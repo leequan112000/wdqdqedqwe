@@ -7,12 +7,23 @@ import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
 import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
+import crypto from "crypto";
+import { sendResetPasswordEmail } from "../../mailer/user";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
 const hashPassword = (password: string): Promise<string> => new Promise((resolve, reject) => hash(password, 10, (error, hash) => (error ? reject(error) : resolve(hash))));
 
 const checkPassword = (reqPassword: string, disgestedPassword: string) => compare(reqPassword, disgestedPassword).then((result) => result).catch(() => false);
+
+const createResetPasswordToken = () => {
+  try {
+    const buf = crypto.randomBytes(127);
+    return buf.toString('base64');
+  } catch (error) {
+    throw error;
+  }
+};
 
 const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: any) => {
   if (isUnitTest) {
@@ -125,6 +136,29 @@ export default {
       } catch (error) {
         // If verify failed, meaning the session is no longer authenticated.
         throw new PublicError('Your session is expired.');
+      }
+    },
+    forgotPassword: async (_: void, args: { email: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+    
+      try {
+        const user = await context.prisma.user.update({
+          where: {
+            email: args.email,
+          },
+          data: {
+            reset_password_token: createResetPasswordToken(),
+            reset_password_expiration: new Date(resetTokenExpiration),
+          },
+        });
+    
+        if (!user) {
+          return false;
+        } 
+        sendResetPasswordEmail(user);
+        return true;
+      } catch (error) {
+        return error;
       }
     },
   },

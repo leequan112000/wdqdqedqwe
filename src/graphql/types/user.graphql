@@ -5,6 +5,7 @@ type User {
   last_name: String
   encrypted_password: String
   reset_password_token: String
+  reset_password_expiration: String
   reset_password_sent_at: String
   remember_created_at: String
   created_at: String
@@ -22,4 +23,5 @@ type Mutation {
   ): User!
   signInUser(email: String, password: String): User!
   refreshJWT: User
+  forgotPassword(email: String): Boolean
 }
