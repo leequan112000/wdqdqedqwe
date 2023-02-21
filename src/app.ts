@@ -1,5 +1,6 @@
 import express from 'express';
 import { ApolloError, ApolloServer } from 'apollo-server-express';
+import cookieParser from 'cookie-parser';
 import { GraphQLError } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
@@ -24,7 +25,7 @@ class App {
   async apolloServer() {
     const apolloServer = new ApolloServer({
       schema,
-      context,
+      context: ({ req, res }) => ({ ...context, req, res }),
       validationRules: [depthLimit(7)],
       formatError: (error: GraphQLError) => {
         const graphqlErrorCode = error.extensions.code;
@@ -38,6 +39,7 @@ class App {
           }
           case 'INTERNAL_ERROR_CODE':
           default: {
+            console.log(error);
             return new ApolloError('Something went wrong.');
           }
         }
@@ -50,6 +52,7 @@ class App {
   middlewares() {
     this.server.use(express.json());
     this.server.use('*', cors());
+    this.server.use(cookieParser());
     this.server.use(compression());
     this.server.use(authMiddleware);
   }

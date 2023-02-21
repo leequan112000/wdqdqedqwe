@@ -1,0 +1,23 @@
+type User {
+  id: String
+  email: String
+  first_name: String
+  last_name: String
+  encrypted_password: String
+  reset_password_token: String
+  reset_password_sent_at: String
+  remember_created_at: String
+  created_at: String
+  updated_at: String
+  access_token: String
+  refresh_token: String
+}
+
+type Mutation {
+  signUpUser(
+    email: String
+    first_name: String
+    last_name: String
+    password: String
+  ): User!
+}
