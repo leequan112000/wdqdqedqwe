@@ -10,16 +10,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                  String    @unique
+  first_name             String
+  last_name              String
+  encrypted_password     String
+  reset_password_token   String?   @unique
+  reset_password_sent_at DateTime?
+  remember_created_at    DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  customer      Customer?
+  vendor_member VendorMember?
+
+  @@map("users")
+}
+
 model Customer {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email             String   @unique
-  first_name        String
-  last_name         String
   has_setup_profile Boolean  @default(false)
   team              String?
   job_title         String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
+
+  user_id String @unique @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id])
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
@@ -93,15 +111,15 @@ model VendorCompany {
 
 model VendorMember {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  first_name        String
-  last_name         String
-  email             String
   is_primary_member Boolean  @default(false)
   phone             String?
   title             String?
   department        String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
+
+  user_id String @unique @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id])
 
   vendor_company_id String         @db.Uuid
   vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
