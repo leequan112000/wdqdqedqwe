@@ -40,6 +40,8 @@
   "dependencies": {
     "@graphql-tools/load-files": "^6.6.1",
     "@prisma/client": "^4.10.1",
+    "@sendgrid/client": "^7.7.0",
+    "@sendgrid/mail": "^7.7.0",
     "apollo-server-express": "^3.11.1",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
