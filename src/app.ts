@@ -1,5 +1,6 @@
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloError, ApolloServer } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
@@ -25,6 +26,22 @@ class App {
       schema,
       context,
       validationRules: [depthLimit(7)],
+      formatError: (error: GraphQLError) => {
+        const graphqlErrorCode = error.extensions.code;
+        switch (graphqlErrorCode) {
+          // Returning public error before sending slack error to skip reporting public error
+          case 'PUBLIC_ERROR_CODE': {
+            return new ApolloError(String(error.extensions.display_message), 'PUBLIC_ERROR_CODE');
+          }
+          case 'UNAUTHENTICATED': {
+            return error;
+          }
+          case 'INTERNAL_ERROR_CODE':
+          default: {
+            return new ApolloError('Something went wrong.');
+          }
+        }
+      },
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({ app: this.server, path: '/graphql' });
