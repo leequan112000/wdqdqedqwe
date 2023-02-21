@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
 import { context } from './context';
+import { authMiddleware } from './middlewares/auth';
 import routes from './routes';
 import schema from './graphql/index';
 
@@ -33,6 +34,7 @@ class App {
     this.server.use(express.json());
     this.server.use('*', cors());
     this.server.use(compression());
+    this.server.use(authMiddleware);
   }
 
   routes() {
