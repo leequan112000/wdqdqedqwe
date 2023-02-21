@@ -4,10 +4,6 @@ import { verify } from 'jsonwebtoken';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
 
-interface IJwtPayload extends Request {
-  userId: string;
-}
-
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
@@ -23,7 +19,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   if (tokenArray.length === 2) {
     const accessTokenFromHeader = tokenArray[1];
     try {
-      const data = verify(accessTokenFromHeader, ACCESS_TOKEN_SECRET || "secret") as IJwtPayload;
+      const data = verify(accessTokenFromHeader, ACCESS_TOKEN_SECRET || "secret") as Request;
       req.userId = data.userId;
       return next();
     } catch (error) {
@@ -40,7 +36,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     // Try to verify access token.
     // If verified, save decoded userId to the req context which will then pass to apollo context.
     // If not verified or access token undefined, this will throw error and proceed.
-    const data = verify(accessToken, ACCESS_TOKEN_SECRET || "secret") as IJwtPayload;
+    const data = verify(accessToken, ACCESS_TOKEN_SECRET || "secret") as Request;
     req.userId = data.userId;
     return next();
   } catch {}
@@ -56,7 +52,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     // Verify the refresh token.
     // If verified, save the decoded data.
     // If not verified, this will throw error and end middleware.
-    data = verify(refreshToken, REFRESH_TOKEN_SECRET || "secret") as IJwtPayload;
+    data = verify(refreshToken, REFRESH_TOKEN_SECRET || "secret") as Request;
   } catch {
     return next();
   }

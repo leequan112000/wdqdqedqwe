@@ -21,4 +21,5 @@ type Mutation {
     password: String
   ): User!
   signInUser(email: String, password: String): User!
+  refreshJWT: User
 }

@@ -5,6 +5,8 @@ import { hash, compare } from "bcryptjs";
 import { createTokens } from "../../helper/auth";
 import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
 import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
+import { verify } from "jsonwebtoken";
+import { Request } from "express";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
@@ -87,6 +89,42 @@ export default {
         throw new PublicError('Invalid email or password.');
       } catch (error) {
         return error;
+      }
+    },
+    refreshJWT: async (_: void, args: { email: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+      // Get refresh token from header
+      const authHeader = context.req.get('authorization');
+      const tokenArray = authHeader.split(' ');
+      if (tokenArray.length !== 2) {
+        return null;
+      }
+      const refreshToken = tokenArray[1];
+      const { REFRESH_TOKEN_SECRET } = process.env;
+      let userId;
+      // Verify the refresh token
+      try {
+        const data = verify(refreshToken, REFRESH_TOKEN_SECRET || "secret") as Request;
+        userId = data.userId;
+        if (userId) {
+          const newTokens = createTokens({ id: userId });
+          const user = await context.prisma.user.findFirst({
+            where: {
+              id: userId
+            }
+          });
+
+          return {
+            ...user,
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+          };
+        }
+
+        // Invalid jwt token if user id not found
+        throw new PublicError('Your session is expired.');
+      } catch (error) {
+        // If verify failed, meaning the session is no longer authenticated.
+        throw new PublicError('Your session is expired.');
       }
     },
   },
