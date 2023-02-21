@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Context } from "apollo-server-core";
 import { PublicError } from "../errors/PublicError";
-import { hash } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import { createTokens } from "../../helper/auth";
 import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
 import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
@@ -9,6 +9,8 @@ import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 const isUnitTest = process.env.NODE_ENV === 'test';
 
 const hashPassword = (password: string): Promise<string> => new Promise((resolve, reject) => hash(password, 10, (error, hash) => (error ? reject(error) : resolve(hash))));
+
+const checkPassword = (reqPassword: string, disgestedPassword: string) => compare(reqPassword, disgestedPassword).then((result) => result).catch(() => false);
 
 const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: any) => {
   if (isUnitTest) {
@@ -54,6 +56,35 @@ export default {
             refreshToken: tokens.refreshToken,
           };
         });
+      } catch (error) {
+        return error;
+      }
+    },
+    signInUser: async (_: void, args: { email: string, password: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+      try {
+        let foundUser = await context.prisma.user.findFirst({
+          where: {
+            email: args.email
+          }
+        });
+
+        if (!foundUser) {
+          throw new PublicError('User not found.');
+        }
+
+        const isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password);
+        if (isPasswordMatched === true) {
+          // Genereate tokens
+          const tokens = createTokens({ id: foundUser.id, });
+          setAuthTokensToCookies(tokens.accessToken, tokens.refreshToken, context.res);
+          
+          return {
+            ...foundUser,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+          };
+        }
+        throw new PublicError('Invalid email or password.');
       } catch (error) {
         return error;
       }

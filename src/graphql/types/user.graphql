@@ -20,4 +20,5 @@ type Mutation {
     last_name: String
     password: String
   ): User!
+  signInUser(email: String, password: String): User!
 }
