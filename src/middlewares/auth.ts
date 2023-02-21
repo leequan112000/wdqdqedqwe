@@ -4,15 +4,11 @@ import { verify } from 'jsonwebtoken';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
 
-interface IGetUserAuthInfoRequest extends Request {
-  userId: string;
-}
-
 interface IJwtPayload extends Request {
   userId: string;
 }
 
-export const authMiddleware = async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
   const refreshToken = req.cookies['refresh-token'];
