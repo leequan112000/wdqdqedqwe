@@ -4,6 +4,7 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
+import { context } from './context';
 import routes from './routes';
 import schema from './graphql/index';
 
@@ -21,6 +22,7 @@ class App {
   async apolloServer() {
     const apolloServer = new ApolloServer({
       schema,
+      context,
       validationRules: [depthLimit(7)],
     });
     await apolloServer.start();
