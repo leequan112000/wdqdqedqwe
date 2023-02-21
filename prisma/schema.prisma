@@ -9,3 +9,309 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Customer {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String   @unique
+  first_name        String
+  last_name         String
+  has_setup_profile Boolean  @default(false)
+  team              String?
+  job_title         String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
+
+  project_requests     ProjectRequest[]
+  customer_connections CustomerConnection[]
+
+  @@index([biotech_id])
+  @@map("customers")
+}
+
+model Admin {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username               String    @unique
+  email                  String    @unique
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  encrypted_password     String
+  reset_password_token   String?   @unique
+  reset_password_sent_at DateTime?
+  remember_created_at    DateTime?
+  invitation_accepted_at DateTime?
+  team                   String?
+
+  @@map("admins")
+}
+
+model Biotech {
+  id                                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                        String    @unique
+  created_at                                  DateTime  @default(now())
+  updated_at                                  DateTime  @updatedAt
+  has_setup_profile                           Boolean   @default(false)
+  address                                     String?
+  website                                     String?
+  about                                       String?
+  cda_pandadoc_file_id                        String?
+  cda_pandadoc_view_session_id                String?
+  cda_pandadoc_view_session_expires_at        DateTime?
+  cda_signed_at                               DateTime?
+  number_of_reqs_allowed_without_subscription Int       @default(0)
+
+  customers        Customer[]
+  subscriptions    Subscription[]
+  project_requests ProjectRequest[]
+  chats            Chat[]
+
+  @@map("biotechs")
+}
+
+model VendorCompany {
+  id                                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                 String
+  website                              String?
+  description                          String?
+  created_at                           DateTime  @default(now())
+  updated_at                           DateTime  @updatedAt
+  address                              String?
+  cda_pandadoc_view_session_id         String?
+  cda_pandadoc_view_session_expires_at DateTime?
+  cda_pandadoc_file_id                 String?
+  cda_signed_at                        DateTime?
+
+  vendor_members      VendorMember[]
+  project_requests    ProjectRequest[]
+  project_connections ProjectConnection[]
+  chats               Chat[]
+
+  @@map("vendor_companies")
+}
+
+model VendorMember {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  first_name        String
+  last_name         String
+  email             String
+  is_primary_member Boolean  @default(false)
+  phone             String?
+  title             String?
+  department        String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  vendor_company_id String         @db.Uuid
+  vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
+
+  project_requests          ProjectRequest[]
+  vendor_member_connections VendorMemberConnection[]
+
+  @@map("vendor_members")
+}
+
+model Subscription {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stripe_subscription_id String
+  stripe_customer_id     String
+  status                 String
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
+
+  @@map("subscriptions")
+}
+
+model ProjectRequest {
+  id                                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creator_email                       String?
+  creator_name                        String?
+  creator_job                         String?
+  creator_company                     String?
+  title                               String
+  vendor_requirement                  String
+  objective_description               String
+  preparation_description             String?
+  in_contact_with_vendor              Boolean
+  existing_vendor_contact_description String?
+  project_challenge_description       String?
+  vendor_search_timeframe             String
+  max_budget                          Decimal  @db.Decimal(14, 2)
+  vendor_location_requirement         String?
+  project_start_time_requirement      String?
+  project_deadline_requirement        String?
+  state                               String
+  created_at                          DateTime @default(now())
+  updated_at                          DateTime @updatedAt
+
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  vendor_member_id String       @db.Uuid
+  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
+
+  project_request_comments ProjectRequestComment[]
+  project_connections      ProjectConnection[]
+
+  @@index([biotech_id])
+  @@index([customer_id])
+  @@index([vendor_company_id])
+  @@index([vendor_member_id])
+  @@map("project_requests")
+}
+
+model ProjectRequestComment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project_request_id String         @db.Uuid
+  project_request    ProjectRequest @relation(fields: [project_request_id], references: [id])
+
+  @@index([project_request_id])
+  @@index([created_at])
+  @@map("project_request_comments")
+}
+
+model ProjectConnection {
+  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_status              String?
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime @updatedAt
+  final_contract_uploaded_at DateTime
+
+  project_request_id String         @db.Uuid
+  project_request    ProjectRequest @relation(fields: [project_request_id], references: [id])
+
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  vendor_member_connections VendorMemberConnection[]
+  customer_connections      CustomerConnection[]
+  chats                     Chat[]
+  project_attachments       ProjectAttachment[]
+
+  @@index([project_request_id])
+  @@index([vendor_company_id])
+  @@map("project_connections")
+}
+
+model VendorMemberConnection {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project_connection_id String            @db.Uuid
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+
+  vendor_member_id String       @db.Uuid
+  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
+
+  @@index([project_connection_id])
+  @@map("vendor_member_connections")
+}
+
+model CustomerConnection {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project_connection_id String            @db.Uuid
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@index([project_connection_id])
+  @@map("customer_connections")
+}
+
+model Invitation {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sender_type   String
+  sender_id     String   @db.Uuid
+  receiver_type String
+  receiver_id   String   @db.Uuid
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([sender_type, sender_id])
+  @@index([receiver_type, receiver_id])
+  @@map("invitations")
+}
+
+model Chat {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
+
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  project_connection_id String            @db.Uuid
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  messages              Message[]
+
+  @@index([biotech_id])
+  @@index([vendor_company_id])
+  @@map("chats")
+}
+
+model Message {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content     String
+  sender_type String
+  sender_id   String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  chat_id String @db.Uuid
+  chat    Chat   @relation(fields: [chat_id], references: [id])
+
+  @@index([chat_id])
+  @@index([sender_id])
+  @@map("messages")
+}
+
+model Notification {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type           String
+  recipient_type String
+  recipient_id   String    @db.Uuid
+  params         Json?
+  read_at        DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@index([recipient_type, recipient_id])
+  @@index([read_at])
+  @@map("notifications")
+}
+
+model ProjectAttachment {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key          String   @unique
+  filename     String
+  content_type String?
+  byte_size    BigInt
+  created_at   DateTime @default(now())
+
+  project_connection_id String            @db.Uuid
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+
+  @@map("project_attachments")
+}
