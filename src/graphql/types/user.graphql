@@ -24,4 +24,5 @@ type Mutation {
   signInUser(email: String, password: String): User!
   refreshJWT: User
   forgotPassword(email: String): Boolean
+  resetPassword(reset_token: String, new_password: String): Boolean
 }

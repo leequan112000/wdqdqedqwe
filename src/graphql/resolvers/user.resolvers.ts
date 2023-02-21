@@ -161,5 +161,35 @@ export default {
         return error;
       }
     },
+    resetPassword: async (_: void, args: { reset_token: string, new_password: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+      try {
+        const user = await context.prisma.user.findFirst({
+          where: {
+            reset_password_token: args.reset_token
+          }
+        });
+
+        if (!user || !user.reset_password_expiration) return false;
+
+        const timeElapsed = user.reset_password_expiration.getTime() - new Date().getTime();
+
+        if (timeElapsed <= 60 * 60 * 1000 && timeElapsed >= 0) {
+          await context.prisma.user.update({
+            where: {
+              reset_password_token: args.reset_token
+            },
+            data: {
+              encrypted_password: await hashPassword(args.new_password),
+              reset_password_token: null,
+              reset_password_expiration: null,
+            },
+          });
+          return true;
+        }
+        return false;
+      } catch (error) {
+        return error;
+      }
+    },
   },
 };
