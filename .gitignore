@@ -1,0 +1,31 @@
+# Extra Python files
+**/__pycache__/
+*.py[cod]
+
+# Ignore personal config files
+.DS_Store
+.idea
+secret.yaml
+.coverage
+
+# Misc
+*.pkl
+
+# Venv
+/venv
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+yarn-error.log
+npm-debug.log*
+
+# local env variables
+.env
+
+# build files
+/build
+newrelic_agent.log
+dump.rdb
