@@ -1,7 +1,7 @@
 import { Biotech, Customer, PrismaClient, User } from "@prisma/client";
 import { Context } from "apollo-server-core";
 import { PublicError } from "../errors/PublicError";
-import { MutationCreateCustomerArgs } from "../generated";
+import { MutationCreateCustomerArgs, MutationUpdateCustomerArgs } from "../generated";
 
 export default {
   Customer: {
@@ -67,6 +67,22 @@ export default {
               biotech_id: newBiotech.id,
             }
           });
+        });        
+      } catch (error) {
+        return error;
+      }
+    },
+    updateCustomer: async (_: void, args: MutationUpdateCustomerArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
+      try {
+        return await context.prisma.customer.update({
+          where: {
+            user_id: args.user_id
+          },
+          data: {
+            job_title: args.job_title,
+            team: args.team,
+            ...(args.has_setup_profile !== null ? { has_setup_profile: args.has_setup_profile } : {})
+          }
         });        
       } catch (error) {
         return error;
