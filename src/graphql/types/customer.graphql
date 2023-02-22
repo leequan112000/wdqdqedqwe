@@ -12,7 +12,7 @@ type Customer {
 }
 
 type Query {
-  customer(id: String): Customer
+  customer: Customer
 }
 
 type Mutation {

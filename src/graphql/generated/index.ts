@@ -118,13 +118,9 @@ export type MutationUpdateCustomerArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  biotech?: Maybe<Biotech>;
   customer?: Maybe<Customer>;
   user?: Maybe<User>;
-};
-
-
-export type QueryCustomerArgs = {
-  id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -280,7 +276,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, Partial<QueryCustomerArgs>>;
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUserArgs>>;
 }>;
 

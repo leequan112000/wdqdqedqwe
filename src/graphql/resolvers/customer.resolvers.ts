@@ -23,10 +23,10 @@ export default {
     },
   },
   Query: {
-    customer: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient}>) => {
+    customer: async (_: void, args: void, context: Context<{prisma: PrismaClient, req: any}>) => {
       return await context.prisma.customer.findFirst({
         where: {
-          id: args.id
+          id: context.req.user_id
         }
       });
     }

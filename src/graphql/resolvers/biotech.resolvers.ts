@@ -13,6 +13,23 @@ export default {
       });
     },
   },
+  Query: {
+    biotech: async (_: void, args: void, context: Context<{prisma: PrismaClient, req: any}>) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const customer = await trx.customer.findFirstOrThrow({
+          where: {
+            user_id: context.req.user_id,
+          },
+        });
+
+        return await trx.biotech.findFirst({
+          where: {
+            id: customer.biotech_id
+          }
+        });
+      });
+    }
+  },
   Mutation: {
     updateBiotech: async (_: void, args: MutationUpdateBiotechArgs, context: Context<{prisma: PrismaClient, req: any, res: any}>) => {
       try {
