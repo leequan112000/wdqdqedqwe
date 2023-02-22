@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 import { verify } from 'jsonwebtoken';
+import { context } from '../context';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const prisma = new PrismaClient();
+  const prisma = context.prisma;
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
   const refreshToken = req.cookies['refresh-token'];
   const accessToken = req.cookies['access-token'];
