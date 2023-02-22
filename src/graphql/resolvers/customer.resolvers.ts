@@ -1,7 +1,14 @@
+import { Customer, PrismaClient, User } from "@prisma/client";
+import { Context } from "apollo-server-core";
+
 export default {
-  Query: {
-    helloWorld(_: void, args: void): string {
-      return "Hello world";
+  Customer: {
+    user: async (parent: Customer, _: void, context: Context<{ prisma: PrismaClient }>): Promise<User | null> => {
+      return await context.prisma.user.findFirst({
+        where: {
+          id: parent.user_id
+        }
+      })
     },
   },
 };

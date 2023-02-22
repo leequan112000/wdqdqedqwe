@@ -1,3 +1,10 @@
-type Query {
-  helloWorld: String!
+type Customer {
+  id: String
+  has_setup_profile: Boolean
+  team: String
+  job_title: String
+  created_at: String
+  updated_at: String
+  user_id: String
+  user: User
 }

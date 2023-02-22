@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Customer, PrismaClient, User } from "@prisma/client";
 import { Context } from "apollo-server-core";
 import { PublicError } from "../errors/PublicError";
 import { hash, compare } from "bcryptjs";
@@ -34,6 +34,15 @@ const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: 
 };
 
 export default {
+  User: {
+    customer: async (parent: User, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Customer | null> => {
+      return await context.prisma.customer.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      })
+    },
+  },
   Mutation: {
     signUpUser: async (_: void, args: { email: string, first_name: string, last_name: string, password: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
       try {

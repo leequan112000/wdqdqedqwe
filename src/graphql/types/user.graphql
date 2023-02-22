@@ -12,6 +12,7 @@ type User {
   updated_at: String
   access_token: String
   refresh_token: String
+  customer: Customer
 }
 
 type Mutation {
