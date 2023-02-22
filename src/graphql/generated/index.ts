@@ -55,6 +55,7 @@ export type Mutation = {
   signInUser: User;
   signUpUser: User;
   updateBiotech: Customer;
+  updateCustomer: Customer;
 };
 
 
@@ -84,6 +85,7 @@ export type MutationSignInUserArgs = {
 
 
 export type MutationSignUpUserArgs = {
+  company_name: Scalars['String'];
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
@@ -97,6 +99,14 @@ export type MutationUpdateBiotechArgs = {
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   id: Scalars['String'];
   website?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateCustomerArgs = {
+  has_setup_profile?: InputMaybe<Scalars['Boolean']>;
+  id: Scalars['String'];
+  job_title?: InputMaybe<Scalars['String']>;
+  team?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -117,19 +127,12 @@ export type QueryUserArgs = {
 
 export type User = {
   __typename?: 'User';
-  access_token?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['String']>;
   customer?: Maybe<Customer>;
   email?: Maybe<Scalars['String']>;
-  encrypted_password?: Maybe<Scalars['String']>;
   first_name?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
-  refresh_token?: Maybe<Scalars['String']>;
-  remember_created_at?: Maybe<Scalars['String']>;
-  reset_password_expiration?: Maybe<Scalars['String']>;
-  reset_password_sent_at?: Maybe<Scalars['String']>;
-  reset_password_token?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['String']>;
 };
 
@@ -263,8 +266,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationSignInUserArgs>>;
-  signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'email' | 'first_name' | 'last_name' | 'password'>>;
+  signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateBiotechArgs, 'id'>>;
+  updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'id'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -273,19 +277,12 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  access_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  encrypted_password?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   first_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  refresh_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  remember_created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reset_password_expiration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reset_password_sent_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reset_password_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -66,6 +66,22 @@ export default {
           if (user) {
             throw new PublicError('User already exist');
           }
+
+          const biotech = await trx.biotech.findFirst({
+            where: {
+              name: args.company_name
+            }
+          });
+  
+          if (biotech) {
+            throw new PublicError('Your company has already setup an account. Please ask any user from your account to invite you to the company account.');
+          }
+          
+          const newBiotech = await trx.biotech.create({
+            data: {
+              name: args.company_name,
+            }
+          });
     
           const hashedPassword = await hashPassword(args.password);
           
@@ -75,6 +91,13 @@ export default {
               first_name: args.first_name,
               last_name: args.last_name,
               encrypted_password: hashedPassword,
+            }
+          });
+
+          await trx.customer.create({
+            data: {
+              user_id: newCreatedUser.id,
+              biotech_id: newBiotech.id,
             }
           });
     

@@ -3,15 +3,8 @@ type User {
   email: String
   first_name: String
   last_name: String
-  encrypted_password: String
-  reset_password_token: String
-  reset_password_expiration: String
-  reset_password_sent_at: String
-  remember_created_at: String
   created_at: String
   updated_at: String
-  access_token: String
-  refresh_token: String
   customer: Customer
 }
 
@@ -25,6 +18,7 @@ type Mutation {
     first_name: String!
     last_name: String!
     password: String!
+    company_name: String!
   ): User!
   signInUser(email: String, password: String): User!
   refreshJWT: User
