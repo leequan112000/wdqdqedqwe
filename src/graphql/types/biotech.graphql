@@ -14,3 +14,13 @@ type Biotech {
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
 }
+
+type Mutation {
+  updateBiotech(
+    id: String!
+    has_setup_profile: Boolean
+    address: String
+    website: String
+    about: String
+  ): Customer!
+}

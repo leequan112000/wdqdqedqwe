@@ -54,6 +54,7 @@ export type Mutation = {
   resetPassword?: Maybe<Scalars['Boolean']>;
   signInUser: User;
   signUpUser: User;
+  updateBiotech: Customer;
 };
 
 
@@ -87,6 +88,15 @@ export type MutationSignUpUserArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
+};
+
+
+export type MutationUpdateBiotechArgs = {
+  about?: InputMaybe<Scalars['String']>;
+  address?: InputMaybe<Scalars['String']>;
+  has_setup_profile?: InputMaybe<Scalars['Boolean']>;
+  id: Scalars['String'];
+  website?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -254,6 +264,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationSignInUserArgs>>;
   signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'email' | 'first_name' | 'last_name' | 'password'>>;
+  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateBiotechArgs, 'id'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
