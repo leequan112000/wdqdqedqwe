@@ -27,4 +27,10 @@ type Mutation {
     job_title: String
     team: String
   ): Customer!
+  inviteCustomer(
+    first_name: String!
+    last_name: String!
+    email: String!
+    custom_message: String
+  ): Customer
 }

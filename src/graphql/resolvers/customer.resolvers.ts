@@ -1,7 +1,9 @@
 import { Biotech, Customer, PrismaClient, User } from "@prisma/client";
 import { Context } from "apollo-server-core";
+import { createResetPasswordToken } from "../../helper/auth";
+import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
-import { MutationCreateCustomerArgs, MutationUpdateCustomerArgs } from "../generated";
+import { MutationCreateCustomerArgs, MutationInviteCustomerArgs, MutationUpdateCustomerArgs } from "../generated";
 
 export default {
   Customer: {
@@ -86,6 +88,52 @@ export default {
             team: args.team,
             ...(args.has_setup_profile !== null ? { has_setup_profile: args.has_setup_profile } : {})
           }
+        });        
+      } catch (error) {
+        return error;
+      }
+    },
+    inviteCustomer: async (_: void, args: MutationInviteCustomerArgs, context: Context<{prisma: PrismaClient, req: any}>) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const user = await trx.user.findFirst({
+            where: {
+              email: args.email
+            }
+          });
+
+          if (user) {
+            throw new PublicError('User already exist!');
+          }
+
+          const currentUser = await trx.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id
+            },
+            include: {
+              customer: true
+            }
+          });
+
+          const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+          const newUser = await trx.user.create({
+            data: {
+              ...args,
+              reset_password_token: createResetPasswordToken(),
+              reset_password_expiration: new Date(resetTokenExpiration),
+            }
+          });
+
+          const newCustomer = await trx.customer.create({
+            data: {
+              user_id: newUser.id,
+              biotech_id: currentUser.customer?.biotech_id!,
+            }
+          });
+
+          sendCustomerInvitationEmail(currentUser, newUser, args.custom_message || "");
+
+          return newCustomer;
         });        
       } catch (error) {
         return error;
