@@ -15,7 +15,7 @@ model User {
   email                     String    @unique
   first_name                String
   last_name                 String
-  encrypted_password        String
+  encrypted_password        String?
   reset_password_token      String?   @unique
   reset_password_expiration DateTime?
   reset_password_sent_at    DateTime?
