@@ -7,6 +7,7 @@
     "build": "tsc --project ./",
     "start:dev": "nodemon src/server.ts",
     "start:prod": "node dist/server.js",
+    "generate": "graphql-codegen",
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push"
   },
@@ -21,6 +22,9 @@
   },
   "homepage": "https://github.com/cro-matic/octavian#readme",
   "devDependencies": {
+    "@graphql-codegen/cli": "^3.1.0",
+    "@graphql-codegen/typescript": "^3.0.1",
+    "@graphql-codegen/typescript-resolvers": "^3.1.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.7.2",
     "@types/cookie-parser": "^1.4.3",
