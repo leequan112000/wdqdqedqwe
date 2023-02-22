@@ -20,7 +20,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const accessTokenFromHeader = tokenArray[1];
     try {
       const data = verify(accessTokenFromHeader, ACCESS_TOKEN_SECRET || "secret") as Request;
-      req.userId = data.userId;
+      req.user_id = data.user_id;
       return next();
     } catch (error) {
       return next();
@@ -34,10 +34,10 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
   try {
     // Try to verify access token.
-    // If verified, save decoded userId to the req context which will then pass to apollo context.
+    // If verified, save decoded user_id to the req context which will then pass to apollo context.
     // If not verified or access token undefined, this will throw error and proceed.
     const data = verify(accessToken, ACCESS_TOKEN_SECRET || "secret") as Request;
-    req.userId = data.userId;
+    req.user_id = data.user_id;
     return next();
   } catch {}
 
@@ -59,7 +59,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
   // Find the user using the decoded user identification.
   const user = await prisma.user.findFirst({
-    where: { id: data?.userId }
+    where: { id: data?.user_id }
   })
 
   // If user doesn't exist. End middleware.
@@ -71,7 +71,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   const tokens = createTokens({ id: user.id });
   res.cookie('access-token', tokens.accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true });
   // Set user id to request so that resolver can read it and prevent unauthenticated
-  req.userId = data.userId;
+  req.user_id = data.user_id;
 
   return next();
 };

@@ -160,7 +160,7 @@ export default {
       // Verify the refresh token
       try {
         const data = verify(refreshToken, REFRESH_TOKEN_SECRET || "secret") as Request;
-        userId = data.userId;
+        userId = data.user_id;
         if (userId) {
           const newTokens = createTokens({ id: userId });
           const user = await context.prisma.user.findFirst({

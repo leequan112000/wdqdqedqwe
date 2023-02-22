@@ -23,7 +23,6 @@ type Mutation {
     team: String
   ): Customer!
   updateCustomer(
-    user_id: String!
     has_setup_profile: Boolean
     job_title: String
     team: String

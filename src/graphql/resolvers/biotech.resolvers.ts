@@ -14,12 +14,12 @@ export default {
     },
   },
   Mutation: {
-    updateBiotech: async (_: void, args: MutationUpdateBiotechArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
+    updateBiotech: async (_: void, args: MutationUpdateBiotechArgs, context: Context<{prisma: PrismaClient, req: any, res: any}>) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const customer = await trx.customer.findFirst({
             where: {
-              user_id: args.user_id,
+              user_id: context.req.user_id,
             },
           });
 

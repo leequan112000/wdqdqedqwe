@@ -5,14 +5,14 @@ import { MutationCreateCustomerArgs, MutationUpdateCustomerArgs } from "../gener
 
 export default {
   Customer: {
-    user: async (parent: Customer, _: void, context: Context<{ prisma: PrismaClient }>): Promise<User | null> => {
+    user: async (parent: Customer, _: void, context: Context<{prisma: PrismaClient}>): Promise<User | null> => {
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
         }
       });
     },
-    biotech: async (parent: Customer, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Biotech | null> => {
+    biotech: async (parent: Customer, _: void, context: Context<{prisma: PrismaClient}>): Promise<Biotech | null> => {
       return await context.prisma.biotech.findFirst({
         where: {
           id: parent.biotech_id
@@ -21,7 +21,7 @@ export default {
     },
   },
   Query: {
-    customer: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+    customer: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient}>) => {
       return await context.prisma.customer.findFirst({
         where: {
           id: args.id
@@ -30,7 +30,7 @@ export default {
     }
   },
   Mutation: {
-    createCustomer: async (_: void, args: MutationCreateCustomerArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
+    createCustomer: async (_: void, args: MutationCreateCustomerArgs, context: Context<{prisma: PrismaClient}>) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const customer = await trx.customer.findFirst({
@@ -75,11 +75,11 @@ export default {
         return error;
       }
     },
-    updateCustomer: async (_: void, args: MutationUpdateCustomerArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
+    updateCustomer: async (_: void, args: MutationUpdateCustomerArgs, context: Context<{prisma: PrismaClient, req: any}>) => {
       try {
         return await context.prisma.customer.update({
           where: {
-            user_id: args.user_id
+            user_id: context.req.user_id
           },
           data: {
             job_title: args.job_title,

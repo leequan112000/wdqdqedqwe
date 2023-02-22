@@ -97,7 +97,6 @@ export type MutationUpdateBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
   address?: InputMaybe<Scalars['String']>;
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
-  user_id: Scalars['String'];
   website?: InputMaybe<Scalars['String']>;
 };
 
@@ -106,7 +105,6 @@ export type MutationUpdateCustomerArgs = {
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
-  user_id: Scalars['String'];
 };
 
 export type Query = {
@@ -267,8 +265,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationSignInUserArgs>>;
   signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
-  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateBiotechArgs, 'user_id'>>;
-  updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'user_id'>>;
+  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
+  updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
