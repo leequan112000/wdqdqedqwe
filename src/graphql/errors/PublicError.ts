@@ -1,9 +1,12 @@
-import { ApolloError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
 
-export class PublicError extends ApolloError {
+export class PublicError extends GraphQLError {
   constructor(message: string) {
-    super(`Public Error: ${message}`, 'PUBLIC_ERROR_CODE', {
-      display_message: message,
+    super(`PublicError: ${message}`, {
+      extensions: {
+        code: 'PUBLIC_ERROR_CODE',
+        display_message: message,
+      },
     });
   }
 }

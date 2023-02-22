@@ -1,17 +1,17 @@
-import { Customer, PrismaClient, User } from "@prisma/client";
-import { Context } from "apollo-server-core";
+import { Customer, User } from "@prisma/client";
+import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
 import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
 import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 import { verify } from "jsonwebtoken";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { MutationSignUpUserArgs } from "../generated";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
-const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: any) => {
+const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: Response) => {
   if (isUnitTest) {
     return; // Skip setting cookies in unit test
   }
@@ -21,7 +21,7 @@ const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: 
 
 export default {
   User: {
-    customer: async (parent: User, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Customer | null> => {
+    customer: async (parent: User, _: void, context: Context): Promise<Customer | null> => {
       return await context.prisma.customer.findFirst({
         where: {
           user_id: parent.id
@@ -30,7 +30,7 @@ export default {
     },
   },
   Query: {
-    user: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+    user: async (_: void, args: { id: string }, context: Context) => {
       return await context.prisma.user.findFirst({
         where: {
           id: args.id
@@ -39,7 +39,7 @@ export default {
     }
   },
   Mutation: {
-    signUpUser: async (_: void, args: MutationSignUpUserArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
+    signUpUser: async (_: void, args: MutationSignUpUserArgs, context: Context & { res: Response }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({
@@ -103,7 +103,7 @@ export default {
         return error;
       }
     },
-    signInUser: async (_: void, args: { email: string, password: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+    signInUser: async (_: void, args: { email: string, password: string }, context: Context & { res: Response }) => {
       try {
         let foundUser = await context.prisma.user.findFirst({
           where: {
@@ -136,9 +136,12 @@ export default {
         return error;
       }
     },
-    refreshJWT: async (_: void, args: { email: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+    refreshJWT: async (_: void, args: { email: string }, context: Context & { req: Request }) => {
       // Get refresh token from header
       const authHeader = context.req.get('authorization');
+      if (!authHeader) {
+        return null;
+      }
       const tokenArray = authHeader.split(' ');
       if (tokenArray.length !== 2) {
         return null;
@@ -172,7 +175,7 @@ export default {
         throw new PublicError('Your session is expired.');
       }
     },
-    forgotPassword: async (_: void, args: { email: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+    forgotPassword: async (_: void, args: { email: string }, context: Context) => {
       const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
     
       try {
@@ -195,7 +198,7 @@ export default {
         return error;
       }
     },
-    resetPassword: async (_: void, args: { reset_token: string, new_password: string }, context: Context<{prisma: PrismaClient, req: any}>) => {
+    resetPassword: async (_: void, args: { reset_token: string, new_password: string }, context: Context) => {
       try {
         const user = await context.prisma.user.findFirst({
           where: {

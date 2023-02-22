@@ -1,18 +1,19 @@
-import { Biotech, Customer, PrismaClient, Subscription } from "@prisma/client";
-import { Context } from "apollo-server-core";
+import { Biotech, Customer, Subscription } from "@prisma/client";
+import { Request } from "express";
+import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { MutationUpdateBiotechArgs } from "../generated";
 
 export default {
   Biotech: {
-    customers: async (parent: Biotech, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Customer[] | null> => {
+    customers: async (parent: Biotech, _: void, context: Context): Promise<Customer[] | null> => {
       return await context.prisma.customer.findMany({
         where: {
           biotech_id: parent.id
         }
       });
     },
-    subscriptions: async (parent: Biotech, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Subscription[] | null> => {
+    subscriptions: async (parent: Biotech, _: void, context: Context): Promise<Subscription[] | null> => {
       return await context.prisma.subscription.findMany({
         where: {
           biotech_id: parent.id
@@ -21,7 +22,7 @@ export default {
     },
   },
   Query: {
-    biotech: async (_: void, args: void, context: Context<{prisma: PrismaClient, req: any}>) => {
+    biotech: async (_: void, args: void, context: Context & { req: Request }) => {
       return await context.prisma.$transaction(async (trx) => {
         const customer = await trx.customer.findFirstOrThrow({
           where: {
@@ -38,7 +39,7 @@ export default {
     }
   },
   Mutation: {
-    updateBiotech: async (_: void, args: MutationUpdateBiotechArgs, context: Context<{prisma: PrismaClient, req: any, res: any}>) => {
+    updateBiotech: async (_: void, args: MutationUpdateBiotechArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const customer = await trx.customer.findFirst({

@@ -1,9 +1,12 @@
-import { ApolloError } from 'apollo-server-express';
+import { GraphQLError } from "graphql";
 
-export class UnauthenticatedError extends ApolloError {
+export class UnauthenticatedError extends GraphQLError {
   constructor() {
-    super('Not Authenticated', 'UNAUTHENTICATED', {
-      display_message: 'Not Authenticated',
+    super(`Unauthenticated: Not Authenticated`, {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+        display_message: 'Not Authenticated',
+      },
     });
   }
 }

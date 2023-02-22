@@ -1,5 +1,6 @@
-import { Biotech, Customer, PrismaClient, User } from "@prisma/client";
-import { Context } from "apollo-server-core";
+import { Biotech, Customer, User } from "@prisma/client";
+import { Request } from "express";
+import { Context } from "../../context";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
@@ -7,14 +8,14 @@ import { MutationCreateCustomerArgs, MutationInviteCustomerArgs, MutationUpdateC
 
 export default {
   Customer: {
-    user: async (parent: Customer, _: void, context: Context<{prisma: PrismaClient}>): Promise<User | null> => {
+    user: async (parent: Customer, _: void, context: Context): Promise<User | null> => {
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
         }
       });
     },
-    biotech: async (parent: Customer, _: void, context: Context<{prisma: PrismaClient}>): Promise<Biotech | null> => {
+    biotech: async (parent: Customer, _: void, context: Context): Promise<Biotech | null> => {
       return await context.prisma.biotech.findFirst({
         where: {
           id: parent.biotech_id
@@ -23,7 +24,7 @@ export default {
     },
   },
   Query: {
-    customer: async (_: void, args: void, context: Context<{prisma: PrismaClient, req: any}>) => {
+    customer: async (_: void, args: void, context: Context & { req: Request }) => {
       return await context.prisma.customer.findFirst({
         where: {
           id: context.req.user_id
@@ -32,7 +33,7 @@ export default {
     }
   },
   Mutation: {
-    createCustomer: async (_: void, args: MutationCreateCustomerArgs, context: Context<{prisma: PrismaClient}>) => {
+    createCustomer: async (_: void, args: MutationCreateCustomerArgs, context: Context) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const customer = await trx.customer.findFirst({
@@ -77,7 +78,7 @@ export default {
         return error;
       }
     },
-    updateCustomer: async (_: void, args: MutationUpdateCustomerArgs, context: Context<{prisma: PrismaClient, req: any}>) => {
+    updateCustomer: async (_: void, args: MutationUpdateCustomerArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.customer.update({
           where: {
@@ -93,7 +94,7 @@ export default {
         return error;
       }
     },
-    inviteCustomer: async (_: void, args: MutationInviteCustomerArgs, context: Context<{prisma: PrismaClient, req: any}>) => {
+    inviteCustomer: async (_: void, args: MutationInviteCustomerArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({

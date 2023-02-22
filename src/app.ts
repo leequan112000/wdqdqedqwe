@@ -1,16 +1,18 @@
 import express from 'express';
-import { ApolloError, ApolloServer } from 'apollo-server-express';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import cookieParser from 'cookie-parser';
-import { GraphQLError } from 'graphql';
+import { GraphQLFormattedError } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
 import corsConfig from './cors';
-import { context } from './context';
+import { Context, context } from './context';
 import { authMiddleware } from './middlewares/auth';
 import routes from './routes';
 import schema from './graphql/index';
+import { json } from 'body-parser';
 
 class App {
   public server;
@@ -24,34 +26,38 @@ class App {
   }
 
   async apolloServer() {
-    const apolloServer = new ApolloServer({
+    const apolloServer = new ApolloServer<Context>({
       schema,
-      context: ({ req, res }) => ({ ...context, req, res }),
       validationRules: [depthLimit(7)],
-      formatError: (error: GraphQLError) => {
-        const graphqlErrorCode = error.extensions.code;
-        switch (graphqlErrorCode) {
-          // Returning public error before sending slack error to skip reporting public error
-          case 'PUBLIC_ERROR_CODE': {
-            return new ApolloError(String(error.extensions.display_message), 'PUBLIC_ERROR_CODE');
-          }
-          case 'UNAUTHENTICATED': {
-            return error;
-          }
-          case 'INTERNAL_ERROR_CODE':
-          default: {
-            console.log(error);
-            return new ApolloError('Something went wrong.');
+      formatError: (formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError => {
+        const errorMap = {
+          'PublicError:': 'PUBLIC_ERROR_CODE',
+          'InternalError:': 'INTERNAL_ERROR_CODE',
+          'Unauthenticated:': 'UNAUTHENTICATED'
+        };
+        
+        for (const [prefix, code] of Object.entries(errorMap)) {
+          if (formattedError.message.startsWith(prefix)) {
+            return {
+              ...formattedError,
+              message: formattedError.message.replace(new RegExp(`^${prefix} `), ''),
+              extensions: { ...formattedError?.extensions, code },
+            };
           }
         }
+        
+        return formattedError;
       },
     });
     await apolloServer.start();
-    apolloServer.applyMiddleware({
-      app: this.server,
-      path: '/graphql',
-      cors: false, // false because we are using our own cors middleware 
-    });
+    this.server.use(
+      '/graphql',
+      cors<cors.CorsRequest>(corsConfig),
+      json(),
+      expressMiddleware(apolloServer, {
+        context: async ({ req, res }) => ({ ...context, req, res }),
+      }),
+    );
   }
 
   middlewares() {

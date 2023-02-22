@@ -1,9 +1,12 @@
-import { ApolloError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
 
-export class InternalError extends ApolloError {
+export class InternalError extends GraphQLError {
   constructor(message: string, meta: any) {
-    super(`Internal Error: ${message}`, 'INTERNAL_ERROR_CODE', {
-      ...meta,
+    super(`InternalError: ${message}`, {
+      extensions: {
+        code: 'INTERNAL_ERROR_CODE',
+        ...meta,
+      },
     });
   }
 }
