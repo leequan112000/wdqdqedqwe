@@ -6,6 +6,7 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
+import corsConfig from './cors';
 import { context } from './context';
 import { authMiddleware } from './middlewares/auth';
 import routes from './routes';
@@ -46,12 +47,16 @@ class App {
       },
     });
     await apolloServer.start();
-    apolloServer.applyMiddleware({ app: this.server, path: '/graphql' });
+    apolloServer.applyMiddleware({
+      app: this.server,
+      path: '/graphql',
+      cors: false, // false because we are using our own cors middleware 
+    });
   }
 
   middlewares() {
     this.server.use(express.json());
-    this.server.use('*', cors());
+    this.server.use(cors(corsConfig));
     this.server.use(cookieParser());
     this.server.use(compression());
     this.server.use(authMiddleware);
