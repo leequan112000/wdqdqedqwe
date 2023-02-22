@@ -69,7 +69,10 @@ export default {
 
           const biotech = await trx.biotech.findFirst({
             where: {
-              name: args.company_name
+              name: {
+                equals: args.company_name,
+                mode: 'insensitive',
+              }
             }
           });
   
