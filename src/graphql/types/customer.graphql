@@ -7,8 +7,19 @@ type Customer {
   updated_at: String
   user_id: String
   user: User
+  biotech_id: String
+  biotech: Biotech
 }
 
 type Query {
   customer(id: String): Customer
+}
+
+type Mutation {
+  createCustomer(
+    user_id: String!
+    company_name: String!
+    job_title: String
+    team: String
+  ): Customer!
 }

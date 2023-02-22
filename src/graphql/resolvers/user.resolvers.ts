@@ -9,6 +9,7 @@ import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import crypto from "crypto";
 import { sendResetPasswordEmail } from "../../mailer/user";
+import { MutationSignUpUserArgs } from "../generated";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
@@ -53,7 +54,7 @@ export default {
     }
   },
   Mutation: {
-    signUpUser: async (_: void, args: { email: string, first_name: string, last_name: string, password: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+    signUpUser: async (_: void, args: MutationSignUpUserArgs, context: Context<{prisma: PrismaClient, res: any}>) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({

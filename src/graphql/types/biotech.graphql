@@ -1,0 +1,16 @@
+type Biotech {
+  id: String
+  name: String
+  created_at: String
+  updated_at: String
+  has_setup_profile: Boolean
+  address: String
+  website: String
+  about: String
+  cda_pandadoc_file_id: String
+  cda_pandadoc_view_session_id: String
+  cda_pandadoc_view_session_expires_at: String
+  cda_signed_at: String
+  number_of_reqs_allowed_without_subscription: Int
+  customers: [Customer]
+}
