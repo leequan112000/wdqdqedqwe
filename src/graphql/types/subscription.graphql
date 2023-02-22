@@ -1,0 +1,15 @@
+type Subscription {
+  id: String
+  stripe_subscription_id: String
+  stripe_customer_id: String
+  status: String
+  created_at: String
+  updated_at: String
+  biotech_id: String
+  biotech: Biotech
+}
+
+type Query {
+  subscription: String
+  stripePricingTableId: String
+}

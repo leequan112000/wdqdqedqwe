@@ -1,4 +1,4 @@
-import { Biotech, Customer, PrismaClient } from "@prisma/client";
+import { Biotech, Customer, PrismaClient, Subscription } from "@prisma/client";
 import { Context } from "apollo-server-core";
 import { PublicError } from "../errors/PublicError";
 import { MutationUpdateBiotechArgs } from "../generated";
@@ -7,6 +7,13 @@ export default {
   Biotech: {
     customers: async (parent: Biotech, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Customer[] | null> => {
       return await context.prisma.customer.findMany({
+        where: {
+          biotech_id: parent.id
+        }
+      });
+    },
+    subscriptions: async (parent: Biotech, _: void, context: Context<{ prisma: PrismaClient }>): Promise<Subscription[] | null> => {
+      return await context.prisma.subscription.findMany({
         where: {
           biotech_id: parent.id
         }

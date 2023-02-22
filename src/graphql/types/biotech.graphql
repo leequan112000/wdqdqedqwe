@@ -13,6 +13,7 @@ type Biotech {
   cda_signed_at: String
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
+  subscriptions: [Subscription]
 }
 
 type Query {
