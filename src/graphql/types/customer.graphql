@@ -8,3 +8,7 @@ type Customer {
   user_id: String
   user: User
 }
+
+type Query {
+  customer(id: String): Customer
+}

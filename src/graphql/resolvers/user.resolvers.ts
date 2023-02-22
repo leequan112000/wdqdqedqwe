@@ -43,6 +43,15 @@ export default {
       })
     },
   },
+  Query: {
+    user: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+      return await context.prisma.user.findFirst({
+        where: {
+          id: args.id
+        }
+      });
+    }
+  },
   Mutation: {
     signUpUser: async (_: void, args: { email: string, first_name: string, last_name: string, password: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
       try {

@@ -15,6 +15,10 @@ type User {
   customer: Customer
 }
 
+type Query {
+  user(id: String): User
+}
+
 type Mutation {
   signUpUser(
     email: String

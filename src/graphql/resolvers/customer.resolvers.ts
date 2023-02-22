@@ -8,7 +8,16 @@ export default {
         where: {
           id: parent.user_id
         }
-      })
+      });
     },
   },
+  Query: {
+    customer: async (_: void, args: { id: string }, context: Context<{prisma: PrismaClient, res: any}>) => {
+      return await context.prisma.customer.findFirst({
+        where: {
+          id: args.id
+        }
+      });
+    }
+  }
 };
