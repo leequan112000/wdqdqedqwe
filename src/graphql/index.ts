@@ -1,6 +1,6 @@
 import 'graphql-import-node';
 import path from 'path';
-import { makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import  { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
 import  { loadFilesSync } from '@graphql-tools/load-files';
 
