@@ -1,4 +1,6 @@
 import { sign } from 'jsonwebtoken';
+import { hash, compare } from "bcryptjs";
+import crypto from "crypto";
 
 type JwtTokens = {
   accessToken: string;
@@ -19,3 +21,16 @@ export const createTokens = (params: CreateTokenParams): JwtTokens => {
     refreshToken,
   };
 }
+
+export const hashPassword = (password: string): Promise<string> => new Promise((resolve, reject) => hash(password, 10, (error, hash) => (error ? reject(error) : resolve(hash))));
+
+export const checkPassword = (reqPassword: string, disgestedPassword: string) => compare(reqPassword, disgestedPassword).then((result) => result).catch(() => false);
+
+export const createResetPasswordToken = () => {
+  try {
+    const buf = crypto.randomBytes(127);
+    return buf.toString('base64');
+  } catch (error) {
+    throw error;
+  }
+};

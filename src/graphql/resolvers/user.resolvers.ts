@@ -1,30 +1,15 @@
 import { Customer, PrismaClient, User } from "@prisma/client";
 import { Context } from "apollo-server-core";
 import { PublicError } from "../errors/PublicError";
-import { hash, compare } from "bcryptjs";
-import { createTokens } from "../../helper/auth";
+import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
 import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
 import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
-import crypto from "crypto";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { MutationSignUpUserArgs } from "../generated";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
-
-const hashPassword = (password: string): Promise<string> => new Promise((resolve, reject) => hash(password, 10, (error, hash) => (error ? reject(error) : resolve(hash))));
-
-const checkPassword = (reqPassword: string, disgestedPassword: string) => compare(reqPassword, disgestedPassword).then((result) => result).catch(() => false);
-
-const createResetPasswordToken = () => {
-  try {
-    const buf = crypto.randomBytes(127);
-    return buf.toString('base64');
-  } catch (error) {
-    throw error;
-  }
-};
 
 const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: any) => {
   if (isUnitTest) {
@@ -130,7 +115,11 @@ export default {
           throw new PublicError('User not found.');
         }
 
-        const isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password);
+        if (foundUser && foundUser.encrypted_password === null) {
+          throw new PublicError('User password not set, please proceed to forgot password to set a new password');
+        }
+
+        const isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
         if (isPasswordMatched === true) {
           // Genereate tokens
           const tokens = createTokens({ id: foundUser.id, });
