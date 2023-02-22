@@ -97,7 +97,7 @@ export type MutationUpdateBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
   address?: InputMaybe<Scalars['String']>;
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
-  id: Scalars['String'];
+  user_id: Scalars['String'];
   website?: InputMaybe<Scalars['String']>;
 };
 
@@ -267,7 +267,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationSignInUserArgs>>;
   signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
-  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateBiotechArgs, 'id'>>;
+  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateBiotechArgs, 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'id'>>;
 }>;
 

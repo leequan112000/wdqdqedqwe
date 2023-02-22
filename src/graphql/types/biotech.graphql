@@ -17,7 +17,7 @@ type Biotech {
 
 type Mutation {
   updateBiotech(
-    id: String!
+    user_id: String!
     has_setup_profile: Boolean
     address: String
     website: String
