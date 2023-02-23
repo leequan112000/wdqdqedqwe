@@ -7,7 +7,7 @@ import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 import { verify } from "jsonwebtoken";
 import { Request, Response } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
-import { MutationSignUpUserArgs } from "../generated";
+import { MutationSignUpUserArgs, QueryUserArgs } from "../generated";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
@@ -30,10 +30,10 @@ export default {
     },
   },
   Query: {
-    user: async (_: void, args: { id: string }, context: Context) => {
+    user: async (_: void, args: QueryUserArgs, context: Context & { req: Request }) => {
       return await context.prisma.user.findFirst({
         where: {
-          id: args.id
+          id: context.req.user_id
         }
       });
     }
