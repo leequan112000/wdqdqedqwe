@@ -1,0 +1,16 @@
+type VendorMember {
+  title: String
+  is_primary_member: Boolean
+  phone: String
+  department: String
+  created_at: String
+  updated_at: String
+  user_id: User
+  user: User
+  vendor_company_id: String
+  vendor_company: VendorCompany
+}
+
+type Query {
+  vendorMember: VendorMember
+}
