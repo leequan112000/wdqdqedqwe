@@ -55,8 +55,9 @@ export type Mutation = {
   resetPassword?: Maybe<Scalars['Boolean']>;
   signInUser: User;
   signUpUser: User;
-  updateBiotech: Customer;
+  updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
+  updateVendorCompany?: Maybe<VendorCompany>;
 };
 
 
@@ -106,6 +107,7 @@ export type MutationUpdateBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
   address?: InputMaybe<Scalars['String']>;
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
+  name?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
 };
 
@@ -114,6 +116,14 @@ export type MutationUpdateCustomerArgs = {
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateVendorCompanyArgs = {
+  address?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  website?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -317,8 +327,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
-  updateBiotech?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
+  updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
+  updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{

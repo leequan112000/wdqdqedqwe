@@ -3,6 +3,7 @@ import { Request } from "express";
 import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
+import { MutationUpdateVendorCompanyArgs } from "../generated";
 
 export default {
   VendorCompany: {
@@ -60,6 +61,35 @@ export default {
     }
   },
   Mutation: {
+    updateVendorCompany: async (_: void, args: MutationUpdateVendorCompanyArgs, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const vendor_member = await trx.vendorMember.findFirst({
+            where: {
+              user_id: context.req.user_id,
+            },
+          });
+
+          if (!vendor_member) {
+            throw new PublicError('Vendor member not found.');
+          }
+
+          return await context.prisma.vendorCompany.update({
+            where: {
+              id: vendor_member.vendor_company_id
+            },
+            data: {
+              description: args.description,
+              website: args.website,
+              address: args.address,
+              ...(args.name !== null ? { name: args.name } : {}),
+            }
+          })
+        }); 
+      } catch (error) {
+        return error;
+      }
+    },
     createCda: async (_: void, __: void, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {

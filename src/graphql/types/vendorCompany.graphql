@@ -17,5 +17,11 @@ type Query {
 }
 
 type Mutation {
+  updateVendorCompany(
+    name: String
+    address: String
+    website: String
+    description: String
+  ): VendorCompany
   createCda: String
 }

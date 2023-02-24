@@ -89,7 +89,8 @@ export default {
               about: args.about,
               website: args.website,
               address: args.address,
-              ...(args.has_setup_profile !== null ? { has_setup_profile: args.has_setup_profile } : {})
+              ...(args.name !== null ? { name: args.name } : {}),
+              ...(args.has_setup_profile !== null ? { has_setup_profile: args.has_setup_profile } : {}),
             }
           })
         }); 
