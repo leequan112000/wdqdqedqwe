@@ -14,3 +14,18 @@ type VendorMember {
 type Query {
   vendorMember: VendorMember
 }
+
+type Mutation {
+  updateVendorMember(
+    is_primary_member: Boolean
+    phone: String
+    title: String
+    department: String
+  ): VendorMember
+  inviteVendorMember(
+    first_name: String!
+    last_name: String!
+    email: String!
+    custom_message: String
+  ): Customer
+}
