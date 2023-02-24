@@ -6,8 +6,6 @@ type VendorCompany {
   created_at: String
   updated_at: String
   address: String
-  cda_pandadoc_view_session_id: String
-  cda_pandadoc_view_session_expires_at: String
   cda_pandadoc_file_id: String
   cda_signed_at: String
   vendor_members: [VendorMember]
@@ -15,4 +13,9 @@ type VendorCompany {
 
 type Query {
   vendorCompany: VendorCompany
+  cdaUrl: String
+}
+
+type Mutation {
+  createCda: String
 }

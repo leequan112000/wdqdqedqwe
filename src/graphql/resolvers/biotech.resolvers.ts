@@ -1,5 +1,6 @@
 import { Biotech, Customer, Subscription } from "@prisma/client";
 import { Request } from "express";
+import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { MutationUpdateBiotechArgs } from "../generated";
@@ -22,7 +23,7 @@ export default {
     },
   },
   Query: {
-    biotech: async (_: void, args: void, context: Context & { req: Request }) => {
+    biotech: async (_: void, __: void, context: Context & { req: Request }) => {
       return await context.prisma.$transaction(async (trx) => {
         const customer = await trx.customer.findFirstOrThrow({
           where: {
@@ -36,6 +37,34 @@ export default {
           }
         });
       });
+    },
+    cdaUrl: async (_: void, __: void, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const user = await trx.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: true
+                }
+              }
+            }
+          });
+
+          const file_id = user.customer?.biotech.cda_pandadoc_file_id;
+          if (file_id) {
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, file_id);
+            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+          }
+
+          return null;
+        });
+      } catch (error) {
+        return null
+      }
     }
   },
   Mutation: {
@@ -66,6 +95,43 @@ export default {
         }); 
       } catch (error) {
         return error;
+      }
+    },
+    createCda: async (_: void, __: void, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const user = await trx.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: true
+                }
+              }
+            }
+          });
+
+          if (user.customer?.biotech?.cda_pandadoc_file_id) {
+            throw new PublicError("CDA already exist.")
+          }
+
+          // Create new CDA if not exist
+          const docResponse = await createBiotechCda(user);
+          await trx.biotech.update({
+            where: {
+              id: user.customer?.biotech_id
+            },
+            data: {
+              cda_pandadoc_file_id: docResponse.id
+            }
+          });
+
+          return docResponse.id;
+        });
+      } catch (error) {
+        return error
       }
     }
   }
