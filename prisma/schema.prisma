@@ -76,8 +76,6 @@ model Biotech {
   website                                     String?
   about                                       String?
   cda_pandadoc_file_id                        String?
-  cda_pandadoc_view_session_id                String?
-  cda_pandadoc_view_session_expires_at        DateTime?
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
@@ -97,8 +95,6 @@ model VendorCompany {
   created_at                           DateTime  @default(now())
   updated_at                           DateTime  @updatedAt
   address                              String?
-  cda_pandadoc_view_session_id         String?
-  cda_pandadoc_view_session_expires_at DateTime?
   cda_pandadoc_file_id                 String?
   cda_signed_at                        DateTime?
 
