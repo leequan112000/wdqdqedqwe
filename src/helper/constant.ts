@@ -5,3 +5,15 @@ export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELED = 'canceled',
 }
+
+export enum ProjectRequestStatus {
+  PROCESSING = 'processing',
+  MATCHED = 'matched',
+  WITHDRAWN = 'withdrawn',
+}
+
+export enum AdminTeam {
+  ENGINEER = 'engineer',
+  PRODUCT = 'product',
+  SCIENCE = 'science',
+}
