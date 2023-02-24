@@ -79,27 +79,25 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
-  customers        Customer[]
-  subscriptions    Subscription[]
-  project_requests ProjectRequest[]
-  chats            Chat[]
+  customers     Customer[]
+  subscriptions Subscription[]
+  chats         Chat[]
 
   @@map("biotechs")
 }
 
 model VendorCompany {
-  id                                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                 String
-  website                              String?
-  description                          String?
-  created_at                           DateTime  @default(now())
-  updated_at                           DateTime  @updatedAt
-  address                              String?
-  cda_pandadoc_file_id                 String?
-  cda_signed_at                        DateTime?
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  website              String?
+  description          String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  address              String?
+  cda_pandadoc_file_id String?
+  cda_signed_at        DateTime?
 
   vendor_members      VendorMember[]
-  project_requests    ProjectRequest[]
   project_connections ProjectConnection[]
   chats               Chat[]
 
@@ -121,7 +119,6 @@ model VendorMember {
   vendor_company_id String         @db.Uuid
   vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
 
-  project_requests          ProjectRequest[]
   vendor_member_connections VendorMemberConnection[]
 
   @@map("vendor_members")
@@ -159,29 +156,17 @@ model ProjectRequest {
   vendor_location_requirement         String?
   project_start_time_requirement      String?
   project_deadline_requirement        String?
-  state                               String
+  status                              String
   created_at                          DateTime @default(now())
   updated_at                          DateTime @updatedAt
-
-  biotech_id String  @db.Uuid
-  biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
-  vendor_company_id String        @db.Uuid
-  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
-
-  vendor_member_id String       @db.Uuid
-  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
-
   project_request_comments ProjectRequestComment[]
   project_connections      ProjectConnection[]
 
-  @@index([biotech_id])
   @@index([customer_id])
-  @@index([vendor_company_id])
-  @@index([vendor_member_id])
   @@map("project_requests")
 }
 
