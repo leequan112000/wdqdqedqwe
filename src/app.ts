@@ -67,11 +67,11 @@ class App {
     this.server.use(compression());
     this.server.use(authMiddleware);
     this.server.use((req, res, next) => {
-      if (req.originalUrl === '/webhook/stripe') {
-        // Do nothing with the body because Stripe need it to be raw
+      if (req.originalUrl === '/webhook/stripe' || req.originalUrl.startsWith('/webhook/pandadoc')) {
+        // Do nothing with the body because Stripe / Pandadoc need it to be raw
         next();
       } else {
-        // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
+        // ONLY do express.json() if the received request is NOT a webhook.
         express.json()(req, res, next);
       }
     });
