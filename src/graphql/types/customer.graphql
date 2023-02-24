@@ -9,6 +9,7 @@ type Customer {
   user: User
   biotech_id: String
   biotech: Biotech
+  project_requests: [ProjectRequest]
 }
 
 type Query {

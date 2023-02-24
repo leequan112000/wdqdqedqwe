@@ -9,6 +9,7 @@ type VendorCompany {
   cda_pandadoc_file_id: String
   cda_signed_at: String
   vendor_members: [VendorMember]
+  project_connections: [ProjectConnection]
 }
 
 type Query {

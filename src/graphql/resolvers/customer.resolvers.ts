@@ -1,4 +1,4 @@
-import { Biotech, Customer, User } from "@prisma/client";
+import { Biotech, Customer, ProjectRequest, User } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../context";
 import { createResetPasswordToken } from "../../helper/auth";
@@ -21,6 +21,13 @@ export default {
           id: parent.biotech_id
         }
       });
+    },
+    project_requests: async (parent: Customer, _: void, context: Context): Promise<ProjectRequest[] | null> => {
+      return await context.prisma.projectRequest.findMany({
+        where: {
+          customer_id: parent.id
+        }
+      })
     },
   },
   Query: {

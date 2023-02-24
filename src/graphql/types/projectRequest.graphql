@@ -1,0 +1,42 @@
+type ProjectRequest {
+  id: String
+  creator_email: String
+  creator_name: String
+  creator_job: String
+  creator_company: String
+  title: String!
+  vendor_requirement: String!
+  objective_description: String!
+  preparation_description: String
+  in_contact_with_vendor: Boolean!
+  existing_vendor_contact_description: String
+  project_challenge_description: String
+  vendor_search_timeframe: String!
+  max_budget: Int!
+  vendor_location_requirement: String
+  project_start_time_requirement: String
+  project_deadline_requirement: String
+  status: String!
+  created_at: String
+  updated_at: String
+  customer_id: String
+  customer: Customer
+  project_connections: [ProjectConnection]
+}
+
+type Mutation {
+  createProjectRequest(
+    title: String!
+    vendor_requirement: String!
+    objective_description: String!
+    preparation_description: String
+    in_contact_with_vendor: Boolean!
+    existing_vendor_contact_description: String
+    project_challenge_description: String
+    vendor_search_timeframe: String!
+    max_budget: Int!
+    vendor_location_requirement: String
+    project_start_time_requirement: String
+    project_deadline_requirement: String
+  ): ProjectRequest
+}
