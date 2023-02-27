@@ -4,12 +4,15 @@
   "description": "Cromatic Backend",
   "main": "server.ts",
   "scripts": {
-    "build": "tsc --project ./",
+    "build": "yarn prisma generate && tsc --project ./",
     "start:dev": "nodemon src/server.ts",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push"
+  },
+  "engines": {
+    "node": "18"
   },
   "repository": {
     "type": "git",
