@@ -1,0 +1,10 @@
+type Notification {
+  id: String
+  notification_type: String
+  params: JSON
+  read_at: String
+  created_at: String
+  updated_at: String
+  user_id: String
+  user: User
+}

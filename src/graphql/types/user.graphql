@@ -6,6 +6,7 @@ type User {
   created_at: String
   updated_at: String
   customer: Customer
+  notifications: [Notification]
 }
 
 type Query {

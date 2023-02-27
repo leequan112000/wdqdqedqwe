@@ -1,4 +1,4 @@
-import { Customer, User } from "@prisma/client";
+import { Customer, Notification, User } from "@prisma/client";
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
@@ -23,6 +23,13 @@ export default {
   User: {
     customer: async (parent: User, _: void, context: Context): Promise<Customer | null> => {
       return await context.prisma.customer.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      })
+    },
+    notifications: async (parent: User, _: void, context: Context): Promise<Notification[] | null> => {
+      return await context.prisma.notification.findMany({
         where: {
           user_id: parent.id
         }
