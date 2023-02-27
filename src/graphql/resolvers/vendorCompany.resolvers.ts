@@ -1,4 +1,4 @@
-import { ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
+import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../context";
@@ -20,6 +20,13 @@ export default {
           vendor_company_id: parent.id
         }
       })
+    },
+    chats: async (parent: VendorCompany, _: void, context: Context): Promise<Chat[] | null> => {
+      return await context.prisma.chat.findMany({
+        where: {
+          vendor_company_id: parent.id
+        }
+      });
     },
   },
   Query: {

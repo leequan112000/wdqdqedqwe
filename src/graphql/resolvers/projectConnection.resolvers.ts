@@ -1,4 +1,4 @@
-import { CustomerConnection, ProjectAttachment, ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
+import { Chat, CustomerConnection, ProjectAttachment, ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
 import { Context } from "../../context";
 
 export default {
@@ -37,6 +37,13 @@ export default {
           project_connection_id: parent.id
         }
       })
+    },
+    chats: async (parent: ProjectConnection, _: void, context: Context): Promise<Chat[] | null> => {
+      return await context.prisma.chat.findMany({
+        where: {
+          project_connection_id: parent.id
+        }
+      });
     },
   },
 };

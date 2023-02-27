@@ -12,6 +12,7 @@ type Biotech {
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   subscriptions: [Subscription]
+  chats: [Chat]
 }
 
 type Query {

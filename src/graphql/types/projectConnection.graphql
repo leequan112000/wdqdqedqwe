@@ -11,4 +11,5 @@ type ProjectConnection {
   vendor_member_connections: [VendorMemberConnection]
   customer_connections: [CustomerConnection]
   project_attachments: [ProjectAttachment]
+  chats: [Chat]
 }

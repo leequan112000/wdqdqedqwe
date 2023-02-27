@@ -1,4 +1,4 @@
-import { Biotech, Customer, Subscription } from "@prisma/client";
+import { Biotech, Chat, Customer, Subscription } from "@prisma/client";
 import { Request } from "express";
 import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../context";
@@ -16,6 +16,13 @@ export default {
     },
     subscriptions: async (parent: Biotech, _: void, context: Context): Promise<Subscription[] | null> => {
       return await context.prisma.subscription.findMany({
+        where: {
+          biotech_id: parent.id
+        }
+      });
+    },
+    chats: async (parent: Biotech, _: void, context: Context): Promise<Chat[] | null> => {
+      return await context.prisma.chat.findMany({
         where: {
           biotech_id: parent.id
         }
