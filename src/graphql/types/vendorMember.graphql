@@ -9,6 +9,7 @@ type VendorMember {
   user: User
   vendor_company_id: String
   vendor_company: VendorCompany
+  vendor_member_connections: [VendorMemberConnection]
 }
 
 type Query {

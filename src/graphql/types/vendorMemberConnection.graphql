@@ -1,0 +1,9 @@
+type VendorMemberConnection {
+  id: String
+  created_at: String
+  updated_at: String
+  project_connection_id: String
+  project_connection: ProjectConnection
+  vendor_member_id: String
+  vendor_member: VendorMember
+}

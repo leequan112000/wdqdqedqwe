@@ -8,4 +8,5 @@ type ProjectConnection {
   project_request: ProjectRequest
   vendor_company_id: String
   vendor_company: VendorCompany
+  vendor_member_connections: [VendorMemberConnection]
 }
