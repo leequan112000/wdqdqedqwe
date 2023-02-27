@@ -22,6 +22,7 @@ type ProjectRequest {
   customer_id: String
   customer: Customer
   project_connections: [ProjectConnection]
+  project_request_comments: [ProjectRequestComment]
 }
 
 type Mutation {

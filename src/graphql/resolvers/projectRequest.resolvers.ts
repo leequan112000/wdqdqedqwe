@@ -1,4 +1,4 @@
-import { Customer, ProjectConnection, ProjectRequest } from "@prisma/client";
+import { Customer, ProjectConnection, ProjectRequest, ProjectRequestComment } from "@prisma/client";
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { Request } from "express";
@@ -18,6 +18,13 @@ export default {
     },
     project_connections: async (parent: ProjectRequest, _: void, context: Context): Promise<ProjectConnection[] | null> => {
       return await context.prisma.projectConnection.findMany({
+        where: {
+          project_request_id: parent.id
+        }
+      })
+    },
+    project_request_comments: async (parent: ProjectRequest, _: void, context: Context): Promise<ProjectRequestComment[] | null> => {
+      return await context.prisma.projectRequestComment.findMany({
         where: {
           project_request_id: parent.id
         }

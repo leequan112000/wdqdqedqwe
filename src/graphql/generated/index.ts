@@ -36,6 +36,7 @@ export type Customer = {
   biotech?: Maybe<Biotech>;
   biotech_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['String']>;
+  customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   has_setup_profile?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   job_title?: Maybe<Scalars['String']>;
@@ -46,11 +47,23 @@ export type Customer = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type CustomerConnection = {
+  __typename?: 'CustomerConnection';
+  created_at?: Maybe<Scalars['String']>;
+  customer?: Maybe<Customer>;
+  customer_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createCda?: Maybe<Scalars['String']>;
   createCustomer: Customer;
   createProjectRequest?: Maybe<ProjectRequest>;
+  createProjectRequestComment?: Maybe<ProjectRequestComment>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCustomer?: Maybe<Customer>;
   inviteVendorMember?: Maybe<Customer>;
@@ -86,6 +99,12 @@ export type MutationCreateProjectRequestArgs = {
   vendor_location_requirement?: InputMaybe<Scalars['String']>;
   vendor_requirement: Scalars['String'];
   vendor_search_timeframe: Scalars['String'];
+};
+
+
+export type MutationCreateProjectRequestCommentArgs = {
+  content: Scalars['String'];
+  project_request_id: Scalars['String'];
 };
 
 
@@ -165,6 +184,7 @@ export type MutationUpdateVendorMemberArgs = {
 export type ProjectConnection = {
   __typename?: 'ProjectConnection';
   created_at?: Maybe<Scalars['String']>;
+  customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   final_contract_uploaded_at?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   project_request?: Maybe<ProjectRequest>;
@@ -172,6 +192,7 @@ export type ProjectConnection = {
   updated_at?: Maybe<Scalars['String']>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
+  vendor_member_connections?: Maybe<Array<Maybe<VendorMemberConnection>>>;
   vendor_status?: Maybe<Scalars['String']>;
 };
 
@@ -193,6 +214,7 @@ export type ProjectRequest = {
   project_challenge_description?: Maybe<Scalars['String']>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   project_deadline_requirement?: Maybe<Scalars['String']>;
+  project_request_comments?: Maybe<Array<Maybe<ProjectRequestComment>>>;
   project_start_time_requirement?: Maybe<Scalars['String']>;
   status: Scalars['String'];
   title: Scalars['String'];
@@ -200,6 +222,16 @@ export type ProjectRequest = {
   vendor_location_requirement?: Maybe<Scalars['String']>;
   vendor_requirement: Scalars['String'];
   vendor_search_timeframe: Scalars['String'];
+};
+
+export type ProjectRequestComment = {
+  __typename?: 'ProjectRequestComment';
+  content?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  project_request?: Maybe<ProjectRequest>;
+  project_request_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -264,6 +296,18 @@ export type VendorMember = {
   user_id?: Maybe<User>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
+  vendor_member_connections?: Maybe<Array<Maybe<VendorMemberConnection>>>;
+};
+
+export type VendorMemberConnection = {
+  __typename?: 'VendorMemberConnection';
+  created_at?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['String']>;
+  vendor_member?: Maybe<VendorMember>;
+  vendor_member_id?: Maybe<Scalars['String']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -339,16 +383,19 @@ export type ResolversTypes = ResolversObject<{
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Customer: ResolverTypeWrapper<Customer>;
+  CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
+  ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
   VendorMember: ResolverTypeWrapper<VendorMember>;
+  VendorMemberConnection: ResolverTypeWrapper<VendorMemberConnection>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -356,16 +403,19 @@ export type ResolversParentTypes = ResolversObject<{
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
   Customer: Customer;
+  CustomerConnection: CustomerConnection;
   Int: Scalars['Int'];
   Mutation: {};
   ProjectConnection: ProjectConnection;
   ProjectRequest: ProjectRequest;
+  ProjectRequestComment: ProjectRequestComment;
   Query: {};
   String: Scalars['String'];
   Subscription: {};
   User: User;
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
+  VendorMemberConnection: VendorMemberConnection;
 }>;
 
 export type BiotechResolvers<ContextType = any, ParentType extends ResolversParentTypes['Biotech'] = ResolversParentTypes['Biotech']> = ResolversObject<{
@@ -389,6 +439,7 @@ export type CustomerResolvers<ContextType = any, ParentType extends ResolversPar
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   has_setup_profile?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -400,10 +451,22 @@ export type CustomerResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CustomerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomerConnection'] = ResolversParentTypes['CustomerConnection']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createCda?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'max_budget' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
+  createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
@@ -419,6 +482,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type ProjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectConnection'] = ResolversParentTypes['ProjectConnection']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
@@ -426,6 +490,7 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_member_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMemberConnection']>>>, ParentType, ContextType>;
   vendor_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -447,6 +512,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   project_challenge_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   project_deadline_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request_comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestComment']>>>, ParentType, ContextType>;
   project_start_time_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -454,6 +520,16 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   vendor_location_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   vendor_search_timeframe?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestComment'] = ResolversParentTypes['ProjectRequestComment']> = ResolversObject<{
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
+  project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -516,19 +592,34 @@ export type VendorMemberResolvers<ContextType = any, ParentType extends Resolver
   user_id?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_member_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMemberConnection']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type VendorMemberConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VendorMemberConnection'] = ResolversParentTypes['VendorMemberConnection']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
+  vendor_member_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   Biotech?: BiotechResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
+  CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
+  ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   VendorCompany?: VendorCompanyResolvers<ContextType>;
   VendorMember?: VendorMemberResolvers<ContextType>;
+  VendorMemberConnection?: VendorMemberConnectionResolvers<ContextType>;
 }>;
 

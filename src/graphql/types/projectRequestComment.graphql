@@ -1,0 +1,15 @@
+type ProjectRequestComment {
+  id: String
+  content: String
+  created_at: String
+  updated_at: String
+  project_request_id: String
+  project_request: ProjectRequest
+}
+
+type Mutation {
+  createProjectRequestComment(
+    content: String!
+    project_request_id: String!
+  ): ProjectRequestComment
+}
