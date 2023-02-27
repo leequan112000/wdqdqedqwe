@@ -4,10 +4,11 @@
   "description": "Cromatic Backend",
   "main": "server.ts",
   "scripts": {
-    "build": "yarn prisma generate && tsc --project ./",
+    "build": "yarn prisma generate && tsc --project ./ && yarn copy-graphql",
     "start:dev": "nodemon src/server.ts",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
+    "copy-graphql": "cp -r ./src/graphql/types ./dist/graphql/types",
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push"
   },
