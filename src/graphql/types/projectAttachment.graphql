@@ -1,0 +1,10 @@
+type ProjectAttachment {
+  id: String
+  key: String
+  filename: String
+  content_type: String
+  byte_size: Int
+  created_at: String
+  project_connection_id: String
+  project_connection: ProjectConnection
+}
