@@ -1,7 +1,7 @@
 let origin: string[] = [];
 
 // Loosen CORS for development and staging
-if (process.env.REACT_APP_ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
   origin = [ 'https://cro-matic.com' ];
 } else {
   origin = [
