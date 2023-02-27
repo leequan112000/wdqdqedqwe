@@ -1,4 +1,3 @@
-import 'graphql-import-node';
 import path from 'path';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import  { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge';
