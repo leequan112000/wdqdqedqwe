@@ -1,0 +1,9 @@
+type CustomerConnection {
+  id: String
+  created_at: String
+  updated_at: String
+  project_connection_id: String
+  project_connection: ProjectConnection
+  customer_id: String
+  customer: Customer
+}

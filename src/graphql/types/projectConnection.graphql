@@ -9,4 +9,5 @@ type ProjectConnection {
   vendor_company_id: String
   vendor_company: VendorCompany
   vendor_member_connections: [VendorMemberConnection]
+  customer_connections: [CustomerConnection]
 }

@@ -10,6 +10,7 @@ type Customer {
   biotech_id: String
   biotech: Biotech
   project_requests: [ProjectRequest]
+  customer_connections: [CustomerConnection]
 }
 
 type Query {

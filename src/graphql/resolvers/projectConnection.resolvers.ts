@@ -1,4 +1,4 @@
-import { ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
+import { CustomerConnection, ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
 import { Context } from "../../context";
 
 export default {
@@ -20,7 +20,14 @@ export default {
     vendor_member_connections: async (parent: ProjectConnection, _: void, context: Context): Promise<VendorMemberConnection[] | null> => {
       return await context.prisma.vendorMemberConnection.findMany({
         where: {
-          id: parent.project_request_id
+          project_connection_id: parent.id
+        }
+      })
+    },
+    customer_connections: async (parent: ProjectConnection, _: void, context: Context): Promise<CustomerConnection[] | null> => {
+      return await context.prisma.customerConnection.findMany({
+        where: {
+          project_connection_id: parent.id
         }
       })
     },
