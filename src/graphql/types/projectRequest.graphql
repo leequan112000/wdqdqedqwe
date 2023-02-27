@@ -35,7 +35,7 @@ type Mutation {
     existing_vendor_contact_description: String
     project_challenge_description: String
     vendor_search_timeframe: String!
-    max_budget: Int!
+    max_budget: Int
     vendor_location_requirement: String
     project_start_time_requirement: String
     project_deadline_requirement: String
