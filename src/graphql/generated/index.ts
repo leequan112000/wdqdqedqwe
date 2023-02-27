@@ -31,6 +31,20 @@ export type Biotech = {
   website?: Maybe<Scalars['String']>;
 };
 
+export type Chat = {
+  __typename?: 'Chat';
+  biotech?: Maybe<Biotech>;
+  biotech_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  messages?: Maybe<Array<Maybe<Message>>>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
 export type Customer = {
   __typename?: 'Customer';
   biotech?: Maybe<Biotech>;
@@ -58,9 +72,22 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['String']>;
 };
 
+export type Message = {
+  __typename?: 'Message';
+  chat?: Maybe<Chat>;
+  chat_id?: Maybe<Scalars['String']>;
+  content?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  sender_id?: Maybe<Scalars['String']>;
+  sender_type?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createCda?: Maybe<Scalars['String']>;
+  createChat?: Maybe<Chat>;
   createCustomer: Customer;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
@@ -69,12 +96,18 @@ export type Mutation = {
   inviteVendorMember?: Maybe<Customer>;
   refreshJWT?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
+  sendMessage?: Maybe<Message>;
   signInUser: User;
   signUpUser: User;
   updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+};
+
+
+export type MutationCreateChatArgs = {
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -135,6 +168,13 @@ export type MutationResetPasswordArgs = {
 };
 
 
+export type MutationSendMessageArgs = {
+  chat_id: Scalars['String'];
+  content: Scalars['String'];
+  sender_type: Scalars['String'];
+};
+
+
 export type MutationSignInUserArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -181,12 +221,25 @@ export type MutationUpdateVendorMemberArgs = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+export type ProjectAttachment = {
+  __typename?: 'ProjectAttachment';
+  byte_size?: Maybe<Scalars['Int']>;
+  content_type?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['String']>;
+  filename?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
+};
+
 export type ProjectConnection = {
   __typename?: 'ProjectConnection';
   created_at?: Maybe<Scalars['String']>;
   customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   final_contract_uploaded_at?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['String']>;
@@ -382,10 +435,13 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = ResolversObject<{
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  Chat: ResolverTypeWrapper<Chat>;
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  Message: ResolverTypeWrapper<Message>;
   Mutation: ResolverTypeWrapper<{}>;
+  ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
@@ -402,10 +458,13 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
+  Chat: Chat;
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Int: Scalars['Int'];
+  Message: Message;
   Mutation: {};
+  ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
   ProjectRequest: ProjectRequest;
   ProjectRequestComment: ProjectRequestComment;
@@ -432,6 +491,20 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   subscriptions?: Resolver<Maybe<Array<Maybe<ResolversTypes['Subscription']>>>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chat'] = ResolversParentTypes['Chat']> = ResolversObject<{
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -462,8 +535,21 @@ export type CustomerConnectionResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = ResolversObject<{
+  chat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType>;
+  chat_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sender_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sender_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createCda?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'max_budget' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
@@ -472,6 +558,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
+  sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'chat_id' | 'content' | 'sender_type'>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
@@ -480,11 +567,24 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
 }>;
 
+export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
+  byte_size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ProjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectConnection'] = ResolversParentTypes['ProjectConnection']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -609,9 +709,12 @@ export type VendorMemberConnectionResolvers<ContextType = any, ParentType extend
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   Biotech?: BiotechResolvers<ContextType>;
+  Chat?: ChatResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
+  Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;

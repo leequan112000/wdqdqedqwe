@@ -1,0 +1,16 @@
+type Chat {
+  id: String
+  created_at: String
+  updated_at: String
+  biotech_id: String
+  biotech: Biotech
+  vendor_company_id: String
+  vendor_company: VendorCompany
+  project_connection_id: String
+  project_connection: ProjectConnection
+  messages: [Message]
+}
+
+type Mutation {
+  createChat(project_connection_id: String!): Chat
+}

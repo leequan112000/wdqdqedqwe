@@ -25,6 +25,7 @@ model User {
 
   customer      Customer?
   vendor_member VendorMember?
+  Message       Message[]
 
   @@map("users")
 }
@@ -272,18 +273,19 @@ model Chat {
 }
 
 model Message {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  content     String
-  sender_type String
-  sender_id   String   @db.Uuid
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   chat_id String @db.Uuid
   chat    Chat   @relation(fields: [chat_id], references: [id])
 
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id])
+
   @@index([chat_id])
-  @@index([sender_id])
+  @@index([user_id])
   @@map("messages")
 }
 
