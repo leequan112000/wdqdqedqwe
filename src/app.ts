@@ -29,6 +29,7 @@ class App {
     const apolloServer = new ApolloServer<Context>({
       schema,
       validationRules: [depthLimit(7)],
+      introspection: process.env.NODE_ENV === 'development',
       formatError: (formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError => {
         const errorMap = {
           'PublicError:': 'PUBLIC_ERROR_CODE',
