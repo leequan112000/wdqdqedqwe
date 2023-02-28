@@ -142,10 +142,6 @@ model Subscription {
 
 model ProjectRequest {
   id                                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  creator_email                       String?
-  creator_name                        String?
-  creator_job                         String?
-  creator_company                     String?
   title                               String
   vendor_requirement                  String
   objective_description               String

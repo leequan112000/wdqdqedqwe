@@ -1,9 +1,5 @@
 type ProjectRequest {
   id: String
-  creator_email: String
-  creator_name: String
-  creator_job: String
-  creator_company: String
   title: String!
   vendor_requirement: String!
   objective_description: String!

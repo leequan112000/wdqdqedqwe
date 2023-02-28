@@ -54,10 +54,6 @@ export default {
 
           const projectRequest = await trx.projectRequest.create({
             data: {
-              creator_email: user.email,
-              creator_name: `${user.first_name} ${user.last_name}`,
-              creator_job: user.customer?.job_title,
-              creator_company: user.customer?.biotech.name,
               status: ProjectRequestStatus.PROCESSING,
               customer_id: user.customer.id,
               ...args,
