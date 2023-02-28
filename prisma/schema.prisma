@@ -25,8 +25,8 @@ model User {
 
   customer      Customer?
   vendor_member VendorMember?
-  Message       Message[]
-  Notification  Notification[]
+  messages       Message[]
+  notifications  Notification[]
 
   @@map("users")
 }
@@ -81,9 +81,10 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
-  customers     Customer[]
-  subscriptions Subscription[]
-  chats         Chat[]
+  customers      Customer[]
+  subscriptions  Subscription[]
+  chats          Chat[]
+  project_requests ProjectRequest[]
 
   @@map("biotechs")
 }
@@ -150,13 +151,16 @@ model ProjectRequest {
   existing_vendor_contact_description String?
   project_challenge_description       String?
   vendor_search_timeframe             String
-  max_budget                          Decimal?  @db.Decimal(14, 2)
+  max_budget                          Decimal? @db.Decimal(14, 2)
   vendor_location_requirement         String?
   project_start_time_requirement      String?
   project_deadline_requirement        String?
   status                              String
   created_at                          DateTime @default(now())
   updated_at                          DateTime @updatedAt
+
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])

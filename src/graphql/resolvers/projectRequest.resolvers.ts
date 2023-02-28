@@ -1,4 +1,4 @@
-import { Customer, ProjectConnection, ProjectRequest, ProjectRequestComment } from "@prisma/client";
+import { Biotech, Customer, ProjectConnection, ProjectRequest, ProjectRequestComment } from "@prisma/client";
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { Request } from "express";
@@ -9,6 +9,13 @@ import { sendAdminNewProjectRequestEmail } from "../../mailer/admin";
 
 export default {
   ProjectRequest: {
+    biotech: async (parent: ProjectRequest, _: void, context: Context): Promise<Biotech | null> => {
+      return await context.prisma.biotech.findFirst({
+        where: {
+          id: parent.biotech_id
+        }
+      })
+    },
     customer: async (parent: ProjectRequest, _: void, context: Context): Promise<Customer | null> => {
       return await context.prisma.customer.findFirst({
         where: {
@@ -56,6 +63,7 @@ export default {
             data: {
               status: ProjectRequestStatus.PROCESSING,
               customer_id: user.customer.id,
+              biotech_id: user.customer.biotech_id,
               ...args,
             }
           });

@@ -264,11 +264,9 @@ export type ProjectConnection = {
 
 export type ProjectRequest = {
   __typename?: 'ProjectRequest';
+  biotech?: Maybe<Biotech>;
+  biotech_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['String']>;
-  creator_company?: Maybe<Scalars['String']>;
-  creator_email?: Maybe<Scalars['String']>;
-  creator_job?: Maybe<Scalars['String']>;
-  creator_name?: Maybe<Scalars['String']>;
   customer?: Maybe<Customer>;
   customer_id?: Maybe<Scalars['String']>;
   existing_vendor_contact_description?: Maybe<Scalars['String']>;
@@ -617,11 +615,9 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type ProjectRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequest'] = ResolversParentTypes['ProjectRequest']> = ResolversObject<{
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  creator_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  creator_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  creator_job?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  creator_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   existing_vendor_contact_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
