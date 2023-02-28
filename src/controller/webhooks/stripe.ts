@@ -59,9 +59,9 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
     event = stripe.webhooks.constructEvent(isUnitTest ? req : req.body, sig, endpointSecret);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(400).send(`Webhook Error: ${error.message}`);
+      res.status(400).json({ status: 400, message: `Webhook Error: ${error.message}` });
     } else {
-      res.status(400).send('Webhook Error');
+      res.status(400).json({ status: 400, message: 'Webhook Error' });
     }
     return;
   }
@@ -104,15 +104,16 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           // This can happen in because stripe sends webhooks for both staging and production traffic.
           console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
         }
-        res.status(200).send('OK');
+        res.status(200).json({ status: 200, message: 'OK' });
       } catch (error) {
-        res.status(400).send('Webhook Error in checkout session completed');
+        console.log(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
     }
     default: {
       console.warn(`Unhandled webhook: event type=${event.type}`);
-      res.status(400).send('Unhandled Event Type');
+      res.status(400).json({ status: 400, message: 'Unhandled Event Type' });
     }
   }
 };
