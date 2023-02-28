@@ -4,9 +4,20 @@ import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pand
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { MutationUpdateBiotechArgs } from "../generated";
+import { SubscriptionStatus } from "../../helper/constant";
 
 export default {
   Biotech: {
+    has_active_subscription: async (parent: Biotech, _: void, context: Context): Promise<Boolean | null> => {
+      const subscriptions = await context.prisma.subscription.findMany({
+        where: {
+          biotech_id: parent.id,
+          status: SubscriptionStatus.ACTIVE
+        }
+      });
+      
+      return subscriptions.length > 0 ? true : false;
+    },
     customers: async (parent: Biotech, _: void, context: Context): Promise<Customer[] | null> => {
       return await context.prisma.customer.findMany({
         where: {

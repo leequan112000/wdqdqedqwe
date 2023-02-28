@@ -4,6 +4,7 @@ type Biotech {
   created_at: String
   updated_at: String
   has_setup_profile: Boolean
+  has_active_subscription: Boolean
   address: String
   website: String
   about: String
