@@ -2,7 +2,7 @@ import express from 'express';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import cookieParser from 'cookie-parser';
-import { GraphQLFormattedError } from 'graphql';
+import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
@@ -56,7 +56,19 @@ class App {
       cors<cors.CorsRequest>(corsConfig),
       json(),
       expressMiddleware(apolloServer, {
-        context: async ({ req, res }) => ({ ...context, req, res }),
+        context: async ({ req, res }) => {
+          if (process.env.NODE_ENV !== "development") {
+            if (!req.user_id) {
+              throw new GraphQLError('User is not authenticated', {
+                extensions: {
+                  code: 'UNAUTHENTICATED',
+                  http: { status: 401 },
+                },
+              });
+            }
+          }
+          return ({ ...context, req, res });
+        },
       }),
     );
   }
