@@ -18,6 +18,36 @@ export default {
       
       return subscriptions.length > 0 ? true : false;
     },
+    cda_url: async (parent: Biotech, _: void, context: Context & { req: Request }): Promise<String | null> => {
+      try {
+        const user = await context.prisma.user.findFirstOrThrow({
+          where: {
+            id: context.req.user_id,
+          },
+          include: {
+            customer: {
+              include: {
+                biotech: true
+              }
+            }
+          }
+        });
+
+        if (user.customer?.biotech_id !== parent.id) {
+          // User has no access to this biotech
+          return null;
+        }
+  
+        if (parent.cda_pandadoc_file_id) {
+          const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, parent.cda_pandadoc_file_id);
+          return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+        }
+
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
     customers: async (parent: Biotech, _: void, context: Context): Promise<Customer[] | null> => {
       return await context.prisma.customer.findMany({
         where: {
@@ -49,34 +79,6 @@ export default {
         });
       });
     },
-    cdaUrl: async (_: void, __: void, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const user = await trx.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              customer: {
-                include: {
-                  biotech: true
-                }
-              }
-            }
-          });
-
-          const file_id = user.customer?.biotech.cda_pandadoc_file_id;
-          if (file_id) {
-            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, file_id);
-            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-          }
-
-          return null;
-        });
-      } catch (error) {
-        return null
-      }
-    }
   },
   Mutation: {
     onboardBiotech: async (_: void, args: MutationOnboardBiotechArgs, context: Context & { req: Request }) => {

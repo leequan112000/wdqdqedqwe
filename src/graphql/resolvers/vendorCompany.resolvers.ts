@@ -21,6 +21,36 @@ export default {
         }
       })
     },
+    cda_url: async (parent: VendorCompany, _: void, context: Context & { req: Request }): Promise<String | null> => {
+      try {
+        const user = await context.prisma.user.findFirstOrThrow({
+          where: {
+            id: context.req.user_id,
+          },
+          include: {
+            vendor_member: {
+              include: {
+                vendor_company: true
+              }
+            }
+          }
+        });
+
+        if (user.vendor_member?.vendor_company_id !== parent.id) {
+          // User has no access to this vendor company
+          return null;
+        }
+  
+        if (parent.cda_pandadoc_file_id) {
+          const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, parent.cda_pandadoc_file_id);
+          return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+        }
+
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
     chats: async (parent: VendorCompany, _: void, context: Context): Promise<Chat[] | null> => {
       return await context.prisma.chat.findMany({
         where: {
@@ -45,34 +75,6 @@ export default {
         })
       });
     },
-    cdaUrl: async (_: void, __: void, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const user = await trx.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              vendor_member: {
-                include: {
-                  vendor_company: true
-                }
-              }
-            }
-          });
-
-          const file_id = user.vendor_member?.vendor_company?.cda_pandadoc_file_id;
-          if (file_id) {
-            const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, file_id);
-            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-          }
-
-          return null;
-        });
-      } catch (error) {
-        return null
-      }
-    }
   },
   Mutation: {
     onboardVendorCompany: async (_: void, args: MutationOnboardVendorCompanyArgs, context: Context & { req: Request }) => {

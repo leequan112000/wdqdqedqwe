@@ -21,6 +21,7 @@ export type Biotech = {
   address?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['String']>;
+  cda_url?: Maybe<Scalars['String']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   created_at?: Maybe<Scalars['String']>;
   customers?: Maybe<Array<Maybe<Customer>>>;
@@ -318,7 +319,6 @@ export type ProjectRequestComment = {
 export type Query = {
   __typename?: 'Query';
   biotech?: Maybe<Biotech>;
-  cdaUrl?: Maybe<Scalars['String']>;
   customer?: Maybe<Customer>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   user?: Maybe<User>;
@@ -343,6 +343,7 @@ export type VendorCompany = {
   address?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['String']>;
+  cda_url?: Maybe<Scalars['String']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   created_at?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
@@ -501,6 +502,7 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   customers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Customer']>>>, ParentType, ContextType>;
@@ -671,7 +673,6 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
-  cdaUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -695,6 +696,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

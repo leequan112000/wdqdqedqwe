@@ -10,6 +10,7 @@ type Biotech {
   about: String
   cda_pandadoc_file_id: String
   cda_signed_at: String
+  cda_url: String
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   chats: [Chat]
@@ -17,7 +18,6 @@ type Biotech {
 
 type Query {
   biotech: Biotech
-  cdaUrl: String
 }
 
 type Mutation {

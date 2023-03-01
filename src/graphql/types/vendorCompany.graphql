@@ -8,6 +8,7 @@ type VendorCompany {
   address: String
   cda_pandadoc_file_id: String
   cda_signed_at: String
+  cda_url: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
@@ -15,7 +16,6 @@ type VendorCompany {
 
 type Query {
   vendorCompany: VendorCompany
-  cdaUrl: String
 }
 
 type Mutation {
