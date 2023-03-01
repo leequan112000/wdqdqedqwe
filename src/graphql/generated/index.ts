@@ -168,7 +168,6 @@ export type MutationInviteVendorMemberArgs = {
 export type MutationOnboardBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
   address?: InputMaybe<Scalars['String']>;
-  has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   name?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
 };

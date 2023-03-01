@@ -23,7 +23,6 @@ type Query {
 type Mutation {
   onboardBiotech(
     name: String
-    has_setup_profile: Boolean
     address: String
     website: String
     about: String

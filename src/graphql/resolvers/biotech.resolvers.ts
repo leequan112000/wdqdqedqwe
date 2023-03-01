@@ -115,6 +115,7 @@ export default {
               website: args.website,
               address: args.address,
               cda_pandadoc_file_id,
+              has_setup_profile: true,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
