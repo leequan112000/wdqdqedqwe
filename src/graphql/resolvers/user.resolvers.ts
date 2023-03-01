@@ -21,6 +21,39 @@ const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: 
 
 export default {
   User: {
+    user_type: async (parent: User, _: void, context: Context): Promise<String> => {
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+      return vendor ? 'vendor' : 'customer';
+   },
+    has_completed_onboarding: async (parent: User, _: void, context: Context): Promise<Boolean> => {
+      const result = await context.prisma.user.findFirst({
+        where: {
+          id: parent.id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true
+            }
+          },
+          vendor_member: {
+            include: {
+              vendor_company: true,
+            },
+          },
+        },
+      });
+      
+      if (result?.customer?.biotech?.cda_signed_at || result?.vendor_member?.vendor_company?.cda_signed_at) {
+        return true;
+      }
+      
+      return false;
+    },
     customer: async (parent: User, _: void, context: Context): Promise<Customer | null> => {
       return await context.prisma.customer.findFirst({
         where: {
