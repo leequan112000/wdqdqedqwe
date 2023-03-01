@@ -19,11 +19,16 @@ type Query {
 }
 
 type Mutation {
+  onboardVendorCompany(
+    name: String
+    address: String
+    website: String
+    description: String
+  ): VendorCompany
   updateVendorCompany(
     name: String
     address: String
     website: String
     description: String
   ): VendorCompany
-  createCda: String
 }

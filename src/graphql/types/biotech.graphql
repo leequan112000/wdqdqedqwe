@@ -21,12 +21,17 @@ type Query {
 }
 
 type Mutation {
-  updateBiotech(
+  onboardBiotech(
     name: String
     has_setup_profile: Boolean
     address: String
     website: String
     about: String
   ): Biotech
-  createCda: String
+  updateBiotech(
+    name: String
+    address: String
+    website: String
+    about: String
+  ): Biotech
 }
