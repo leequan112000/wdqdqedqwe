@@ -191,7 +191,7 @@ model ProjectConnection {
   vendor_status              String?
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
-  final_contract_uploaded_at DateTime
+  final_contract_uploaded_at DateTime?
 
   project_request_id String         @db.Uuid
   project_request    ProjectRequest @relation(fields: [project_request_id], references: [id])
