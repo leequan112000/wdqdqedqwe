@@ -11,10 +11,9 @@ import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
  */
 
 const verifySignature = (req: Request, signature: string): boolean => {
-  const body = JSON.stringify(req.body);
   const computedSignature = crypto
     .createHmac('sha256', process.env.PANDADOC_WEBHOOK_SECRET!)
-    .update(body)
+    .update(req.body)
     .digest('hex');
 
   // Compare the computed signature with the expected signature
@@ -32,7 +31,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
     return;
   }
 
-  const event_payload = req.body[0];
+  const event_payload = JSON.parse(req.body)[0];
   const data = event_payload.data;
 
   try {
