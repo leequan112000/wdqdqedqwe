@@ -23,6 +23,10 @@ type ProjectRequest {
   project_request_comments: [ProjectRequestComment]
 }
 
+type Query {
+  projectRequests: [ProjectRequest]
+}
+
 type Mutation {
   createProjectRequest(
     title: String!

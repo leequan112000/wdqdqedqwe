@@ -38,6 +38,21 @@ export default {
       })
     },
   },
+  Query: {
+    projectRequests: async (_: void, __: void, context: Context & { req: Request }) => {
+      const customer = await context.prisma.customer.findFirstOrThrow({
+        where: {
+          user_id: context.req.user_id
+        }
+      });
+
+      return await context.prisma.projectRequest.findMany({
+        where: {
+          customer_id: customer.id
+        }
+      });
+    }
+  },
   Mutation: {
     createProjectRequest: async (_: void, args: MutationCreateProjectRequestArgs, context: Context & { req: Request }) => {
       try {
