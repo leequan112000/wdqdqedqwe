@@ -2,10 +2,10 @@ const dev = {
   APP_URL: 'https://localhost:3000',
 };
 const prod = {
-  APP_URL: 'https://cro-matic.com',
+  APP_URL: 'https://platform.cro-matic.com',
 };
 const staging = {
-  APP_URL: 'https://cromatic-staging.herokuapp.com/',
+  APP_URL: 'https://caesar-staging.herokuapp.com/',
 };
 
 let env = dev;
