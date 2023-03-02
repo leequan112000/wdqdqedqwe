@@ -13,6 +13,7 @@ import { authMiddleware } from './middlewares/auth';
 import routes from './routes';
 import schema from './graphql/index';
 import { json } from 'body-parser';
+import { operationWhitelist } from './helper/graphql'
 
 class App {
   public server;
@@ -57,12 +58,15 @@ class App {
       json(),
       expressMiddleware(apolloServer, {
         context: async ({ req, res }) => {
-
+          const operationName = req.body?.operationName;
+          const isWhitelisted = operationWhitelist.includes(operationName);
           if (
             // bypass authentication for codegen
             (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
             // if user_id exist
             || req.user_id
+            // bypass authentication for whitelisted operation, eg. signIn and signUp
+            || isWhitelisted
           ) {
             return ({ ...context, req, res });
           }
