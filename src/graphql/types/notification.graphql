@@ -8,3 +8,7 @@ type Notification {
   user_id: String
   user: User
 }
+
+type Query {
+  notifications: [Notification]
+}

@@ -1,4 +1,5 @@
 import { Notification, User } from "@prisma/client";
+import { Request } from "express";
 import { Context } from "../../context";
 
 export default {
@@ -10,5 +11,17 @@ export default {
         }
       })
     },
+  },
+  Query: {
+    notifications: async (_: void, __: void, context: Context & { req: Request }) => {
+      return await context.prisma.notification.findMany({
+        where: {
+          user_id: context.req.user_id
+        },
+        orderBy: {
+          updated_at: 'desc'
+        }
+      });
+    }
   },
 };
