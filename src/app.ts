@@ -36,7 +36,7 @@ class App {
           'InternalError:': 'INTERNAL_ERROR_CODE',
           'Unauthenticated:': 'UNAUTHENTICATED'
         };
-        
+
         for (const [prefix, code] of Object.entries(errorMap)) {
           if (formattedError.message.startsWith(prefix)) {
             return {
@@ -46,7 +46,7 @@ class App {
             };
           }
         }
-        
+
         return formattedError;
       },
     });
@@ -57,17 +57,22 @@ class App {
       json(),
       expressMiddleware(apolloServer, {
         context: async ({ req, res }) => {
-          if (process.env.NODE_ENV !== "development") {
-            if (!req.user_id) {
-              throw new GraphQLError('User is not authenticated', {
-                extensions: {
-                  code: 'UNAUTHENTICATED',
-                  http: { status: 401 },
-                },
-              });
-            }
+
+          if (
+            // bypass authentication for codegen
+            (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+            // if user_id exist
+            || req.user_id
+          ) {
+            return ({ ...context, req, res });
           }
-          return ({ ...context, req, res });
+
+          throw new GraphQLError('User is not authenticated', {
+            extensions: {
+              code: 'UNAUTHENTICATED',
+              http: { status: 401 },
+            },
+          });
         },
       }),
     );
