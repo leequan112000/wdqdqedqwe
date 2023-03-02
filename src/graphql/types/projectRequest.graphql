@@ -24,7 +24,7 @@ type ProjectRequest {
 }
 
 type Query {
-  projectRequests: [ProjectRequest]
+  projectRequests(status: [String]): [ProjectRequest]
 }
 
 type Mutation {
