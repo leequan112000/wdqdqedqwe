@@ -2,7 +2,7 @@ import { Biotech, Customer, ProjectConnection, ProjectRequest, ProjectRequestCom
 import { Context } from "../../context";
 import { PublicError } from "../errors/PublicError";
 import { Request } from "express";
-import { MutationCreateProjectRequestArgs } from "../generated";
+import { MutationCreateProjectRequestArgs, QueryProjectRequestsArgs } from "../generated";
 import { ProjectRequestStatus } from "../../helper/constant";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
 import { sendAdminNewProjectRequestEmail } from "../../mailer/admin";
@@ -27,7 +27,11 @@ export default {
       return await context.prisma.projectConnection.findMany({
         where: {
           project_request_id: parent.id
-        }
+        },
+        orderBy: [
+          { final_contract_uploaded_at: { sort: 'desc', nulls: 'last' } },
+          { updated_at: 'desc' }
+        ]
       })
     },
     project_request_comments: async (parent: ProjectRequest, _: void, context: Context): Promise<ProjectRequestComment[] | null> => {
@@ -39,7 +43,7 @@ export default {
     },
   },
   Query: {
-    projectRequests: async (_: void, __: void, context: Context & { req: Request }) => {
+    projectRequests: async (_: void, args: QueryProjectRequestsArgs, context: Context & { req: Request }) => {
       const customer = await context.prisma.customer.findFirstOrThrow({
         where: {
           user_id: context.req.user_id
@@ -48,7 +52,15 @@ export default {
 
       return await context.prisma.projectRequest.findMany({
         where: {
-          customer_id: customer.id
+          customer_id: customer.id,
+          ...(args.status && args.status.length > 0 ? {
+            status: {
+              in: args.status as string[],
+            }
+          } : {}),
+        },
+        orderBy: {
+          updated_at: 'desc'
         }
       });
     }
@@ -88,7 +100,7 @@ export default {
           await sendAdminNewProjectRequestEmail(user.customer.biotech.name);
 
           return projectRequest;
-        });        
+        });
       } catch (error) {
         return error;
       }
