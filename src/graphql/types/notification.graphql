@@ -10,5 +10,5 @@ type Notification {
 }
 
 type Query {
-  notifications: [Notification]
+  notifications(unread_only: Boolean): [Notification]
 }

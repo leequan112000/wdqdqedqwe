@@ -329,6 +329,11 @@ export type Query = {
 };
 
 
+export type QueryNotificationsArgs = {
+  unread_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type QueryProjectRequestsArgs = {
   status?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -684,7 +689,7 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
-  notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
+  notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
