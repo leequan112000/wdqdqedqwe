@@ -7,8 +7,9 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
+import { PrismaClient } from '@prisma/client'
 import corsConfig from './cors';
-import { Context, context } from './context';
+import { Context } from './types/context'
 import { authMiddleware } from './middlewares/auth';
 import routes from './routes';
 import schema from './graphql/index';
@@ -27,6 +28,7 @@ class App {
   }
 
   async apolloServer() {
+    const prisma = new PrismaClient()
     const apolloServer = new ApolloServer<Context>({
       schema,
       validationRules: [depthLimit(7)],
@@ -56,7 +58,7 @@ class App {
       '/graphql',
       cors<cors.CorsRequest>(corsConfig),
       json(),
-      expressMiddleware(apolloServer, {
+      expressMiddleware<Context>(apolloServer, {
         context: async ({ req, res }) => {
           const operationName = req.body?.operationName;
           const isWhitelisted = operationWhitelist.includes(operationName);
@@ -68,7 +70,7 @@ class App {
             // bypass authentication for whitelisted operation, eg. signIn and signUp
             || isWhitelisted
           ) {
-            return ({ ...context, req, res });
+            return ({ prisma, req, res });
           }
 
           throw new GraphQLError('User is not authenticated', {

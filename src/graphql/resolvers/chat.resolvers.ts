@@ -1,6 +1,6 @@
 import { Biotech, Chat, Message, ProjectConnection, VendorCompany } from "@prisma/client";
 import { Request } from "express";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { MutationCreateChatArgs } from "../generated";
 
 export default {
@@ -57,7 +57,7 @@ export default {
               biotech_id: customer.biotech_id,
             }
           });
-        });        
+        });
       } catch (error) {
         return error;
       }

@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import { verify } from 'jsonwebtoken';
-import { context } from '../context';
+import { PrismaClient } from '@prisma/client';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
 
+const prisma = new PrismaClient();
+
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const prisma = context.prisma;
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
   const refreshToken = req.cookies['refresh-token'];
   const accessToken = req.cookies['access-token'];
@@ -39,7 +40,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const data = verify(accessToken, ACCESS_TOKEN_SECRET || "secret") as Request;
     req.user_id = data.user_id;
     return next();
-  } catch {}
+  } catch { }
 
   // If refresh token is not present. End middleware.
   if (!refreshToken) {

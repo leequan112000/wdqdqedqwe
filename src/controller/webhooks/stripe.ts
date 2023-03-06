@@ -1,8 +1,10 @@
 import Stripe from 'stripe';
 import { Request, Response } from 'express';
-import { context } from '../../context';
+import { PrismaClient } from '@prisma/client';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import { SubscriptionStatus } from '../../helper/constant';
+
+const prisma = new PrismaClient();
 
 /*
  *   Stripe webhook endpoint
@@ -26,8 +28,8 @@ const createActiveSubscriptionIfNoneExists = async (
   if (customer.biotech.subscriptions.length > 0) {
     return;
   }
-  
-  await context.prisma.subscription.create({
+
+  await prisma.subscription.create({
     data: {
       stripe_subscription_id,
       stripe_customer_id,
@@ -72,7 +74,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       try {
         // https://stripe.com/docs/api/checkout/sessions/object
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
-        const customer = await context.prisma.customer.findFirstOrThrow({
+        const customer = await prisma.customer.findFirstOrThrow({
           where: {
             id: checkoutSession.client_reference_id!
           },
@@ -90,7 +92,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           } else {
             // Increment number_of_reqs_allowed_without_subscription by 1
             const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
-            await context.prisma.biotech.update({
+            await prisma.biotech.update({
               where: {
                 id: customer.biotech_id
               },

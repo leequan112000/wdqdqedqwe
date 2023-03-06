@@ -1,7 +1,7 @@
 import { Biotech, Chat, Customer } from "@prisma/client";
 import { Request } from "express";
 import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pandadoc";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../generated";
 import { SubscriptionStatus } from "../../helper/constant";
@@ -15,7 +15,7 @@ export default {
           status: SubscriptionStatus.ACTIVE
         }
       });
-      
+
       return subscriptions.length > 0 ? true : false;
     },
     cda_url: async (parent: Biotech, _: void, context: Context & { req: Request }): Promise<String | null> => {
@@ -37,7 +37,7 @@ export default {
           // User has no access to this biotech
           return null;
         }
-  
+
         if (parent.cda_pandadoc_file_id) {
           const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, parent.cda_pandadoc_file_id);
           return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
@@ -100,7 +100,7 @@ export default {
           if (!user.customer) {
             throw new PublicError('Customer not found.');
           }
-          
+
           let cda_pandadoc_file_id = user?.customer?.biotech?.cda_pandadoc_file_id;
 
           if (cda_pandadoc_file_id === null) {
@@ -121,7 +121,7 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }
@@ -150,7 +150,7 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }

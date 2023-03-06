@@ -1,6 +1,6 @@
 import { Chat, Message, User } from "@prisma/client";
 import { Request } from "express";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationSendMessageArgs } from "../generated";
 
@@ -36,7 +36,7 @@ export default {
               user_id: context.req.user_id
             }
           });
-        });        
+        });
       } catch (error) {
         return error;
       }

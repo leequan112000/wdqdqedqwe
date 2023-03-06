@@ -1,5 +1,5 @@
 import { Customer, Notification, User, VendorMember } from "@prisma/client";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
 import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
@@ -47,11 +47,11 @@ export default {
           },
         },
       });
-      
+
       if (result?.customer?.biotech?.cda_signed_at || result?.vendor_member?.vendor_company?.cda_signed_at) {
         return true;
       }
-      
+
       return false;
     },
     customer: async (parent: User, _: void, context: Context): Promise<Customer | null> => {
@@ -94,7 +94,7 @@ export default {
               email: args.email,
             },
           })
-    
+
           if (user) {
             throw new PublicError('User already exist');
           }
@@ -107,19 +107,19 @@ export default {
               }
             }
           });
-  
+
           if (biotech) {
             throw new PublicError('Your company has already setup an account. Please ask any user from your account to invite you to the company account.');
           }
-          
+
           const newBiotech = await trx.biotech.create({
             data: {
               name: args.company_name,
             }
           });
-    
+
           const hashedPassword = await hashPassword(args.password);
-          
+
           const newCreatedUser = await trx.user.create({
             data: {
               email: args.email,
@@ -135,11 +135,11 @@ export default {
               biotech_id: newBiotech.id,
             }
           });
-    
+
           // Genereate tokens
           const tokens = createTokens({ id: newCreatedUser.id });
           setAuthTokensToCookies(tokens.accessToken, tokens.refreshToken, context.res);
-    
+
           return {
             ...newCreatedUser,
             accessToken: tokens.accessToken,
@@ -171,7 +171,7 @@ export default {
           // Genereate tokens
           const tokens = createTokens({ id: foundUser.id, });
           setAuthTokensToCookies(tokens.accessToken, tokens.refreshToken, context.res);
-          
+
           return {
             ...foundUser,
             accessToken: tokens.accessToken,
@@ -224,7 +224,7 @@ export default {
     },
     forgotPassword: async (_: void, args: { email: string }, context: Context) => {
       const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
-    
+
       try {
         const user = await context.prisma.user.update({
           where: {
@@ -235,10 +235,10 @@ export default {
             reset_password_expiration: new Date(resetTokenExpiration),
           },
         });
-    
+
         if (!user) {
           return false;
-        } 
+        }
         sendResetPasswordEmail(user);
         return true;
       } catch (error) {

@@ -1,7 +1,7 @@
 import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
 
@@ -40,7 +40,7 @@ export default {
           // User has no access to this vendor company
           return null;
         }
-  
+
         if (parent.cda_pandadoc_file_id) {
           const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, parent.cda_pandadoc_file_id);
           return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
@@ -116,7 +116,7 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }
@@ -145,7 +145,7 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }

@@ -1,6 +1,6 @@
 import { Biotech, Customer, CustomerConnection, ProjectRequest, User } from "@prisma/client";
 import { Request } from "express";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
@@ -68,11 +68,11 @@ export default {
               }
             }
           });
-  
+
           if (biotech) {
             throw new PublicError('Your company has already setup an account. Please ask any user from your account to invite you to the company account.');
           }
-          
+
           const newBiotech = await trx.biotech.create({
             data: {
               name: args.company_name,
@@ -87,7 +87,7 @@ export default {
               biotech_id: newBiotech.id,
             }
           });
-        });        
+        });
       } catch (error) {
         return error;
       }
@@ -103,7 +103,7 @@ export default {
             team: args.team,
             ...(args.has_setup_profile !== null ? { has_setup_profile: args.has_setup_profile } : {})
           }
-        });        
+        });
       } catch (error) {
         return error;
       }
@@ -149,7 +149,7 @@ export default {
           sendCustomerInvitationEmail(currentUser, newUser, args.custom_message || "");
 
           return newCustomer;
-        });        
+        });
       } catch (error) {
         return error;
       }

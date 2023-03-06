@@ -2,7 +2,7 @@ import { User, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationInviteVendorMemberArgs, MutationUpdateVendorMemberArgs } from "../generated";
 
@@ -45,7 +45,7 @@ export default {
             department: args.department,
             ...(args.is_primary_member !== null ? { is_primary_member: args.is_primary_member } : {}),
           }
-        });        
+        });
       } catch (error) {
         return error;
       }
@@ -91,7 +91,7 @@ export default {
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, args.custom_message || "");
 
           return newVendorMember;
-        });        
+        });
       } catch (error) {
         return error;
       }
