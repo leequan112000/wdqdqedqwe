@@ -1,6 +1,6 @@
 import { ProjectRequestComment, ProjectRequest } from "@prisma/client";
 import { Request } from "express";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationCreateProjectRequestCommentArgs } from "../generated";
 
@@ -40,7 +40,7 @@ export default {
           return await context.prisma.projectRequestComment.create({
             data: { ...args }
           });
-        }); 
+        });
       } catch (error) {
         return error;
       }

@@ -1,10 +1,10 @@
 import { mailSender, sendMail } from "./config";
 import { adminNewProjectRequestTemplate } from "./templates";
-import { context } from "../context";
 import { AdminTeam } from "../helper/constant";
+import { prisma } from '../connectDB';
 
 export const sendAdminNewProjectRequestEmail = async (biotech_name: string) => {
-  const admins = await context.prisma.admin.findMany({
+  const admins = await prisma.admin.findMany({
     where: {
       team: AdminTeam.SCIENCE
     }
@@ -23,7 +23,7 @@ export const sendAdminNewProjectRequestEmail = async (biotech_name: string) => {
           admin_name: admin.username,
         },
       };
-    
+
       sendMail(mailData);
     })
   );

@@ -1,6 +1,6 @@
 import { Notification, User } from "@prisma/client";
 import { Request } from "express";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { QueryNotificationsArgs } from "../generated";
 
 export default {

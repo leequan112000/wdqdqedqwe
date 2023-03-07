@@ -1,5 +1,5 @@
 import { ProjectConnection, CustomerConnection, Customer } from "@prisma/client";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 
 export default {
   CustomerConnection: {
