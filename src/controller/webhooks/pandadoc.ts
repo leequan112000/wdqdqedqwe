@@ -1,9 +1,7 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
-import { PrismaClient } from "@prisma/client";
+import { prisma } from '../../connectDB';
 import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
-
-const prisma = new PrismaClient();
 
 /*
  *   Pandadoc webhook endpoint

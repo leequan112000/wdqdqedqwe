@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import { mailSender, sendMail } from "./config";
 import { adminNewProjectRequestTemplate } from "./templates";
 import { AdminTeam } from "../helper/constant";
-
-const prisma = new PrismaClient();
+import { prisma } from '../connectDB';
 
 export const sendAdminNewProjectRequestEmail = async (biotech_name: string) => {
   const admins = await prisma.admin.findMany({

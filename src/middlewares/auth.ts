@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { verify } from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../connectDB';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
-
-const prisma = new PrismaClient();
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;

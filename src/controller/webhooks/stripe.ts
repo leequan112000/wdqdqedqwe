@@ -1,10 +1,8 @@
 import Stripe from 'stripe';
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import { SubscriptionStatus } from '../../helper/constant';
-
-const prisma = new PrismaClient();
 
 /*
  *   Stripe webhook endpoint
@@ -21,7 +19,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 const isUnitTest = process.env.NODE_ENV === 'test';
 
 const createActiveSubscriptionIfNoneExists = async (
-  customer: Customer & {biotech: Biotech & { subscriptions: Subscription[]}},
+  customer: Customer & { biotech: Biotech & { subscriptions: Subscription[] } },
   stripe_subscription_id: string,
   stripe_customer_id: string
 ) => {

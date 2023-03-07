@@ -7,10 +7,10 @@ import depthLimit from 'graphql-depth-limit';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client'
 import corsConfig from './cors';
 import { Context } from './types/context'
 import { authMiddleware } from './middlewares/auth';
+import { prisma } from './connectDB';
 import routes from './routes';
 import schema from './graphql/index';
 import { json } from 'body-parser';
@@ -28,7 +28,6 @@ class App {
   }
 
   async apolloServer() {
-    const prisma = new PrismaClient()
     const apolloServer = new ApolloServer<Context>({
       schema,
       validationRules: [depthLimit(7)],
