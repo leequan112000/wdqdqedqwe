@@ -1,4 +1,5 @@
 type VendorMember {
+  id: String
   title: String
   is_primary_member: Boolean
   phone: String
@@ -28,5 +29,11 @@ type Mutation {
     last_name: String!
     email: String!
     custom_message: String
-  ): Customer
+  ): VendorMember
+  inviteVendorMemberByAdmin(
+    first_name: String!
+    last_name: String!
+    email: String!
+    vendor_company_id: String!
+  ): VendorMember
 }
