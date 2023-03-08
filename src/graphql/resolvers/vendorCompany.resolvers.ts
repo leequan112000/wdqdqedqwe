@@ -1,9 +1,10 @@
-import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
+import { Chat, ProjectConnection, User, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
+import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
 import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationCreateVendorCompanyArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
+import { MutationCreateVendorCompanyArgs, MutationInviteVendorCompaniesToProjectByAdminArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
 
 export default {
   VendorCompany: {
@@ -159,6 +160,77 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
+        });
+      } catch (error) {
+        return error;
+      }
+    },
+    inviteVendorCompaniesToProjectByAdmin: async (_: void, args: MutationInviteVendorCompaniesToProjectByAdminArgs, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const projectRequest = await trx.projectRequest.findFirst({
+            where: {
+              id: args.project_request_id
+            }
+          });
+
+          if (!projectRequest) {
+            throw new PublicError('Invalid project request ID.');
+          }
+
+          let primaryVendorMembers: (VendorMember & {user: User })[] = [];
+          await Promise.all(
+            args.vendor_company_ids.map(async (vendor_company_id) => {
+              const primaryVendorMember = await trx.vendorMember.findFirst({
+                where: {
+                  vendor_company_id: vendor_company_id as string,
+                  is_primary_member: true,
+                },
+                include: {
+                  user: true,
+                }
+              });
+
+              if (!primaryVendorMember) {
+                throw new PublicError('No primary vendor member found.');
+              }
+
+              const projectConnection = await trx.projectConnection.create({
+                data: {
+                  project_request_id: args.project_request_id,
+                  vendor_company_id: vendor_company_id as string,
+                }
+              });
+
+              if (!projectConnection) {
+                throw new PublicError('There was an error while creating the project connection.');
+              }
+
+              await trx.vendorMemberConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  vendor_member_id: primaryVendorMember.id,
+                }
+              });
+
+              await trx.customerConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  customer_id: projectRequest.customer_id,
+                }
+              });
+
+              primaryVendorMembers.push(primaryVendorMember);
+            })
+          );
+
+          await Promise.all(
+            primaryVendorMembers.map((primaryVendorMember) => {
+              // TODO: use queue & send notification to vendor members
+              sendVendorMemberProjectRequestInvitationByAdminEmail(projectRequest, primaryVendorMember.user);
+            })
+          );
+          return true;
         });
       } catch (error) {
         return error;

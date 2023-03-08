@@ -37,4 +37,8 @@ type Mutation {
     website: String
     description: String
   ): VendorCompany
+  inviteVendorCompaniesToProjectByAdmin(
+    project_request_id: String!
+    vendor_company_ids: [String]!
+  ): Boolean 
 }
