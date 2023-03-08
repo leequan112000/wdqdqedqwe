@@ -19,6 +19,12 @@ type Query {
 }
 
 type Mutation {
+  createVendorCompany(
+    name: String!
+    address: String
+    website: String
+    description: String
+  ): VendorCompany
   onboardVendorCompany(
     name: String
     address: String

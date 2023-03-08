@@ -3,7 +3,7 @@ import { Request } from "express";
 import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
+import { MutationCreateVendorCompanyArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
 
 export default {
   VendorCompany: {
@@ -77,6 +77,20 @@ export default {
     },
   },
   Mutation: {
+    createVendorCompany: async (_: void, args: MutationCreateVendorCompanyArgs, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.vendorCompany.create({
+          data: {
+            name: args.name,
+            website: args.website,
+            description: args.description,
+            address: args.address,
+          }
+        });
+      } catch (error) {
+        return error;
+      }
+    },
     onboardVendorCompany: async (_: void, args: MutationOnboardVendorCompanyArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
@@ -104,7 +118,7 @@ export default {
             cda_pandadoc_file_id = docResponse.id as string;
           }
 
-          return await context.prisma.vendorCompany.update({
+          return await trx.vendorCompany.update({
             where: {
               id: user.vendor_member.vendor_company_id
             },
@@ -134,7 +148,7 @@ export default {
             throw new PublicError('Vendor member not found.');
           }
 
-          return await context.prisma.vendorCompany.update({
+          return await trx.vendorCompany.update({
             where: {
               id: vendor_member.vendor_company_id
             },
