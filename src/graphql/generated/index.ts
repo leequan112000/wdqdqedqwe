@@ -94,9 +94,12 @@ export type Mutation = {
   createCustomer: Customer;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
+  createVendorCompany?: Maybe<VendorCompany>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCustomer?: Maybe<Customer>;
-  inviteVendorMember?: Maybe<Customer>;
+  inviteVendorCompaniesToProjectByAdmin?: Maybe<Scalars['Boolean']>;
+  inviteVendorMember?: Maybe<VendorMember>;
+  inviteVendorMemberByAdmin?: Maybe<VendorMember>;
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<User>;
@@ -146,6 +149,14 @@ export type MutationCreateProjectRequestCommentArgs = {
 };
 
 
+export type MutationCreateVendorCompanyArgs = {
+  address?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+  website?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationForgotPasswordArgs = {
   email?: InputMaybe<Scalars['String']>;
 };
@@ -159,11 +170,25 @@ export type MutationInviteCustomerArgs = {
 };
 
 
+export type MutationInviteVendorCompaniesToProjectByAdminArgs = {
+  project_request_id: Scalars['String'];
+  vendor_company_ids: Array<InputMaybe<Scalars['String']>>;
+};
+
+
 export type MutationInviteVendorMemberArgs = {
   custom_message?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+};
+
+
+export type MutationInviteVendorMemberByAdminArgs = {
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+  vendor_company_id: Scalars['String'];
 };
 
 
@@ -381,6 +406,7 @@ export type VendorMember = {
   __typename?: 'VendorMember';
   created_at?: Maybe<Scalars['String']>;
   department?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
   is_primary_member?: Maybe<Scalars['Boolean']>;
   phone?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
@@ -606,9 +632,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
+  createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
-  inviteVendorMember?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
+  inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
+  inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
+  inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -746,6 +775,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
 export type VendorMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['VendorMember'] = ResolversParentTypes['VendorMember']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   department?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_primary_member?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
