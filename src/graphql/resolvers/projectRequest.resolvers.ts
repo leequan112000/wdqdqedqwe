@@ -51,7 +51,10 @@ const resolvers: Resolvers<Context> = {
       const data = await context.prisma.projectRequestComment.findMany({
         where: {
           project_request_id: parent.id
-        }
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
       });
 
       const processed: ProjectRequestComment[] = data.map((d) => ({
