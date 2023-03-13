@@ -111,6 +111,7 @@ export type Mutation = {
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  withdrawProjectRequest?: Maybe<ProjectRequest>;
 };
 
 
@@ -263,6 +264,11 @@ export type MutationUpdateVendorMemberArgs = {
   is_primary_member?: InputMaybe<Scalars['Boolean']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationWithdrawProjectRequestArgs = {
+  project_request_id: Scalars['String'];
 };
 
 export type Notification = {
@@ -649,6 +655,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;
 
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{

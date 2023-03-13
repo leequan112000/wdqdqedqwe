@@ -150,6 +150,29 @@ const resolvers: Resolvers<Context> = {
         };
       });
     },
+    withdrawProjectRequest: async (_, args, context) => {
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: args.project_request_id
+        },
+      });
+      if (projectRequest) {
+        const updatedRequest = await context.prisma.projectRequest.update({
+          data: {
+            status: ProjectRequestStatus.WITHDRAWN,
+          },
+          where: {
+            id: args.project_request_id,
+          },
+        });
+
+        return {
+          ...updatedRequest,
+          max_budget: updatedRequest.max_budget?.toNumber() || 0,
+        };
+      }
+      throw new PublicError('Project request not found.')
+    },
   },
 };
 
