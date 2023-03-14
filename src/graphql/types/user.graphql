@@ -3,10 +3,10 @@ type User {
   email: String
   first_name: String
   last_name: String
-  created_at: String
-  updated_at: String
-  user_type: String!
-  has_completed_onboarding: Boolean!
+  created_at: Date
+  updated_at: Date
+  user_type: String
+  has_completed_onboarding: Boolean
   customer: Customer
   vendor_member: VendorMember
   notifications: [Notification]
