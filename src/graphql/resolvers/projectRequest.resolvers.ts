@@ -51,7 +51,10 @@ const resolvers: Resolvers<Context> = {
       const data = await context.prisma.projectRequestComment.findMany({
         where: {
           project_request_id: parent.id
-        }
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
       });
 
       const processed: ProjectRequestComment[] = data.map((d) => ({
@@ -146,6 +149,29 @@ const resolvers: Resolvers<Context> = {
           max_budget: projectRequest.max_budget?.toNumber() || 0,
         };
       });
+    },
+    withdrawProjectRequest: async (_, args, context) => {
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: args.project_request_id
+        },
+      });
+      if (projectRequest) {
+        const updatedRequest = await context.prisma.projectRequest.update({
+          data: {
+            status: ProjectRequestStatus.WITHDRAWN,
+          },
+          where: {
+            id: args.project_request_id,
+          },
+        });
+
+        return {
+          ...updatedRequest,
+          max_budget: updatedRequest.max_budget?.toNumber() || 0,
+        };
+      }
+      throw new PublicError('Project request not found.')
     },
   },
 };
