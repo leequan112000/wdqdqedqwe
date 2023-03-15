@@ -1,7 +1,7 @@
 type CustomerConnection {
   id: String
-  created_at: String
-  updated_at: String
+  created_at: Date
+  updated_at: Date
   project_connection_id: String
   project_connection: ProjectConnection
   customer_id: String

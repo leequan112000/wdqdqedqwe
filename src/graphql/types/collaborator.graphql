@@ -1,0 +1,13 @@
+type Query {
+  collaborators: [User]
+}
+
+type Mutation {
+  inviteCollaborator(
+    first_name: String!
+    last_name: String!
+    email: String!
+    custom_message: String
+  ): User
+  resendInvitation(user_id: String!): User
+}

@@ -3,7 +3,7 @@ import { mailSender, sendMail } from "./config";
 import { customerInvitationTemplate } from "./templates";
 import { app_env } from "../environment";
 
-export const sendCustomerInvitationEmail = (inviter: User, receiver: User, custom_message: string) => {
+export const sendCustomerInvitationEmail = (inviter: User, receiver: User, custom_message: string = '') => {
   const mailData = {
     from: `Cromatic <${mailSender}>`,
     to: receiver.email,
