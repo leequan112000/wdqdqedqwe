@@ -96,8 +96,11 @@ export type Mutation = {
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createVendorCompany?: Maybe<VendorCompany>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
+  inviteCollaborator?: Maybe<User>;
+  /** @deprecated Use `inviteCollaborator`. */
   inviteCustomer?: Maybe<Customer>;
   inviteVendorCompaniesToProjectByAdmin?: Maybe<Scalars['Boolean']>;
+  /** @deprecated Use `inviteCollaborator`. */
   inviteVendorMember?: Maybe<VendorMember>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
   onboardBiotech?: Maybe<Biotech>;
@@ -159,6 +162,14 @@ export type MutationCreateVendorCompanyArgs = {
 
 export type MutationForgotPasswordArgs = {
   email?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationInviteCollaboratorArgs = {
+  custom_message?: InputMaybe<Scalars['String']>;
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
 };
 
 
@@ -637,6 +648,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
+  inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;

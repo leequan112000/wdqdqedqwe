@@ -34,5 +34,5 @@ type Mutation {
     last_name: String!
     email: String!
     custom_message: String
-  ): Customer
+  ): Customer @deprecated(reason: "Use `inviteCollaborator`.")
 }

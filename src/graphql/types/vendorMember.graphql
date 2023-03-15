@@ -29,7 +29,7 @@ type Mutation {
     last_name: String!
     email: String!
     custom_message: String
-  ): VendorMember
+  ): VendorMember @deprecated(reason: "Use `inviteCollaborator`.")
   inviteVendorMemberByAdmin(
     first_name: String!
     last_name: String!
