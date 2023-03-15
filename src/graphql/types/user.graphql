@@ -10,6 +10,8 @@ type User {
   customer: Customer
   vendor_member: VendorMember
   notifications: [Notification]
+  has_setup_profile: Boolean
+  company_name: String
 }
 
 type Query {

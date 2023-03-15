@@ -98,6 +98,74 @@ const resolvers: Resolvers<Context> = {
 
       return notifications;
     },
+    has_setup_profile: async (parent, _, context) => {
+      if (parent.customer?.has_setup_profile) {
+        return parent.customer.has_setup_profile;
+      }
+
+      if (!parent.id) {
+        throw new InternalError('Missing user id.')
+      }
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: parent.id,
+        }
+      });
+
+      if (!customer) {
+        throw new InternalError('Customer not found.')
+      }
+
+      return customer.has_setup_profile;
+    },
+    company_name: async (parent, _, context) => {
+      if (parent.customer?.biotech?.name) {
+        return parent.customer.biotech.name;
+      }
+      if (parent.vendor_member?.vendor_company?.name) {
+        return parent.vendor_member.vendor_company.name;
+      }
+
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+        include: {
+          biotech: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (customer?.biotech.name) {
+        return customer.biotech.name;
+      }
+
+      const vendorMember = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+        include: {
+          vendor_company: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (vendorMember?.vendor_company?.name) {
+        return vendorMember.vendor_company.name;
+      }
+
+      throw new InternalError('Missing user.')
+    }
   },
   Query: {
     user: async (_, __, context) => {
@@ -106,7 +174,7 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id
         }
       });
-    }
+    },
   },
   Mutation: {
     signUpUser: async (_, args, context) => {
