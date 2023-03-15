@@ -361,7 +361,13 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!user || !user.reset_password_expiration) return false;
+      if (!user) {
+        throw new PublicError('User not found.')
+      }
+
+      if (!user.reset_password_expiration) {
+        throw new PublicError('Invalid reset password link.')
+      }
 
       const timeElapsed = user.reset_password_expiration.getTime() - new Date().getTime();
 
@@ -378,7 +384,7 @@ const resolvers: Resolvers<Context> = {
         });
         return true;
       }
-      return false;
+      throw new PublicError('The reset password link is expired.')
     },
   },
 };
