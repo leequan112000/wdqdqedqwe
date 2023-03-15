@@ -9,4 +9,5 @@ type Mutation {
     email: String!
     custom_message: String
   ): User
+  resendInvitation(user_id: String!): User
 }

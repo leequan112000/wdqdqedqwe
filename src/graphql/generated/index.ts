@@ -106,6 +106,7 @@ export type Mutation = {
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<User>;
+  resendInvitation?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   signInUser: User;
@@ -216,6 +217,11 @@ export type MutationOnboardVendorCompanyArgs = {
   description?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationResendInvitationArgs = {
+  user_id: Scalars['String'];
 };
 
 
@@ -656,6 +662,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'chat_id' | 'content'>>;
   signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
