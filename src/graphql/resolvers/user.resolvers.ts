@@ -103,20 +103,41 @@ const resolvers: Resolvers<Context> = {
         return parent.customer.has_setup_profile;
       }
 
+      if (parent.vendor_member) {
+        return !!parent.vendor_member.title ? true : false;
+      }
+
       if (!parent.id) {
         throw new InternalError('Missing user id.')
       }
-      const customer = await context.prisma.customer.findFirst({
+
+      const user = await context.prisma.user.findFirst({
         where: {
-          user_id: parent.id,
-        }
+          id: parent.id,
+        },
+        include: {
+          customer: {
+            select: {
+              has_setup_profile: true,
+            },
+          },
+          vendor_member: {
+            select: {
+              title: true,
+            },
+          },
+        },
       });
 
-      if (!customer) {
-        throw new InternalError('Customer not found.')
+      if (user?.customer) {
+        return user.customer.has_setup_profile;
       }
 
-      return customer.has_setup_profile;
+      if (user?.vendor_member) {
+        return user.vendor_member.title ? true : false;
+      }
+
+      throw new InternalError('Missing user');
     },
     company_name: async (parent, _, context) => {
       if (parent.customer?.biotech?.name) {
