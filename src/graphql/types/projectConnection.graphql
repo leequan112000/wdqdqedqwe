@@ -13,3 +13,7 @@ type ProjectConnection {
   project_attachments: [ProjectAttachment]
   chats: [Chat]
 }
+
+type Query {
+  projectConnections: [ProjectConnection]
+}
