@@ -1,10 +1,7 @@
 type Message {
   id: String
   content: String
-  created_at: String
-  updated_at: String
-  chat_id: String
-  chat: Chat
+  created_at: Date
   user_id: String
   user: User
 }
@@ -12,6 +9,6 @@ type Message {
 type Mutation {
   sendMessage(
     content: String!
-    chat_id: String!
+    project_connection_id: String!
   ): Message
 }

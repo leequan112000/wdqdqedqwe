@@ -11,5 +11,12 @@ type ProjectConnection {
   vendor_member_connections: [VendorMemberConnection]
   customer_connections: [CustomerConnection]
   project_attachments: [ProjectAttachment]
-  chats: [Chat]
+  customer_users: [User]
+  vendor_users: [User]
+  chat: Chat
+  messages: [Message]
+}
+
+type Query {
+  projectConnection(id: String!): ProjectConnection
 }
