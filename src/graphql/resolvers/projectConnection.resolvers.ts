@@ -1,55 +1,153 @@
-import { Chat, CustomerConnection, ProjectAttachment, ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { QueryProjectConnectionsArgs } from "../generated";
+import { Resolvers } from "../generated";
 
-export default {
+const resolvers: Resolvers<Context> = {
   ProjectConnection: {
-    vendor_company: async (parent: ProjectConnection, _: void, context: Context): Promise<VendorCompany | null> => {
-      return await context.prisma.vendorCompany.findFirst({
+    vendor_company: async (parent, _, context) => {
+      if (!parent?.vendor_company_id) {
+        throw new InternalError('Vendor company id not found');
+      }
+      const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
-          id: parent.vendor_company_id
-        }
-      })
+          id: parent.vendor_company_id,
+        },
+      });
+      if (!vendorCompany) {
+        throw new InternalError('Vendor company not found');
+      }
+      return vendorCompany;
     },
-    project_request: async (parent: ProjectConnection, _: void, context: Context): Promise<ProjectRequest | null> => {
-      return await context.prisma.projectRequest.findFirst({
+    project_request: async (parent, _, context) => {
+      if (!parent?.project_request_id) {
+        throw new InternalError('Project request id not found');
+      }
+      const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
-          id: parent.project_request_id
-        }
-      })
+          id: parent.project_request_id,
+        },
+      });
+      if (!projectRequest) {
+        throw new InternalError('Project request not found');
+      }
+      return {
+        ...projectRequest,
+        max_budget: projectRequest.max_budget?.toNumber() || 0,
+      };
     },
-    vendor_member_connections: async (parent: ProjectConnection, _: void, context: Context): Promise<VendorMemberConnection[] | null> => {
-      return await context.prisma.vendorMemberConnection.findMany({
+    vendor_member_connections: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const vendorMemberConnections = await context.prisma.vendorMemberConnection.findMany({
         where: {
-          project_connection_id: parent.id
-        }
-      })
+          project_connection_id: parent.id,
+        },
+      });
+
+      return vendorMemberConnections;
     },
-    customer_connections: async (parent: ProjectConnection, _: void, context: Context): Promise<CustomerConnection[] | null> => {
+    customer_connections: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
       return await context.prisma.customerConnection.findMany({
         where: {
           project_connection_id: parent.id
-        }
-      })
+        },
+      });
     },
-    project_attachments: async (parent: ProjectConnection, _: void, context: Context): Promise<ProjectAttachment[] | null> => {
-      return await context.prisma.projectAttachment.findMany({
+    project_attachments: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const projectAttachments = await context.prisma.projectAttachment.findMany({
         where: {
           project_connection_id: parent.id
-        }
-      })
+        },
+      });
+
+      return projectAttachments.map((a) => ({
+        ...a,
+        byte_size: Number(a.byte_size) * 1.0 / 1024
+      }));
     },
-    chats: async (parent: ProjectConnection, _: void, context: Context): Promise<Chat[] | null> => {
-      return await context.prisma.chat.findMany({
+    chat: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      return await context.prisma.chat.findFirst({
         where: {
           project_connection_id: parent.id
         }
       });
     },
+    customer_users: async (parent, args, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const customerConnections = await context.prisma.customerConnection.findMany({
+        where: {
+          project_connection_id: parent.id
+        },
+        include: {
+          customer: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      return customerConnections.map((cc) => cc.customer.user);
+    },
+    vendor_users: async (parent, args, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const customerConnections = await context.prisma.vendorMemberConnection.findMany({
+        where: {
+          project_connection_id: parent.id
+        },
+        include: {
+          vendor_member: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      return customerConnections.map((cc) => cc.vendor_member.user);
+    },
+    messages: async (parent, args, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const chat = await context.prisma.chat.findFirst({
+        where: {
+          project_connection_id: parent.id,
+        },
+        include: {
+          messages: true,
+        },
+      });
+
+      return chat?.messages || [];
+    },
   },
   Query: {
-    projectConnections: async (_: void, args: QueryProjectConnectionsArgs, context: Context & { req: Request }) => {
+    projectConnection: async (parent, args, context) => {
+      if (args.id) {
+
+      }
+      return await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+      });
+    },
+    projectConnections: async (parent, args, context) => {
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
@@ -77,3 +175,5 @@ export default {
     }
   },
 };
+
+export default resolvers;

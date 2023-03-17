@@ -3,8 +3,8 @@ type ProjectAttachment {
   key: String
   filename: String
   content_type: String
-  byte_size: Int
-  created_at: String
+  byte_size: Float
+  created_at: Date
   project_connection_id: String
   project_connection: ProjectConnection
 }

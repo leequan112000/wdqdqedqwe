@@ -10,7 +10,7 @@ export const sendVendorMemberInvitationByExistingMemberEmail = (inviter: User, r
     replyTo: mailSender,
     templateId: vendorMemberInvitationByExistingMemberTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${receiver.reset_password_token}`,
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
       inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
       inviter_message: custom_message,
       receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
@@ -27,7 +27,7 @@ export const sendVendorMemberInvitationByAdminEmail = (receiver: User) => {
     replyTo: mailSender,
     templateId: vendorMemberInvitationByAdminTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${receiver.reset_password_token}`,
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
       receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
     },
   };
@@ -42,7 +42,7 @@ export const sendVendorMemberProjectRequestInvitationByAdminEmail = (project_req
     replyTo: mailSender,
     templateId: vendorMemberInvitationToProjectRequestByAdminTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${receiver.reset_password_token}`,
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
       project_request_name: project_request.title,
     },
   };
