@@ -114,18 +114,19 @@ const resolvers: Resolvers<Context> = {
     },
     removeAttachment: async (parent, args, context) => {
       const { id } = args;
-      const deletedAttachment = await context.prisma.projectAttachment.delete({
-        where: {
-          id,
-        },
-      });
+      return await context.prisma.$transaction(async (trx) => {
+        const deletedAttachment = await trx.projectAttachment.delete({
+          where: {
+            id,
+          },
+        });
 
-      await deleteObject(deletedAttachment.key);
-
-      return {
-        ...deletedAttachment,
-        byte_size: Number(deletedAttachment.byte_size),
-      };
+        await deleteObject(deletedAttachment.key);
+        return {
+          ...deletedAttachment,
+          byte_size: Number(deletedAttachment.byte_size),
+        };
+      })
     },
   },
 };
