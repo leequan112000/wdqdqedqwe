@@ -147,7 +147,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
-    projectConnections: async (_: void, args: void, context: Context & { req: Request }) => {
+    projectConnections: async (parent, args, context) => {
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
