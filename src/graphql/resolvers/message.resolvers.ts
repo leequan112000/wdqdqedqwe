@@ -1,19 +1,14 @@
-import { Chat, Message, User } from "@prisma/client";
-import { Request } from "express";
 import { Context } from "../../types/context";
+import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
-import { MutationSendMessageArgs } from "../generated";
+import { Resolvers } from "../generated";
 
-export default {
+const resolvers: Resolvers<Context> = {
   Message: {
-    chat: async (parent: Message, _: void, context: Context): Promise<Chat | null> => {
-      return await context.prisma.chat.findFirst({
-        where: {
-          id: parent.chat_id
-        }
-      })
-    },
-    user: async (parent: Message, _: void, context: Context): Promise<User | null> => {
+    user: async (parent, _, context) => {
+      if (!parent.user_id) {
+        throw new InternalError('User id not found')
+      }
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
@@ -22,24 +17,55 @@ export default {
     },
   },
   Mutation: {
-    sendMessage: async (_: void, args: MutationSendMessageArgs, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          if (!context.req.user_id) {
-            throw new PublicError('User not logged in.');
-          }
+    sendMessage: async (_, args, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        if (!context.req.user_id) {
+          throw new PublicError('User not logged in.');
+        }
 
-          return await trx.message.create({
-            data: {
-              content: args.content,
-              chat_id: args.chat_id,
-              user_id: context.req.user_id
-            }
-          });
+        let chat = await trx.chat.findFirst({
+          where: {
+            project_connection_id: args.project_connection_id,
+          },
         });
-      } catch (error) {
-        return error;
-      }
+
+        // Create chat if not exist.
+        if (!chat) {
+          const projectConnection = await trx.projectConnection.findFirst({
+            where: {
+              id: args.project_connection_id,
+            },
+            include: {
+              vendor_company: true,
+              project_request: {
+                select: {
+                  biotech_id: true,
+                },
+              },
+            },
+          });
+          if (!projectConnection) {
+            throw new InternalError('Project connection not found.')
+          }
+          chat = await trx.chat.create({
+            data: {
+              biotech_id: projectConnection.project_request.biotech_id,
+              vendor_company_id: projectConnection.vendor_company_id,
+              project_connection_id: projectConnection.id,
+            },
+          })
+        }
+
+        return await trx.message.create({
+          data: {
+            content: args.content,
+            chat_id: chat.id,
+            user_id: context.req.user_id
+          }
+        });
+      });
     },
   }
 };
+
+export default resolvers;

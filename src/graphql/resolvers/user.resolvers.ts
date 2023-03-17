@@ -186,6 +186,9 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('Missing user.')
+    },
+    full_name: async (parent, args, context) => {
+      return `${parent.first_name} ${parent.last_name}`;
     }
   },
   Query: {
