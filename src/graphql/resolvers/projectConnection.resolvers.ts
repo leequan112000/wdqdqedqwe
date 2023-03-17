@@ -147,6 +147,28 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    projectConnections: async (_: void, args: void, context: Context & { req: Request }) => {
+      // find vendor member id
+      const vendorMember = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+      if (vendorMember === null) {
+        throw new InternalError('Vendor member not found!')
+      }
+      // find vendor member connections
+      const vendorMemberConnections = await context.prisma.vendorMemberConnection.findMany({
+        where: {
+          vendor_member_id: vendorMember.id,
+        },
+        include: {
+          project_connection: true,
+        }
+      });
+      // find project connections, return project connections
+      return vendorMemberConnections.map(vmc => vmc.project_connection);
+    }
   },
 };
 

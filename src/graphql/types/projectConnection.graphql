@@ -20,3 +20,7 @@ type ProjectConnection {
 type Query {
   projectConnection(id: String!): ProjectConnection
 }
+
+type Query {
+  projectConnections: [ProjectConnection]
+}
