@@ -7,9 +7,11 @@ type ProjectAttachment {
   project_connection_id: String
   project_connection: ProjectConnection
   signed_url: String
+  formatted_filesize: String
 }
 
 type Mutation {
   uploadDocuments(files: [Upload]!, project_connection_id: String!): [ProjectAttachment]
   uploadContract(file: Upload!, project_connection_id: String!): ProjectAttachment
+  removeAttachment(id: String!): ProjectAttachment
 }

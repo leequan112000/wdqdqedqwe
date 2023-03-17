@@ -3,7 +3,19 @@ import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
 import storeUpload from "../../../src/helper/storeUpload";
 import { ProjectAttachmentDocumentType } from "../../../src/helper/constant";
-import { getSignedUrl } from "../../../src/helper/awsS3";
+import { deleteObject, getSignedUrl } from "../../../src/helper/awsS3";
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 B'
+
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
 
 const resolvers: Resolvers<Context> = {
   ProjectAttachment: {
@@ -22,6 +34,12 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Key not found');
       }
       return await getSignedUrl(parent.key);
+    },
+    formatted_filesize: async (parent,) => {
+      if (parent.byte_size) {
+        return formatBytes(parent.byte_size);
+      }
+      return null;
     }
   },
   Mutation: {
@@ -93,7 +111,22 @@ const resolvers: Resolvers<Context> = {
         ...attachment,
         byte_size: Number(attachment.byte_size) / 1000,
       };
-    }
+    },
+    removeAttachment: async (parent, args, context) => {
+      const { id } = args;
+      const deletedAttachment = await context.prisma.projectAttachment.delete({
+        where: {
+          id,
+        },
+      });
+
+      await deleteObject(deletedAttachment.key);
+
+      return {
+        ...deletedAttachment,
+        byte_size: Number(deletedAttachment.byte_size),
+      };
+    },
   },
 };
 

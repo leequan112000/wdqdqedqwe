@@ -1,3 +1,4 @@
+import { ProjectAttachmentDocumentType } from "../../../src/helper/constant";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
@@ -69,7 +70,7 @@ const resolvers: Resolvers<Context> = {
 
       return projectAttachments.map((a) => ({
         ...a,
-        byte_size: Number(a.byte_size) * 1.0 / 1024
+        byte_size: Number(a.byte_size),
       }));
     },
     chat: async (parent, _, context) => {
@@ -134,6 +135,38 @@ const resolvers: Resolvers<Context> = {
       });
 
       return chat?.messages || [];
+    },
+    documents: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const projectAttachments = await context.prisma.projectAttachment.findMany({
+        where: {
+          project_connection_id: parent.id,
+          document_type: ProjectAttachmentDocumentType.FILE,
+        },
+      });
+      return projectAttachments.map((a) => ({
+        ...a,
+        byte_size: Number(a.byte_size),
+      }));
+    },
+    final_contract: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const projectAttachment = await context.prisma.projectAttachment.findFirst({
+        where: {
+          project_connection_id: parent.id,
+          document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+        },
+      });
+      return projectAttachment
+        ? {
+          ...projectAttachment,
+          byte_size: Number(projectAttachment.byte_size)
+        }
+        : null;
     },
   },
   Query: {

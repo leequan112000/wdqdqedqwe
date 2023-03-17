@@ -96,6 +96,7 @@ export type Mutation = {
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<User>;
+  removeAttachment?: Maybe<ProjectAttachment>;
   resendInvitation?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
@@ -213,6 +214,11 @@ export type MutationOnboardVendorCompanyArgs = {
 };
 
 
+export type MutationRemoveAttachmentArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationResendInvitationArgs = {
   user_id: Scalars['String'];
 };
@@ -309,6 +315,7 @@ export type ProjectAttachment = {
   byte_size?: Maybe<Scalars['Float']>;
   created_at?: Maybe<Scalars['Date']>;
   filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   key?: Maybe<Scalars['String']>;
   project_connection?: Maybe<ProjectConnection>;
@@ -322,6 +329,8 @@ export type ProjectConnection = {
   created_at?: Maybe<Scalars['Date']>;
   customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   customer_users?: Maybe<Array<Maybe<User>>>;
+  documents?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  final_contract?: Maybe<ProjectAttachment>;
   final_contract_uploaded_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<Message>>>;
@@ -681,6 +690,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
@@ -711,6 +721,7 @@ export type ProjectAttachmentResolvers<ContextType = any, ParentType extends Res
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
@@ -724,6 +735,8 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   customer_users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  documents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  final_contract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
