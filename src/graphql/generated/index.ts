@@ -14,6 +14,7 @@ export type Scalars = {
   Float: number;
   Date: any;
   JSON: any;
+  Upload: any;
 };
 
 export type Biotech = {
@@ -104,6 +105,7 @@ export type Mutation = {
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadDocuments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   withdrawProjectRequest?: Maybe<ProjectRequest>;
 };
 
@@ -273,6 +275,12 @@ export type MutationUpdateVendorMemberArgs = {
 };
 
 
+export type MutationUploadDocumentsArgs = {
+  files: Array<InputMaybe<Scalars['Upload']>>;
+  project_connection_id: Scalars['String'];
+};
+
+
 export type MutationWithdrawProjectRequestArgs = {
   project_request_id: Scalars['String'];
 };
@@ -292,13 +300,13 @@ export type Notification = {
 export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
-  content_type?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   filename?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   key?: Maybe<Scalars['String']>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
 };
 
 export type ProjectConnection = {
@@ -543,6 +551,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<User>;
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
   VendorMember: ResolverTypeWrapper<VendorMember>;
@@ -569,6 +578,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
   String: Scalars['String'];
+  Upload: Scalars['Upload'];
   User: User;
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
@@ -668,6 +678,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
   withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;
 
@@ -685,13 +696,13 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
 
 export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -765,6 +776,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
 }>;
+
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -843,6 +858,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   VendorCompany?: VendorCompanyResolvers<ContextType>;
   VendorMember?: VendorMemberResolvers<ContextType>;

@@ -17,3 +17,8 @@ export enum AdminTeam {
   PRODUCT = 'product',
   SCIENCE = 'science',
 }
+
+export enum ProjectAttachmentDocumentType {
+  FILE = 'file',
+  FINAL_CONTACT = 'final_contract',
+}

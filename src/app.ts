@@ -4,6 +4,7 @@ import { expressMiddleware } from '@apollo/server/express4';
 import cookieParser from 'cookie-parser';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.js";
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
@@ -28,6 +29,12 @@ class App {
   }
 
   async apolloServer() {
+    this.server.use(
+      graphqlUploadExpress({
+        maxFileSize: 10000000,
+        maxFiles: 10,
+      }),
+    );
     const apolloServer = new ApolloServer<Context>({
       schema,
       validationRules: [depthLimit(7)],

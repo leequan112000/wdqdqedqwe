@@ -2,9 +2,13 @@ type ProjectAttachment {
   id: String
   key: String
   filename: String
-  content_type: String
   byte_size: Float
   created_at: Date
   project_connection_id: String
   project_connection: ProjectConnection
+  signed_url: String
+}
+
+type Mutation {
+  uploadDocuments(files: [Upload]!, project_connection_id: String!): [ProjectAttachment]
 }
