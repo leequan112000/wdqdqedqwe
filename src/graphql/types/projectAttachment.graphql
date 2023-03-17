@@ -8,6 +8,7 @@ type ProjectAttachment {
   project_connection: ProjectConnection
   signed_url: String
   formatted_filesize: String
+  document_type: String
 }
 
 type Mutation {

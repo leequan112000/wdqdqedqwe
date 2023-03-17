@@ -314,6 +314,7 @@ export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
   created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
   filename?: Maybe<Scalars['String']>;
   formatted_filesize?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
@@ -720,6 +721,7 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
 export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
