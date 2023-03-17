@@ -70,47 +70,51 @@ const resolvers: Resolvers<Context> = {
     },
     uploadContract: async (parent, args, context) => {
       const { file, project_connection_id } = args;
-
-      const existingContract = await context.prisma.projectAttachment.findFirst({
-        where: {
-          project_connection_id,
-          document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
-        },
-      });
-
-      const { filename, key, filesize, contextType } = await storeUpload(file, 'final_contracts');
-
-      let attachment;
-
-      // If contract exist, replace with new version.
-      if (existingContract) {
-        attachment = await context.prisma.projectAttachment.update({
-          data: {
-            byte_size: filesize,
-            filename,
-          },
+      return await context.prisma.$transaction(async (trx) => {
+        const existingContract = await context.prisma.projectAttachment.findFirst({
           where: {
-            id: existingContract.id,
+            project_connection_id,
+            document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
           },
         });
-      } else {
-        // Else create a new one.
-        attachment = await context.prisma.projectAttachment.create({
-          data: {
-            byte_size: filesize,
-            document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
-            filename,
-            key,
-            project_connection_id,
-            content_type: contextType,
-          }
-        });
-      }
 
-      return {
-        ...attachment,
-        byte_size: Number(attachment.byte_size) / 1000,
-      };
+        const { filename, key, filesize, contextType } = await storeUpload(file, 'final_contracts');
+
+        let attachment;
+
+        // If contract exist, replace with new version.
+        if (existingContract) {
+          attachment = await context.prisma.projectAttachment.update({
+            data: {
+              byte_size: filesize,
+              filename,
+              key,
+            },
+            where: {
+              id: existingContract.id,
+            },
+          });
+          // delete the old contract s3 object
+          await deleteObject(existingContract.key);
+        } else {
+          // Else create a new one.
+          attachment = await context.prisma.projectAttachment.create({
+            data: {
+              byte_size: filesize,
+              document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+              filename,
+              key,
+              project_connection_id,
+              content_type: contextType,
+            }
+          });
+        }
+
+        return {
+          ...attachment,
+          byte_size: Number(attachment.byte_size) / 1000,
+        };
+      });
     },
     removeAttachment: async (parent, args, context) => {
       const { id } = args;
