@@ -29,7 +29,7 @@ const resolvers: Resolvers<Context> = {
       const { files, project_connection_id } = args;
       if (files) {
         const result = await Promise.all(files.map(async (f) => {
-          const { filename, key, filesize, contextType } = await storeUpload(f);
+          const { filename, key, filesize, contextType } = await storeUpload(f, 'documents');
           const attachment = await context.prisma.projectAttachment.create({
             data: {
               byte_size: filesize,
@@ -50,7 +50,51 @@ const resolvers: Resolvers<Context> = {
       }
       return []
     },
-  }
+    uploadContract: async (parent, args, context) => {
+      const { file, project_connection_id } = args;
+
+      const existingContract = await context.prisma.projectAttachment.findFirst({
+        where: {
+          project_connection_id,
+          document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+        },
+      });
+
+      const { filename, key, filesize, contextType } = await storeUpload(file, 'final_contracts');
+
+      let attachment;
+
+      // If contract exist, replace with new version.
+      if (existingContract) {
+        attachment = await context.prisma.projectAttachment.update({
+          data: {
+            byte_size: filesize,
+            filename,
+          },
+          where: {
+            id: existingContract.id,
+          },
+        });
+      } else {
+        // Else create a new one.
+        attachment = await context.prisma.projectAttachment.create({
+          data: {
+            byte_size: filesize,
+            document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+            filename,
+            key,
+            project_connection_id,
+            content_type: contextType,
+          }
+        });
+      }
+
+      return {
+        ...attachment,
+        byte_size: Number(attachment.byte_size) / 1000,
+      };
+    }
+  },
 };
 
 export default resolvers;

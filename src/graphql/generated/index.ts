@@ -105,6 +105,7 @@ export type Mutation = {
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadContract?: Maybe<ProjectAttachment>;
   uploadDocuments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   withdrawProjectRequest?: Maybe<ProjectRequest>;
 };
@@ -272,6 +273,12 @@ export type MutationUpdateVendorMemberArgs = {
   is_primary_member?: InputMaybe<Scalars['Boolean']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUploadContractArgs = {
+  file: Scalars['Upload'];
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -683,6 +690,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadContract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
   withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;

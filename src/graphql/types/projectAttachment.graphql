@@ -11,4 +11,5 @@ type ProjectAttachment {
 
 type Mutation {
   uploadDocuments(files: [Upload]!, project_connection_id: String!): [ProjectAttachment]
+  uploadContract(file: Upload!, project_connection_id: String!): ProjectAttachment
 }
