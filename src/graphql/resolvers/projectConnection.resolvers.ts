@@ -1,6 +1,7 @@
 import { Chat, CustomerConnection, ProjectAttachment, ProjectConnection, ProjectRequest, VendorCompany, VendorMemberConnection } from "@prisma/client";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
+import { QueryProjectConnectionsArgs } from "../generated";
 
 export default {
   ProjectConnection: {
@@ -48,11 +49,15 @@ export default {
     },
   },
   Query: {
-    projectConnections: async (_: void, args: void, context: Context & { req: Request }) => {
+    projectConnections: async (_: void, args: QueryProjectConnectionsArgs, context: Context & { req: Request }) => {
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
-          user_id: context.req.user_id,
+          user_id: args.user_id ?? '',
+        },
+        select: {
+          id: true,
+          vendor_company_id: true,
         },
       });
       if (vendorMember === null) {
@@ -63,12 +68,12 @@ export default {
         where: {
           vendor_member_id: vendorMember.id,
         },
-        include: {
+        select: {
           project_connection: true,
         }
       });
       // find project connections, return project connections
-      return vendorMemberConnections.map(vmc => vmc.project_connection);
+      return vendorMemberConnections.map(vmc => vmc.project_connection.vendor_company_id === vendorMember.vendor_company_id ? vmc.project_connection : null).filter(v => v !== null);
     }
   },
 };

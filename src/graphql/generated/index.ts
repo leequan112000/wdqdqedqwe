@@ -386,6 +386,11 @@ export type QueryNotificationsArgs = {
 };
 
 
+export type QueryProjectConnectionsArgs = {
+  user_id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryProjectRequestArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -763,7 +768,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
-  projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
+  projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

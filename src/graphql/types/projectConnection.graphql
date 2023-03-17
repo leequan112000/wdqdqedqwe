@@ -15,5 +15,5 @@ type ProjectConnection {
 }
 
 type Query {
-  projectConnections: [ProjectConnection]
+  projectConnections(user_id: String): [ProjectConnection]
 }
