@@ -363,6 +363,7 @@ export type Query = {
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
@@ -375,6 +376,11 @@ export type Query = {
 
 export type QueryNotificationsArgs = {
   unread_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryProjectConnectionArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -755,6 +761,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
+  projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
