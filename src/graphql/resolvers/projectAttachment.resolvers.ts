@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
 import storeUpload from "../../../src/helper/storeUpload";
-import { ProjectAttachmentDocumentType } from "../../../src/helper/constant";
+import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
 import { deleteObject, getSignedUrl } from "../../../src/helper/awsS3";
 
 function formatBytes(bytes: number, decimals = 2) {
@@ -47,7 +47,10 @@ const resolvers: Resolvers<Context> = {
       const { files, project_connection_id } = args;
       if (files) {
         const result = await Promise.all(files.map(async (f) => {
-          const { filename, key, filesize, contextType } = await storeUpload(f, 'documents');
+          const { filename, key, filesize, contextType } = await storeUpload(
+            f,
+            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.FILE],
+          );
           const attachment = await context.prisma.projectAttachment.create({
             data: {
               byte_size: filesize,
@@ -64,6 +67,7 @@ const resolvers: Resolvers<Context> = {
         return result.map((r) => ({
           ...r,
           byte_size: Number(r.byte_size) / 1000,
+          document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.document_type],
         }));
       }
       return []
@@ -74,11 +78,14 @@ const resolvers: Resolvers<Context> = {
         const existingContract = await context.prisma.projectAttachment.findFirst({
           where: {
             project_connection_id,
-            document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+            document_type: ProjectAttachmentDocumentType.REDLINE_FILE,
           },
         });
 
-        const { filename, key, filesize, contextType } = await storeUpload(file, 'final_contracts');
+        const { filename, key, filesize, contextType } = await storeUpload(
+          file,
+          PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.REDLINE_FILE],
+        );
 
         let attachment;
 
@@ -101,7 +108,7 @@ const resolvers: Resolvers<Context> = {
           attachment = await context.prisma.projectAttachment.create({
             data: {
               byte_size: filesize,
-              document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+              document_type: ProjectAttachmentDocumentType.REDLINE_FILE,
               filename,
               key,
               project_connection_id,
@@ -113,6 +120,7 @@ const resolvers: Resolvers<Context> = {
         return {
           ...attachment,
           byte_size: Number(attachment.byte_size) / 1000,
+          document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
         };
       });
     },
@@ -129,6 +137,7 @@ const resolvers: Resolvers<Context> = {
         return {
           ...deletedAttachment,
           byte_size: Number(deletedAttachment.byte_size),
+          document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[deletedAttachment.document_type],
         };
       })
     },

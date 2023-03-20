@@ -19,6 +19,11 @@ export enum AdminTeam {
 }
 
 export enum ProjectAttachmentDocumentType {
-  FILE = 'file',
-  FINAL_CONTACT = 'final_contract',
+  FILE,
+  REDLINE_FILE,
+}
+
+export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [ProjectAttachmentDocumentType.FILE]: 'file',
+  [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
 }

@@ -311,7 +311,7 @@ model ProjectAttachment {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   key           String   @unique
   filename      String
-  document_type String
+  document_type Int
   content_type  String?
   byte_size     BigInt
   created_at    DateTime @default(now())

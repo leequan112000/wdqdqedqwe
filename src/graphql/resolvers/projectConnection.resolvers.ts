@@ -1,4 +1,4 @@
-import { ProjectAttachmentDocumentType } from "../../../src/helper/constant";
+import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
@@ -71,6 +71,7 @@ const resolvers: Resolvers<Context> = {
       return projectAttachments.map((a) => ({
         ...a,
         byte_size: Number(a.byte_size),
+        document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
     chat: async (parent, _, context) => {
@@ -149,6 +150,7 @@ const resolvers: Resolvers<Context> = {
       return projectAttachments.map((a) => ({
         ...a,
         byte_size: Number(a.byte_size),
+        document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
     final_contract: async (parent, _, context) => {
@@ -158,13 +160,14 @@ const resolvers: Resolvers<Context> = {
       const projectAttachment = await context.prisma.projectAttachment.findFirst({
         where: {
           project_connection_id: parent.id,
-          document_type: ProjectAttachmentDocumentType.FINAL_CONTACT,
+          document_type: ProjectAttachmentDocumentType.REDLINE_FILE,
         },
       });
       return projectAttachment
         ? {
           ...projectAttachment,
-          byte_size: Number(projectAttachment.byte_size)
+          byte_size: Number(projectAttachment.byte_size),
+          document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[projectAttachment.document_type],
         }
         : null;
     },
