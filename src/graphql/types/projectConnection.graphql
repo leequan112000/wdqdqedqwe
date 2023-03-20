@@ -23,3 +23,8 @@ type Query {
   projectConnection(id: String!): ProjectConnection
   projectConnections(user_id: String): [ProjectConnection]
 }
+
+type Mutation {
+  acceptProjectConnection(id: String!): ProjectConnection
+  declinedProjectConnection(id: String!): ProjectConnection
+}
