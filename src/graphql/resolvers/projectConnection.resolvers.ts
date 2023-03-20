@@ -1,4 +1,4 @@
-import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
@@ -209,6 +209,46 @@ const resolvers: Resolvers<Context> = {
       // find project connections, return project connections
       return vendorMemberConnections.map(vmc => vmc.project_connection.vendor_company_id === vendorMember.vendor_company_id ? vmc.project_connection : null).filter(v => v !== null);
     }
+  },
+  Mutation: {
+    acceptProjectConnection: async (_, args, context) => {
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+      const updatedProjectConnection = await context.prisma.projectConnection.update({
+        where: {
+          id: args.id,
+        },
+        data: {
+          vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+        },
+      });
+      return updatedProjectConnection;
+    },
+    declinedProjectConnection: async (_, args, context) => {
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+      const updatedProjectConnection = await context.prisma.projectConnection.update({
+        where: {
+          id: args.id,
+        },
+        data: {
+          vendor_status: ProjectConnectionVendorStatus.DECLINED,
+        },
+      });
+      return updatedProjectConnection;
+    },
   },
 };
 
