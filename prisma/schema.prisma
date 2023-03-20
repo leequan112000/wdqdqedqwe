@@ -221,6 +221,7 @@ model VendorMemberConnection {
   vendor_member_id String       @db.Uuid
   vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
 
+  @@unique([project_connection_id, vendor_member_id])
   @@index([project_connection_id])
   @@map("vendor_member_connections")
 }
@@ -236,6 +237,7 @@ model CustomerConnection {
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
+  @@unique([project_connection_id, customer_id])
   @@index([project_connection_id])
   @@map("customer_connections")
 }

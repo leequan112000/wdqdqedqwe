@@ -84,44 +84,6 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
-    customer_users: async (parent, args, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
-      const customerConnections = await context.prisma.customerConnection.findMany({
-        where: {
-          project_connection_id: parent.id
-        },
-        include: {
-          customer: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      return customerConnections.map((cc) => cc.customer.user);
-    },
-    vendor_users: async (parent, args, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
-      const customerConnections = await context.prisma.vendorMemberConnection.findMany({
-        where: {
-          project_connection_id: parent.id
-        },
-        include: {
-          vendor_member: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      return customerConnections.map((cc) => cc.vendor_member.user);
-    },
     messages: async (parent, args, context) => {
       if (!parent?.id) {
         throw new InternalError('Project connection id not found');
@@ -171,6 +133,187 @@ const resolvers: Resolvers<Context> = {
         }
         : null;
     },
+    collaborators_not_invited: async (parent, args, context) => {
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+      if (!parent.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      if (!parent.project_request_id) {
+        throw new InternalError('Project request id not found');
+      }
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        }
+      });
+
+      if (!currentUser) {
+        throw new InternalError('Current user not found');
+      }
+
+      if (currentUser.customer) {
+        const customers = await context.prisma.customer.findMany({
+          where: {
+            customer_connections: {
+              none: {
+                project_connection_id: parent.id,
+              },
+            },
+            has_setup_profile: true,
+            project_requests: {
+              every: {
+                id: parent.project_request_id,
+              },
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        return customers.map((c) => c.user);
+      }
+
+      if (currentUser.vendor_member) {
+        const vendorMembers = await context.prisma.vendorMember.findMany({
+          where: {
+            vendor_member_connections: {
+              none: {
+                project_connection_id: parent.id,
+              },
+            },
+            title: {
+              not: null,
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+        return vendorMembers.map((v) => v.user);
+      }
+
+      throw new InternalError('User is not customer nor vendor member');
+    },
+    internal_collaborators: async (parent, args, context) => {
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+      if (!parent.id) {
+        throw new InternalError('Project connection id not found')
+      }
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      let users;
+
+      if (currentUser?.customer) {
+        const customerConnections = await context.prisma.customerConnection.findMany({
+          where: {
+            project_connection_id: parent.id,
+          },
+          include: {
+            customer: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        users = customerConnections.map((cc) => cc.customer.user);
+      }
+
+      if (currentUser?.vendor_member) {
+        const vendorConnections = await context.prisma.vendorMemberConnection.findMany({
+          where: {
+            project_connection_id: parent.id,
+          },
+          include: {
+            vendor_member: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        users = vendorConnections.map((vs) => vs.vendor_member.user);
+      }
+
+      if (!users) {
+        throw new InternalError('Current user is not customer nor vendor member');
+      }
+
+      return users.map((u) => ({
+        ...u,
+        can_be_removed: u.id !== context.req.user_id, // cannot delete current user
+      }))
+    },
+    external_collaborators: async (parent, args, context) => {
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+      if (!parent.id) {
+        throw new InternalError('Project connection id not found')
+      }
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      if (currentUser?.customer) {
+        const vendorConnections = await context.prisma.vendorMemberConnection.findMany({
+          where: {
+            project_connection_id: parent.id,
+          },
+          include: {
+            vendor_member: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        return vendorConnections.map((vs) => vs.vendor_member.user);
+      }
+
+      if (currentUser?.vendor_member) {
+        const customerConnections = await context.prisma.customerConnection.findMany({
+          where: {
+            project_connection_id: parent.id,
+          },
+          include: {
+            customer: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+        return customerConnections.map((cc) => cc.customer.user);
+      }
+
+      throw new InternalError('Current user is not customer nor vendor member');
+    }
   },
   Query: {
     projectConnection: async (parent, args, context) => {
@@ -208,6 +351,110 @@ const resolvers: Resolvers<Context> = {
       });
       // find project connections, return project connections
       return vendorMemberConnections.map(vmc => vmc.project_connection.vendor_company_id === vendorMember.vendor_company_id ? vmc.project_connection : null).filter(v => v !== null);
+    }
+  },
+  Mutation: {
+    addProjectCollaborator: async (parent, args, context) => {
+      const { project_connection_id, user_id } = args;
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      if (!user) {
+        throw new InternalError('User not found');
+      }
+
+      if (user?.customer) {
+        await context.prisma.customerConnection.upsert({
+          where: {
+            project_connection_id_customer_id: {
+              customer_id: user.customer.id,
+              project_connection_id,
+            },
+          },
+          create: {
+            customer_id: user.customer.id,
+            project_connection_id,
+          },
+          update: {
+            customer_id: user.customer.id,
+            project_connection_id,
+          },
+        });
+        return user;
+      }
+
+      if (user?.vendor_member) {
+        await context.prisma.vendorMemberConnection.upsert({
+          where: {
+            project_connection_id_vendor_member_id: {
+              vendor_member_id: user.vendor_member.id,
+              project_connection_id,
+            },
+          },
+          create: {
+            vendor_member_id: user.vendor_member.id,
+            project_connection_id,
+          },
+          update: {
+            vendor_member_id: user.vendor_member.id,
+            project_connection_id,
+          },
+        });
+        return user;
+      }
+
+      throw new InternalError('User is not customer nor vendor member');
+    },
+    removeProjectCollaborator: async (parent, args, context) => {
+      const { project_connection_id, user_id } = args;
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      if (!user) {
+        throw new InternalError('User not found');
+      }
+
+      if (user.customer) {
+        await context.prisma.customerConnection.delete({
+          where: {
+            project_connection_id_customer_id: {
+              customer_id: user.customer.id,
+              project_connection_id,
+            },
+          },
+        });
+        return user;
+      }
+
+      if (user.vendor_member) {
+        await context.prisma.vendorMemberConnection.delete({
+          where: {
+            project_connection_id_vendor_member_id: {
+              vendor_member_id: user.vendor_member.id,
+              project_connection_id,
+            },
+          },
+        });
+        return user;
+      }
+
+      throw new InternalError('User is not customer nor vendor member');
     }
   },
 };
