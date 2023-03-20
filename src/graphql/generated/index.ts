@@ -14,6 +14,7 @@ export type Scalars = {
   Float: number;
   Date: any;
   JSON: any;
+  Upload: any;
 };
 
 export type Biotech = {
@@ -95,6 +96,7 @@ export type Mutation = {
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<User>;
+  removeAttachment?: Maybe<ProjectAttachment>;
   resendInvitation?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
@@ -104,6 +106,8 @@ export type Mutation = {
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadContract?: Maybe<ProjectAttachment>;
+  uploadDocuments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   withdrawProjectRequest?: Maybe<ProjectRequest>;
 };
 
@@ -210,6 +214,11 @@ export type MutationOnboardVendorCompanyArgs = {
 };
 
 
+export type MutationRemoveAttachmentArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationResendInvitationArgs = {
   user_id: Scalars['String'];
 };
@@ -273,6 +282,18 @@ export type MutationUpdateVendorMemberArgs = {
 };
 
 
+export type MutationUploadContractArgs = {
+  file: Scalars['Upload'];
+  project_connection_id: Scalars['String'];
+};
+
+
+export type MutationUploadDocumentsArgs = {
+  files: Array<InputMaybe<Scalars['Upload']>>;
+  project_connection_id: Scalars['String'];
+};
+
+
 export type MutationWithdrawProjectRequestArgs = {
   project_request_id: Scalars['String'];
 };
@@ -292,13 +313,15 @@ export type Notification = {
 export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
-  content_type?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
   filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   key?: Maybe<Scalars['String']>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
 };
 
 export type ProjectConnection = {
@@ -307,6 +330,8 @@ export type ProjectConnection = {
   created_at?: Maybe<Scalars['Date']>;
   customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   customer_users?: Maybe<Array<Maybe<User>>>;
+  documents?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  final_contract?: Maybe<ProjectAttachment>;
   final_contract_uploaded_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<Message>>>;
@@ -548,6 +573,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<User>;
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
   VendorMember: ResolverTypeWrapper<VendorMember>;
@@ -574,6 +600,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
   String: Scalars['String'];
+  Upload: Scalars['Upload'];
   User: User;
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
@@ -664,6 +691,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
@@ -673,6 +701,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadContract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
+  uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
   withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;
 
@@ -690,13 +720,15 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
 
 export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -705,6 +737,8 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   customer_users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  documents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  final_contract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
@@ -770,6 +804,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
 }>;
+
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -848,6 +886,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   VendorCompany?: VendorCompanyResolvers<ContextType>;
   VendorMember?: VendorMemberResolvers<ContextType>;

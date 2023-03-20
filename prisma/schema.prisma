@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["orderByNulls"]
 }
 
@@ -26,8 +26,8 @@ model User {
 
   customer      Customer?
   vendor_member VendorMember?
-  messages       Message[]
-  notifications  Notification[]
+  messages      Message[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -82,9 +82,9 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
-  customers      Customer[]
-  subscriptions  Subscription[]
-  chats          Chat[]
+  customers        Customer[]
+  subscriptions    Subscription[]
+  chats            Chat[]
   project_requests ProjectRequest[]
 
   @@map("biotechs")
@@ -188,10 +188,10 @@ model ProjectRequestComment {
 }
 
 model ProjectConnection {
-  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendor_status              String?
-  created_at                 DateTime @default(now())
-  updated_at                 DateTime @updatedAt
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
   final_contract_uploaded_at DateTime?
 
   project_request_id String         @db.Uuid
@@ -308,12 +308,13 @@ model Notification {
 }
 
 model ProjectAttachment {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  key          String   @unique
-  filename     String
-  content_type String?
-  byte_size    BigInt
-  created_at   DateTime @default(now())
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
 
   project_connection_id String            @db.Uuid
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])

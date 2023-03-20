@@ -17,3 +17,13 @@ export enum AdminTeam {
   PRODUCT = 'product',
   SCIENCE = 'science',
 }
+
+export enum ProjectAttachmentDocumentType {
+  FILE,
+  REDLINE_FILE,
+}
+
+export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [ProjectAttachmentDocumentType.FILE]: 'file',
+  [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
+}
