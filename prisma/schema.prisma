@@ -24,10 +24,11 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  customer      Customer?
-  vendor_member VendorMember?
-  messages      Message[]
-  notifications Notification[]
+  customer                  Customer?
+  vendor_member             VendorMember?
+  messages                  Message[]
+  notifications             Notification[]
+  MeetingAttendeeConnection MeetingAttendeeConnection[]
 
   @@map("users")
 }
@@ -322,4 +323,34 @@ model ProjectAttachment {
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   @@map("project_attachments")
+}
+
+model MeetingEvent {
+  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                     String
+  description               String?
+  start_time                DateTime
+  end_time                  DateTime
+  timezone                  String
+  meeting_link              String
+  phone                     String?
+  phone_pin                 String?
+  phone_country             String?
+  platform                  String
+  platform_event_id         String?
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @default(now())
+  MeetingAttendeeConnection MeetingAttendeeConnection[]
+
+  @@map("meeting_events")
+}
+
+model MeetingAttendeeConnection {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  meeting_event_id String       @db.Uuid
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  user_id          String       @db.Uuid
+  user             User         @relation(fields: [user_id], references: [id])
+
+  @@map("meeting_attendee_connections")
 }
