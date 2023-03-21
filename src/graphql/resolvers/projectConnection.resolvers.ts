@@ -189,10 +189,6 @@ const resolvers: Resolvers<Context> = {
         where: {
           user_id: context.req.user_id,
         },
-        select: {
-          id: true,
-          vendor_company_id: true,
-        },
       });
       if (vendorMember === null) {
         throw new InternalError('Vendor member not found!')
@@ -202,12 +198,12 @@ const resolvers: Resolvers<Context> = {
         where: {
           vendor_member_id: vendorMember.id,
         },
-        select: {
+        include: {
           project_connection: true,
         }
       });
       // find project connections, return project connections
-      return vendorMemberConnections.map(vmc => vmc.project_connection.vendor_company_id === vendorMember.vendor_company_id ? vmc.project_connection : null).filter(v => v !== null);
+      return vendorMemberConnections;
     }
   },
   Mutation: {
