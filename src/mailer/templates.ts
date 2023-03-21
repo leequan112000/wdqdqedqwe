@@ -4,3 +4,4 @@ export const vendorMemberInvitationByAdminTemplate = 'd-2a357ff76dee4c88b80c306e
 export const vendorMemberInvitationToProjectRequestByAdminTemplate = 'd-edd661da8f8e473ab73136efae1d2cf4';
 export const projectRequestSubmissionTemplate = 'd-6863bad77cde41b184c0be9e4b6c6b15';
 export const adminNewProjectRequestTemplate = 'd-f72cc7b30afe432f9eecf8b11a09cd2a';
+export const projectRequestInvitationByExistingMember = 'd-ef2219b798a74fd1add33b1f70035b3e';
