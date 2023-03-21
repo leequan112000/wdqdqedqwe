@@ -8,7 +8,6 @@ import { Request, Response } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
-import { app_env } from "../../environment";
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
@@ -16,8 +15,8 @@ const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: 
   if (isUnitTest) {
     return; // Skip setting cookies in unit test
   }
-  res.cookie('access-token', accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: `.${app_env.APP_DOMAIN}`});
-  res.cookie('refresh-token', refreshToken, { maxAge: REFRESH_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: `.${app_env.APP_DOMAIN}` });
+  res.cookie('access-token', accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true });
+  res.cookie('refresh-token', refreshToken, { maxAge: REFRESH_TOKEN_MAX_AGE, sameSite: 'none', secure: true });
 };
 
 const resolvers: Resolvers<Context> = {
