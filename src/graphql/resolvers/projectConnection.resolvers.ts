@@ -187,7 +187,7 @@ const resolvers: Resolvers<Context> = {
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
-          user_id: args.user_id ?? '',
+          user_id: context.req.user_id,
         },
         select: {
           id: true,
