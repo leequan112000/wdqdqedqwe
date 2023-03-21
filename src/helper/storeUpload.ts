@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { extname } from 'path';
 import mime from 'mime-types';
 import { s3Client } from "./awsS3";
-import config from "../../src/config";
+import config from "../config";
 
 export default async function storeUpload(upload: any, path: string = '') {
   try {
