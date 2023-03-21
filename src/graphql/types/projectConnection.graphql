@@ -11,12 +11,13 @@ type ProjectConnection {
   vendor_member_connections: [VendorMemberConnection]
   customer_connections: [CustomerConnection]
   project_attachments: [ProjectAttachment]
-  customer_users: [User]
-  vendor_users: [User]
   chat: Chat
   messages: [Message]
   documents: [ProjectAttachment]
   final_contract: ProjectAttachment
+  collaborators_not_invited: [User]
+  internal_collaborators: [User]
+  external_collaborators: [User]
 }
 
 type Query {
@@ -27,4 +28,9 @@ type Query {
 type Mutation {
   acceptProjectConnection(id: String!): ProjectConnection
   declinedProjectConnection(id: String!): ProjectConnection
+}
+
+type Mutation {
+  addProjectCollaborator(user_id: String!, project_connection_id: String!): User
+  removeProjectCollaborator(user_id: String!, project_connection_id: String!): User
 }

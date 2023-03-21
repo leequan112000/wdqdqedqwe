@@ -81,6 +81,7 @@ export type Message = {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
+  addProjectCollaborator?: Maybe<User>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
   createProjectRequest?: Maybe<ProjectRequest>;
@@ -99,6 +100,7 @@ export type Mutation = {
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<User>;
   removeAttachment?: Maybe<ProjectAttachment>;
+  removeProjectCollaborator?: Maybe<User>;
   resendInvitation?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
@@ -116,6 +118,12 @@ export type Mutation = {
 
 export type MutationAcceptProjectConnectionArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationAddProjectCollaboratorArgs = {
+  project_connection_id: Scalars['String'];
+  user_id: Scalars['String'];
 };
 
 
@@ -231,6 +239,12 @@ export type MutationRemoveAttachmentArgs = {
 };
 
 
+export type MutationRemoveProjectCollaboratorArgs = {
+  project_connection_id: Scalars['String'];
+  user_id: Scalars['String'];
+};
+
+
 export type MutationResendInvitationArgs = {
   user_id: Scalars['String'];
 };
@@ -339,13 +353,15 @@ export type ProjectAttachment = {
 export type ProjectConnection = {
   __typename?: 'ProjectConnection';
   chat?: Maybe<Chat>;
+  collaborators_not_invited?: Maybe<Array<Maybe<User>>>;
   created_at?: Maybe<Scalars['Date']>;
   customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
-  customer_users?: Maybe<Array<Maybe<User>>>;
   documents?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  external_collaborators?: Maybe<Array<Maybe<User>>>;
   final_contract?: Maybe<ProjectAttachment>;
   final_contract_uploaded_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
+  internal_collaborators?: Maybe<Array<Maybe<User>>>;
   messages?: Maybe<Array<Maybe<Message>>>;
   project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   project_request?: Maybe<ProjectRequest>;
@@ -355,7 +371,6 @@ export type ProjectConnection = {
   vendor_company_id?: Maybe<Scalars['String']>;
   vendor_member_connections?: Maybe<Array<Maybe<VendorMemberConnection>>>;
   vendor_status?: Maybe<Scalars['String']>;
-  vendor_users?: Maybe<Array<Maybe<User>>>;
 };
 
 export type ProjectRequest = {
@@ -432,6 +447,7 @@ export type QueryProjectRequestsArgs = {
 
 export type User = {
   __typename?: 'User';
+  can_be_removed?: Maybe<Scalars['Boolean']>;
   company_name?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customer?: Maybe<Customer>;
@@ -685,6 +701,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
+  addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
@@ -701,6 +718,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
+  removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
@@ -743,13 +761,15 @@ export type ProjectAttachmentResolvers<ContextType = any, ParentType extends Res
 
 export type ProjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectConnection'] = ResolversParentTypes['ProjectConnection']> = ResolversObject<{
   chat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType>;
+  collaborators_not_invited?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
-  customer_users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   documents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  external_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   final_contract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  internal_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
   project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
@@ -759,7 +779,6 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_member_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMemberConnection']>>>, ParentType, ContextType>;
   vendor_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  vendor_users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -819,6 +838,7 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 }
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  can_be_removed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
