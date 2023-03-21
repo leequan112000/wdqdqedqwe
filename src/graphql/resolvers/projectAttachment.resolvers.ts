@@ -1,9 +1,9 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
-import storeUpload from "../../../src/helper/storeUpload";
-import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
-import { deleteObject, getSignedUrl } from "../../../src/helper/awsS3";
+import storeUpload from "../../helper/storeUpload";
+import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'

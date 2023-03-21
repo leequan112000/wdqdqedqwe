@@ -1,6 +1,6 @@
 import { GetObjectCommand, S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl as s3GetSignedUrl } from "@aws-sdk/s3-request-presigner";
-import config from "../../src/config";
+import config from "../config";
 
 export const s3Client = new S3Client({
   credentials: config.s3.credentials,
