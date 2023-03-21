@@ -346,7 +346,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
       // find project connections, return project connections
-      return vendorMemberConnections;
+      return vendorMemberConnections.map((vmc) => vmc.project_connection);
     }
   },
   Mutation: {
