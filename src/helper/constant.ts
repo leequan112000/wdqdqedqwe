@@ -12,6 +12,12 @@ export enum ProjectRequestStatus {
   WITHDRAWN = 'withdrawn',
 }
 
+export enum ProjectConnectionVendorStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+}
+
 export enum AdminTeam {
   ENGINEER = 'engineer',
   PRODUCT = 'product',

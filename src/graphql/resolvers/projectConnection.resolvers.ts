@@ -1,4 +1,4 @@
-import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../../src/helper/constant";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
@@ -330,11 +330,7 @@ const resolvers: Resolvers<Context> = {
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
-          user_id: args.user_id ?? '',
-        },
-        select: {
-          id: true,
-          vendor_company_id: true,
+          user_id: context.req.user_id,
         },
       });
       if (vendorMember === null) {
@@ -345,15 +341,53 @@ const resolvers: Resolvers<Context> = {
         where: {
           vendor_member_id: vendorMember.id,
         },
-        select: {
+        include: {
           project_connection: true,
         }
       });
       // find project connections, return project connections
-      return vendorMemberConnections.map(vmc => vmc.project_connection.vendor_company_id === vendorMember.vendor_company_id ? vmc.project_connection : null).filter(v => v !== null);
+      return vendorMemberConnections;
     }
   },
   Mutation: {
+    acceptProjectConnection: async (_, args, context) => {
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+      const updatedProjectConnection = await context.prisma.projectConnection.update({
+        where: {
+          id: args.id,
+        },
+        data: {
+          vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+        },
+      });
+      return updatedProjectConnection;
+    },
+    declinedProjectConnection: async (_, args, context) => {
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+      const updatedProjectConnection = await context.prisma.projectConnection.update({
+        where: {
+          id: args.id,
+        },
+        data: {
+          vendor_status: ProjectConnectionVendorStatus.DECLINED,
+        },
+      });
+      return updatedProjectConnection;
+    },
     addProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
@@ -455,7 +489,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('User is not customer nor vendor member');
-    }
+    },
   },
 };
 
