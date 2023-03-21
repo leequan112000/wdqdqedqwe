@@ -16,8 +16,8 @@ const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: 
   if (isUnitTest) {
     return; // Skip setting cookies in unit test
   }
-  res.cookie('access-token', accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: app_env.APP_DOMAIN});
-  res.cookie('refresh-token', refreshToken, { maxAge: REFRESH_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: app_env.APP_DOMAIN });
+  res.cookie('access-token', accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: `.${app_env.APP_DOMAIN}`});
+  res.cookie('refresh-token', refreshToken, { maxAge: REFRESH_TOKEN_MAX_AGE, sameSite: 'none', secure: true, domain: `.${app_env.APP_DOMAIN}` });
 };
 
 const resolvers: Resolvers<Context> = {
