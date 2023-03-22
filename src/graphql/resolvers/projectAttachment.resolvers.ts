@@ -122,6 +122,8 @@ const resolvers: Resolvers<Context> = {
           byte_size: Number(attachment.byte_size) / 1000,
           document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
         };
+      }, {
+        timeout: 30000, // 30 seconds
       });
     },
     removeAttachment: async (parent, args, context) => {
