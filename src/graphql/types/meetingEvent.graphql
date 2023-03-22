@@ -1,0 +1,25 @@
+type MeetingEvent {
+  id: String
+  title: String
+  description: String
+  start_time: Date
+  end_time: Date
+  timezone: String
+  meeting_link: String
+  phone_link: String
+}
+
+type Query {
+  meetingFormAttendees(project_connection_id: String!): [User]
+}
+
+type Mutation {
+  createMeetingEvent(
+    title: String!
+    description: String
+    start_time: String!
+    end_time: String!
+    timezone: String!
+    attendees: [String!]!
+  ): MeetingEvent
+}

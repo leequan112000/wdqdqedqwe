@@ -69,6 +69,18 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type MeetingEvent = {
+  __typename?: 'MeetingEvent';
+  description?: Maybe<Scalars['String']>;
+  end_time?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  meeting_link?: Maybe<Scalars['String']>;
+  phone_link?: Maybe<Scalars['String']>;
+  start_time?: Maybe<Scalars['Date']>;
+  timezone?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
 export type Message = {
   __typename?: 'Message';
   content?: Maybe<Scalars['String']>;
@@ -84,6 +96,7 @@ export type Mutation = {
   addProjectCollaborator?: Maybe<User>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
+  createMeetingEvent?: Maybe<MeetingEvent>;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createVendorCompany?: Maybe<VendorCompany>;
@@ -137,6 +150,16 @@ export type MutationCreateCustomerArgs = {
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
   user_id: Scalars['String'];
+};
+
+
+export type MutationCreateMeetingEventArgs = {
+  attendees: Array<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  end_time: Scalars['String'];
+  start_time: Scalars['String'];
+  timezone: Scalars['String'];
+  title: Scalars['String'];
 };
 
 
@@ -414,6 +437,7 @@ export type Query = {
   biotech?: Maybe<Biotech>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
@@ -423,6 +447,11 @@ export type Query = {
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryMeetingFormAttendeesArgs = {
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -587,6 +616,7 @@ export type ResolversTypes = ResolversObject<{
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
+  MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
   Mutation: ResolverTypeWrapper<{}>;
   Notification: ResolverTypeWrapper<Notification>;
@@ -614,6 +644,7 @@ export type ResolversParentTypes = ResolversObject<{
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
+  MeetingEvent: MeetingEvent;
   Message: Message;
   Mutation: {};
   Notification: Notification;
@@ -690,6 +721,18 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'JSON';
 }
 
+export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  start_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = ResolversObject<{
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -704,6 +747,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
+  createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'start_time' | 'timezone' | 'title'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
@@ -822,6 +866,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
@@ -907,6 +952,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
+  MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;
