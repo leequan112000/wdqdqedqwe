@@ -366,6 +366,20 @@ const resolvers: Resolvers<Context> = {
       }
       throw new PublicError('The reset password link is expired.')
     },
+    updateUserInfo: async (_, args, context) => {
+      const user = await context.prisma.user.update({
+        where: {
+          id: context.req.user_id,
+        },
+        data: {
+          first_name: args.first_name,
+          last_name: args.last_name,
+          email: args.email,
+        },
+      });
+
+      return user;
+    },
   },
 };
 
