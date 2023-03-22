@@ -1,23 +1,11 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
-import { ACCESS_TOKEN_MAX_AGE } from "../../helper/constant";
-import { REFRESH_TOKEN_MAX_AGE } from "../../helper/constant";
 import { verify } from "jsonwebtoken";
 import { Request, Response } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
-
-const isUnitTest = process.env.NODE_ENV === 'test';
-
-const setAuthTokensToCookies = (accessToken: string, refreshToken: string, res: Response) => {
-  if (isUnitTest) {
-    return; // Skip setting cookies in unit test
-  }
-  res.cookie('access-token', accessToken, { maxAge: ACCESS_TOKEN_MAX_AGE, sameSite: 'none', secure: true });
-  res.cookie('refresh-token', refreshToken, { maxAge: REFRESH_TOKEN_MAX_AGE, sameSite: 'none', secure: true });
-};
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -252,12 +240,10 @@ const resolvers: Resolvers<Context> = {
 
         // Genereate tokens
         const tokens = createTokens({ id: newCreatedUser.id });
-        setAuthTokensToCookies(tokens.accessToken, tokens.refreshToken, context.res);
 
         return {
-          ...newCreatedUser,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          access_token: tokens.accessToken,
+          refresh_token: tokens.refreshToken,
         };
       });
     },
@@ -280,12 +266,10 @@ const resolvers: Resolvers<Context> = {
       if (isPasswordMatched === true) {
         // Genereate tokens
         const tokens = createTokens({ id: foundUser.id, });
-        setAuthTokensToCookies(tokens.accessToken, tokens.refreshToken, context.res);
 
         return {
-          ...foundUser,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          access_token: tokens.accessToken,
+          refresh_token: tokens.refreshToken,
         };
       }
       throw new PublicError('Invalid email or password.');
@@ -309,16 +293,9 @@ const resolvers: Resolvers<Context> = {
         userId = data.user_id;
         if (userId) {
           const newTokens = createTokens({ id: userId });
-          const user = await context.prisma.user.findFirst({
-            where: {
-              id: userId
-            }
-          });
-
           return {
-            ...user,
-            accessToken: newTokens.accessToken,
-            refreshToken: newTokens.refreshToken,
+            access_token: newTokens.accessToken,
+            refresh_token: newTokens.refreshToken,
           };
         }
 

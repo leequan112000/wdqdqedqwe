@@ -17,6 +17,12 @@ export type Scalars = {
   Upload: any;
 };
 
+export type AuthResponse = {
+  __typename?: 'AuthResponse';
+  access_token: Scalars['String'];
+  refresh_token: Scalars['String'];
+};
+
 export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
@@ -111,14 +117,14 @@ export type Mutation = {
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
-  refreshJWT?: Maybe<User>;
+  refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
   removeProjectCollaborator?: Maybe<User>;
   resendInvitation?: Maybe<User>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
-  signInUser: User;
-  signUpUser: User;
+  signInUser: AuthResponse;
+  signUpUser: AuthResponse;
   updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
   updateVendorCompany?: Maybe<VendorCompany>;
@@ -607,6 +613,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Chat: ResolverTypeWrapper<Chat>;
@@ -635,6 +642,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AuthResponse: AuthResponse;
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
   Chat: Chat;
@@ -659,6 +667,12 @@ export type ResolversParentTypes = ResolversObject<{
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
   VendorMemberConnection: VendorMemberConnection;
+}>;
+
+export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
+  access_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refresh_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BiotechResolvers<ContextType = any, ParentType extends ResolversParentTypes['Biotech'] = ResolversParentTypes['Biotech']> = ResolversObject<{
@@ -760,14 +774,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
-  refreshJWT?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
-  signInUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
-  signUpUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
+  signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
+  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
@@ -946,6 +960,7 @@ export type VendorMemberConnectionResolvers<ContextType = any, ParentType extend
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
+  AuthResponse?: AuthResponseResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
