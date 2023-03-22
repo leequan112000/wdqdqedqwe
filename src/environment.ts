@@ -10,9 +10,9 @@ const staging = {
 
 let env = dev;
 
-if (process.env.REACT_APP_ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
   env = prod;
-} else if (process.env.REACT_APP_ENV === 'staging') {
+} else if (process.env.NODE_ENV === 'staging') {
   env = staging;
 }
 

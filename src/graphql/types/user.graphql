@@ -18,6 +18,11 @@ type User {
   can_be_removed: Boolean
 }
 
+type AuthResponse {
+  access_token: String!
+  refresh_token: String!
+}
+
 type Query {
   user: User
 }
@@ -29,9 +34,9 @@ type Mutation {
     last_name: String!
     password: String!
     company_name: String!
-  ): User!
-  signInUser(email: String!, password: String!): User!
-  refreshJWT: User
+  ): AuthResponse!
+  signInUser(email: String!, password: String!): AuthResponse!
+  refreshJWT: AuthResponse
   forgotPassword(email: String): Boolean
   resetPassword(reset_token: String, new_password: String): Boolean
 }
