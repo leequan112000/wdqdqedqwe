@@ -2,6 +2,8 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_A
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
+import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
+import { app_env } from "../../environment";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -391,6 +393,20 @@ const resolvers: Resolvers<Context> = {
     addProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+      });
+
+      if (!currentUser) {
+        throw new InternalError('Current user not found');
+      }
+
       const user = await context.prisma.user.findFirst({
         where: {
           id: user_id,
@@ -405,43 +421,68 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('User not found');
       }
 
-      if (user?.customer) {
-        await context.prisma.customerConnection.upsert({
-          where: {
-            project_connection_id_customer_id: {
+      if (user.customer || user.vendor_member) {
+        if (user?.customer) {
+          await context.prisma.customerConnection.upsert({
+            where: {
+              project_connection_id_customer_id: {
+                customer_id: user.customer.id,
+                project_connection_id,
+              },
+            },
+            create: {
               customer_id: user.customer.id,
               project_connection_id,
             },
-          },
-          create: {
-            customer_id: user.customer.id,
-            project_connection_id,
-          },
-          update: {
-            customer_id: user.customer.id,
-            project_connection_id,
-          },
-        });
-        return user;
-      }
-
-      if (user?.vendor_member) {
-        await context.prisma.vendorMemberConnection.upsert({
-          where: {
-            project_connection_id_vendor_member_id: {
+            update: {
+              customer_id: user.customer.id,
+              project_connection_id,
+            },
+          });
+        } else if (user?.vendor_member) {
+          await context.prisma.vendorMemberConnection.upsert({
+            where: {
+              project_connection_id_vendor_member_id: {
+                vendor_member_id: user.vendor_member.id,
+                project_connection_id,
+              },
+            },
+            create: {
               vendor_member_id: user.vendor_member.id,
               project_connection_id,
             },
+            update: {
+              vendor_member_id: user.vendor_member.id,
+              project_connection_id,
+            },
+          });
+        }
+
+        const projectConnection = await context.prisma.projectConnection.findFirst({
+          where: {
+            id: project_connection_id,
           },
-          create: {
-            vendor_member_id: user.vendor_member.id,
-            project_connection_id,
-          },
-          update: {
-            vendor_member_id: user.vendor_member.id,
-            project_connection_id,
+          include: {
+            project_request: {
+              select: {
+                title: true,
+              },
+            },
           },
         });
+
+        if (projectConnection) {
+          sendProjectCollaboratorInvitation({
+            login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
+            inviter_full_name: `${currentUser.first_name} ${currentUser.last_name}`,
+            project_title: projectConnection.project_request.title,
+            receiver_full_name: `${user.first_name} ${user.last_name}`,
+          }, user.email)
+        } else {
+          // no-op
+          // TODO: report to bug channel
+        }
+
         return user;
       }
 

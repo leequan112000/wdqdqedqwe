@@ -39,4 +39,9 @@ type Mutation {
   refreshJWT: AuthResponse
   forgotPassword(email: String): Boolean
   resetPassword(reset_token: String, new_password: String): Boolean
+  updateUserInfo(
+    first_name: String!
+    last_name: String!
+    email: String!
+  ): User
 }
