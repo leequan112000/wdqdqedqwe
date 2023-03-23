@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { find } from 'lodash';
-import { createGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
+import { createGoogleEvent, patchGoogleEvent, cancelGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { InternalError } from '../errors/InternalError';
@@ -354,6 +354,32 @@ const resolvers: Resolvers<Context> = {
           },
         };
       });
+    },
+    removeMeetingEvent: async (parent, args, context) => {
+      const { meeting_event_id } = args;
+      return await context.prisma.$transaction(async (trx) => {
+        // Delete all meeting attendee connections.
+        await trx.meetingAttendeeConnection.deleteMany({
+          where: {
+            meeting_event_id,
+          },
+        });
+        // Delete meeting event record.
+        const deletedMeetingEvent = await trx.meetingEvent.delete({
+          where: {
+            id: meeting_event_id,
+          },
+        });
+
+        if (!deletedMeetingEvent?.platform_event_id) {
+          throw new InternalError('Meeting event not found');
+        }
+
+        // Cancel Google event and inform the guests.
+        await cancelGoogleEvent(deletedMeetingEvent.platform_event_id);
+
+        return deletedMeetingEvent;
+      })
     },
   },
 }

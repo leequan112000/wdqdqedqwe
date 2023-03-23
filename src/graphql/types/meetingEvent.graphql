@@ -39,4 +39,5 @@ type Mutation {
     timezone: String!
     attendees: [String!]!
   ): MeetingEvent
+  removeMeetingEvent(meeting_event_id: String!): MeetingEvent
 }

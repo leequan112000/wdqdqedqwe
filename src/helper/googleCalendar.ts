@@ -84,3 +84,15 @@ export const patchGoogleEvent = async (eventId: string, gEvent: GEvent) => {
   });
 }
 
+export const cancelGoogleEvent = async (eventId: string) => {
+  return await calendar('v3').events.patch({
+    calendarId: process.env.GOOGLE_CALENDAR_ID!,
+    eventId,
+    auth: client,
+    requestBody: {
+      status: 'cancelled',
+    },
+    sendUpdates: 'all',
+  })
+}
+
