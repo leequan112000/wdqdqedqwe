@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { find } from 'lodash';
 import { createGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
@@ -6,6 +7,15 @@ import { InternalError } from '../errors/InternalError';
 import { MeetingPlatform } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
+  MeetingEvent: {
+    phone_link: (parent) => {
+      return `tel:${parent.phone_country}-${parent.phone}`;
+    },
+    phone_pin: (parent) => {
+      return parent.phone_pin?.replace(/\d{3}(?=\d)/g, '$& ') + '#' || null;
+    },
+
+  },
   Query: {
     meetingFormAttendees: async (parent, args, context) => {
       if (!context.req.user_id) {
@@ -61,11 +71,67 @@ const resolvers: Resolvers<Context> = {
         ...customerConnections.map((c) => c.customer.user),
         ...vendorConnections.map((v) => v.vendor_member.user),
       ];
-    }
+    },
+    meetingEvents: async (parent, args, context) => {
+      const { status } = args
+
+      const conditionalWhere: Prisma.MeetingEventWhereInput = {}
+
+      switch (status) {
+        case 'ongoing': {
+          conditionalWhere.start_time = {
+            gte: new Date(),
+          }
+          break;
+        }
+        case 'past': {
+          conditionalWhere.start_time = {
+            lt: new Date(),
+          }
+          break;
+        }
+        default:
+      }
+
+      const meetingEvents = await context.prisma.meetingEvent.findMany({
+        where: {
+          meetingAttendeeConnections: {
+            some: {
+              user_id: context.req.user_id,
+            },
+          },
+          ...conditionalWhere,
+        },
+        include: {
+          meetingAttendeeConnections: {
+            include: {
+              user: true,
+            },
+          },
+          project_connection: {
+            include: {
+              project_request: true,
+            }
+          }
+        },
+        orderBy: {
+          start_time: 'desc',
+        },
+      });
+
+      return meetingEvents.map((m) => ({
+        ...m,
+        guests: m.meetingAttendeeConnections.map((mac) => mac.user),
+        project_request: {
+          ...m.project_connection.project_request,
+          max_budget: m.project_connection.project_request.max_budget?.toNumber() || 0,
+        },
+      }));
+    },
   },
   Mutation: {
     createMeetingEvent: async (parent, args, context) => {
-      const { title, end_time, start_time, timezone, attendees, description } = args;
+      const { title, end_time, start_time, timezone, attendees, description, project_connection_id } = args;
 
       const organizerUser = await context.prisma.user.findFirst({
         where: {

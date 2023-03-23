@@ -7,10 +7,16 @@ type MeetingEvent {
   timezone: String
   meeting_link: String
   phone_link: String
+  phone_country: String
+  phone: String
+  phone_pin: String
+  guests: [User]
+  project_request: ProjectRequest
 }
 
 type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
+  meetingEvents(status: String): [MeetingEvent]
 }
 
 type Mutation {

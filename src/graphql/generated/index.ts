@@ -79,9 +79,14 @@ export type MeetingEvent = {
   __typename?: 'MeetingEvent';
   description?: Maybe<Scalars['String']>;
   end_time?: Maybe<Scalars['Date']>;
+  guests?: Maybe<Array<Maybe<User>>>;
   id?: Maybe<Scalars['String']>;
   meeting_link?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  phone_country?: Maybe<Scalars['String']>;
   phone_link?: Maybe<Scalars['String']>;
+  phone_pin?: Maybe<Scalars['String']>;
+  project_request?: Maybe<ProjectRequest>;
   start_time?: Maybe<Scalars['Date']>;
   timezone?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
@@ -444,6 +449,7 @@ export type Query = {
   biotech?: Maybe<Biotech>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   projectConnection?: Maybe<ProjectConnection>;
@@ -454,6 +460,11 @@ export type Query = {
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryMeetingEventsArgs = {
+  status?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -739,9 +750,14 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone_country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone_pin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -762,7 +778,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
-  createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'start_time' | 'timezone' | 'title'>>;
+  createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
@@ -881,6 +897,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
