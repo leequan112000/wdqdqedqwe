@@ -57,3 +57,30 @@ export const createGoogleEvent = async (gEvent: GEvent) => {
   });
 }
 
+export const patchGoogleEvent = async (eventId: string, gEvent: GEvent) => {
+  return await calendar('v3').events.patch({
+    calendarId: process.env.GOOGLE_CALENDAR_ID!,
+    eventId,
+    auth: client,
+    requestBody: {
+      ...gEvent,
+      conferenceData: {
+        createRequest: {
+          requestId: uuidv4(),
+          conferenceSolutionKey: {
+            type: 'hangoutsMeet',
+          },
+        },
+        entryPoints: [
+          { entryPointType: 'video' },
+        ],
+      },
+      guestsCanSeeOtherGuests: false,
+      guestsCanModify: false,
+      guestsCanInviteOthers: false,
+    },
+    sendUpdates: 'all',
+    conferenceDataVersion: 1,
+  });
+}
+

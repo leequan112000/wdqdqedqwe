@@ -86,6 +86,7 @@ export type MeetingEvent = {
   phone_country?: Maybe<Scalars['String']>;
   phone_link?: Maybe<Scalars['String']>;
   phone_pin?: Maybe<Scalars['String']>;
+  project_connection_id?: Maybe<Scalars['String']>;
   project_request?: Maybe<ProjectRequest>;
   start_time?: Maybe<Scalars['Date']>;
   timezone?: Maybe<Scalars['String']>;
@@ -132,6 +133,7 @@ export type Mutation = {
   signUpUser: AuthResponse;
   updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
+  updateMeetingEvent?: Maybe<MeetingEvent>;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
   uploadContract?: Maybe<ProjectAttachment>;
@@ -324,6 +326,17 @@ export type MutationUpdateCustomerArgs = {
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateMeetingEventArgs = {
+  attendees: Array<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  end_time: Scalars['String'];
+  meeting_event_id: Scalars['String'];
+  start_time: Scalars['String'];
+  timezone: Scalars['String'];
+  title: Scalars['String'];
 };
 
 
@@ -757,6 +770,7 @@ export type MeetingEventResolvers<ContextType = any, ParentType extends Resolver
   phone_country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_pin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -801,6 +815,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
+  updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;

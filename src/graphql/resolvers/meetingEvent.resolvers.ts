@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { find } from 'lodash';
-import { createGoogleEvent } from "../../helper/googleCalendar";
+import { createGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { InternalError } from '../errors/InternalError';
@@ -14,7 +14,55 @@ const resolvers: Resolvers<Context> = {
     phone_pin: (parent) => {
       return parent.phone_pin?.replace(/\d{3}(?=\d)/g, '$& ') + '#' || null;
     },
-
+    phone: (parent) => {
+      return `${parent.phone_country} ${parent.phone}`;
+    },
+    guests: async (parent, args, context) => {
+      if (!parent.guests && parent.id) {
+        const meetingAttendeeConnections = await context.prisma.meetingAttendeeConnection.findMany({
+          where: {
+            meeting_event_id: parent.id,
+          },
+          include: {
+            user: true,
+          },
+        });
+        return meetingAttendeeConnections.map((mac) => mac.user);
+      }
+      return parent.guests || [];
+    },
+    project_request: async (parent, args, context) => {
+      const initial = {
+        in_contact_with_vendor: false,
+        max_budget: 0,
+        objective_description: '',
+        status: '',
+        title: '',
+        vendor_requirement: '',
+        vendor_search_timeframe: '',
+      }
+      if (!parent.project_request && parent.id) {
+        const meetingEvent = await context.prisma.meetingEvent.findFirst({
+          where: {
+            id: parent.id,
+          },
+          include: {
+            project_connection: {
+              include: {
+                project_request: true,
+              },
+            },
+          },
+        });
+        return meetingEvent?.project_connection?.project_request
+          ? {
+            ...meetingEvent?.project_connection?.project_request,
+            max_budget: meetingEvent?.project_connection?.project_request.max_budget?.toNumber() || 0,
+          }
+          : initial;
+      }
+      return parent.project_request || initial;
+    },
   },
   Query: {
     meetingFormAttendees: async (parent, args, context) => {
@@ -143,32 +191,31 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user not found');
       }
 
-      const attendeeArr = [...attendees.map((a) => ({ email: a })), { email: organizerUser.email }];
-
-      const resp = await createGoogleEvent({
-        summary: title,
-        description,
-        attendees: attendeeArr,
-        end: {
-          dateTime: end_time,
-          timeZone: timezone,
-        },
-        start: {
-          dateTime: start_time,
-          timeZone: timezone,
-        },
-      });
-
-      const { conferenceData, hangoutLink } = resp.data;
-      if (!conferenceData || !hangoutLink) {
-        throw new InternalError('Missing conferenceData and hangout link');
-      }
-      const entryPoints = conferenceData.entryPoints
-      const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
-
-      const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
-
       return await context.prisma.$transaction(async (trx) => {
+        // Create Google event.
+        const attendeeArr = [...attendees.map((a) => ({ email: a })), { email: organizerUser.email }];
+        const resp = await createGoogleEvent({
+          summary: title,
+          description,
+          attendees: attendeeArr,
+          end: {
+            dateTime: end_time,
+            timeZone: timezone,
+          },
+          start: {
+            dateTime: start_time,
+            timeZone: timezone,
+          },
+        });
+        const { conferenceData, hangoutLink, id: gEventId } = resp.data;
+        if (!conferenceData || !hangoutLink) {
+          throw new InternalError('Missing conferenceData and hangout link');
+        }
+        const entryPoints = conferenceData.entryPoints
+        const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
+        const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
+
+        // Create meeting event record.
         const newMeetingEvent = await trx.meetingEvent.create({
           data: {
             title,
@@ -182,9 +229,11 @@ const resolvers: Resolvers<Context> = {
             phone: phone,
             phone_country: countryCode,
             project_connection_id,
+            platform_event_id: gEventId,
           },
         });
 
+        // Find attendees. This NOT INCLUDE the organizer.
         const attendeeUsers = await trx.user.findMany({
           where: {
             email: {
@@ -193,18 +242,119 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
+        // Create meeting attendee connections.
+        // Note that organizerUser is inserted here.
         const data = [...attendeeUsers, organizerUser].map((u) => ({
           user_id: u.id,
           meeting_event_id: newMeetingEvent.id,
         }));
-
         await trx.meetingAttendeeConnection.createMany({
           data,
         });
 
         return newMeetingEvent;
       });
-    }
+    },
+    updateMeetingEvent: async (parent, args, context) => {
+      const { meeting_event_id, attendees, end_time, start_time, timezone, title, description } = args;
+      const oldMeetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        }
+      });
+
+      if (!oldMeetingEvent?.platform_event_id) {
+        throw new InternalError('Meeting event not found');
+      }
+
+      return await context.prisma.$transaction(async (trx) => {
+        // Find all attendees. This INCLUDE the organizer.
+        const attendeeUsers = await trx.user.findMany({
+          where: {
+            email: {
+              in: attendees,
+            },
+          },
+        });
+
+        // Remove all and recreate meeting attendee connections.
+        const data = [...attendeeUsers].map((u) => ({
+          user_id: u.id,
+          meeting_event_id: meeting_event_id,
+        }));
+        await trx.meetingAttendeeConnection.deleteMany({
+          where: {
+            meeting_event_id,
+          },
+        });
+        await trx.meetingAttendeeConnection.createMany({
+          data,
+        });
+
+        // Patch Google event
+        const attendeeArr = [...attendees.map((a) => ({ email: a }))];
+        const resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
+          summary: title,
+          description,
+          attendees: attendeeArr,
+          end: {
+            dateTime: end_time,
+            timeZone: timezone,
+          },
+          start: {
+            dateTime: start_time,
+            timeZone: timezone,
+          },
+        });
+        const { conferenceData, hangoutLink } = resp.data;
+        if (!conferenceData || !hangoutLink) {
+          throw new InternalError('Missing conferenceData and hangout link');
+        }
+        const entryPoints = conferenceData.entryPoints
+        const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
+        const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
+
+        // Update meeting event record.
+        const updatedMeetingEvent = await trx.meetingEvent.update({
+          data: {
+            updated_at: new Date(),
+            title,
+            description,
+            end_time,
+            start_time,
+            timezone,
+            meeting_link: hangoutLink,
+            phone_pin: phoneEntryPoint.pin,
+            phone: phone,
+            phone_country: countryCode,
+          },
+          where: {
+            id: meeting_event_id,
+          },
+          include: {
+            project_connection: {
+              include: {
+                project_request: true,
+              }
+            },
+            meetingAttendeeConnections: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+
+        return {
+          ...updatedMeetingEvent,
+          guests: updatedMeetingEvent.meetingAttendeeConnections.map((mac) => mac.user),
+          project_request: {
+            ...updatedMeetingEvent.project_connection.project_request,
+            max_budget: updatedMeetingEvent.project_connection.project_request.max_budget?.toNumber() || 0,
+          },
+        };
+      });
+    },
   },
 }
 
