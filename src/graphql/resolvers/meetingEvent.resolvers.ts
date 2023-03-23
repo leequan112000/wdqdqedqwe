@@ -115,7 +115,8 @@ const resolvers: Resolvers<Context> = {
             phone_pin: phoneEntryPoint.pin,
             phone: phone,
             phone_country: countryCode,
-          }
+            project_connection_id,
+          },
         });
 
         const attendeeUsers = await trx.user.findMany({

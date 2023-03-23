@@ -163,6 +163,7 @@ export type MutationCreateMeetingEventArgs = {
   attendees: Array<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   end_time: Scalars['String'];
+  project_connection_id: Scalars['String'];
   start_time: Scalars['String'];
   timezone: Scalars['String'];
   title: Scalars['String'];

@@ -205,6 +205,7 @@ model ProjectConnection {
   customer_connections      CustomerConnection[]
   chats                     Chat[]
   project_attachments       ProjectAttachment[]
+  MeetingEvent              MeetingEvent[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -326,21 +327,23 @@ model ProjectAttachment {
 }
 
 model MeetingEvent {
-  id                        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title                     String
-  description               String?
-  start_time                DateTime
-  end_time                  DateTime
-  timezone                  String
-  meeting_link              String
-  phone                     String?
-  phone_pin                 String?
-  phone_country             String?
-  platform                  String
-  platform_event_id         String?
-  created_at                DateTime                    @default(now())
-  updated_at                DateTime                    @default(now())
-  MeetingAttendeeConnection MeetingAttendeeConnection[]
+  id                         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                      String
+  description                String?
+  start_time                 DateTime
+  end_time                   DateTime
+  timezone                   String
+  meeting_link               String
+  phone                      String?
+  phone_pin                  String?
+  phone_country              String?
+  platform                   String
+  platform_event_id          String?
+  created_at                 DateTime                    @default(now())
+  updated_at                 DateTime                    @default(now())
+  project_connection_id      String                      @db.Uuid
+  project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
+  meetingAttendeeConnections MeetingAttendeeConnection[]
 
   @@map("meeting_events")
 }

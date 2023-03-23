@@ -21,5 +21,6 @@ type Mutation {
     end_time: String!
     timezone: String!
     attendees: [String!]!
+    project_connection_id: String!
   ): MeetingEvent
 }
