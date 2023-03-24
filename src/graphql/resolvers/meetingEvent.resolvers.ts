@@ -230,6 +230,7 @@ const resolvers: Resolvers<Context> = {
             phone_country: countryCode,
             project_connection_id,
             platform_event_id: gEventId,
+            organizer_id: organizerUser.id,
           },
         });
 

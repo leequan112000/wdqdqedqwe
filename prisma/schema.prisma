@@ -24,11 +24,12 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  customer                  Customer?
-  vendor_member             VendorMember?
-  messages                  Message[]
-  notifications             Notification[]
-  MeetingAttendeeConnection MeetingAttendeeConnection[]
+  customer                   Customer?
+  vendor_member              VendorMember?
+  messages                   Message[]
+  notifications              Notification[]
+  meetingAttendeeConnections MeetingAttendeeConnection[]
+  meetingEvents              MeetingEvent[]
 
   @@map("users")
 }
@@ -342,8 +343,10 @@ model MeetingEvent {
   created_at                 DateTime                    @default(now())
   updated_at                 DateTime                    @default(now())
   project_connection_id      String                      @db.Uuid
+  organizer_id               String                      @db.Uuid
   project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
   meetingAttendeeConnections MeetingAttendeeConnection[]
+  organizer                  User                        @relation(fields: [organizer_id], references: [id])
 
   @@map("meeting_events")
 }
