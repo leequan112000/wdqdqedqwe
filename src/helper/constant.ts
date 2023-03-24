@@ -33,3 +33,7 @@ export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.FILE]: 'file',
   [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
 }
+
+export enum MeetingPlatform {
+  GOOGLE_MEET = 'google-meet',
+}
