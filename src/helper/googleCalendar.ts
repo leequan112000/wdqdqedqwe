@@ -14,13 +14,13 @@ const client = new JWT({
 });
 
 type GEvent = {
-  summary: string;
+  summary?: string;
   description?: string | null;
-  start: {
+  start?: {
     dateTime: string;
     timeZone: string;
   };
-  end: {
+  end?: {
     dateTime: string;
     timeZone: string;
   };
@@ -28,7 +28,7 @@ type GEvent = {
     useDefault: boolean;
     overrides: [{ method: 'popup' | 'email'; minutes: number }];
   };
-  attendees: Array<{ email: string; comment?: string }>;
+  attendees?: Array<{ email: string; comment?: string }>;
 }
 
 export const createGoogleEvent = async (gEvent: GEvent) => {
@@ -57,7 +57,7 @@ export const createGoogleEvent = async (gEvent: GEvent) => {
   });
 }
 
-export const patchGoogleEvent = async (eventId: string, gEvent: GEvent) => {
+export const patchGoogleEvent = async (eventId: string, gEvent: GEvent, sendUpdates = false) => {
   return await calendar('v3').events.patch({
     calendarId: process.env.GOOGLE_CALENDAR_ID!,
     eventId,
@@ -79,7 +79,7 @@ export const patchGoogleEvent = async (eventId: string, gEvent: GEvent) => {
       guestsCanModify: false,
       guestsCanInviteOthers: false,
     },
-    sendUpdates: 'all',
+    sendUpdates: sendUpdates ? 'all' : 'none',
     conferenceDataVersion: 1,
   });
 }
@@ -92,7 +92,6 @@ export const cancelGoogleEvent = async (eventId: string) => {
     requestBody: {
       status: 'cancelled',
     },
-    sendUpdates: 'all',
+    sendUpdates: 'none',
   })
 }
-

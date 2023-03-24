@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { find } from 'lodash';
+import { find, intersectionBy } from 'lodash';
 import { createGoogleEvent, patchGoogleEvent, cancelGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
@@ -260,7 +260,14 @@ const resolvers: Resolvers<Context> = {
       const oldMeetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
           id: meeting_event_id,
-        }
+        },
+        include: {
+          meetingAttendeeConnections: {
+            include: {
+              user: true,
+            },
+          },
+        },
       });
 
       if (!oldMeetingEvent?.platform_event_id) {
@@ -292,8 +299,15 @@ const resolvers: Resolvers<Context> = {
         });
 
         // Patch Google event
+        const existingAttendees = oldMeetingEvent.meetingAttendeeConnections.map((mac) => mac.user);
         const attendeeArr = [...attendees.map((a) => ({ email: a }))];
-        const resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
+        const existingAttendeesThatRemain = intersectionBy(existingAttendees, attendeeArr, 'email');
+        // Remove deselected guests
+        let resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
+          attendees: existingAttendeesThatRemain,
+        }, false);
+        // Update the rest of the user, info, and send an email update
+        resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
           summary: title,
           description,
           attendees: attendeeArr,
@@ -305,7 +319,7 @@ const resolvers: Resolvers<Context> = {
             dateTime: start_time,
             timeZone: timezone,
           },
-        });
+        }, true)
         const { conferenceData, hangoutLink } = resp.data;
         if (!conferenceData || !hangoutLink) {
           throw new InternalError('Missing conferenceData and hangout link');
