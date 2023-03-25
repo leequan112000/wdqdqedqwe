@@ -5,6 +5,7 @@ type Biotech {
   updated_at: Date
   has_setup_profile: Boolean
   has_active_subscription: Boolean
+  stripe_customer_id: String
   address: String
   website: String
   about: String
