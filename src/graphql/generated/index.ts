@@ -38,6 +38,7 @@ export type Biotech = {
   id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   number_of_reqs_allowed_without_subscription?: Maybe<Scalars['Int']>;
+  stripe_customer_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   website?: Maybe<Scalars['String']>;
 };
@@ -728,6 +729,7 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   number_of_reqs_allowed_without_subscription?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  stripe_customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -18,6 +18,20 @@ export default {
 
       return subscriptions.length > 0 ? true : false;
     },
+    stripe_customer_id: async (parent: Biotech, _: void, context: Context): Promise<String> => {
+      try {
+        const subscription = await context.prisma.subscription.findFirstOrThrow({
+          where: {
+            biotech_id: parent.id,
+            status: SubscriptionStatus.ACTIVE
+          }
+        });
+
+        return subscription?.stripe_customer_id ?? '';
+      } catch (error) {
+        return '';
+      }
+    },
     cda_url: async (parent: Biotech, _: void, context: Context & { req: Request }): Promise<String | null> => {
       try {
         const user = await context.prisma.user.findFirstOrThrow({
