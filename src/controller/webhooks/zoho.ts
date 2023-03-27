@@ -55,7 +55,7 @@ export const zohoWebhook = async (req: MulterRequest, res: Response): Promise<vo
     // TODO: Notify the vendor members when customers update the contract
     // TODO: Send notification email to vendor side members
 
-    res.status(200).json({ status: 200, message: 'OK' });
+    res.status(200).send("Saved!");
   } catch (error) {
     console.log(error);
     res.status(400).json({ status: 400, message: `Webhook Error: ${error}` });
