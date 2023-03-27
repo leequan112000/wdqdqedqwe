@@ -97,7 +97,7 @@ class App {
     this.server.use(compression());
     this.server.use(authMiddleware);
     this.server.use((req, res, next) => {
-      if (req.originalUrl === '/webhook/stripe' || req.originalUrl.startsWith('/webhook/pandadoc')) {
+      if (req.originalUrl === '/webhook/stripe' || req.originalUrl.startsWith('/webhook/pandadoc') || req.originalUrl.startsWith('/webhook/zoho')) {
         // Do nothing with the body because Stripe / Pandadoc need it to be raw
         next();
       } else {
