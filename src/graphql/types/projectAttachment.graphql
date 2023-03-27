@@ -9,6 +9,7 @@ type ProjectAttachment {
   signed_url: String
   formatted_filesize: String
   document_type: String
+  zoho_editor_url: String
 }
 
 type Mutation {
