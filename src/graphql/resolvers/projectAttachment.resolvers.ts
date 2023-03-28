@@ -1,9 +1,11 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
+import mime from "mime-types";
 import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
+import { getZohoContractEditorUrl } from "../../helper/zoho";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -40,7 +42,26 @@ const resolvers: Resolvers<Context> = {
         return formatBytes(parent.byte_size);
       }
       return null;
-    }
+    },
+    zoho_editor_url: async (parent, _, context) => {
+      if (parent.document_type === PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.REDLINE_FILE] && parent.filename) {
+        const mimeType = mime.lookup(parent.filename);
+        if (mimeType !== 'application/pdf') {
+          try {
+            const user = await context.prisma.user.findFirstOrThrow({
+              where: {
+                id: context.req.user_id,
+              },
+            });
+            const url = await getZohoContractEditorUrl(parent, user);
+            return url;
+          } catch {
+            return null;
+          }
+        }
+      }
+      return null;
+    },
   },
   Mutation: {
     uploadDocuments: async (parent, args, context) => {
