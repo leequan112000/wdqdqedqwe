@@ -411,6 +411,7 @@ export type ProjectAttachment = {
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   signed_url?: Maybe<Scalars['String']>;
+  zoho_editor_url?: Maybe<Scalars['String']>;
 };
 
 export type ProjectConnection = {
@@ -864,6 +865,7 @@ export type ProjectAttachmentResolvers<ContextType = any, ParentType extends Res
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  zoho_editor_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
