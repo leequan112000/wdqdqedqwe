@@ -174,6 +174,7 @@ const resolvers: Resolvers<Context> = {
                 id: parent.project_request_id,
               },
             },
+            biotech_id: currentUser.customer.biotech_id,
           },
           include: {
             user: true,
@@ -194,6 +195,7 @@ const resolvers: Resolvers<Context> = {
             title: {
               not: null,
             },
+            vendor_company_id: currentUser.vendor_member.vendor_company_id,
           },
           include: {
             user: true,
