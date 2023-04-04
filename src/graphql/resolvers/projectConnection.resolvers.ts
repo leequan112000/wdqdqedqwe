@@ -4,6 +4,7 @@ import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
 import { app_env } from "../../environment";
+import { RedirectError } from "../errors/RedirectError";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -344,11 +345,17 @@ const resolvers: Resolvers<Context> = {
       if (args.id) {
 
       }
-      return await context.prisma.projectConnection.findFirst({
+      const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
         },
       });
+
+      if (projectConnection?.vendor_status === 'declined') {
+        throw new RedirectError();
+      }
+
+      return projectConnection;
     },
     projectConnections: async (parent, args, context) => {
       // find vendor member id
