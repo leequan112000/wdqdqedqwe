@@ -27,7 +27,8 @@ model User {
   customer                   Customer?
   vendor_member              VendorMember?
   messages                   Message[]
-  notifications              Notification[]
+  notifications              Notification[]              @relation("ReceiverNotifications")
+  sent_notifications         Notification[]              @relation("SenderNotifications")
   meetingAttendeeConnections MeetingAttendeeConnection[]
   meetingEvents              MeetingEvent[]
 
@@ -299,15 +300,20 @@ model Message {
 model Notification {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   notification_type String
-  params            Json?
+  message           String
+  reference_id      String    @db.Uuid
+  refernece_type    String
   read_at           DateTime?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 
-  user_id String @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  recipient_id String @db.Uuid
+  recipient    User   @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
+  sender_id    String @db.Uuid
+  sender       User   @relation("SenderNotifications", fields: [sender_id], references: [id])
 
-  @@index([user_id])
+  @@index([sender_id])
+  @@index([recipient_id])
   @@index([read_at])
   @@map("notifications")
 }
