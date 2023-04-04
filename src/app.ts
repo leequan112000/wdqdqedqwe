@@ -29,7 +29,13 @@ const wsServer = new WebSocketServer({
   server: httpServer,
 })
 
-const serverCleanup = useServer({ schema }, wsServer);
+const serverCleanup = useServer({
+  schema, context: () => {
+    return {
+      prisma,
+    }
+  },
+}, wsServer);
 
 export const apolloServer = new ApolloServer<Context>({
   schema,
