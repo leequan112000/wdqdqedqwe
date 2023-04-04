@@ -92,7 +92,7 @@ export default {
         return error;
       }
     },
-    onboardVendorCompany: async (_: void, args: MutationOnboardVendorCompanyArgs, context: Context & { req: Request }) => {
+    createVendorCompanyCda: async (_: void, __: void, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirstOrThrow({
@@ -124,10 +124,42 @@ export default {
               id: user.vendor_member.vendor_company_id
             },
             data: {
+              cda_pandadoc_file_id,
+            }
+          })
+        });
+      } catch (error) {
+        return error;
+      }
+    },
+    onboardVendorCompany: async (_: void, args: MutationOnboardVendorCompanyArgs, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const user = await trx.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              vendor_member: {
+                include: {
+                  vendor_company: true
+                }
+              }
+            }
+          });
+
+          if (!user.vendor_member) {
+            throw new PublicError('Vendor member not found.');
+          }
+
+          return await trx.vendorCompany.update({
+            where: {
+              id: user.vendor_member.vendor_company_id
+            },
+            data: {
               description: args.description,
               website: args.website,
               address: args.address,
-              cda_pandadoc_file_id,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
