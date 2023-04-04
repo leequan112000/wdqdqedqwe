@@ -179,6 +179,84 @@ const resolvers: Resolvers<Context> = {
       return `${parent.first_name} ${parent.last_name}`;
     }
   },
+  Subscription: {
+    cda_url: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        let fileId;
+        if (vendor) {
+          const vendor = await context.prisma.vendorMember.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              vendor_company: true
+            }
+          });
+  
+          fileId = vendor.vendor_company?.cda_pandadoc_file_id;
+        } else {
+          const customer = await context.prisma.customer.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              biotech: true
+            }
+          });
+  
+          fileId = customer.biotech.cda_pandadoc_file_id;
+        }
+        
+        const channel = `cdaUrl:${fileId}`;
+        return context.pubsub.asyncIterator(channel);
+      },
+    },
+    cda_signed_at: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        let fileId;
+        if (vendor) {
+          const vendor = await context.prisma.vendorMember.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              vendor_company: true
+            }
+          });
+  
+          fileId = vendor.vendor_company?.cda_pandadoc_file_id;
+        } else {
+          const customer = await context.prisma.customer.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              biotech: true
+            }
+          });
+  
+          fileId = customer.biotech.cda_pandadoc_file_id;
+        }
+        
+        const channel = `cdaSigned:${fileId}`;
+        return context.pubsub.asyncIterator(channel);
+      },
+    },
+  },
   Query: {
     user: async (_, __, context) => {
       return await context.prisma.user.findFirst({
