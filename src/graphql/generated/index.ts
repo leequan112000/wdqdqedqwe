@@ -391,12 +391,16 @@ export type Notification = {
   __typename?: 'Notification';
   created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
   notification_type?: Maybe<Scalars['String']>;
-  params?: Maybe<Scalars['JSON']>;
   read_at?: Maybe<Scalars['Date']>;
+  recipient?: Maybe<User>;
+  recipient_id?: Maybe<Scalars['String']>;
+  reference_id?: Maybe<Scalars['String']>;
+  reference_type?: Maybe<Scalars['String']>;
+  sender?: Maybe<User>;
+  sender_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
-  user?: Maybe<User>;
-  user_id?: Maybe<Scalars['String']>;
 };
 
 export type ProjectAttachment = {
@@ -535,6 +539,7 @@ export type User = {
   id?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  sent_notifications?: Maybe<Array<Maybe<Notification>>>;
   updated_at?: Maybe<Scalars['Date']>;
   user_type?: Maybe<Scalars['String']>;
   vendor_member?: Maybe<VendorMember>;
@@ -845,12 +850,16 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notification_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   read_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  recipient?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  recipient_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reference_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sender?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  sender_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -962,6 +971,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
+  sent_notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;

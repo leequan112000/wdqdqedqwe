@@ -80,7 +80,7 @@ const resolvers: Resolvers<Context> = {
       }
       const notifications = await context.prisma.notification.findMany({
         where: {
-          user_id: parent.id
+          recipient_id: parent.id
         }
       });
 
