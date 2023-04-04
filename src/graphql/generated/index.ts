@@ -521,6 +521,12 @@ export type QueryProjectRequestsArgs = {
   status?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  cda_signed_at?: Maybe<Scalars['String']>;
+  cda_url?: Maybe<Scalars['String']>;
+};
+
 export type User = {
   __typename?: 'User';
   can_be_removed?: Maybe<Scalars['Boolean']>;
@@ -674,6 +680,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Subscription: ResolverTypeWrapper<{}>;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<User>;
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
@@ -703,6 +710,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
   String: Scalars['String'];
+  Subscription: {};
   Upload: Scalars['Upload'];
   User: User;
   VendorCompany: VendorCompany;
@@ -945,6 +953,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
 }>;
 
+export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  cda_signed_at?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_signed_at", ParentType, ContextType>;
+  cda_url?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_url", ParentType, ContextType>;
+}>;
+
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -1029,6 +1042,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   VendorCompany?: VendorCompanyResolvers<ContextType>;
