@@ -95,7 +95,7 @@ export default {
     },
   },
   Mutation: {
-    onboardBiotech: async (_: void, args: MutationOnboardBiotechArgs, context: Context & { req: Request }) => {
+    createBiotechCda: async (_: void, __: void, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirstOrThrow({
@@ -127,10 +127,42 @@ export default {
               id: user.customer.biotech_id
             },
             data: {
+              cda_pandadoc_file_id,
+            }
+          })
+        });
+      } catch (error) {
+        return error;
+      }
+    },
+    onboardBiotech: async (_: void, args: MutationOnboardBiotechArgs, context: Context & { req: Request }) => {
+      try {
+        return await context.prisma.$transaction(async (trx) => {
+          const user = await trx.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: true
+                }
+              }
+            }
+          });
+
+          if (!user.customer) {
+            throw new PublicError('Customer not found.');
+          }
+
+          return await context.prisma.biotech.update({
+            where: {
+              id: user.customer.biotech_id
+            },
+            data: {
               about: args.about,
               website: args.website,
               address: args.address,
-              cda_pandadoc_file_id,
               has_setup_profile: true,
               ...(args.name !== null ? { name: args.name } : {}),
             }
