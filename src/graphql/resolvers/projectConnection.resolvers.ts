@@ -342,11 +342,16 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     projectConnection: async (parent, args, context) => {
-      const projectConnection = await context.prisma.projectConnection.findFirst({
-        where: {
-          id: args.id,
-        },
-      });
+      let projectConnection
+      try {
+        projectConnection = await context.prisma.projectConnection.findFirstOrThrow({
+          where: {
+            id: args.id,
+          },
+        });
+      } catch (error) {
+        throw new NotFoundError();
+      }
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -357,7 +362,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (currentUser?.customer && projectConnection?.vendor_status === 'declined') {
+      if (!projectConnection || currentUser?.customer && projectConnection?.vendor_status === 'declined') {
         throw new NotFoundError();
       }
 
