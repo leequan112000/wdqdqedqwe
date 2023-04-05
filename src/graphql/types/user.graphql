@@ -23,6 +23,11 @@ type AuthResponse {
   refresh_token: String!
 }
 
+type Subscription {
+  cda_url: String
+  cda_signed_at: String
+}
+
 type Query {
   user: User
 }

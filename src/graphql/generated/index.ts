@@ -107,12 +107,14 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   addProjectCollaborator?: Maybe<User>;
+  createBiotechCda?: Maybe<Biotech>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
   createMeetingEvent?: Maybe<MeetingEvent>;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createVendorCompany?: Maybe<VendorCompany>;
+  createVendorCompanyCda?: Maybe<VendorCompany>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
@@ -523,6 +525,8 @@ export type QueryProjectRequestsArgs = {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  cda_signed_at?: Maybe<Scalars['String']>;
+  cda_url?: Maybe<Scalars['String']>;
   newMessage?: Maybe<Message>;
 };
 
@@ -819,12 +823,14 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  createBiotechCda?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
+  createVendorCompanyCda?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
@@ -958,6 +964,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  cda_signed_at?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_signed_at", ParentType, ContextType>;
+  cda_url?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_url", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
 }>;
 

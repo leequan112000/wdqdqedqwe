@@ -20,6 +20,7 @@ import schema from './graphql/index';
 import { json } from 'body-parser';
 import { operationWhitelist } from './helper/graphql'
 import { pubsub } from './helper/pubsub';
+import { verify } from 'jsonwebtoken';
 
 const app = express();
 
@@ -30,9 +31,25 @@ const wsServer = new WebSocketServer({
 })
 
 const serverCleanup = useServer({
-  schema, context: () => {
+  schema,
+  context: (context) => {
+    const { ACCESS_TOKEN_SECRET } = process.env;
+    const authHeader = (context.connectionParams?.authorization as string);
+    const tokenArray = authHeader ? authHeader?.split(' ') : [];
+    const req: { user_id: string | undefined } = { user_id: undefined };
+    if (tokenArray.length === 2) {
+      const accessTokenFromHeader = tokenArray[1];
+      try {
+        const data: any = verify(accessTokenFromHeader, ACCESS_TOKEN_SECRET || "secret");
+        req.user_id = data.user_id;
+      } catch (error) {
+        console.error(error);
+      }
+    }
     return {
+      req,
       prisma,
+      pubsub,
     }
   },
 }, wsServer);
