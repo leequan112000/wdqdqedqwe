@@ -1,6 +1,6 @@
 import { Biotech, Chat, Customer } from "@prisma/client";
 import { Request } from "express";
-import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pandadoc";
+import { createBiotechViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../generated";
@@ -95,46 +95,6 @@ export default {
     },
   },
   Mutation: {
-    createBiotechCda: async (_: void, __: void, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const user = await trx.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              customer: {
-                include: {
-                  biotech: true
-                }
-              }
-            }
-          });
-
-          if (!user.customer) {
-            throw new PublicError('Customer not found.');
-          }
-
-          let cda_pandadoc_file_id = user?.customer?.biotech?.cda_pandadoc_file_id;
-
-          if (cda_pandadoc_file_id === null) {
-            const docResponse = await createBiotechCda(user);
-            cda_pandadoc_file_id = docResponse.id as string;
-          }
-
-          return await context.prisma.biotech.update({
-            where: {
-              id: user.customer.biotech_id
-            },
-            data: {
-              cda_pandadoc_file_id,
-            }
-          })
-        });
-      } catch (error) {
-        return error;
-      }
-    },
     onboardBiotech: async (_: void, args: MutationOnboardBiotechArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {

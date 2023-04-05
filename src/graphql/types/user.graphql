@@ -49,4 +49,5 @@ type Mutation {
     last_name: String!
     email: String!
   ): User
+  createCda: Boolean
 }

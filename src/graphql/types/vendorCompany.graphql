@@ -25,7 +25,6 @@ type Mutation {
     website: String
     description: String
   ): VendorCompany
-  createVendorCompanyCda: VendorCompany
   onboardVendorCompany(
     name: String
     address: String

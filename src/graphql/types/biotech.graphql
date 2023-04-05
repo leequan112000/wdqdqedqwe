@@ -22,7 +22,6 @@ type Query {
 }
 
 type Mutation {
-  createBiotechCda: Biotech
   onboardBiotech(
     name: String
     address: String
