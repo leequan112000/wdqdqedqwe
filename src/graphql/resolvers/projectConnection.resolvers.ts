@@ -4,7 +4,7 @@ import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
 import { app_env } from "../../environment";
-import { RedirectError } from "../errors/RedirectError";
+import { NotFoundError } from "../errors/NotFoundError";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -358,7 +358,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (currentUser?.customer && projectConnection?.vendor_status === 'declined') {
-        throw new RedirectError();
+        throw new NotFoundError();
       }
 
       return projectConnection;

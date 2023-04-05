@@ -1,9 +1,9 @@
 import { GraphQLError } from "graphql";
 
-export class RedirectError extends GraphQLError {
+export class NotFoundError extends GraphQLError {
   constructor(url: string | undefined = undefined) {
     super('Redirect', {
-      extensions: { code: 'REDIRECT_CODE', url: url || '/app' },
+      extensions: { code: 'NOT_FOUND', url: url || '/app' },
     });
   }
 }
