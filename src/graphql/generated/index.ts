@@ -527,6 +527,12 @@ export type Subscription = {
   __typename?: 'Subscription';
   cda_signed_at?: Maybe<Scalars['String']>;
   cda_url?: Maybe<Scalars['String']>;
+  newMessage?: Maybe<Message>;
+};
+
+
+export type SubscriptionNewMessageArgs = {
+  chat_id: Scalars['String'];
 };
 
 export type User = {
@@ -960,6 +966,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   cda_signed_at?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_signed_at", ParentType, ContextType>;
   cda_url?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_url", ParentType, ContextType>;
+  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {

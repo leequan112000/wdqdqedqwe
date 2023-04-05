@@ -1,3 +1,5 @@
+import { withFilter } from "graphql-subscriptions";
+import { pubsub } from "../../helper/pubsub";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
@@ -56,16 +58,33 @@ const resolvers: Resolvers<Context> = {
           })
         }
 
-        return await trx.message.create({
+        const newMessage = await trx.message.create({
           data: {
             content: args.content,
             chat_id: chat.id,
             user_id: context.req.user_id
           }
         });
+
+        pubsub.publish('NEW_MESSAGE', { newMessage })
+
+        return newMessage;
       });
     },
-  }
+  },
+  Subscription: {
+    newMessage: {
+      // @ts-ignore
+      subscribe: withFilter(
+        () => pubsub.asyncIterator<any>(['NEW_MESSAGE']),
+        (payload, variables) => {
+          return (
+            payload.newMessage.chat_id === variables.chat_id
+          );
+        },
+      ),
+    },
+  },
 };
 
 export default resolvers;
