@@ -342,16 +342,22 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     projectConnection: async (parent, args, context) => {
-      if (args.id) {
-
-      }
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
         },
       });
 
-      if (projectConnection?.vendor_status === 'declined') {
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id
+        },
+        include: {
+          customer: true,
+        },
+      });
+
+      if (currentUser?.customer && projectConnection?.vendor_status === 'declined') {
         throw new RedirectError();
       }
 
