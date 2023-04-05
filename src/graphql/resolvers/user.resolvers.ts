@@ -1,7 +1,7 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
-import { createBiotechCda, createVendorCompanyCda } from "../../helper/pandadoc";
+import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
@@ -176,6 +176,109 @@ const resolvers: Resolvers<Context> = {
 
       throw new InternalError('Missing user.')
     },
+    cda_url: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+
+      try {
+        if (vendor) {
+          const user = await context.prisma.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              vendor_member: {
+                include: {
+                  vendor_company: true
+                }
+              }
+            }
+          });
+  
+          if (user.vendor_member?.vendor_company?.cda_pandadoc_file_id) {
+            const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, user.vendor_member?.vendor_company?.cda_pandadoc_file_id);
+            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+          }
+        } else {
+          const user = await context.prisma.user.findFirstOrThrow({
+            where: {
+              id: parent.id,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: true
+                }
+              }
+            }
+          });
+  
+          if (user.customer?.biotech.cda_pandadoc_file_id) {
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, user.customer.biotech.cda_pandadoc_file_id);
+            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+          }
+        }
+
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
+    cda_signed_at: async (parent, _, context) => {
+      if (parent.customer?.biotech?.cda_signed_at) {
+        return parent.customer.biotech.cda_signed_at;
+      }
+      if (parent.vendor_member?.vendor_company?.cda_signed_at) {
+        return parent.vendor_member.vendor_company.cda_signed_at;
+      }
+
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+
+      if (vendor) {
+        const vendorMember = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            vendor_company: {
+              select: {
+                cda_signed_at: true,
+              },
+            },
+          },
+        });
+        return vendorMember?.vendor_company?.cda_signed_at;
+      } else {
+        const customer = await context.prisma.customer.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            biotech: {
+              select: {
+                cda_signed_at: true,
+              },
+            },
+          },
+        });
+        return customer?.biotech?.cda_signed_at;
+      }
+    },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
     }
@@ -190,7 +293,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        let fileId;
+        let channelId;
         if (vendor) {
           const vendor = await context.prisma.vendorMember.findFirstOrThrow({
             where: {
@@ -201,7 +304,7 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          fileId = vendor.vendor_company?.cda_pandadoc_file_id;
+          channelId = vendor.vendor_company?.id;
         } else {
           const customer = await context.prisma.customer.findFirstOrThrow({
             where: {
@@ -212,10 +315,10 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          fileId = customer.biotech.cda_pandadoc_file_id;
+          channelId = customer.biotech.id;
         }
 
-        const channel = `cdaUrl:${fileId}`;
+        const channel = `cdaUrl:${channelId}`;
         return context.pubsub.asyncIterator(channel);
       },
     },
@@ -228,7 +331,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        let fileId;
+        let channelId;
         if (vendor) {
           const vendor = await context.prisma.vendorMember.findFirstOrThrow({
             where: {
@@ -239,7 +342,7 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          fileId = vendor.vendor_company?.cda_pandadoc_file_id;
+          channelId = vendor.vendor_company?.id;
         } else {
           const customer = await context.prisma.customer.findFirstOrThrow({
             where: {
@@ -250,10 +353,10 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          fileId = customer.biotech.cda_pandadoc_file_id;
+          channelId = customer.biotech.id;
         }
 
-        const channel = `cdaSignedAt:${fileId}`;
+        const channel = `cdaSignedAt:${channelId}`;
         return context.pubsub.asyncIterator(channel);
       },
     },

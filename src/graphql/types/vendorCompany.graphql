@@ -8,7 +8,6 @@ type VendorCompany {
   address: String
   cda_pandadoc_file_id: String
   cda_signed_at: Date
-  cda_url: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]

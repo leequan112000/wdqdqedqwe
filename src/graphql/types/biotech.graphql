@@ -11,7 +11,6 @@ type Biotech {
   about: String
   cda_pandadoc_file_id: String
   cda_signed_at: Date
-  cda_url: String
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   chats: [Chat]

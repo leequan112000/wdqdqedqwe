@@ -60,7 +60,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the customer who created the document in metadata
-        const channel = `cdaUrl:${biotech.cda_pandadoc_file_id}`;
+        const channel = `cdaUrl:${biotech.id}`;
         if (biotech.customers.length > 1) {
           const recipient = data.recipients[0];
           const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, biotech.cda_pandadoc_file_id as string);
@@ -103,7 +103,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the vendor member who created the document in metadata
-        const channel = `cdaUrl:${vendor_company.cda_pandadoc_file_id}`;
+        const channel = `cdaUrl:${vendor_company.id}`;
         if (vendor_company.vendor_members.length > 1) {
           const recipient = data.recipients[0];
           const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, vendor_company.cda_pandadoc_file_id as string);
@@ -137,7 +137,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
         }
       });
 
-      const channel = `cdaSignedAt:${biotech.cda_pandadoc_file_id}`;
+      const channel = `cdaSignedAt:${biotech.id}`;
       pubsub.publish(channel, { cdaSignedAt: new Date() });
     } else if (event_payload.event === 'recipient_completed' && data.metadata.recipient_type === 'vendor') {
       const doc_id = data.id;
@@ -156,7 +156,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
         }
       });
 
-      const channel = `cdaSignedAt:${vendor_company.cda_pandadoc_file_id}`;
+      const channel = `cdaSignedAt:${vendor_company.id}`;
       pubsub.publish(channel, { cdaSignedAt: new Date() });
     }
     res.status(200).send('OK');

@@ -13,6 +13,8 @@ type User {
   notifications: [Notification]
   has_setup_profile: Boolean
   company_name: String
+  cda_url: String
+  cda_signed_at: Date
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean

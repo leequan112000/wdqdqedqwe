@@ -1,6 +1,5 @@
 import { Biotech, Chat, Customer } from "@prisma/client";
 import { Request } from "express";
-import { createBiotechViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../generated";
@@ -30,36 +29,6 @@ export default {
         return subscription?.stripe_customer_id ?? '';
       } catch (error) {
         return '';
-      }
-    },
-    cda_url: async (parent: Biotech, _: void, context: Context & { req: Request }): Promise<String | null> => {
-      try {
-        const user = await context.prisma.user.findFirstOrThrow({
-          where: {
-            id: context.req.user_id,
-          },
-          include: {
-            customer: {
-              include: {
-                biotech: true
-              }
-            }
-          }
-        });
-
-        if (user.customer?.biotech_id !== parent.id) {
-          // User has no access to this biotech
-          return null;
-        }
-
-        if (parent.cda_pandadoc_file_id) {
-          const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, parent.cda_pandadoc_file_id);
-          return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-        }
-
-        return null;
-      } catch (error) {
-        return null;
       }
     },
     customers: async (parent: Biotech, _: void, context: Context): Promise<Customer[] | null> => {
