@@ -525,8 +525,8 @@ export type QueryProjectRequestsArgs = {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  cda_signed_at?: Maybe<Scalars['String']>;
-  cda_url?: Maybe<Scalars['String']>;
+  cdaSignedAt?: Maybe<Scalars['String']>;
+  cdaUrl?: Maybe<Scalars['String']>;
   newMessage?: Maybe<Message>;
 };
 
@@ -964,8 +964,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
-  cda_signed_at?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_signed_at", ParentType, ContextType>;
-  cda_url?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cda_url", ParentType, ContextType>;
+  cdaSignedAt?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaSignedAt", ParentType, ContextType>;
+  cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
 }>;
 

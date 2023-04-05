@@ -24,8 +24,8 @@ type AuthResponse {
 }
 
 type Subscription {
-  cda_url: String
-  cda_signed_at: String
+  cdaUrl: String
+  cdaSignedAt: String
 }
 
 type Query {

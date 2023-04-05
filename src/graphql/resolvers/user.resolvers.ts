@@ -180,7 +180,7 @@ const resolvers: Resolvers<Context> = {
     }
   },
   Subscription: {
-    cda_url: {
+    cdaUrl: {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         const vendor = await context.prisma.vendorMember.findFirst({
@@ -218,7 +218,7 @@ const resolvers: Resolvers<Context> = {
         return context.pubsub.asyncIterator(channel);
       },
     },
-    cda_signed_at: {
+    cdaSignedAt: {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         const vendor = await context.prisma.vendorMember.findFirst({
@@ -252,7 +252,7 @@ const resolvers: Resolvers<Context> = {
           fileId = customer.biotech.cda_pandadoc_file_id;
         }
         
-        const channel = `cdaSigned:${fileId}`;
+        const channel = `cdaSignedAt:${fileId}`;
         return context.pubsub.asyncIterator(channel);
       },
     },
