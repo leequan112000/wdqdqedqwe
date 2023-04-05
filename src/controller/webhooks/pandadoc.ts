@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
+import { pubsub } from "../../helper/pubsub";
 import { prisma } from '../../connectDB';
 import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
 
@@ -59,13 +60,18 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the customer who created the document in metadata
+        const channel = `cdaUrl:${biotech.cda_pandadoc_file_id}`;
         if (biotech.customers.length > 1) {
           const recipient = data.recipients[0];
-          await createBiotechViewCdaSession(recipient.email, biotech.cda_pandadoc_file_id as string);
+          const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, biotech.cda_pandadoc_file_id as string);
+          const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+          pubsub.publish(channel, { cda_url: cdaUrl });
         } else {
           const user = await prisma.user.findFirst({ where: { id: biotech.customers[0].user_id } })
           if (user) {
-            await createBiotechViewCdaSession(user.email, biotech.cda_pandadoc_file_id as string);
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, biotech.cda_pandadoc_file_id as string);
+            const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+            pubsub.publish(channel, { cda_url: cdaUrl });
           }
         }
       } else {
@@ -97,13 +103,18 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the vendor member who created the document in metadata
+        const channel = `cdaUrl:${vendor_company.cda_pandadoc_file_id}`;
         if (vendor_company.vendor_members.length > 1) {
           const recipient = data.recipients[0];
-          await createBiotechViewCdaSession(recipient.email, vendor_company.cda_pandadoc_file_id as string);
+          const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, vendor_company.cda_pandadoc_file_id as string);
+          const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+          pubsub.publish(channel, { cda_url: cdaUrl });
         } else {
           const user = await prisma.user.findFirst({ where: { id: vendor_company.vendor_members[0].user_id } })
           if (user) {
-            await createBiotechViewCdaSession(user.email, vendor_company.cda_pandadoc_file_id as string);
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, vendor_company.cda_pandadoc_file_id as string);
+            const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+            pubsub.publish(channel, { cda_url: cdaUrl });
           }
         }
       } else {
@@ -125,6 +136,9 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
           cda_signed_at: new Date()
         }
       });
+
+      const channel = `cdaSigned:${biotech.cda_pandadoc_file_id}`;
+      pubsub.publish(channel, { cda_signed_at: new Date() });
     } else if (event_payload.event === 'recipient_completed' && data.metadata.recipient_type === 'vendor') {
       const doc_id = data.id;
       const vendor_company = await prisma.vendorCompany.findFirst({ where: { cda_pandadoc_file_id: doc_id } });
@@ -141,6 +155,9 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
           cda_signed_at: new Date()
         }
       });
+
+      const channel = `cdaSigned:${vendor_company.cda_pandadoc_file_id}`;
+      pubsub.publish(channel, { cda_signed_at: new Date() });
     }
     res.status(200).send('OK');
   } catch (error) {
