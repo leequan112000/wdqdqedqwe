@@ -18,6 +18,7 @@ type MeetingEvent {
 type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
   meetingEvents(status: String): [MeetingEvent]
+  upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
 }
 
 type Mutation {

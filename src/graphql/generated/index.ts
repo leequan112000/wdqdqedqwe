@@ -488,6 +488,7 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
+  upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorMember?: Maybe<VendorMember>;
@@ -521,6 +522,11 @@ export type QueryProjectRequestArgs = {
 
 export type QueryProjectRequestsArgs = {
   status?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryUpcomingMeetingEventsArgs = {
+  project_connection_id?: InputMaybe<Scalars['String']>;
 };
 
 export type Subscription = {
@@ -958,6 +964,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;

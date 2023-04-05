@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { find, intersectionBy } from 'lodash';
+import moment from 'moment'
 import { createGoogleEvent, patchGoogleEvent, cancelGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
@@ -175,6 +176,49 @@ const resolvers: Resolvers<Context> = {
           max_budget: m.project_connection.project_request.max_budget?.toNumber() || 0,
         },
       }));
+    },
+    upcomingMeetingEvents: async (parent, args, context) => {
+      const { project_connection_id } = args;
+      const { user_id } = context.req;
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+      });
+
+      if (!currentUser) {
+        throw new InternalError('Currect user not found');
+      }
+
+      const UPCOMING_DAYS = 1;
+      const checkStartTime = moment();
+      const checkEndTime = moment().add(UPCOMING_DAYS, 'd').endOf('d');
+
+      const meetingEvents = await context.prisma.meetingEvent.findMany({
+        where: {
+          OR: [
+            { organizer_id: currentUser.id },
+            {
+              meetingAttendeeConnections: {
+                some: {
+                  user_id: currentUser.id,
+                }
+              }
+            },
+          ],
+          start_time: {
+            gte: checkStartTime.toDate(),
+            lte: checkEndTime.toDate(),
+          },
+          project_connection_id: project_connection_id || undefined,
+        },
+        orderBy: {
+          start_time: 'asc',
+        },
+      });
+
+      return meetingEvents;
     },
   },
   Mutation: {
