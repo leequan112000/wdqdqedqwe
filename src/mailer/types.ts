@@ -5,7 +5,7 @@ export type ProjectRequestInvitationByExistingMemberData = {
   receiver_full_name: string;
 }
 
-export type DocumentUploadNoticeData = {
+export type UploadNoticeData = {
   login_url: string;
   receiver_full_name: string;
   project_title: string;

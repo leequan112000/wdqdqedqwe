@@ -3,7 +3,7 @@ import { app_env } from "../environment";
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
-import { sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
+import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { User } from "@prisma/client";
 
 export const sendAdminNewProjectRequestEmailQueue = new Queue(
@@ -27,13 +27,18 @@ sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName
 });
 
 
-export const sendDocumentUploadNoticeEmailQueue = new Queue(
+export const sendFileUploadNoticeEmailQueue = new Queue(
   `send_file_upload_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendDocumentUploadNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, uploaderUserId: string }>) => {
-  const { projectConnectionId, uploaderUserId } = job.data;
+sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
+  projectConnectionId: string,
+  uploaderUserId: string,
+  isFinalContract: boolean,
+  action?: string,
+}>) => {
+  const { projectConnectionId, uploaderUserId, isFinalContract, action } = job.data;
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
     where: {
       id: projectConnectionId,
@@ -91,14 +96,31 @@ sendDocumentUploadNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnec
     });
   }
 
-  await Promise.all(
-    receivers.map(receiver => {
-      sendDocumentUploadNoticeEmail({
-        login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-        receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-        project_title: projectConnection.project_request.title,
-        company_name: senderCompanyName,
-      }, receiver.email);
-    })
-  );
+  if (isFinalContract) {
+    await Promise.all(
+      receivers.map(receiver => {
+        sendContractUploadNoticeEmail(
+          {
+            login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            project_title: projectConnection.project_request.title,
+            company_name: senderCompanyName,
+          },
+          receiver.email,
+          action!,
+        );
+      })
+    );
+  } else {
+    await Promise.all(
+      receivers.map(receiver => {
+        sendDocumentUploadNoticeEmail({
+          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          project_title: projectConnection.project_request.title,
+          company_name: senderCompanyName,
+        }, receiver.email);
+      })
+    );
+  }
 });
