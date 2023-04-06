@@ -43,6 +43,14 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      if (result?.vendor_member && !result.vendor_member.title) {
+        return false
+      }
+
+      if (result?.customer && !result.customer.job_title) {
+        return false
+      }
+
       if (result?.customer?.biotech?.cda_signed_at || result?.vendor_member?.vendor_company?.cda_signed_at) {
         return true;
       }
@@ -201,7 +209,7 @@ const resolvers: Resolvers<Context> = {
               }
             }
           });
-  
+
           if (user.vendor_member?.vendor_company?.cda_pandadoc_file_id) {
             const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, user.vendor_member?.vendor_company?.cda_pandadoc_file_id);
             return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
@@ -219,7 +227,7 @@ const resolvers: Resolvers<Context> = {
               }
             }
           });
-  
+
           if (user.customer?.biotech.cda_pandadoc_file_id) {
             const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, user.customer.biotech.cda_pandadoc_file_id);
             return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
