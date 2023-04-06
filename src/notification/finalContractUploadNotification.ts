@@ -1,7 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
-const finalContractUploadNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
+const createFinalContractUploadNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
 
   const recipient = await prisma.user.findFirst({
     where: {
@@ -28,4 +28,4 @@ const finalContractUploadNotification = async (sender_id: string, recipient_id: 
   }
 };
 
-export default finalContractUploadNotification;
+export default createFinalContractUploadNotification;

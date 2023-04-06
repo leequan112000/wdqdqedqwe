@@ -1,7 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
-const messageNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
+const createMessageNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,
@@ -36,4 +36,4 @@ const messageNotification = async (sender_id: string, recipient_id: string, refe
   }
 };
 
-export default messageNotification;
+export default createMessageNotification;
