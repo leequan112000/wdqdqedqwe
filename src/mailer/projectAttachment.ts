@@ -1,11 +1,11 @@
 import { createMailData, sendMail } from "./config";
-import type { FileUploadNoticeData } from "./types";
-import { fileUploadNotice } from "./templates";
+import type { DocumentUploadNoticeData } from "./types";
+import { documentUploadNotice } from "./templates";
 
-export const sendFileUploadNoticeEmail = async (emailData: FileUploadNoticeData, receiverEmail: string) => {
+export const sendDocumentUploadNoticeEmail = async (emailData: DocumentUploadNoticeData, receiverEmail: string) => {
   const mailData = createMailData({
     to: receiverEmail,
-    templateId: fileUploadNotice,
+    templateId: documentUploadNotice,
     dynamicTemplateData: {
       login_url: emailData.login_url,
       project_title: emailData.project_title,

@@ -3,7 +3,7 @@ import { app_env } from "../environment";
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
-import { sendFileUploadNoticeEmail } from "../mailer/projectAttachment";
+import { sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { User } from "@prisma/client";
 
 export const sendAdminNewProjectRequestEmailQueue = new Queue(
@@ -27,12 +27,12 @@ sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName
 });
 
 
-export const sendFileUploadNoticeEmailQueue = new Queue(
+export const sendDocumentUploadNoticeEmailQueue = new Queue(
   `send_file_upload_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, uploaderUserId: string }>) => {
+sendDocumentUploadNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, uploaderUserId: string }>) => {
   const { projectConnectionId, uploaderUserId } = job.data;
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
     where: {
@@ -93,7 +93,7 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnection
 
   await Promise.all(
     receivers.map(receiver => {
-      sendFileUploadNoticeEmail({
+      sendDocumentUploadNoticeEmail({
         login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
         receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
         project_title: projectConnection.project_request.title,
