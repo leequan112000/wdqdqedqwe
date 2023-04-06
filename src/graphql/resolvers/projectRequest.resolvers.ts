@@ -139,8 +139,6 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-
-        // TODO implement queue
         sendProjectRequestSubmissionEmail(user);
         sendAdminNewProjectRequestEmailQueue.add({ biotechName: user.customer.biotech.name });
 
