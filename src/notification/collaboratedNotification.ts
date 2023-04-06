@@ -1,24 +1,7 @@
+import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
 const createCollaboratedNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
-  const sender = await prisma.user.findFirst({
-    where: {
-      id: sender_id,
-    },
-  });
-  if (!sender) {
-    throw new Error('Sender not found');
-  }
-
-  const recipient = await prisma.user.findFirst({
-    where: {
-      id: recipient_id,
-    },
-  });
-  if (!recipient) {
-    throw new Error('Recipient not found');
-  }
-
   const notification = await prisma.notification.create({
     data: {
       notification_type: 'CollaboratedNotification',
@@ -31,7 +14,7 @@ const createCollaboratedNotification = async (sender_id: string, recipient_id: s
   });
 
   if (!notification) {
-    throw new Error('Notification not created');
+    throw new InternalError('Notification not created');
   }
 };
 

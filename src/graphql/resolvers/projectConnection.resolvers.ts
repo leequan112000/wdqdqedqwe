@@ -521,7 +521,11 @@ const resolvers: Resolvers<Context> = {
             receiver_full_name: `${user.first_name} ${user.last_name}`,
           }, user.email)
 
-          createCollaboratedNotification(currentUser.id, user.id, projectConnection.id, 'project_connection')
+          try {
+            createCollaboratedNotification(currentUser.id, user.id, projectConnection.id, 'project_connection')
+          } catch (error) {
+            console.log(error)
+          }
         } else {
           // no-op
           // TODO: report to bug channel
