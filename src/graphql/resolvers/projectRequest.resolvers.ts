@@ -1,10 +1,10 @@
 import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";
-import { ProjectRequestStatus } from "../../helper/constant";
-import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
-import { sendAdminNewProjectRequestEmail } from "../../mailer/admin";
 import { nonNullable } from '../../helper/filter'
+import { PublicError } from "../errors/PublicError";
+import { ProjectRequestStatus } from "../../helper/constant";
+import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";
+import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
+import { sendAdminNewProjectRequestEmailQueue } from "../../queues/mailer.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -142,7 +142,7 @@ const resolvers: Resolvers<Context> = {
 
         // TODO implement queue
         sendProjectRequestSubmissionEmail(user);
-        await sendAdminNewProjectRequestEmail(user.customer.biotech.name);
+        sendAdminNewProjectRequestEmailQueue.add({ biotechName: user.customer.biotech.name });
 
         return {
           ...projectRequest,
