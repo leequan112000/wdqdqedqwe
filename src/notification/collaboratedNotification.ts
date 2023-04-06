@@ -6,19 +6,20 @@ const createCollaboratedNotification = async (sender_id: string, recipient_id: s
       id: sender_id,
     },
   });
-  if (sender) {
+  if (!sender) {
     throw new Error('Sender not found');
   }
+
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,
     },
   });
-  if (recipient) {
+  if (!recipient) {
     throw new Error('Recipient not found');
   }
 
-  await prisma.notification.create({
+  const notification = await prisma.notification.create({
     data: {
       notification_type: 'CollaboratedNotification',
       message: ' invited you to collaborate on ',
@@ -28,6 +29,10 @@ const createCollaboratedNotification = async (sender_id: string, recipient_id: s
       reference_type: reference_type,
     },
   });
+
+  if (!notification) {
+    throw new Error('Notification not created');
+  }
 };
 
 export default createCollaboratedNotification;

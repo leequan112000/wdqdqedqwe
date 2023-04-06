@@ -437,6 +437,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: true,
           vendor_member: true,
+          notifications: true,
         },
       });
 
@@ -501,6 +502,7 @@ const resolvers: Resolvers<Context> = {
             project_title: projectConnection.project_request.title,
             receiver_full_name: `${user.first_name} ${user.last_name}`,
           }, user.email)
+
           createCollaboratedNotification(currentUser.id, user.id, projectConnection.id, 'project_connection')
         } else {
           // no-op
