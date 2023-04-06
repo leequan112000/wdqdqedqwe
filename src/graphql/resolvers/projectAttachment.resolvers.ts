@@ -6,6 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
+import { sendFileUploadNoticeEmailQueue } from "../../queues/mailer.queues";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -85,6 +86,12 @@ const resolvers: Resolvers<Context> = {
 
           return attachment;
         }));
+
+        sendFileUploadNoticeEmailQueue.add({
+          projectConnectionId: project_connection_id,
+          uploaderUserId: context.req.user_id,
+        });
+
         return result.map((r) => ({
           ...r,
           byte_size: Number(r.byte_size) / 1000,
