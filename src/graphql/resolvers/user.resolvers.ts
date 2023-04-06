@@ -1,8 +1,9 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { checkPassword, createTokens, hashPassword, createResetPasswordToken } from "../../helper/auth";
+import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { verify } from "jsonwebtoken";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
@@ -175,9 +176,190 @@ const resolvers: Resolvers<Context> = {
 
       throw new InternalError('Missing user.')
     },
+    cda_url: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+
+      try {
+        if (vendor) {
+          const user = await context.prisma.user.findFirstOrThrow({
+            where: {
+              id: context.req.user_id,
+            },
+            include: {
+              vendor_member: {
+                include: {
+                  vendor_company: true
+                }
+              }
+            }
+          });
+  
+          if (user.vendor_member?.vendor_company?.cda_pandadoc_file_id) {
+            const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, user.vendor_member?.vendor_company?.cda_pandadoc_file_id);
+            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+          }
+        } else {
+          const user = await context.prisma.user.findFirstOrThrow({
+            where: {
+              id: parent.id,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: true
+                }
+              }
+            }
+          });
+  
+          if (user.customer?.biotech.cda_pandadoc_file_id) {
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, user.customer.biotech.cda_pandadoc_file_id);
+            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
+          }
+        }
+
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
+    cda_signed_at: async (parent, _, context) => {
+      if (parent.customer?.biotech?.cda_signed_at) {
+        return parent.customer.biotech.cda_signed_at;
+      }
+      if (parent.vendor_member?.vendor_company?.cda_signed_at) {
+        return parent.vendor_member.vendor_company.cda_signed_at;
+      }
+
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+
+      if (vendor) {
+        const vendorMember = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            vendor_company: {
+              select: {
+                cda_signed_at: true,
+              },
+            },
+          },
+        });
+        return vendorMember?.vendor_company?.cda_signed_at;
+      } else {
+        const customer = await context.prisma.customer.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            biotech: {
+              select: {
+                cda_signed_at: true,
+              },
+            },
+          },
+        });
+        return customer?.biotech?.cda_signed_at;
+      }
+    },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
     }
+  },
+  Subscription: {
+    cdaUrl: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        let channelId;
+        if (vendor) {
+          const vendor = await context.prisma.vendorMember.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              vendor_company: true
+            }
+          });
+
+          channelId = vendor.vendor_company?.id;
+        } else {
+          const customer = await context.prisma.customer.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              biotech: true
+            }
+          });
+
+          channelId = customer.biotech.id;
+        }
+
+        const channel = `cdaUrl:${channelId}`;
+        return context.pubsub.asyncIterator(channel);
+      },
+    },
+    cdaSignedAt: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        let channelId;
+        if (vendor) {
+          const vendor = await context.prisma.vendorMember.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              vendor_company: true
+            }
+          });
+
+          channelId = vendor.vendor_company?.id;
+        } else {
+          const customer = await context.prisma.customer.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+            include: {
+              biotech: true
+            }
+          });
+
+          channelId = customer.biotech.id;
+        }
+
+        const channel = `cdaSignedAt:${channelId}`;
+        return context.pubsub.asyncIterator(channel);
+      },
+    },
   },
   Query: {
     user: async (_, __, context) => {
@@ -379,6 +561,90 @@ const resolvers: Resolvers<Context> = {
       });
 
       return user;
+    },
+    createCda: async (_, __, context) => {
+      try {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        if (vendor) {
+          await context.prisma.$transaction(async (trx) => {
+            const user = await trx.user.findFirstOrThrow({
+              where: {
+                id: context.req.user_id,
+              },
+              include: {
+                vendor_member: {
+                  include: {
+                    vendor_company: true
+                  }
+                }
+              }
+            });
+
+            if (!user.vendor_member) {
+              throw new PublicError('Vendor member not found.');
+            }
+
+            let cda_pandadoc_file_id = user?.vendor_member?.vendor_company?.cda_pandadoc_file_id;
+
+            if (cda_pandadoc_file_id === null) {
+              const docResponse = await createVendorCompanyCda(user);
+              cda_pandadoc_file_id = docResponse.id as string;
+            }
+
+            return await trx.vendorCompany.update({
+              where: {
+                id: user.vendor_member.vendor_company_id
+              },
+              data: {
+                cda_pandadoc_file_id,
+              }
+            })
+          });
+        } else {
+          await context.prisma.$transaction(async (trx) => {
+            const user = await trx.user.findFirstOrThrow({
+              where: {
+                id: context.req.user_id,
+              },
+              include: {
+                customer: {
+                  include: {
+                    biotech: true
+                  }
+                }
+              }
+            });
+
+            if (!user.customer) {
+              throw new PublicError('Customer not found.');
+            }
+
+            let cda_pandadoc_file_id = user?.customer?.biotech?.cda_pandadoc_file_id;
+
+            if (cda_pandadoc_file_id === null) {
+              const docResponse = await createBiotechCda(user);
+              cda_pandadoc_file_id = docResponse.id as string;
+            }
+
+            return await context.prisma.biotech.update({
+              where: {
+                id: user.customer.biotech_id
+              },
+              data: {
+                cda_pandadoc_file_id,
+              }
+            })
+          });
+        }
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
   },
 };

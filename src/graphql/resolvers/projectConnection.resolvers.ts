@@ -4,6 +4,7 @@ import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
 import { app_env } from "../../environment";
+import { NotFoundError } from "../errors/NotFoundError";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 
 const resolvers: Resolvers<Context> = {
@@ -342,14 +343,31 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     projectConnection: async (parent, args, context) => {
-      if (args.id) {
-
+      let projectConnection
+      try {
+        projectConnection = await context.prisma.projectConnection.findFirstOrThrow({
+          where: {
+            id: args.id,
+          },
+        });
+      } catch (error) {
+        throw new NotFoundError();
       }
-      return await context.prisma.projectConnection.findFirst({
+
+      const currentUser = await context.prisma.user.findFirst({
         where: {
-          id: args.id,
+          id: context.req.user_id
+        },
+        include: {
+          customer: true,
         },
       });
+
+      if (!projectConnection || currentUser?.customer && projectConnection?.vendor_status === 'declined') {
+        throw new NotFoundError();
+      }
+
+      return projectConnection;
     },
     projectConnections: async (parent, args, context) => {
       // find vendor member id

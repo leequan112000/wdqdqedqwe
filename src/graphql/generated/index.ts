@@ -29,7 +29,6 @@ export type Biotech = {
   address?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
-  cda_url?: Maybe<Scalars['String']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   created_at?: Maybe<Scalars['Date']>;
   customers?: Maybe<Array<Maybe<Customer>>>;
@@ -107,6 +106,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   addProjectCollaborator?: Maybe<User>;
+  createCda?: Maybe<Scalars['Boolean']>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
   createMeetingEvent?: Maybe<MeetingEvent>;
@@ -490,6 +490,7 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
+  upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorMember?: Maybe<VendorMember>;
@@ -525,9 +526,28 @@ export type QueryProjectRequestsArgs = {
   status?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+
+export type QueryUpcomingMeetingEventsArgs = {
+  project_connection_id?: InputMaybe<Scalars['String']>;
+};
+
+export type Subscription = {
+  __typename?: 'Subscription';
+  cdaSignedAt?: Maybe<Scalars['String']>;
+  cdaUrl?: Maybe<Scalars['String']>;
+  newMessage?: Maybe<Message>;
+};
+
+
+export type SubscriptionNewMessageArgs = {
+  chat_id: Scalars['String'];
+};
+
 export type User = {
   __typename?: 'User';
   can_be_removed?: Maybe<Scalars['Boolean']>;
+  cda_signed_at?: Maybe<Scalars['Date']>;
+  cda_url?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customer?: Maybe<Customer>;
@@ -549,7 +569,6 @@ export type VendorCompany = {
   address?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
-  cda_url?: Maybe<Scalars['String']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   created_at?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
@@ -678,6 +697,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Subscription: ResolverTypeWrapper<{}>;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<User>;
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
@@ -707,6 +727,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
   String: Scalars['String'];
+  Subscription: {};
   Upload: Scalars['Upload'];
   User: User;
   VendorCompany: VendorCompany;
@@ -725,7 +746,6 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Customer']>>>, ParentType, ContextType>;
@@ -811,6 +831,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
@@ -948,9 +969,16 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
+}>;
+
+export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  cdaSignedAt?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaSignedAt", ParentType, ContextType>;
+  cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
+  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -959,6 +987,8 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   can_be_removed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
@@ -980,7 +1010,6 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1037,6 +1066,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   VendorCompany?: VendorCompanyResolvers<ContextType>;
