@@ -3,4 +3,5 @@ export const operationWhitelist = [
   'signInUserMutation',
   'signUpCustomerMutation',
   'ResetPassword_Mutation',
+  'ForgotPassword_Mutation',
 ]

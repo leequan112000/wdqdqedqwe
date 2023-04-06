@@ -13,8 +13,8 @@ export const sendResetPasswordEmail = (user: User) => {
       + '<br />'
       + '<p>We’ve received a request to reset the password for your Cromatic account.</p>'
       + '<p>To reset, click on the link below to set a new password:</p>'
-      + `<a href="${app_env.APP_URL}/reset-password?token=${user.reset_password_token}">
-      ${app_env.APP_URL}/reset-password?token=${user.reset_password_token}
+      + `<a href="${app_env.APP_URL}/reset-password?token=${encodeURIComponent(user.reset_password_token!)}">
+      ${app_env.APP_URL}/reset-password?token=${encodeURIComponent(user.reset_password_token!)}
       </a>`
       + '<br />'
       + '<p>If you didn’t ask to change your password, don’t worry! Your password is still safe and you can delete this email.</p>'
