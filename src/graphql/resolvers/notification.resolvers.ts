@@ -1,23 +1,36 @@
 import { Notification, User } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
-import { QueryNotificationsArgs } from "../generated";
+import { QueryNotificationsArgs, Resolvers } from "../generated";
 
-export default {
+const resolvers: Resolvers<Context> = {
   Notification: {
-    user: async (parent: Notification, _: void, context: Context): Promise<User | null> => {
+    recipient: async (parent, _, context) => {
+      if (!parent.recipient_id) {
+        return {};
+      }
       return await context.prisma.user.findFirst({
         where: {
-          id: parent.user_id
+          id: parent.recipient_id
+        }
+      })
+    },
+    sender: async (parent, _, context) => {
+      if (!parent.sender_id) {
+        return {};
+      }
+      return await context.prisma.user.findFirst({
+        where: {
+          id: parent.sender_id
         }
       })
     },
   },
   Query: {
-    notifications: async (_: void, args: QueryNotificationsArgs, context: Context & { req: Request }) => {
+    notifications: async (_, args, context) => {
       return await context.prisma.notification.findMany({
         where: {
-          user_id: context.req.user_id,
+          recipient_id: context.req.user_id,
           ...(!!args.unread_only ? { read_at: null } : {}),
         },
         orderBy: {
@@ -26,4 +39,9 @@ export default {
       });
     }
   },
+  Mutation: {
+    // TODO: mark notification as read
+  },
 };
+
+export default resolvers;

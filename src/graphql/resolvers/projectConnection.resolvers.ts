@@ -5,6 +5,7 @@ import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
 import { app_env } from "../../environment";
 import { NotFoundError } from "../errors/NotFoundError";
+import createCollaboratedNotification from '../../notification/collaboratedNotification';
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -454,6 +455,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: true,
           vendor_member: true,
+          notifications: true,
         },
       });
 
@@ -518,6 +520,12 @@ const resolvers: Resolvers<Context> = {
             project_title: projectConnection.project_request.title,
             receiver_full_name: `${user.first_name} ${user.last_name}`,
           }, user.email)
+
+          try {
+            createCollaboratedNotification(currentUser.id, user.id, projectConnection.id, 'project_connection')
+          } catch (error) {
+            console.log(error)
+          }
         } else {
           // no-op
           // TODO: report to bug channel
