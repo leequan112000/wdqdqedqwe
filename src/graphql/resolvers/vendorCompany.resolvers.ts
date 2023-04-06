@@ -1,7 +1,6 @@
 import { Chat, ProjectConnection, User, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
-import { createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationCreateVendorCompanyArgs, MutationInviteVendorCompaniesToProjectByAdminArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
@@ -21,36 +20,6 @@ export default {
           vendor_company_id: parent.id
         }
       })
-    },
-    cda_url: async (parent: VendorCompany, _: void, context: Context & { req: Request }): Promise<String | null> => {
-      try {
-        const user = await context.prisma.user.findFirstOrThrow({
-          where: {
-            id: context.req.user_id,
-          },
-          include: {
-            vendor_member: {
-              include: {
-                vendor_company: true
-              }
-            }
-          }
-        });
-
-        if (user.vendor_member?.vendor_company_id !== parent.id) {
-          // User has no access to this vendor company
-          return null;
-        }
-
-        if (parent.cda_pandadoc_file_id) {
-          const viewDocSessionResponse = await createVendorCompanyViewCdaSession(user.email, parent.cda_pandadoc_file_id);
-          return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-        }
-
-        return null;
-      } catch (error) {
-        return null;
-      }
     },
     chats: async (parent: VendorCompany, _: void, context: Context): Promise<Chat[] | null> => {
       return await context.prisma.chat.findMany({
@@ -87,46 +56,6 @@ export default {
             description: args.description,
             address: args.address,
           }
-        });
-      } catch (error) {
-        return error;
-      }
-    },
-    createVendorCompanyCda: async (_: void, __: void, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const user = await trx.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              vendor_member: {
-                include: {
-                  vendor_company: true
-                }
-              }
-            }
-          });
-
-          if (!user.vendor_member) {
-            throw new PublicError('Vendor member not found.');
-          }
-
-          let cda_pandadoc_file_id = user?.vendor_member?.vendor_company?.cda_pandadoc_file_id;
-
-          if (cda_pandadoc_file_id === null) {
-            const docResponse = await createVendorCompanyCda(user);
-            cda_pandadoc_file_id = docResponse.id as string;
-          }
-
-          return await trx.vendorCompany.update({
-            where: {
-              id: user.vendor_member.vendor_company_id
-            },
-            data: {
-              cda_pandadoc_file_id,
-            }
-          })
         });
       } catch (error) {
         return error;

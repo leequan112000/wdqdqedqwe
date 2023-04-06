@@ -13,6 +13,8 @@ type User {
   notifications: [Notification]
   has_setup_profile: Boolean
   company_name: String
+  cda_url: String
+  cda_signed_at: Date
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean
@@ -24,8 +26,8 @@ type AuthResponse {
 }
 
 type Subscription {
-  cda_url: String
-  cda_signed_at: String
+  cdaUrl: String
+  cdaSignedAt: String
 }
 
 type Query {
@@ -49,4 +51,5 @@ type Mutation {
     last_name: String!
     email: String!
   ): User
+  createCda: Boolean
 }
