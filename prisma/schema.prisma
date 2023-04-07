@@ -307,10 +307,10 @@ model Notification {
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 
-  recipient_id String @db.Uuid
-  recipient    User   @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
-  sender_id    String @db.Uuid
-  sender       User   @relation("SenderNotifications", fields: [sender_id], references: [id])
+  recipient_id String  @db.Uuid
+  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
+  sender_id    String? @db.Uuid
+  sender       User?   @relation("SenderNotifications", fields: [sender_id], references: [id])
 
   @@index([sender_id])
   @@index([recipient_id])
