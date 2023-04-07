@@ -1,11 +1,11 @@
 import { createMailData, sendMail } from "./config";
-import { contractUploadNotice, contractUpdateNotice, documentUploadNotice } from "./templates";
+import { contractUploadNoticeTemplate, contractUpdateNoticeTemplate, documentUploadNoticeTemplate } from "./templates";
 import type { UploadNoticeData } from "./types";
 
 export const sendDocumentUploadNoticeEmail = async (emailData: UploadNoticeData, receiverEmail: string) => {
   const mailData = createMailData({
     to: receiverEmail,
-    templateId: documentUploadNotice,
+    templateId: documentUploadNoticeTemplate,
     dynamicTemplateData: {
       login_url: emailData.login_url,
       project_title: emailData.project_title,
@@ -20,7 +20,7 @@ export const sendDocumentUploadNoticeEmail = async (emailData: UploadNoticeData,
 export const sendContractUploadNoticeEmail = async (emailData: UploadNoticeData, receiverEmail: string, action: string) => {
   const mailData = createMailData({
     to: receiverEmail,
-    templateId: action === 'upload' ? contractUploadNotice : contractUpdateNotice,
+    templateId: action === 'upload' ? contractUploadNoticeTemplate : contractUpdateNoticeTemplate,
     dynamicTemplateData: {
       login_url: emailData.login_url,
       project_title: emailData.project_title,
