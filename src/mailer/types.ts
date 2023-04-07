@@ -18,3 +18,10 @@ export type NewMessageNoticeData = {
   project_title: string;
   company_name: string;
 }
+
+export type AcceptProjectRequestNoticeData = {
+  login_url: string;
+  vendor_company_name: string;
+  project_title: string;
+  receiver_full_name: string;
+}

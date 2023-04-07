@@ -1,11 +1,12 @@
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { app_env } from "../../environment";
+import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
+import { NotFoundError } from "../errors/NotFoundError";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { app_env } from "../../environment";
-import { NotFoundError } from "../errors/NotFoundError";
-import createCollaboratedNotification from '../../notification/collaboratedNotification';
+import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -409,6 +410,11 @@ const resolvers: Resolvers<Context> = {
         data: {
           vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
         },
+      });
+
+      sendAcceptProjectRequestNoticeEmailQueue.add({
+        projectConnectionId: projectConnection.id,
+        senderUserId: context.req.user_id,
       });
       return updatedProjectConnection;
     },

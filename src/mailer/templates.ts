@@ -1,4 +1,5 @@
 export const adminNewProjectRequestTemplate = 'd-f72cc7b30afe432f9eecf8b11a09cd2a';
+export const acceptProjectRequestNoticeTemplate = 'd-012fca87103443949a1543b196c71ff1';
 export const customerInvitationTemplate = 'd-8138d95b7956431ca8d32687c6f37cce';
 export const contractUploadNoticeTemplate = 'd-70785c0ac4374d9ead9863061a22d131';
 export const contractUpdateNoticeTemplate = 'd-9e168bfd9c464e1097b79bf6438a144b';
