@@ -6,6 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
+import { sendFileUploadNoticeEmailQueue } from "../../queues/mailer.queues";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -85,6 +86,13 @@ const resolvers: Resolvers<Context> = {
 
           return attachment;
         }));
+
+        sendFileUploadNoticeEmailQueue.add({
+          projectConnectionId: project_connection_id,
+          uploaderUserId: context.req.user_id,
+          isFinalContract: false,
+        });
+
         return result.map((r) => ({
           ...r,
           byte_size: Number(r.byte_size) / 1000,
@@ -124,6 +132,13 @@ const resolvers: Resolvers<Context> = {
           });
           // delete the old contract s3 object
           await deleteObject(existingContract.key);
+
+          sendFileUploadNoticeEmailQueue.add({
+            projectConnectionId: project_connection_id,
+            uploaderUserId: context.req.user_id,
+            isFinalContract: true,
+            action: 'update',
+          });
         } else {
           // Else create a new one.
           attachment = await context.prisma.projectAttachment.create({
@@ -135,6 +150,13 @@ const resolvers: Resolvers<Context> = {
               project_connection_id,
               content_type: contextType,
             }
+          });
+
+          sendFileUploadNoticeEmailQueue.add({
+            projectConnectionId: project_connection_id,
+            uploaderUserId: context.req.user_id,
+            isFinalContract: true,
+            action: 'upload',
           });
         }
 

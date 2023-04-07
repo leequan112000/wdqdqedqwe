@@ -2,7 +2,7 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_A
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../generated";
-import { sendProjectCollaboratorInvitation } from '../../mailer/projectConnection';
+import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
 import { app_env } from "../../environment";
 import { NotFoundError } from "../errors/NotFoundError";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
@@ -514,7 +514,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         if (projectConnection) {
-          sendProjectCollaboratorInvitation({
+          sendProjectCollaboratorInvitationEmail({
             login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
             inviter_full_name: `${currentUser.first_name} ${currentUser.last_name}`,
             project_title: projectConnection.project_request.title,
