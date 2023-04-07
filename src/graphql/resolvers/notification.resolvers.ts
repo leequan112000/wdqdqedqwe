@@ -25,6 +25,14 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
+    url: async (parent, _, context) => {
+      switch (parent.notification_type) {
+        case 'CollaborationRequestNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        default:
+          return '/app';
+      }
+    },
   },
   Query: {
     notifications: async (_, args, context) => {
@@ -37,7 +45,28 @@ const resolvers: Resolvers<Context> = {
           updated_at: 'desc'
         }
       });
-    }
+    },
+    // TODO: get notification include project connection info
+    // projectNotifications: async (_, args, context) => {
+    //   return await context.prisma.notification.findMany({
+    //     where: {
+    //       recipient_id: context.req.user_id,
+    //       ...(!!args.unread_only ? { read_at: null } : {}),
+    //     },
+    //     orderBy: {
+    //       updated_at: 'desc'
+    //     },
+    //     select: {
+    //       if (reference_type === 'project_connection') {
+    //         return await context.prisma.projectConnection.findFirst({
+    //           where: {
+    //             id: reference_id
+    //           }
+    //         });
+    //       }
+    //     }
+    //   });
+    // },
   },
   Mutation: {
     // TODO: mark notification as read

@@ -393,14 +393,14 @@ export type Notification = {
   id?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notification_type?: Maybe<Scalars['String']>;
+  params?: Maybe<Scalars['JSON']>;
   read_at?: Maybe<Scalars['Date']>;
   recipient?: Maybe<User>;
   recipient_id?: Maybe<Scalars['String']>;
-  reference_id?: Maybe<Scalars['String']>;
-  reference_type?: Maybe<Scalars['String']>;
   sender?: Maybe<User>;
   sender_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
+  url?: Maybe<Scalars['String']>;
 };
 
 export type ProjectAttachment = {
@@ -872,14 +872,14 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notification_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   read_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   recipient?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   recipient_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reference_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sender?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   sender_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
