@@ -11,3 +11,10 @@ export type UploadNoticeData = {
   project_title: string;
   company_name: string;
 }
+
+export type NewMessageNoticeData = {
+  login_url: string;
+  receiver_full_name: string;
+  project_title: string;
+  company_name: string;
+}

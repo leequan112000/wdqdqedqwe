@@ -3,6 +3,7 @@ import { app_env } from "../environment";
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
+import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { User } from "@prisma/client";
 
@@ -123,4 +124,84 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
       })
     );
   }
+});
+
+export const sendNewMessageNoticeEmailQueue = new Queue(
+  `send_new_message_notice_email_${Date.now()}`,
+  process.env.REDIS_URL!
+);
+
+sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+  const { projectConnectionId, senderUserId } = job.data;
+
+  const projectConnection = await prisma.projectConnection.findFirstOrThrow({
+    where: {
+      id: projectConnectionId,
+    },
+    include: {
+      customer_connections: true,
+      vendor_member_connections: true,
+      project_request: true,
+    }
+  });
+  
+  const vendor = await prisma.vendorMember.findFirst({
+    where: {
+      user_id: senderUserId,
+    },
+    include: {
+      vendor_company: true,
+    }
+  });
+
+  let senderCompanyName = "";
+  let receivers: User[] = [];
+
+  if (vendor) {
+    // if sender is vendor, notify biotech members
+    senderCompanyName = vendor.vendor_company?.name as string;
+    receivers = await prisma.user.findMany({
+      where: {
+        customer: {
+          id: {
+            in: projectConnection.customer_connections.map(cc => cc.customer_id),
+          }
+        }
+      }
+    });
+  } else {
+    // if sender is customer, notify vendor members
+    const customer = await prisma.customer.findFirstOrThrow({
+      where: {
+        user_id: senderUserId,
+      },
+      include: {
+        biotech: true,
+      }
+    });
+    senderCompanyName = customer.biotech.name;
+    receivers = await prisma.user.findMany({
+      where: {
+        vendor_member: {
+          id: {
+            in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+          }
+        }
+      }
+    });
+  }
+
+  await Promise.all(
+    receivers.map(receiver => {
+      sendNewMessageNoticeEmail(
+        {
+          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          project_title: projectConnection.project_request.title,
+          company_name: senderCompanyName,
+        },
+        receiver.email,
+      );
+    })
+  );
 });
