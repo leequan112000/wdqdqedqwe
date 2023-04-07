@@ -3,7 +3,8 @@ import createCollaboratedNotification from '../../notification/collaboratedNotif
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { NotFoundError } from "../errors/NotFoundError";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
 import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
@@ -399,17 +400,38 @@ const resolvers: Resolvers<Context> = {
         where: {
           id: args.id,
         },
+        include: {
+          project_request: true,
+        }
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
       }
-      const updatedProjectConnection = await context.prisma.projectConnection.update({
-        where: {
-          id: args.id,
-        },
-        data: {
-          vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
-        },
+
+      const updatedProjectConnection = await context.prisma.$transaction(async (trx) => {
+        if (projectConnection.project_request.status === ProjectRequestStatus.WITHDRAWN) {
+          throw new PublicError('Project request has been withdrawn')
+        }
+
+        if (projectConnection.project_request.status === ProjectRequestStatus.PROCESSING) {
+          await trx.projectRequest.update({
+            where: {
+              id: projectConnection.project_request_id,
+            },
+            data: {
+              status: ProjectRequestStatus.MATCHED,
+            },
+          });
+        }
+
+        return await trx.projectConnection.update({
+          where: {
+            id: args.id,
+          },
+          data: {
+            vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+          },
+        });
       });
 
       sendAcceptProjectRequestNoticeEmailQueue.add({
