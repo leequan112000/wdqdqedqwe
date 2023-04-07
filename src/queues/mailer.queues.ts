@@ -3,6 +3,7 @@ import { app_env } from "../environment";
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
+import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { User } from "@prisma/client";
@@ -204,4 +205,60 @@ sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnection
       );
     })
   );
+});
+
+export const sendAcceptProjectRequestNoticeEmailQueue = new Queue(
+  `send_accept_project_request_notice_email_${Date.now()}`,
+  process.env.REDIS_URL!
+);
+
+sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+  const { projectConnectionId, senderUserId } = job.data;
+
+  const projectConnection = await prisma.projectConnection.findFirstOrThrow({
+    where: {
+      id: projectConnectionId,
+    },
+    include: {
+      customer_connections: true,
+      vendor_member_connections: true,
+      project_request: true,
+    }
+  });
+  
+  const vendor = await prisma.vendorMember.findFirst({
+    where: {
+      user_id: senderUserId,
+    },
+    include: {
+      vendor_company: true,
+    }
+  });
+
+  if (vendor) {
+    // notify biotech members
+    const receivers = await prisma.user.findMany({
+      where: {
+        customer: {
+          id: {
+            in: projectConnection.customer_connections.map(cc => cc.customer_id),
+          }
+        }
+      }
+    });
+
+    await Promise.all(
+      receivers.map(receiver => {
+        sendAcceptProjectRequestEmail(
+          {
+            login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            project_title: projectConnection.project_request.title,
+            vendor_company_name: vendor.vendor_company?.name as string,
+          },
+          receiver.email,
+        );
+      })
+    );
+  }
 });
