@@ -2,7 +2,7 @@ import { createMailData, sendMail } from "./config";
 import type { ProjectRequestInvitationByExistingMemberData } from "./types";
 import { projectRequestInvitationByExistingMember } from "./templates";
 
-export const sendProjectCollaboratorInvitation = async (emailData: ProjectRequestInvitationByExistingMemberData, receiverEmail: string) => {
+export const sendProjectCollaboratorInvitationEmail = async (emailData: ProjectRequestInvitationByExistingMemberData, receiverEmail: string) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: projectRequestInvitationByExistingMember,
