@@ -26,7 +26,6 @@ const resolvers: Resolvers<Context> = {
       })
     },
     url: async (parent, _, context) => {
-      console.log(parent.notification_type);
       switch (parent.notification_type) {
         case 'AcceptRequestNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
