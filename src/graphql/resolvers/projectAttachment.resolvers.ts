@@ -6,6 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
+import createFileUploadNotification from "../../notification/fileUploadNotification";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -66,6 +67,51 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     uploadDocuments: async (parent, args, context) => {
       const { files, project_connection_id } = args;
+
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
+      const  customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: project_connection_id,
+        },
+        include: {
+          customer_connections: true,
+          vendor_member_connections: true,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+
+      let users;
+      if (customer) {
+        // user is customer
+        users = await context.prisma.user.findMany({
+          where: {
+            id: {
+              in: projectConnection.customer_connections.map(cc => cc.customer_id),
+            },
+          },
+        });
+      } else {
+        // user is vendor member
+        users = await context.prisma.user.findMany({
+          where: {
+            id: {
+              in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+            },
+          },
+        });
+      }
+
       if (files) {
         const result = await Promise.all(files.map(async (f) => {
           const { filename, key, filesize, contextType } = await storeUpload(
@@ -91,10 +137,41 @@ const resolvers: Resolvers<Context> = {
           document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.document_type],
         }));
       }
+
+      await Promise.all(
+        users.map(user => {
+          createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+        })
+      );
+
       return []
     },
     uploadContract: async (parent, args, context) => {
       const { file, project_connection_id } = args;
+
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
+      const  customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: project_connection_id,
+        },
+        include: {
+          customer_connections: true,
+          vendor_member_connections: true,
+        },
+      });
+      if (!projectConnection) {
+        throw new InternalError('Project connection not found');
+      }
+      
       return await context.prisma.$transaction(async (trx) => {
         const existingContract = await context.prisma.projectAttachment.findFirst({
           where: {
@@ -137,6 +214,33 @@ const resolvers: Resolvers<Context> = {
             }
           });
         }
+
+        let users;
+        if (customer) {
+          // user is customer
+          users = await context.prisma.user.findMany({
+            where: {
+              id: {
+                in: projectConnection.customer_connections.map(cc => cc.customer_id),
+              },
+            },
+          });
+        } else {
+          // user is vendor member
+          users = await context.prisma.user.findMany({
+            where: {
+              id: {
+                in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+              },
+            },
+          });
+        }
+
+        await Promise.all(
+          users.map(user => {
+            createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+          })
+        );
 
         return {
           ...attachment,
