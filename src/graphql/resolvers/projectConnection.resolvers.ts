@@ -1,4 +1,5 @@
 import { app_env } from "../../environment";
+import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
@@ -396,13 +397,18 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
         },
         include: {
+          customer_connections: true,
           project_request: true,
-        }
+        },
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
@@ -438,6 +444,23 @@ const resolvers: Resolvers<Context> = {
         projectConnectionId: projectConnection.id,
         senderUserId: context.req.user_id,
       });
+
+      const users = await context.prisma.user.findMany({
+        where: {
+          customer: {
+            id: {
+              in: projectConnection.customer_connections.map(cc => cc.customer_id),
+            }
+          }
+        }
+      });
+
+      await Promise.all(
+        users.map(user => {
+          createAcceptRequestNotification(context.req.user_id! ,user.id, projectConnection.id);
+        })
+      );
+
       return updatedProjectConnection;
     },
     declinedProjectConnection: async (_, args, context) => {
@@ -550,7 +573,7 @@ const resolvers: Resolvers<Context> = {
           }, user.email)
 
           try {
-            createCollaboratedNotification(currentUser.id, user.id, projectConnection.id, 'project_connection')
+            createCollaboratedNotification(currentUser.id, user.id, projectConnection.id)
           } catch (error) {
             console.log(error)
           }

@@ -1,16 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
-const createMessageNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
-  const sender = await prisma.user.findFirst({
-    where: {
-      id: sender_id,
-    },
-  });
-  if (!sender) {
-    throw new InternalError('Sender not found');
-  }
-
+const createAdminInviteNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,
@@ -31,9 +22,8 @@ const createMessageNotification = async (sender_id: string, recipient_id: string
 
   const notification = await prisma.notification.create({
     data: {
-      notification_type: 'MessageNotification',
-      message: `**${sender.first_name} ${sender.last_name}** has sent you messages on **${project_connection?.project_request.title}**`,
-      sender_id: sender_id,
+      notification_type: 'AdminInviteNotification',
+      message: `**Cromatic Admin** invited you to review a new request has been submitted by a Cromatic client, the project name is **${project_connection?.project_request.title}**`,
       params: {
         project_connection_id: project_connection_id,
       },
@@ -46,4 +36,4 @@ const createMessageNotification = async (sender_id: string, recipient_id: string
   }
 };
 
-export default createMessageNotification;
+export default createAdminInviteNotification;

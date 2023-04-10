@@ -1,7 +1,15 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
-const createFinalContractUploadNotification = async (sender_id: string, recipient_id: string, reference_id: string, reference_type: string) => {
+const createFinalContractUploadNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
+  const sender = await prisma.user.findFirst({
+    where: {
+      id: sender_id,
+    },
+  });
+  if (!sender) {
+    throw new InternalError('Sender not found');
+  }
 
   const recipient = await prisma.user.findFirst({
     where: {
@@ -12,14 +20,24 @@ const createFinalContractUploadNotification = async (sender_id: string, recipien
     throw new InternalError('Recipient not found');
   }
 
+  const project_connection = await prisma.projectConnection.findFirst({
+    where: {
+      id: project_connection_id,
+    },
+    include: {
+      project_request: true,
+    },
+  });
+
   const notification = await prisma.notification.create({
     data: {
       notification_type: 'FinalContractUploadNotification',
-      message: ' updated final contract for ',
+      message: `**${sender.first_name} ${sender.last_name}** updated final contract for **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
+      params: {
+        project_connection_id: project_connection_id,
+      },
       recipient_id: recipient_id,
-      reference_id: reference_id,
-      reference_type: reference_type,
     },
   });
 

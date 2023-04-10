@@ -2,8 +2,7 @@ type Notification {
   id: String
   notification_type: String
   message: String
-  reference_id: String
-  reference_type: String
+  params: JSON
   read_at: Date
   created_at: Date
   updated_at: Date
@@ -11,6 +10,7 @@ type Notification {
   recipient: User
   sender_id: String
   sender: User
+  url: String
 }
 
 type Query {

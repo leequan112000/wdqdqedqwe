@@ -25,6 +25,24 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
+    url: async (parent, _, context) => {
+      switch (parent.notification_type) {
+        case 'AcceptRequestNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case 'AdminInviteNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case 'CollaboratedNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case 'FileUploadNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case 'FinalContractUploadNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case 'MessageNotification':
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        default:
+          return `/app`;
+      }
+    },
   },
   Query: {
     notifications: async (_, args, context) => {
@@ -37,7 +55,7 @@ const resolvers: Resolvers<Context> = {
           updated_at: 'desc'
         }
       });
-    }
+    },
   },
   Mutation: {
     // TODO: mark notification as read
