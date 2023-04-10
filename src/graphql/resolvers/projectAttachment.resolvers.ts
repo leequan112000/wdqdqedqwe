@@ -73,7 +73,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const  customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findFirst({
         where: {
           user_id: context.req.user_id,
         },
@@ -161,7 +161,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const  customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findFirst({
         where: {
           user_id: context.req.user_id,
         },
