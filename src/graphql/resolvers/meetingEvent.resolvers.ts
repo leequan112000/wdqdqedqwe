@@ -128,13 +128,13 @@ const resolvers: Resolvers<Context> = {
 
       switch (status) {
         case 'ongoing': {
-          conditionalWhere.start_time = {
+          conditionalWhere.end_time = {
             gte: new Date(),
           }
           break;
         }
         case 'past': {
-          conditionalWhere.start_time = {
+          conditionalWhere.end_time = {
             lt: new Date(),
           }
           break;
