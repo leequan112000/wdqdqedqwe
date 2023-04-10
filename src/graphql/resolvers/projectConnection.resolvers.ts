@@ -1,12 +1,14 @@
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { app_env } from "../../environment";
+import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
+import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
+import { NotFoundError } from "../errors/NotFoundError";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { app_env } from "../../environment";
-import { NotFoundError } from "../errors/NotFoundError";
-import createCollaboratedNotification from '../../notification/collaboratedNotification';
-import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
+import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -405,18 +407,42 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           customer_connections: true,
+          project_request: true,
         },
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
       }
-      const updatedProjectConnection = await context.prisma.projectConnection.update({
-        where: {
-          id: args.id,
-        },
-        data: {
-          vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
-        },
+
+      const updatedProjectConnection = await context.prisma.$transaction(async (trx) => {
+        if (projectConnection.project_request.status === ProjectRequestStatus.WITHDRAWN) {
+          throw new PublicError('Project request has been withdrawn')
+        }
+
+        if (projectConnection.project_request.status === ProjectRequestStatus.PROCESSING) {
+          await trx.projectRequest.update({
+            where: {
+              id: projectConnection.project_request_id,
+            },
+            data: {
+              status: ProjectRequestStatus.MATCHED,
+            },
+          });
+        }
+
+        return await trx.projectConnection.update({
+          where: {
+            id: args.id,
+          },
+          data: {
+            vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+          },
+        });
+      });
+
+      sendAcceptProjectRequestNoticeEmailQueue.add({
+        projectConnectionId: projectConnection.id,
+        senderUserId: context.req.user_id,
       });
 
       const users = await context.prisma.user.findMany({

@@ -1,12 +1,10 @@
 import { User } from "@prisma/client";
-import { mailSender, sendMail } from "./config";
+import { createMailData, mailSender, sendMail } from "./config";
 import { app_env } from "../environment";
 
 export const sendResetPasswordEmail = (user: User) => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
+  const mailData = createMailData({
     to: user.email,
-    replyTo: mailSender,
     subject: 'Cromatic | Reset Cromatic Password',
     html:
       `Hi ${user.first_name},`
@@ -28,7 +26,7 @@ export const sendResetPasswordEmail = (user: User) => {
       + '<br />'
       + '<p>Best,</p>'
       + '<p>Cromatic</p>'
-  };
+  });
 
   sendMail(mailData);
 };
