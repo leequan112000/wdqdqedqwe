@@ -3,7 +3,7 @@ import { find, intersectionBy } from 'lodash';
 import moment from 'moment'
 import { createGoogleEvent, patchGoogleEvent, cancelGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { Resolvers } from "../../generated";
 import { InternalError } from '../errors/InternalError';
 import { MeetingPlatform } from '../../helper/constant';
 

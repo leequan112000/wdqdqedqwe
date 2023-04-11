@@ -1,6 +1,6 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { Resolvers } from "../generated";
+import { Resolvers } from "../../generated";
 import mime from "mime-types";
 import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
@@ -179,7 +179,7 @@ const resolvers: Resolvers<Context> = {
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
       }
-      
+
       return await context.prisma.$transaction(async (trx) => {
         const existingContract = await context.prisma.projectAttachment.findFirst({
           where: {

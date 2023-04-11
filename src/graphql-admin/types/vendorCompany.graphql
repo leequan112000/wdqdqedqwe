@@ -1,0 +1,24 @@
+type VendorCompany {
+  id: String
+  name: String
+  website: String
+  description: String
+  created_at: Date
+  updated_at: Date
+  address: String
+  cda_pandadoc_file_id: String
+  cda_signed_at: Date
+}
+
+type Mutation {
+  createVendorCompany(
+    name: String!
+    address: String
+    website: String
+    description: String
+  ): VendorCompany
+  inviteVendorCompaniesToProjectByAdmin(
+    project_request_id: String!
+    vendor_company_ids: [String]!
+  ): Boolean
+}

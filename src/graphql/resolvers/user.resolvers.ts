@@ -5,7 +5,7 @@ import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, 
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
-import { Resolvers } from "../generated";
+import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 
 const resolvers: Resolvers<Context> = {
