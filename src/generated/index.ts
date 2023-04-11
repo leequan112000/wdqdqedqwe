@@ -479,6 +479,7 @@ export type ProjectRequestComment = {
 
 export type Query = {
   __typename?: 'Query';
+  _dummy?: Maybe<Scalars['String']>;
   biotech?: Maybe<Biotech>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
@@ -958,6 +959,7 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;

@@ -17,10 +17,12 @@ import { authMiddleware } from './middlewares/auth';
 import { prisma } from './connectDB';
 import routes from './routes';
 import schema from './graphql/index';
+import adminSchema from './graphql-admin/index';
 import { json } from 'body-parser';
 import { operationWhitelist } from './helper/graphql'
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
+import basicAuth from './middlewares/basicAuth';
 
 const app = express();
 
@@ -91,13 +93,37 @@ export const apolloServer = new ApolloServer<Context>({
   ],
 });
 
+export const adminApolloServer = new ApolloServer<Context>({
+  schema: adminSchema,
+  validationRules: [depthLimit(7)],
+  introspection: process.env.NODE_ENV === 'development',
+  formatError: (formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError => {
+    const errorMap = {
+      'PublicError:': 'PUBLIC_ERROR_CODE',
+      'InternalError:': 'INTERNAL_ERROR_CODE',
+      'Unauthenticated:': 'UNAUTHENTICATED'
+    };
+
+    for (const [prefix, code] of Object.entries(errorMap)) {
+      if (formattedError.message.startsWith(prefix)) {
+        return {
+          ...formattedError,
+          message: formattedError.message.replace(new RegExp(`^${prefix} `), ''),
+          extensions: { ...formattedError?.extensions, code },
+        };
+      }
+    }
+
+    return formattedError;
+  },
+});
+
 export async function startServer() {
   app.use(routes);
   app.use(express.json());
   app.use(cors(corsConfig));
   app.use(cookieParser());
   app.use(compression());
-  app.use(authMiddleware);
   app.use((req, res, next) => {
     if (req.originalUrl === '/webhook/stripe' || req.originalUrl.startsWith('/webhook/pandadoc' || req.originalUrl.startsWith('/webhook/zoho'))) {
       // Do nothing with the body because Stripe / Pandadoc need it to be raw
@@ -117,10 +143,39 @@ export async function startServer() {
 
   await apolloServer.start();
 
+  await adminApolloServer.start();
+
+  app.use(
+    '/graphql/admin',
+    cors<cors.CorsRequest>(corsConfig),
+    json(),
+    basicAuth,
+    expressMiddleware<Context>(adminApolloServer, {
+      context: async ({ req, res }) => {
+        if (
+          // bypass authentication for codegen
+          (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+          // if user_id exist
+          || req.is_admin_authorized
+        ) {
+          return ({ prisma, req, res, pubsub });
+        }
+
+        throw new GraphQLError('Admin is not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+            http: { status: 401 },
+          },
+        });
+      },
+    }),
+  );
+
   app.use(
     '/graphql',
     cors<cors.CorsRequest>(corsConfig),
     json(),
+    authMiddleware,
     expressMiddleware<Context>(apolloServer, {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;

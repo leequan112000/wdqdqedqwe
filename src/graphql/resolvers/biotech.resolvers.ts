@@ -2,7 +2,7 @@ import { Biotech, Chat, Customer } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../generated";
+import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../../generated";
 import { SubscriptionStatus } from "../../helper/constant";
 
 export default {

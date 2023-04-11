@@ -3,7 +3,7 @@ import { Request } from "express";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationCreateVendorCompanyArgs, MutationInviteVendorCompaniesToProjectByAdminArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../generated";
+import { MutationCreateVendorCompanyArgs, MutationInviteVendorCompaniesToProjectByAdminArgs, MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../../generated";
 
 export default {
   VendorCompany: {

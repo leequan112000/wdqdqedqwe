@@ -1,7 +1,7 @@
 import { Notification, User } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
-import { QueryNotificationsArgs, Resolvers } from "../generated";
+import { QueryNotificationsArgs, Resolvers } from "../../generated";
 
 const resolvers: Resolvers<Context> = {
   Notification: {

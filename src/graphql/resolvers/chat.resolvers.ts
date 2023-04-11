@@ -1,6 +1,6 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { Resolvers } from "../generated";
+import { Resolvers } from "../../generated";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
