@@ -147,8 +147,8 @@ const resolvers: Resolvers<Context> = {
       }
 
       await Promise.all(
-        users.map(user => {
-          createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+        users.map(async (user) => {
+          await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
         })
       );
 
@@ -259,8 +259,8 @@ const resolvers: Resolvers<Context> = {
         }
 
         await Promise.all(
-          users.map(user => {
-            createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+          users.map(async (user) => {
+            await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
           })
         );
 
