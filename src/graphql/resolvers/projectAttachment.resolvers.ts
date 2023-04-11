@@ -73,7 +73,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const  customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findFirst({
         where: {
           user_id: context.req.user_id,
         },
@@ -94,20 +94,34 @@ const resolvers: Resolvers<Context> = {
 
       let users;
       if (customer) {
-        // user is customer
+        // current user is customer, then users find vendor members
+        const vendorMembers = await context.prisma.vendorMember.findMany({
+          where: {
+            id: {
+              in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+            },
+          },
+        });
         users = await context.prisma.user.findMany({
+          where: {
+            id: {
+              in: vendorMembers.map(vm => vm.user_id),
+            },
+          },
+        });
+      } else {
+        // current user is vendor member, then users find customers
+        const customers = await context.prisma.vendorMember.findMany({
           where: {
             id: {
               in: projectConnection.customer_connections.map(cc => cc.customer_id),
             },
           },
         });
-      } else {
-        // user is vendor member
         users = await context.prisma.user.findMany({
           where: {
             id: {
-              in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+              in: customers.map(c => c.user_id),
             },
           },
         });
@@ -147,8 +161,8 @@ const resolvers: Resolvers<Context> = {
       }
 
       await Promise.all(
-        users.map(user => {
-          createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+        users.map(async (user) => {
+          await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
         })
       );
 
@@ -161,7 +175,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const  customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findFirst({
         where: {
           user_id: context.req.user_id,
         },
@@ -239,28 +253,42 @@ const resolvers: Resolvers<Context> = {
 
         let users;
         if (customer) {
-          // user is customer
-          users = await context.prisma.user.findMany({
-            where: {
-              id: {
-                in: projectConnection.customer_connections.map(cc => cc.customer_id),
-              },
-            },
-          });
-        } else {
-          // user is vendor member
-          users = await context.prisma.user.findMany({
+          // current user is customer, then users find vendor members
+          const vendorMembers = await context.prisma.vendorMember.findMany({
             where: {
               id: {
                 in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
               },
             },
           });
+          users = await context.prisma.user.findMany({
+            where: {
+              id: {
+                in: vendorMembers.map(vm => vm.user_id),
+              },
+            },
+          });
+        } else {
+          // current user is vendor member, then users find customers
+          const customers = await context.prisma.vendorMember.findMany({
+            where: {
+              id: {
+                in: projectConnection.customer_connections.map(cc => cc.customer_id),
+              },
+            },
+          });
+          users = await context.prisma.user.findMany({
+            where: {
+              id: {
+                in: customers.map(c => c.user_id),
+              },
+            },
+          });
         }
 
         await Promise.all(
-          users.map(user => {
-            createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+          users.map(async (user) => {
+            await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
           })
         );
 

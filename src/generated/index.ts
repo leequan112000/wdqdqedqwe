@@ -122,6 +122,7 @@ export type Mutation = {
   /** @deprecated Use `inviteCollaborator`. */
   inviteVendorMember?: Maybe<VendorMember>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
+  markAsRead?: Maybe<Scalars['Boolean']>;
   onboardBiotech?: Maybe<Biotech>;
   onboardVendorCompany?: Maybe<VendorCompany>;
   refreshJWT?: Maybe<AuthResponse>;
@@ -255,6 +256,11 @@ export type MutationInviteVendorMemberByAdminArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   vendor_company_id: Scalars['String'];
+};
+
+
+export type MutationMarkAsReadArgs = {
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -846,6 +852,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
+  markAsRead?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationMarkAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;

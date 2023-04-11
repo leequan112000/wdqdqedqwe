@@ -3,6 +3,8 @@ import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { User, VendorMember } from "@prisma/client";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
+import createAdminInviteNotification from "../../notification/adminInviteNotification";
+import { InternalError } from "../../graphql/errors/InternalError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -75,9 +77,21 @@ const resolvers: Resolvers<Context> = {
         );
 
         await Promise.all(
-          primaryVendorMembers.map((primaryVendorMember) => {
+          primaryVendorMembers.map(async (primaryVendorMember) => {
             // TODO: use queue & send notification to vendor members
             sendVendorMemberProjectRequestInvitationByAdminEmail(projectRequest, primaryVendorMember.user);
+
+            const projectConnection = await trx.projectConnection.findFirst({
+              where: {
+                project_request_id: args.project_request_id,
+                vendor_company_id: primaryVendorMember.vendor_company_id,
+              }
+            });
+
+            if (!projectConnection) {
+              throw new InternalError('There was an error while find the project connection for creating notifications.');
+            }
+            await createAdminInviteNotification(primaryVendorMember.id, projectConnection?.id)
           })
         );
         return true;

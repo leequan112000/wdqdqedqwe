@@ -1,7 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { prisma } from '../connectDB';
 
-const createAdminInviteNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
+const createAdminInviteNotification = async (recipient_id: string, project_connection_id: string) => {
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,

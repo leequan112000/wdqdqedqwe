@@ -16,3 +16,7 @@ type Notification {
 type Query {
   notifications(unread_only: Boolean): [Notification]
 }
+
+type Mutation {
+  markAsRead(project_connection_id: String!): Boolean
+}
