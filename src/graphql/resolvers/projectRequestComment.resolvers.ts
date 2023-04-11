@@ -2,7 +2,7 @@ import { ProjectRequestComment, ProjectRequest } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationCreateProjectRequestCommentArgs } from "../generated";
+import { MutationCreateProjectRequestCommentArgs } from "../../generated";
 
 export default {
   ProjectRequestComment: {

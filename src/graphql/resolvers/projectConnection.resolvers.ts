@@ -6,7 +6,7 @@ import { InternalError } from "../errors/InternalError";
 import { NotFoundError } from "../errors/NotFoundError";
 import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../generated";
+import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
 import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
 

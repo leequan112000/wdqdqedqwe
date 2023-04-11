@@ -1,7 +1,7 @@
 import { User } from "@prisma/client";
 import axios from "axios";
 import { app_env } from "../environment";
-import { ProjectAttachment } from "../graphql/generated";
+import { ProjectAttachment } from "../generated";
 import { getSignedUrl } from "./awsS3";
 
 
