@@ -1,6 +1,7 @@
 import { Notification, User } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
+import { InternalError } from "../errors/InternalError";
 import { QueryNotificationsArgs, Resolvers } from "../generated";
 
 const resolvers: Resolvers<Context> = {
@@ -58,7 +59,39 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    // TODO: mark notification as read
+    markAsRead: async (_, args, context) => {
+      const { project_connection_id } = args;
+
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
+      const notifications = await context.prisma.notification.findMany({
+        where: {
+          recipient_id: context.req.user_id,
+          read_at: null,
+          params: {
+            path: ['project_connection_id'],
+            equals: project_connection_id,
+          },
+        },
+      });
+      
+      await Promise.all(
+        notifications.map(async (notification) => {
+          await context.prisma.notification.update({
+            where: {
+              id: notification.id,
+            },
+            data: {
+              read_at: new Date(),
+            },
+          });
+        })
+      );
+
+      return true;
+    },
   },
 };
 
