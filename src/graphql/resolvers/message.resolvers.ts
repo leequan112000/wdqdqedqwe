@@ -116,15 +116,20 @@ const resolvers: Resolvers<Context> = {
         });
 
         await Promise.all(
-          users.map(user => {
-            const notification =
-              context.prisma.notification.findFirst({
-                where: {
-                  recipient_id: user.id,
-                  notification_type: 'MessageNotification',
-                }
-              });
-            if (!notification) {
+          users.map(async (user) => {
+            const notification = await context.prisma.notification.findFirst({
+              where: {
+                recipient_id: user.id,
+                notification_type: 'MessageNotification',
+                read_at: null,
+                params: {
+                  path: ['project_connection_id'],
+                  equals: projectConnection.id,
+                },
+              }
+            });
+
+            if (notification) {
               createMessageNotification(context.req.user_id!, user.id, projectConnection.id);
             }
           })
