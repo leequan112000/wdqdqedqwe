@@ -48,20 +48,34 @@ const resolvers: Resolvers<Context> = {
   
         let users;
         if (customer) {
-          // user is customer
+          // current user is customer, then users find vendor members
+          const vendorMembers = await context.prisma.vendorMember.findMany({
+            where: {
+              id: {
+                in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+              },
+            },
+          });
           users = await context.prisma.user.findMany({
+            where: {
+              id: {
+                in: vendorMembers.map(vm => vm.user_id),
+              },
+            },
+          });
+        } else {
+          // current user is vendor member, then users find customers
+          const customers = await context.prisma.vendorMember.findMany({
             where: {
               id: {
                 in: projectConnection.customer_connections.map(cc => cc.customer_id),
               },
             },
           });
-        } else {
-          // user is vendor member
           users = await context.prisma.user.findMany({
             where: {
               id: {
-                in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+                in: customers.map(c => c.user_id),
               },
             },
           });
@@ -129,7 +143,7 @@ const resolvers: Resolvers<Context> = {
               }
             });
 
-            if (notification) {
+            if (!notification) {
               createMessageNotification(context.req.user_id!, user.id, projectConnection.id);
             }
           })
