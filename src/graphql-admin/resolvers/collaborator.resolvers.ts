@@ -6,7 +6,7 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
-    resendInvitation: async (parent, args, context) => {
+    resendInvitationByAdmin: async (parent, args, context) => {
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -52,14 +52,16 @@ const resolvers: Resolvers<Context> = {
 
       if (currentUser?.customer?.biotech_id) {
         sendCustomerInvitationEmail(currentUser, newUser);
-        return newUser;
+        return true;
       }
       if (currentUser?.vendor_member?.vendor_company_id) {
         sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser);
-        return newUser;
+        return true;
       }
 
       throw new InternalError('User not found.');
     },
   }
 }
+
+export default resolvers;

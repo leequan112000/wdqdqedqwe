@@ -129,6 +129,7 @@ export type Mutation = {
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
   resendInvitation?: Maybe<User>;
+  resendInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   signInUser: AuthResponse;
@@ -291,6 +292,11 @@ export type MutationRemoveProjectCollaboratorArgs = {
 
 
 export type MutationResendInvitationArgs = {
+  user_id: Scalars['String'];
+};
+
+
+export type MutationResendInvitationByAdminArgs = {
   user_id: Scalars['String'];
 };
 
@@ -853,6 +859,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
+  resendInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendInvitationByAdminArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
