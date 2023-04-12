@@ -156,7 +156,6 @@ const resolvers: Resolvers<Context> = {
 
         await Promise.all(
           users.map(async (user) => {
-            console.log('createFileUploadNotification', user.id, projectConnection.id)
             await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
           })
         );
