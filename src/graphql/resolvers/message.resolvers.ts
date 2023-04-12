@@ -4,7 +4,7 @@ import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
-import { sendNewMessageNoticeEmailQueue } from "../../queues/mailer.queues";
+import { sendNewMessageNoticeEmailQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   Message: {

@@ -6,7 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
-import { sendFileUploadNoticeEmailQueue } from "../../queues/mailer.queues";
+import { sendFileUploadNoticeEmailQueue } from "../../queues/notification.queues";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'

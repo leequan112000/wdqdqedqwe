@@ -4,7 +4,7 @@ import { PublicError } from "../errors/PublicError";
 import { ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
-import { sendAdminNewProjectRequestEmailQueue } from "../../queues/mailer.queues";
+import { sendAdminNewProjectRequestEmailQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {

@@ -7,7 +7,7 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRe
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
+import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
