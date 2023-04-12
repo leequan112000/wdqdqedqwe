@@ -8,7 +8,7 @@
     "start:dev": "concurrently \"yarn nodemon src/server.ts\" \"yarn generate --watch\"",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
-    "copy-graphql": "cp -r ./src/graphql/types ./dist/graphql/types",
+    "copy-graphql": "cp -r ./src/graphql/types ./dist/graphql/types && cp -r ./src/graphql-admin/types ./dist/graphql-admin/types",
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push",
     "prepare": "husky install"
