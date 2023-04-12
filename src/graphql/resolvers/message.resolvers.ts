@@ -5,7 +5,6 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendNewMessageNoticeEmailQueue } from "../../queues/mailer.queues";
-import createMessageNotification from '../../notification/messageNotification';
 
 const resolvers: Resolvers<Context> = {
   Message: {
@@ -27,58 +26,13 @@ const resolvers: Resolvers<Context> = {
           throw new PublicError('User not logged in.');
         }
 
-        const customer = await context.prisma.customer.findFirst({
-          where: {
-            user_id: context.req.user_id,
-          },
-        });
-  
         const projectConnection = await context.prisma.projectConnection.findFirst({
           where: {
             id: args.project_connection_id,
-          },
-          include: {
-            customer_connections: true,
-            vendor_member_connections: true,
-          },
+          }
         });
         if (!projectConnection) {
           throw new InternalError('Project connection not found');
-        }
-  
-        let users;
-        if (customer) {
-          // current user is customer, then users find vendor members
-          const vendorMembers = await context.prisma.vendorMember.findMany({
-            where: {
-              id: {
-                in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
-              },
-            },
-          });
-          users = await context.prisma.user.findMany({
-            where: {
-              id: {
-                in: vendorMembers.map(vm => vm.user_id),
-              },
-            },
-          });
-        } else {
-          // current user is vendor member, then users find customers
-          const customers = await context.prisma.vendorMember.findMany({
-            where: {
-              id: {
-                in: projectConnection.customer_connections.map(cc => cc.customer_id),
-              },
-            },
-          });
-          users = await context.prisma.user.findMany({
-            where: {
-              id: {
-                in: customers.map(c => c.user_id),
-              },
-            },
-          });
         }
 
         let chat = await trx.chat.findFirst({
@@ -128,26 +82,6 @@ const resolvers: Resolvers<Context> = {
           projectConnectionId: chat.project_connection_id,
           senderUserId: context.req.user_id,
         });
-
-        await Promise.all(
-          users.map(async (user) => {
-            const notification = await context.prisma.notification.findFirst({
-              where: {
-                recipient_id: user.id,
-                notification_type: 'MessageNotification',
-                read_at: null,
-                params: {
-                  path: ['project_connection_id'],
-                  equals: projectConnection.id,
-                },
-              }
-            });
-
-            if (!notification) {
-              createMessageNotification(context.req.user_id!, user.id, projectConnection.id);
-            }
-          })
-        );
 
         return newMessage;
       });

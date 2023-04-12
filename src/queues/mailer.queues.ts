@@ -1,5 +1,6 @@
 import { AdminTeam } from "../helper/constant";
 import { app_env } from "../environment";
+import createMessageNotification from '../notification/messageNotification';
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
@@ -193,16 +194,31 @@ sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnection
   }
 
   await Promise.all(
-    receivers.map(receiver => {
-      sendNewMessageNoticeEmail(
-        {
-          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-          project_title: projectConnection.project_request.title,
-          company_name: senderCompanyName,
-        },
-        receiver.email,
-      );
+    receivers.map(async (receiver) => {
+      const notification = await prisma.notification.findFirst({
+        where: {
+          recipient_id: receiver.id,
+          notification_type: 'MessageNotification',
+          read_at: null,
+          params: {
+            path: ['project_connection_id'],
+            equals: projectConnection.id,
+          },
+        }
+      });
+
+      if (!notification) {
+        await sendNewMessageNoticeEmail(
+          {
+            login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            project_title: projectConnection.project_request.title,
+            company_name: senderCompanyName,
+          },
+          receiver.email,
+        );
+        await createMessageNotification(senderUserId, receiver.id, projectConnection.id);
+      }
     })
   );
 });
