@@ -1,5 +1,6 @@
 import { AdminTeam } from "../helper/constant";
 import { app_env } from "../environment";
+import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createMessageNotification from '../notification/messageNotification';
 import createFileUploadNotification from "../notification/fileUploadNotification";
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
@@ -15,9 +16,9 @@ import { User } from "@prisma/client";
 export const sendAdminNewProjectRequestEmailQueue = new Queue(
   `send_admin_new_project_request_email_${Date.now()}`,
   process.env.REDIS_URL!
-);
-
-sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
+  );
+  
+  sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
   const { biotechName } = job.data;
   const admins = await prisma.admin.findMany({
     where: {
@@ -270,8 +271,8 @@ sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ project
     });
 
     await Promise.all(
-      receivers.map(receiver => {
-        sendAcceptProjectRequestEmail(
+      receivers.map(async (receiver) => {
+        await sendAcceptProjectRequestEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
             receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
@@ -280,6 +281,8 @@ sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ project
           },
           receiver.email,
         );
+
+        await createAcceptRequestNotification(senderUserId ,receiver.id, projectConnection.id);
       })
     );
   }
