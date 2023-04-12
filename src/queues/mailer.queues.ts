@@ -1,6 +1,8 @@
 import { AdminTeam } from "../helper/constant";
 import { app_env } from "../environment";
 import createMessageNotification from '../notification/messageNotification';
+import createFileUploadNotification from "../notification/fileUploadNotification";
+import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import Queue from 'bull';
@@ -102,8 +104,8 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
 
   if (isFinalContract) {
     await Promise.all(
-      receivers.map(receiver => {
-        sendContractUploadNoticeEmail(
+      receivers.map(async (receiver) => {
+        await sendContractUploadNoticeEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
             receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
@@ -113,17 +115,20 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
           receiver.email,
           action!,
         );
+        await createFinalContractUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
       })
     );
   } else {
     await Promise.all(
-      receivers.map(receiver => {
-        sendDocumentUploadNoticeEmail({
+      receivers.map(async (receiver) => {
+        await sendDocumentUploadNoticeEmail({
           login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
           receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
           project_title: projectConnection.project_request.title,
           company_name: senderCompanyName,
         }, receiver.email);
+
+        await createFileUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
       })
     );
   }

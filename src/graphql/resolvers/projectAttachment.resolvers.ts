@@ -6,9 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
-import createFileUploadNotification from "../../notification/fileUploadNotification";
 import { sendFileUploadNoticeEmailQueue } from "../../queues/mailer.queues";
-import createFinalContractUploadNotification from "../../notification/finalContractUploadNotification";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -74,58 +72,13 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: project_connection_id,
-        },
-        include: {
-          customer_connections: true,
-          vendor_member_connections: true,
-        },
+        }
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
-      }
-
-      let users;
-      if (customer) {
-        // current user is customer, then users find vendor members
-        const vendorMembers = await context.prisma.vendorMember.findMany({
-          where: {
-            id: {
-              in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
-            },
-          },
-        });
-        users = await context.prisma.user.findMany({
-          where: {
-            id: {
-              in: vendorMembers.map(vm => vm.user_id),
-            },
-          },
-        });
-      } else {
-        // current user is vendor member, then users find customers
-        const customers = await context.prisma.vendorMember.findMany({
-          where: {
-            id: {
-              in: projectConnection.customer_connections.map(cc => cc.customer_id),
-            },
-          },
-        });
-        users = await context.prisma.user.findMany({
-          where: {
-            id: {
-              in: customers.map(c => c.user_id),
-            },
-          },
-        });
       }
 
       if (files) {
@@ -154,12 +107,6 @@ const resolvers: Resolvers<Context> = {
           isFinalContract: false,
         });
 
-        await Promise.all(
-          users.map(async (user) => {
-            await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
-          })
-        );
-
         return result.map((r) => ({
           ...r,
           byte_size: Number(r.byte_size) / 1000,
@@ -176,20 +123,10 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user id not found');
       }
 
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: project_connection_id,
-        },
-        include: {
-          customer_connections: true,
-          vendor_member_connections: true,
-        },
+        }
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
@@ -251,47 +188,6 @@ const resolvers: Resolvers<Context> = {
             action: 'upload',
           });
         }
-
-        let users;
-        if (customer) {
-          // current user is customer, then users find vendor members
-          const vendorMembers = await context.prisma.vendorMember.findMany({
-            where: {
-              id: {
-                in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
-              },
-            },
-          });
-          users = await context.prisma.user.findMany({
-            where: {
-              id: {
-                in: vendorMembers.map(vm => vm.user_id),
-              },
-            },
-          });
-        } else {
-          // current user is vendor member, then users find customers
-          const customers = await context.prisma.vendorMember.findMany({
-            where: {
-              id: {
-                in: projectConnection.customer_connections.map(cc => cc.customer_id),
-              },
-            },
-          });
-          users = await context.prisma.user.findMany({
-            where: {
-              id: {
-                in: customers.map(c => c.user_id),
-              },
-            },
-          });
-        }
-
-        await Promise.all(
-          users.map(async (user) => {
-            await createFinalContractUploadNotification(context.req.user_id!, user.id, projectConnection.id);
-          })
-        );
 
         return {
           ...attachment,
