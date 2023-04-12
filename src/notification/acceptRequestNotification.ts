@@ -1,4 +1,5 @@
 import { InternalError } from '../graphql/errors/InternalError';
+import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 
 const createAcceptRequestNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
@@ -31,7 +32,7 @@ const createAcceptRequestNotification = async (sender_id: string, recipient_id: 
 
   const notification = await prisma.notification.create({
     data: {
-      notification_type: 'AcceptRequestNotification',
+      notification_type: NotificationType.ACCEPT_REQUEST_NOTIFICATION,
       message: `**${sender.first_name} ${sender.last_name}** is interested in working on your project request **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
       params: {

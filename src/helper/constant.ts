@@ -24,6 +24,15 @@ export enum AdminTeam {
   SCIENCE = 'science',
 }
 
+export enum NotificationType {
+  ACCEPT_REQUEST_NOTIFICATION = 'AcceptRequestNotification',
+  ADMIN_INVITE_NOTIFICATION = 'AdminInviteNotification',
+  COLLABORATED_NOTIFICATION = 'CollaboratedNotification',
+  FILE_UPLOAD_NOTIFICATION = 'FileUploadNotification',
+  FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
+  MESSAGE_NOTIFICATION = 'MessageNotification',
+}
+
 export enum ProjectAttachmentDocumentType {
   FILE,
   REDLINE_FILE,

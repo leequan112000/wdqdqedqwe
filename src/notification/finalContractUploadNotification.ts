@@ -1,4 +1,5 @@
 import { InternalError } from '../graphql/errors/InternalError';
+import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 
 const createFinalContractUploadNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
@@ -31,7 +32,7 @@ const createFinalContractUploadNotification = async (sender_id: string, recipien
 
   const notification = await prisma.notification.create({
     data: {
-      notification_type: 'FinalContractUploadNotification',
+      notification_type: NotificationType.FINAL_CONTRACT_UPLOAD_NOTIFICATION,
       message: `**${sender.first_name} ${sender.last_name}** updated final contract for **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
       params: {

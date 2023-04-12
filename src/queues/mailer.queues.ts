@@ -1,6 +1,7 @@
 import { AdminTeam } from "../helper/constant";
 import { app_env } from "../environment";
 import createMessageNotification from '../notification/messageNotification';
+import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
@@ -198,7 +199,7 @@ sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnection
       const notification = await prisma.notification.findFirst({
         where: {
           recipient_id: receiver.id,
-          notification_type: 'MessageNotification',
+          notification_type: NotificationType.MESSAGE_NOTIFICATION,
           read_at: null,
           params: {
             path: ['project_connection_id'],
