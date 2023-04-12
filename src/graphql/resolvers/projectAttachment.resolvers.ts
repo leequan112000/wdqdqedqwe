@@ -8,6 +8,7 @@ import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
 import createFileUploadNotification from "../../notification/fileUploadNotification";
 import { sendFileUploadNoticeEmailQueue } from "../../queues/mailer.queues";
+import createFinalContractUploadNotification from "../../notification/finalContractUploadNotification";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -153,18 +154,19 @@ const resolvers: Resolvers<Context> = {
           isFinalContract: false,
         });
 
+        await Promise.all(
+          users.map(async (user) => {
+            console.log('createFileUploadNotification', user.id, projectConnection.id)
+            await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+          })
+        );
+
         return result.map((r) => ({
           ...r,
           byte_size: Number(r.byte_size) / 1000,
           document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.document_type],
         }));
       }
-
-      await Promise.all(
-        users.map(async (user) => {
-          await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
-        })
-      );
 
       return []
     },
@@ -288,7 +290,7 @@ const resolvers: Resolvers<Context> = {
 
         await Promise.all(
           users.map(async (user) => {
-            await createFileUploadNotification(context.req.user_id!, user.id, projectConnection.id);
+            await createFinalContractUploadNotification(context.req.user_id!, user.id, projectConnection.id);
           })
         );
 
