@@ -135,12 +135,12 @@ sendFileUploadNotificationQueue.process(async (job: Queue.Job<{
   }
 });
 
-export const sendNewMessageNoticeEmailQueue = new Queue(
+export const sendNewMessageNotificationQueue = new Queue(
   `send_new_message_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({

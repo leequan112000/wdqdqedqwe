@@ -4,7 +4,7 @@ import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
-import { sendNewMessageNoticeEmailQueue } from "../../queues/notification.queues";
+import { sendNewMessageNotificationQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   Message: {
@@ -78,7 +78,7 @@ const resolvers: Resolvers<Context> = {
 
         pubsub.publish('NEW_MESSAGE', { newMessage });
 
-        sendNewMessageNoticeEmailQueue.add({
+        sendNewMessageNotificationQueue.add({
           projectConnectionId: chat.project_connection_id,
           senderUserId: context.req.user_id,
         });
