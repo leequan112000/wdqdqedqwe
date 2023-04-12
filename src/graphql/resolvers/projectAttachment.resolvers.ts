@@ -6,7 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
-import { sendFileUploadNoticeEmailQueue } from "../../queues/notification.queues";
+import { sendFileUploadNotificationQueue } from "../../queues/notification.queues";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -101,7 +101,7 @@ const resolvers: Resolvers<Context> = {
           return attachment;
         }));
 
-        sendFileUploadNoticeEmailQueue.add({
+        sendFileUploadNotificationQueue.add({
           projectConnectionId: project_connection_id,
           uploaderUserId: context.req.user_id,
           isFinalContract: false,
@@ -162,7 +162,7 @@ const resolvers: Resolvers<Context> = {
           // delete the old contract s3 object
           await deleteObject(existingContract.key);
 
-          sendFileUploadNoticeEmailQueue.add({
+          sendFileUploadNotificationQueue.add({
             projectConnectionId: project_connection_id,
             uploaderUserId: context.req.user_id,
             isFinalContract: true,
@@ -181,7 +181,7 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          sendFileUploadNoticeEmailQueue.add({
+          sendFileUploadNotificationQueue.add({
             projectConnectionId: project_connection_id,
             uploaderUserId: context.req.user_id,
             isFinalContract: true,

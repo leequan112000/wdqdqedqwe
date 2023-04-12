@@ -34,12 +34,12 @@ export const sendAdminNewProjectRequestEmailQueue = new Queue(
 });
 
 
-export const sendFileUploadNoticeEmailQueue = new Queue(
+export const sendFileUploadNotificationQueue = new Queue(
   `send_file_upload_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
+sendFileUploadNotificationQueue.process(async (job: Queue.Job<{
   projectConnectionId: string,
   uploaderUserId: string,
   isFinalContract: boolean,
