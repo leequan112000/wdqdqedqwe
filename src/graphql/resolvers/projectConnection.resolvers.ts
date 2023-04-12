@@ -7,7 +7,7 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRe
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/notification.queues";
+import { sendAcceptProjectRequestNotificationQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -439,7 +439,7 @@ const resolvers: Resolvers<Context> = {
         });
       });
 
-      sendAcceptProjectRequestNoticeEmailQueue.add({
+      sendAcceptProjectRequestNotificationQueue.add({
         projectConnectionId: projectConnection.id,
         senderUserId: context.req.user_id,
       });

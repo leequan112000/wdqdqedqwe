@@ -230,12 +230,12 @@ sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectio
   );
 });
 
-export const sendAcceptProjectRequestNoticeEmailQueue = new Queue(
+export const sendAcceptProjectRequestNotificationQueue = new Queue(
   `send_accept_project_request_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
