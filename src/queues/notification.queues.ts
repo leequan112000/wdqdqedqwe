@@ -1,5 +1,10 @@
 import { AdminTeam } from "../helper/constant";
 import { app_env } from "../environment";
+import createAcceptRequestNotification from "../notification/acceptRequestNotification";
+import createMessageNotification from '../notification/messageNotification';
+import createFileUploadNotification from "../notification/fileUploadNotification";
+import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
+import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import Queue from 'bull';
 import { sendAdminNewProjectRequestEmail } from "../mailer/admin";
@@ -11,9 +16,9 @@ import { User } from "@prisma/client";
 export const sendAdminNewProjectRequestEmailQueue = new Queue(
   `send_admin_new_project_request_email_${Date.now()}`,
   process.env.REDIS_URL!
-);
-
-sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
+  );
+  
+  sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
   const { biotechName } = job.data;
   const admins = await prisma.admin.findMany({
     where: {
@@ -29,12 +34,12 @@ sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName
 });
 
 
-export const sendFileUploadNoticeEmailQueue = new Queue(
+export const sendFileUploadNotificationQueue = new Queue(
   `send_file_upload_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
+sendFileUploadNotificationQueue.process(async (job: Queue.Job<{
   projectConnectionId: string,
   uploaderUserId: string,
   isFinalContract: boolean,
@@ -100,8 +105,8 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
 
   if (isFinalContract) {
     await Promise.all(
-      receivers.map(receiver => {
-        sendContractUploadNoticeEmail(
+      receivers.map(async (receiver) => {
+        await sendContractUploadNoticeEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
             receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
@@ -111,28 +116,31 @@ sendFileUploadNoticeEmailQueue.process(async (job: Queue.Job<{
           receiver.email,
           action!,
         );
+        await createFinalContractUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
       })
     );
   } else {
     await Promise.all(
-      receivers.map(receiver => {
-        sendDocumentUploadNoticeEmail({
+      receivers.map(async (receiver) => {
+        await sendDocumentUploadNoticeEmail({
           login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
           receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
           project_title: projectConnection.project_request.title,
           company_name: senderCompanyName,
         }, receiver.email);
+
+        await createFileUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
       })
     );
   }
 });
 
-export const sendNewMessageNoticeEmailQueue = new Queue(
+export const sendNewMessageNotificationQueue = new Queue(
   `send_new_message_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
@@ -193,26 +201,41 @@ sendNewMessageNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnection
   }
 
   await Promise.all(
-    receivers.map(receiver => {
-      sendNewMessageNoticeEmail(
-        {
-          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-          project_title: projectConnection.project_request.title,
-          company_name: senderCompanyName,
-        },
-        receiver.email,
-      );
+    receivers.map(async (receiver) => {
+      const notification = await prisma.notification.findFirst({
+        where: {
+          recipient_id: receiver.id,
+          notification_type: NotificationType.MESSAGE_NOTIFICATION,
+          read_at: null,
+          params: {
+            path: ['project_connection_id'],
+            equals: projectConnection.id,
+          },
+        }
+      });
+
+      if (!notification) {
+        await sendNewMessageNoticeEmail(
+          {
+            login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            project_title: projectConnection.project_request.title,
+            company_name: senderCompanyName,
+          },
+          receiver.email,
+        );
+        await createMessageNotification(senderUserId, receiver.id, projectConnection.id);
+      }
     })
   );
 });
 
-export const sendAcceptProjectRequestNoticeEmailQueue = new Queue(
+export const sendAcceptProjectRequestNotificationQueue = new Queue(
   `send_accept_project_request_notice_email_${Date.now()}`,
   process.env.REDIS_URL!
 );
 
-sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
@@ -248,8 +271,8 @@ sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ project
     });
 
     await Promise.all(
-      receivers.map(receiver => {
-        sendAcceptProjectRequestEmail(
+      receivers.map(async (receiver) => {
+        await sendAcceptProjectRequestEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
             receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
@@ -258,6 +281,8 @@ sendAcceptProjectRequestNoticeEmailQueue.process(async (job: Queue.Job<{ project
           },
           receiver.email,
         );
+
+        await createAcceptRequestNotification(senderUserId ,receiver.id, projectConnection.id);
       })
     );
   }

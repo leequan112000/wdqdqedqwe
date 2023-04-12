@@ -1,4 +1,5 @@
 import { InternalError } from '../graphql/errors/InternalError';
+import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 
 const createCollaboratedNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
@@ -31,7 +32,7 @@ const createCollaboratedNotification = async (sender_id: string, recipient_id: s
 
   const notification = await prisma.notification.create({
     data: {
-      notification_type: 'CollaboratedNotification',
+      notification_type: NotificationType.COLLABORATED_NOTIFICATION,
       message: `**${sender.first_name} ${sender.last_name}** invited you to collaborate on **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
       params: {

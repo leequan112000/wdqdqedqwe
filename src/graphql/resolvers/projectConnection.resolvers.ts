@@ -1,5 +1,4 @@
 import { app_env } from "../../environment";
-import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
@@ -8,7 +7,7 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRe
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { sendAcceptProjectRequestNoticeEmailQueue } from "../../queues/mailer.queues";
+import { sendAcceptProjectRequestNotificationQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -440,26 +439,10 @@ const resolvers: Resolvers<Context> = {
         });
       });
 
-      sendAcceptProjectRequestNoticeEmailQueue.add({
+      sendAcceptProjectRequestNotificationQueue.add({
         projectConnectionId: projectConnection.id,
         senderUserId: context.req.user_id,
       });
-
-      const users = await context.prisma.user.findMany({
-        where: {
-          customer: {
-            id: {
-              in: projectConnection.customer_connections.map(cc => cc.customer_id),
-            }
-          }
-        }
-      });
-
-      await Promise.all(
-        users.map(user => {
-          createAcceptRequestNotification(context.req.user_id! ,user.id, projectConnection.id);
-        })
-      );
 
       return updatedProjectConnection;
     },

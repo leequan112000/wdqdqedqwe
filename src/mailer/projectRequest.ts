@@ -16,7 +16,7 @@ export const sendProjectRequestSubmissionEmail = (receiver: User) => {
   sendMail(mailData);
 };
 
-export const sendAcceptProjectRequestEmail = (emailData: AcceptProjectRequestNoticeData, receiverEmail: string) => {
+export const sendAcceptProjectRequestEmail = async (emailData: AcceptProjectRequestNoticeData, receiverEmail: string) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: acceptProjectRequestNoticeTemplate,
@@ -28,5 +28,5 @@ export const sendAcceptProjectRequestEmail = (emailData: AcceptProjectRequestNot
     },
   });
 
-  sendMail(mailData);
+  await sendMail(mailData);
 };
