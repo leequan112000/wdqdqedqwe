@@ -2,7 +2,10 @@ let origin: string[] = [];
 
 // Loosen CORS for development and staging
 if (process.env.NODE_ENV === 'production') {
-  origin = [ 'https://platform.cro-matic.com' ];
+  origin = [
+    'https://platform.cro-matic.com',
+    'https://www.cro-matic.com',
+  ];
 } else if (process.env.NODE_ENV === 'staging') {
   origin = [
     'https://caesar-staging.herokuapp.com',
