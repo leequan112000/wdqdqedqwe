@@ -18,5 +18,5 @@ type Query {
 }
 
 type Mutation {
-  markAsRead(project_connection_id: String!): Boolean
+  markAsRead(project_connection_id: String!): [Notification]
 }

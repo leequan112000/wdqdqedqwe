@@ -90,7 +90,7 @@ const resolvers: Resolvers<Context> = {
         })
       );
 
-      return true;
+      return notifications;
     },
   },
 };
