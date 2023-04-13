@@ -1,10 +1,10 @@
 import { User, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { createResetPasswordToken } from "../../helper/auth";
-import { sendVendorMemberInvitationByAdminEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationInviteVendorMemberArgs, MutationInviteVendorMemberByAdminArgs, MutationUpdateVendorMemberArgs } from "../../generated";
+import { MutationInviteVendorMemberArgs, MutationUpdateVendorMemberArgs } from "../../generated";
 
 export default {
   VendorMember: {
