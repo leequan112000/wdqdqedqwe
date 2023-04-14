@@ -23,7 +23,7 @@ import { operationWhitelist } from './helper/graphql'
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
-import './sentry';
+import Sentry from './sentry';
 
 const app = express();
 
