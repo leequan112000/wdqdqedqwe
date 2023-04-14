@@ -3,7 +3,7 @@ const Sentry = require("@sentry/node");
 // import * as Sentry from '@sentry/node';
 
 Sentry.init({
-  dsn: "https://31e55ce169c6477892443aa4f5352e0e@o4504679770226688.ingest.sentry.io/4505008760750080",
+  dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
