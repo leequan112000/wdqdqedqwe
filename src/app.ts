@@ -27,8 +27,6 @@ import './sentry';
 
 const app = express();
 
-app.use(Sentry.Handlers.errorHandler());
-
 export const httpServer = createServer(app);
 
 const wsServer = new WebSocketServer({
@@ -122,7 +120,9 @@ export const adminApolloServer = new ApolloServer<Context>({
 });
 
 export async function startServer() {
+  app.use(Sentry.Handlers.requestHandler());
   app.use(routes);
+  app.use(Sentry.Handlers.errorHandler());
   app.use(express.json());
   app.use(cors(corsConfig));
   app.use(cookieParser());
