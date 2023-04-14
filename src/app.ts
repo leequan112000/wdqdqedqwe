@@ -23,8 +23,11 @@ import { operationWhitelist } from './helper/graphql'
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
+import './sentry';
 
 const app = express();
+
+app.use(Sentry.Handlers.errorHandler());
 
 export const httpServer = createServer(app);
 
