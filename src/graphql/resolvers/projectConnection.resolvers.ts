@@ -340,7 +340,7 @@ const resolvers: Resolvers<Context> = {
         return 'withdrawn';
       }
 
-      return parent.vendor_status || 'pending';
+      return parent.vendor_status || ProjectConnectionVendorStatus.PENDING;
     }
   },
   Query: {
@@ -365,7 +365,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!projectConnection || currentUser?.customer && projectConnection?.vendor_status === 'declined') {
+      if (!projectConnection || currentUser?.customer && projectConnection?.vendor_status === ProjectConnectionVendorStatus.DECLINED) {
         throw new NotFoundError();
       }
 

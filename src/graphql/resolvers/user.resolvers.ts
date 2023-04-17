@@ -298,20 +298,14 @@ const resolvers: Resolvers<Context> = {
         const vendor = await context.prisma.vendorMember.findFirst({
           where: {
             user_id: context.req.user_id
+          },
+          include: {
+            vendor_company: true
           }
         });
 
         let channelId;
         if (vendor) {
-          const vendor = await context.prisma.vendorMember.findFirstOrThrow({
-            where: {
-              user_id: context.req.user_id,
-            },
-            include: {
-              vendor_company: true
-            }
-          });
-
           channelId = vendor.vendor_company?.id;
         } else {
           const customer = await context.prisma.customer.findFirstOrThrow({
@@ -531,11 +525,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!user) {
-        throw new PublicError('User not found.')
-      }
-
-      if (!user.reset_password_expiration) {
+      if (!user || !user.reset_password_expiration) {
         throw new PublicError('Invalid reset password link.')
       }
 

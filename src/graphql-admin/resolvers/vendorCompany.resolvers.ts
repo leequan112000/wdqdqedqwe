@@ -1,4 +1,5 @@
 import { Context } from "../../types/context";
+import { ProjectConnectionVendorStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { User, VendorMember } from "@prisma/client";
@@ -51,6 +52,7 @@ const resolvers: Resolvers<Context> = {
               data: {
                 project_request_id: args.project_request_id,
                 vendor_company_id: vendor_company_id as string,
+                vendor_status: ProjectConnectionVendorStatus.PENDING,
               }
             });
 
