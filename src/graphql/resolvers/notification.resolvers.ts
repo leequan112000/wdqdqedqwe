@@ -31,7 +31,7 @@ const resolvers: Resolvers<Context> = {
         case 'AcceptRequestNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'AdminInviteNotification':
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
         case 'CollaboratedNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'FileUploadNotification':
