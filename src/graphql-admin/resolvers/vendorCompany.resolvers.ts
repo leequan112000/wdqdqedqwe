@@ -2,10 +2,7 @@ import { Context } from "../../types/context";
 import { ProjectConnectionVendorStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
-import { User, VendorMember } from "@prisma/client";
-import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
-import createAdminInviteNotification from "../../notification/adminInviteNotification";
-import { InternalError } from "../../graphql/errors/InternalError";
+import { sendAdminProjectInvitationNotificationQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -20,84 +17,83 @@ const resolvers: Resolvers<Context> = {
       });
     },
     inviteVendorCompaniesToProjectByAdmin: async (_, args, context) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const projectRequest = await trx.projectRequest.findFirst({
-          where: {
-            id: args.project_request_id
-          }
-        });
-
-        if (!projectRequest) {
-          throw new PublicError('Invalid project request ID.');
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: args.project_request_id
         }
-
-        let primaryVendorMembers: (VendorMember & {user: User })[] = [];
-        await Promise.all(
-          args.vendor_company_ids.map(async (vendor_company_id) => {
-            const primaryVendorMember = await trx.vendorMember.findFirst({
-              where: {
-                vendor_company_id: vendor_company_id as string,
-                is_primary_member: true,
-              },
-              include: {
-                user: true,
-              }
-            });
-
-            if (!primaryVendorMember) {
-              throw new PublicError('No primary vendor member found.');
-            }
-
-            const projectConnection = await trx.projectConnection.create({
-              data: {
-                project_request_id: args.project_request_id,
-                vendor_company_id: vendor_company_id as string,
-                vendor_status: ProjectConnectionVendorStatus.PENDING,
-              }
-            });
-
-            if (!projectConnection) {
-              throw new PublicError('There was an error while creating the project connection.');
-            }
-
-            await trx.vendorMemberConnection.create({
-              data: {
-                project_connection_id: projectConnection.id,
-                vendor_member_id: primaryVendorMember.id,
-              }
-            });
-
-            await trx.customerConnection.create({
-              data: {
-                project_connection_id: projectConnection.id,
-                customer_id: projectRequest.customer_id,
-              }
-            });
-
-            primaryVendorMembers.push(primaryVendorMember);
-          })
-        );
-
-        await Promise.all(
-          primaryVendorMembers.map(async (primaryVendorMember) => {
-            // TODO: use queue & send notification to vendor members
-            sendVendorMemberProjectRequestInvitationByAdminEmail(projectRequest, primaryVendorMember.user);
-
-            const projectConnection = await trx.projectConnection.findFirst({
-              where: {
-                project_request_id: args.project_request_id,
-                vendor_company_id: primaryVendorMember.vendor_company_id,
-              }
-            });
-
-            if (!projectConnection) {
-              throw new InternalError('There was an error while find the project connection for creating notifications.');
-            }
-            await createAdminInviteNotification(primaryVendorMember.id, projectConnection?.id)
-          })
-        );
-        return true;
       });
+
+      if (!projectRequest) {
+        throw new PublicError('Invalid project request ID.');
+      }
+
+      await Promise.all(
+        args.vendor_company_ids.map(async (vendor_company_id) => {
+          // trycatch to prevent single error breaking all the promises
+          try {
+            await context.prisma.$transaction(async (trx) => {
+              // Check existing project connection
+              const existingProjectConnection = await trx.projectConnection.findFirst({
+                where: {
+                  project_request_id: projectRequest.id,
+                  vendor_company_id: vendor_company_id!,
+                }
+              });
+
+              if (existingProjectConnection) {
+                throw new PublicError('Project connection exists');
+              }
+              const primaryVendorMember = await trx.vendorMember.findFirst({
+                where: {
+                  vendor_company_id: vendor_company_id as string,
+                  is_primary_member: true,
+                },
+                include: {
+                  user: true,
+                }
+              });
+
+              if (!primaryVendorMember) {
+                throw new PublicError('No primary vendor member found.');
+              }
+
+              const projectConnection = await trx.projectConnection.create({
+                data: {
+                  project_request_id: args.project_request_id,
+                  vendor_company_id: vendor_company_id as string,
+                  vendor_status: ProjectConnectionVendorStatus.PENDING,
+                }
+              });
+              await trx.vendorMemberConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  vendor_member_id: primaryVendorMember.id,
+                }
+              });
+              await trx.customerConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  customer_id: projectRequest.customer_id,
+                }
+              });
+
+              // Send email and notification
+              sendAdminProjectInvitationNotificationQueue.add({
+                primaryMemberUserId: primaryVendorMember.user_id,
+                projectRequestId: projectRequest.id,
+                projectRequestName: projectRequest.title,
+                receiverEmail: primaryVendorMember.user.email,
+                vendorCompanyId: primaryVendorMember.vendor_company_id,
+                projectConnectionId: projectConnection.id,
+              });
+            })
+          } catch (error) {
+            // no-op
+          }
+        }),
+      );
+
+      return true;
     },
   }
 }
