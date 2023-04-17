@@ -12,13 +12,15 @@ import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { User } from "@prisma/client";
+import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
+import createAdminInviteNotification from "../notification/adminInviteNotification";
 
 export const sendAdminNewProjectRequestEmailQueue = new Queue(
   `send_admin_new_project_request_email_${Date.now()}`,
   process.env.REDIS_URL!
-  );
-  
-  sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
+);
+
+sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
   const { biotechName } = job.data;
   const admins = await prisma.admin.findMany({
     where: {
@@ -153,7 +155,7 @@ sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectio
       project_request: true,
     }
   });
-  
+
   const vendor = await prisma.vendorMember.findFirst({
     where: {
       user_id: senderUserId,
@@ -248,7 +250,7 @@ sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projec
       project_request: true,
     }
   });
-  
+
   const vendor = await prisma.vendorMember.findFirst({
     where: {
       user_id: senderUserId,
@@ -282,8 +284,30 @@ sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projec
           receiver.email,
         );
 
-        await createAcceptRequestNotification(senderUserId ,receiver.id, projectConnection.id);
+        await createAcceptRequestNotification(senderUserId, receiver.id, projectConnection.id);
       })
     );
   }
+});
+
+export const sendAdminProjectInvitationNotificationQueue = new Queue<{ receiverEmail: string; projectRequestName: string; projectRequestId: string; vendorCompanyId: string; primaryMemberUserId: string; projectConnectionId: string }>(
+  `send_admin_project_invitation_nofication_${Date.now()}`,
+  process.env.REDIS_URL!
+);
+
+sendAdminProjectInvitationNotificationQueue.process(async (job) => {
+  const { receiverEmail, projectRequestName, projectRequestId, vendorCompanyId, primaryMemberUserId, projectConnectionId } = job.data;
+  await sendVendorMemberProjectRequestInvitationByAdminEmail({
+    login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/project-request`,
+    project_request_name: projectRequestName,
+  }, receiverEmail);
+
+  const projectConnection = await prisma.projectConnection.findFirst({
+    where: {
+      project_request_id: projectRequestId,
+      vendor_company_id: vendorCompanyId,
+    }
+  })
+
+  await createAdminInviteNotification(primaryMemberUserId, projectConnection!.id)
 });

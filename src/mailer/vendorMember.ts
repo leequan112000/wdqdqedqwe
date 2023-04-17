@@ -1,7 +1,8 @@
-import { ProjectRequest, User } from "@prisma/client";
-import { mailSender, sendMail } from "./config";
+import { User } from "@prisma/client";
+import { createMailData, mailSender, sendMail } from "./config";
 import { vendorMemberInvitationByAdminTemplate, vendorMemberInvitationByExistingMemberTemplate, vendorMemberInvitationToProjectRequestByAdminTemplate } from "./templates";
 import { app_env } from "../environment";
+import { ProjectRequestInvitationByAdminData } from "./types";
 
 export const sendVendorMemberInvitationByExistingMemberEmail = (inviter: User, receiver: User, custom_message: string = '') => {
   const mailData = {
@@ -35,17 +36,15 @@ export const sendVendorMemberInvitationByAdminEmail = (receiver: User) => {
   sendMail(mailData);
 };
 
-export const sendVendorMemberProjectRequestInvitationByAdminEmail = (project_request: ProjectRequest, receiver: User) => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
-    to: receiver.email,
-    replyTo: mailSender,
+export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (emailData: ProjectRequestInvitationByAdminData, receiverEmail: string) => {
+  const mailData = createMailData({
+    to: receiverEmail,
     templateId: vendorMemberInvitationToProjectRequestByAdminTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
-      project_request_name: project_request.title,
+      login_url: emailData.login_url,
+      project_request_name: emailData.project_request_name,
     },
-  };
+  });
 
-  sendMail(mailData);
+  await sendMail(mailData);
 };

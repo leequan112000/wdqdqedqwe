@@ -25,3 +25,8 @@ export type AcceptProjectRequestNoticeData = {
   project_title: string;
   receiver_full_name: string;
 }
+
+export type ProjectRequestInvitationByAdminData = {
+  project_request_name: string;
+  login_url: string;
+}
