@@ -531,11 +531,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!user) {
-        throw new PublicError('User not found.')
-      }
-
-      if (!user.reset_password_expiration) {
+      if (!user || !user.reset_password_expiration) {
         throw new PublicError('Invalid reset password link.')
       }
 
