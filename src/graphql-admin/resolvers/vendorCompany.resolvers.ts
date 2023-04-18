@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { ProjectConnectionVendorStatus } from "../../helper/constant";
+import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { sendAdminProjectInvitationNotificationQueue } from "../../queues/notification.queues";
@@ -25,6 +25,10 @@ const resolvers: Resolvers<Context> = {
 
       if (!projectRequest) {
         throw new PublicError('Invalid project request ID.');
+      }
+
+      if (projectRequest.status === ProjectRequestStatus.WITHDRAWN) {
+        throw new PublicError('Project request has already been withdrawn.');
       }
 
       await Promise.all(
