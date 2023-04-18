@@ -1,5 +1,6 @@
 import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
+import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
 import { sendVendorMemberInvitationByAdminEmail } from "../../mailer/vendorMember";
 
@@ -27,7 +28,19 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('User not found.')
       }
 
-      sendVendorMemberInvitationByAdminEmail(newUser);
+      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+      const resetToken = createResetPasswordToken();
+      const updatedNewUser = await context.prisma.user.update({
+        where: {
+          id: args.user_id,
+        },
+        data: {
+          reset_password_token: resetToken,
+          reset_password_expiration: new Date(resetTokenExpiration),
+        },
+      });
+      
+      sendVendorMemberInvitationByAdminEmail(updatedNewUser);
 
       return true;
     },
