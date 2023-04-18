@@ -77,12 +77,20 @@ const resolvers: Resolvers<Context> = {
 
       const data = await context.prisma.projectRequest.findMany({
         where: {
-          customer_id: customer.id,
           ...(args.status && args.status.length > 0 ? {
             status: {
               in: args.status.filter(nonNullable),
             }
           } : {}),
+          project_connections: {
+            some: {
+              customer_connections: {
+                some: {
+                  customer_id: customer.id,
+                }
+              }
+            }
+          }
         },
         orderBy: {
           updated_at: 'desc'
