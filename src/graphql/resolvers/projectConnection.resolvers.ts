@@ -336,10 +336,6 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (projectRequest?.status === 'withdrawn') {
-        return 'withdrawn';
-      }
-
       return parent.vendor_status || ProjectConnectionVendorStatus.PENDING;
     }
   },
