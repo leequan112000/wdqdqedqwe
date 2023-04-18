@@ -82,6 +82,7 @@ model Biotech {
   website                                     String?
   about                                       String?
   cda_pandadoc_file_id                        String?
+  cda_pandadoc_signer                         String?
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
@@ -102,6 +103,7 @@ model VendorCompany {
   updated_at           DateTime  @updatedAt
   address              String?
   cda_pandadoc_file_id String?
+  cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
 
   vendor_members      VendorMember[]

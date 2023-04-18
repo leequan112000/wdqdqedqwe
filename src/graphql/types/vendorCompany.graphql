@@ -7,6 +7,7 @@ type VendorCompany {
   updated_at: Date
   address: String
   cda_pandadoc_file_id: String
+  cda_pandadoc_signer: String
   cda_signed_at: Date
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]

@@ -10,6 +10,7 @@ type Biotech {
   website: String
   about: String
   cda_pandadoc_file_id: String
+  cda_pandadoc_signer: String
   cda_signed_at: Date
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
