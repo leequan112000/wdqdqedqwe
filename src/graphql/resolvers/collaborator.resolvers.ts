@@ -183,13 +183,25 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('User not found.')
       }
 
+      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+      const resetToken = createResetPasswordToken();
+      const updatedNewUser = await context.prisma.user.update({
+        where: {
+          id: args.user_id,
+        },
+        data: {
+          reset_password_token: resetToken,
+          reset_password_expiration: new Date(resetTokenExpiration),
+        },
+      });
+
       if (currentUser?.customer?.biotech_id) {
-        sendCustomerInvitationEmail(currentUser, newUser);
-        return newUser;
+        sendCustomerInvitationEmail(currentUser, updatedNewUser);
+        return updatedNewUser;
       }
       if (currentUser?.vendor_member?.vendor_company_id) {
-        sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser);
-        return newUser;
+        sendVendorMemberInvitationByExistingMemberEmail(currentUser, updatedNewUser);
+        return updatedNewUser;
       }
 
       throw new InternalError('User not found.');
