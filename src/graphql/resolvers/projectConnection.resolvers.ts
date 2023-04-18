@@ -2,7 +2,7 @@ import { app_env } from "../../environment";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { NotFoundError } from "../errors/NotFoundError";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
@@ -325,28 +325,43 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     projectConnection: async (parent, args, context) => {
-      let projectConnection
-      try {
-        projectConnection = await context.prisma.projectConnection.findFirstOrThrow({
-          where: {
-            id: args.id,
+      const projectConnection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: args.id,
+        },
+        include: {
+          customer_connections: {
+            include: {
+              customer: true,
+            },
           },
-        });
-      } catch (error) {
-        throw new NotFoundError();
+          vendor_member_connections: {
+            include: {
+              vendor_member: true,
+            },
+          },
+        },
+      });
+
+      if (!projectConnection) {
+        throw new PublicError('Project connection not found');
       }
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id
         },
-        include: {
-          customer: true,
-        },
       });
 
-      if (!projectConnection || currentUser?.customer && projectConnection?.vendor_status === ProjectConnectionVendorStatus.DECLINED) {
-        throw new NotFoundError();
+      if (!currentUser) {
+        throw new PermissionDeniedError();
+      }
+
+      const accessableCustomerUserIds = projectConnection.customer_connections.map((cc) => cc.customer.user_id);
+      const accessableVendorMemberIds = projectConnection.vendor_member_connections.map((vmc) => vmc.vendor_member.user_id);
+
+      if (![...accessableCustomerUserIds, ...accessableVendorMemberIds].includes(currentUser.id)) {
+        throw new PermissionDeniedError();
       }
 
       return projectConnection;
