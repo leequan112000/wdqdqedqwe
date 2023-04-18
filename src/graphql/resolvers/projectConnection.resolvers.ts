@@ -321,22 +321,6 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('Current user is not customer nor vendor member');
-    },
-    vendor_status: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Project connection id not found')
-      }
-      const projectRequest = await context.prisma.projectRequest.findFirst({
-        where: {
-          project_connections: {
-            every: {
-              id: parent.id,
-            }
-          }
-        }
-      });
-
-      return parent.vendor_status || ProjectConnectionVendorStatus.PENDING;
     }
   },
   Query: {
