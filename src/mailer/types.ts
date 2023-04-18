@@ -30,3 +30,8 @@ export type ProjectRequestInvitationByAdminData = {
   project_request_name: string;
   login_url: string;
 }
+
+export type AdminNewProjectRequestCommentNoticeData = {
+  biotech_name: string;
+  admin_name: string;
+}
