@@ -84,6 +84,18 @@ export default {
             throw new PublicError('Customer not found.');
           }
 
+          if (args.name) {
+            const existingBiotech = await trx.biotech.findFirst({
+              where: {
+                name: args.name
+              }
+            });
+
+            if (existingBiotech) {
+              throw new PublicError('Biotech name already exists.');
+            }
+          }
+
           return await context.prisma.biotech.update({
             where: {
               id: user.customer.biotech_id
