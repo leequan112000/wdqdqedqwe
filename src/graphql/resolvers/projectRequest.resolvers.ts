@@ -82,15 +82,24 @@ const resolvers: Resolvers<Context> = {
               in: args.status.filter(nonNullable),
             }
           } : {}),
-          project_connections: {
-            some: {
-              customer_connections: {
+          OR: [
+            // by project request collaborator
+            {
+              project_connections: {
                 some: {
-                  customer_id: customer.id,
-                }
-              }
-            }
-          }
+                  customer_connections: {
+                    some: {
+                      customer_id: customer.id,
+                    },
+                  },
+                },
+              },
+            },
+            // by project request creator
+            {
+              customer_id: customer.id,
+            },
+          ],
         },
         orderBy: {
           updated_at: 'desc'
