@@ -83,6 +83,7 @@ const resolvers: Resolvers<Context> = {
 
       if (files) {
         const result = await Promise.all(files.map(async (f) => {
+          await f.promise;
           const { filename, key, filesize, contextType } = await storeUpload(
             f,
             PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.FILE],
