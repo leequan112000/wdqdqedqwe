@@ -343,8 +343,25 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: projectConnection?.project_request_id,
+        },
+        include: {
+          customer: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
       if (!projectConnection) {
         throw new PublicError('Project connection not found');
+      }
+
+      if (!projectRequest) {
+        throw new PublicError('Project request not found');
       }
 
       const currentUser = await context.prisma.user.findFirst({
@@ -357,10 +374,11 @@ const resolvers: Resolvers<Context> = {
         throw new PermissionDeniedError();
       }
 
+      const projectRequestUserId = projectRequest.customer.user_id;
       const accessableCustomerUserIds = projectConnection.customer_connections.map((cc) => cc.customer.user_id);
       const accessableVendorMemberIds = projectConnection.vendor_member_connections.map((vmc) => vmc.vendor_member.user_id);
 
-      if (![...accessableCustomerUserIds, ...accessableVendorMemberIds].includes(currentUser.id)) {
+      if (![projectRequestUserId, ...accessableCustomerUserIds, ...accessableVendorMemberIds].includes(currentUser.id)) {
         throw new PermissionDeniedError();
       }
 
