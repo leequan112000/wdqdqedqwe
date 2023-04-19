@@ -8,6 +8,9 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
 import { sendAcceptProjectRequestNotificationQueue } from "../../queues/notification.queues";
+import { createResetPasswordToken } from "../../helper/auth";
+import { sendCustomerInvitationEmail } from "../../mailer/customer";
+import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -607,6 +610,128 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('User is not customer nor vendor member');
+    },
+    inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
+      const { project_connection_id, email, first_name, last_name, custom_message } = args;
+
+      if (!context.req.user_id) {
+        throw new InternalError('Current user id not found');
+      }
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      if (!currentUser) {
+        throw new InternalError('Current user not found');
+      }
+
+      const existingUser = await context.prisma.user.findFirst({
+        where: {
+          email: email,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      if (existingUser) {
+        // If user exists and same company as the current user.
+        if ((existingUser.customer && existingUser.customer?.biotech_id === currentUser.customer?.biotech_id)
+          || (existingUser.vendor_member && existingUser.vendor_member.vendor_company_id === currentUser.vendor_member?.vendor_company_id)) {
+          throw new PublicError('User already exists.');
+        } else {
+          // If user exists but not the same company as the current user.
+          throw new PublicError('Please make sure the user is belong to your company.')
+        }
+      }
+
+      // If user doesn't exists
+      // 1. Create new user
+      // 2. Create customer/vendor member connection
+      // 3. Send invitation email
+      return await context.prisma.$transaction(async (trx) => {
+        const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+        const resetToken = createResetPasswordToken();
+        const newUser = await trx.user.create({
+          data: {
+            first_name,
+            last_name,
+            email,
+            reset_password_token: resetToken,
+            reset_password_expiration: new Date(resetTokenExpiration),
+          },
+        });
+        const emailMessage = custom_message || '';
+        // If current user is a biotech member,
+        // create customer data for the new user
+        // create customer connection
+        if (currentUser.customer?.biotech_id) {
+          const newCustomer = await trx.customer.create({
+            data: {
+              user_id: newUser.id,
+              biotech_id: currentUser.customer.biotech_id,
+            },
+          });
+          await trx.customerConnection.create({
+            data: {
+              customer_id: newCustomer.id,
+              project_connection_id,
+            },
+          });
+
+          sendCustomerInvitationEmail(currentUser, newUser, emailMessage);
+        }
+
+        // If current user is a vendor member,
+        // create vendor member data for the new user
+        // create vendor member connection
+        if (currentUser.vendor_member?.vendor_company_id) {
+          const newVendorMember = await trx.vendorMember.create({
+            data: {
+              user_id: newUser.id,
+              vendor_company_id: currentUser.vendor_member.vendor_company_id,
+            }
+          });
+          await trx.vendorMemberConnection.create({
+            data: {
+              vendor_member_id: newVendorMember.id,
+              project_connection_id,
+            },
+          });
+          sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
+        }
+
+        const projectConnection = await trx.projectConnection.findFirst({
+          where: {
+            id: project_connection_id,
+          },
+          include: {
+            project_request: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        });
+
+        if (projectConnection) {
+          try {
+            createCollaboratedNotification(currentUser.id, newUser.id, projectConnection.id)
+          } catch (error) {
+            console.log(error)
+          }
+        }
+
+        return newUser;
+      });
     },
   },
 };
