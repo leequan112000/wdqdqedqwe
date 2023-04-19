@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import { ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
@@ -166,12 +167,29 @@ const resolvers: Resolvers<Context> = {
       });
     },
     withdrawProjectRequest: async (_, args, context) => {
+      const user = await context.prisma.user.findFirstOrThrow({
+        where: {
+          id: context.req.user_id
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true
+            }
+          }
+        }
+      });
+
       const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
           id: args.project_request_id
         },
       });
       if (projectRequest) {
+        if (projectRequest.biotech_id !== user.customer?.biotech_id) {
+          throw new PermissionDeniedError();
+        }
+
         const updatedRequest = await context.prisma.projectRequest.update({
           data: {
             status: ProjectRequestStatus.WITHDRAWN,
