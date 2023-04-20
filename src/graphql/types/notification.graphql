@@ -1,10 +1,23 @@
 type Notification {
   id: String
   notification_type: String
+  message: String
   params: JSON
-  read_at: String
-  created_at: String
-  updated_at: String
-  user_id: String
-  user: User
+  read_at: Date
+  created_at: Date
+  updated_at: Date
+  recipient_id: String
+  recipient: User
+  sender_id: String
+  sender: User
+  url: String
+}
+
+type Query {
+  notifications(unread_only: Boolean): [Notification]
+}
+
+type Mutation {
+  markNotificationAsRead(id: String!): Notification
+  markNotificationsInProjectAsRead(project_connection_id: String!): [Notification]
 }

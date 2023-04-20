@@ -1,11 +1,12 @@
 type VendorMember {
+  id: String
   title: String
   is_primary_member: Boolean
   phone: String
   department: String
-  created_at: String
-  updated_at: String
-  user_id: User
+  created_at: Date
+  updated_at: Date
+  user_id: String
   user: User
   vendor_company_id: String
   vendor_company: VendorCompany
@@ -28,5 +29,5 @@ type Mutation {
     last_name: String!
     email: String!
     custom_message: String
-  ): Customer
+  ): VendorMember @deprecated(reason: "Use `inviteCollaborator`.")
 }

@@ -1,5 +1,5 @@
 import { VendorMemberConnection, ProjectConnection, VendorMember } from "@prisma/client";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 
 export default {
   VendorMemberConnection: {

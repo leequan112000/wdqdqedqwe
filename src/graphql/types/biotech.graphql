@@ -1,16 +1,17 @@
 type Biotech {
   id: String
   name: String
-  created_at: String
-  updated_at: String
+  created_at: Date
+  updated_at: Date
   has_setup_profile: Boolean
   has_active_subscription: Boolean
+  stripe_customer_id: String
   address: String
   website: String
   about: String
   cda_pandadoc_file_id: String
-  cda_signed_at: String
-  cda_url: String
+  cda_pandadoc_signer: String
+  cda_signed_at: Date
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   chats: [Chat]

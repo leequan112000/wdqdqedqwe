@@ -1,18 +1,21 @@
 const dev = {
   APP_URL: 'https://localhost:3000',
-};
-const prod = {
-  APP_URL: 'https://cro-matic.com',
+  SERVER_URL: 'https://localhost:9000',
 };
 const staging = {
-  APP_URL: 'https://cromatic-staging.herokuapp.com/',
+  APP_URL: 'https://caesar-staging.herokuapp.com',
+  SERVER_URL: 'https://octavian-staging.herokuapp.com',
+};
+const prod = {
+  APP_URL: 'https://platform.cro-matic.com',
+  SERVER_URL: 'https://octavian.herokuapp.com',
 };
 
 let env = dev;
 
-if (process.env.REACT_APP_ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
   env = prod;
-} else if (process.env.REACT_APP_ENV === 'staging') {
+} else if (process.env.NODE_ENV === 'staging') {
   env = staging;
 }
 

@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["orderByNulls"]
 }
 
 datasource db {
@@ -23,10 +24,13 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  customer      Customer?
-  vendor_member VendorMember?
-  messages       Message[]
-  notifications  Notification[]
+  customer                   Customer?
+  vendor_member              VendorMember?
+  messages                   Message[]
+  notifications              Notification[]              @relation("ReceiverNotifications")
+  sent_notifications         Notification[]              @relation("SenderNotifications")
+  meetingAttendeeConnections MeetingAttendeeConnection[]
+  meetingEvents              MeetingEvent[]
 
   @@map("users")
 }
@@ -78,12 +82,13 @@ model Biotech {
   website                                     String?
   about                                       String?
   cda_pandadoc_file_id                        String?
+  cda_pandadoc_signer                         String?
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
 
-  customers      Customer[]
-  subscriptions  Subscription[]
-  chats          Chat[]
+  customers        Customer[]
+  subscriptions    Subscription[]
+  chats            Chat[]
   project_requests ProjectRequest[]
 
   @@map("biotechs")
@@ -98,6 +103,7 @@ model VendorCompany {
   updated_at           DateTime  @updatedAt
   address              String?
   cda_pandadoc_file_id String?
+  cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
 
   vendor_members      VendorMember[]
@@ -187,10 +193,10 @@ model ProjectRequestComment {
 }
 
 model ProjectConnection {
-  id                         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendor_status              String?
-  created_at                 DateTime @default(now())
-  updated_at                 DateTime @updatedAt
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
   final_contract_uploaded_at DateTime?
 
   project_request_id String         @db.Uuid
@@ -203,6 +209,7 @@ model ProjectConnection {
   customer_connections      CustomerConnection[]
   chats                     Chat[]
   project_attachments       ProjectAttachment[]
+  MeetingEvent              MeetingEvent[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -220,6 +227,7 @@ model VendorMemberConnection {
   vendor_member_id String       @db.Uuid
   vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
 
+  @@unique([project_connection_id, vendor_member_id])
   @@index([project_connection_id])
   @@map("vendor_member_connections")
 }
@@ -235,6 +243,7 @@ model CustomerConnection {
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
+  @@unique([project_connection_id, customer_id])
   @@index([project_connection_id])
   @@map("customer_connections")
 }
@@ -293,29 +302,68 @@ model Message {
 model Notification {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   notification_type String
-  params            Json?
+  message           String
+  params            Json
   read_at           DateTime?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 
-  user_id String @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  recipient_id String  @db.Uuid
+  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
+  sender_id    String? @db.Uuid
+  sender       User?   @relation("SenderNotifications", fields: [sender_id], references: [id])
 
-  @@index([user_id])
+  @@index([sender_id])
+  @@index([recipient_id])
   @@index([read_at])
   @@map("notifications")
 }
 
 model ProjectAttachment {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  key          String   @unique
-  filename     String
-  content_type String?
-  byte_size    BigInt
-  created_at   DateTime @default(now())
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
 
   project_connection_id String            @db.Uuid
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   @@map("project_attachments")
+}
+
+model MeetingEvent {
+  id                         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                      String
+  description                String?
+  start_time                 DateTime
+  end_time                   DateTime
+  timezone                   String
+  meeting_link               String
+  phone                      String?
+  phone_pin                  String?
+  phone_country              String?
+  platform                   String
+  platform_event_id          String?
+  created_at                 DateTime                    @default(now())
+  updated_at                 DateTime                    @default(now())
+  project_connection_id      String                      @db.Uuid
+  organizer_id               String                      @db.Uuid
+  project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
+  meetingAttendeeConnections MeetingAttendeeConnection[]
+  organizer                  User                        @relation(fields: [organizer_id], references: [id])
+
+  @@map("meeting_events")
+}
+
+model MeetingAttendeeConnection {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  meeting_event_id String       @db.Uuid
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  user_id          String       @db.Uuid
+  user             User         @relation(fields: [user_id], references: [id])
+
+  @@map("meeting_attendee_connections")
 }

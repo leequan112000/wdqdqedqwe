@@ -3,13 +3,31 @@ type User {
   email: String
   first_name: String
   last_name: String
-  created_at: String
-  updated_at: String
-  user_type: String!
-  has_completed_onboarding: Boolean!
+  full_name: String
+  created_at: Date
+  updated_at: Date
+  user_type: String
+  has_completed_onboarding: Boolean
   customer: Customer
   vendor_member: VendorMember
   notifications: [Notification]
+  has_setup_profile: Boolean
+  company_name: String
+  cda_url: String
+  cda_signed_at: Date
+
+  # use this field to restrict remove user (experiment)
+  can_be_removed: Boolean
+}
+
+type AuthResponse {
+  access_token: String!
+  refresh_token: String!
+}
+
+type Subscription {
+  cdaUrl: String
+  cdaSignedAt: String
 }
 
 type Query {
@@ -23,9 +41,15 @@ type Mutation {
     last_name: String!
     password: String!
     company_name: String!
-  ): User!
-  signInUser(email: String!, password: String!): User!
-  refreshJWT: User
+  ): AuthResponse!
+  signInUser(email: String!, password: String!): AuthResponse!
+  refreshJWT: AuthResponse
   forgotPassword(email: String): Boolean
   resetPassword(reset_token: String, new_password: String): Boolean
+  updateUserInfo(
+    first_name: String!
+    last_name: String!
+    email: String!
+  ): User
+  createCda: Boolean
 }

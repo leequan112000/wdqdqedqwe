@@ -13,8 +13,8 @@ type ProjectRequest {
   project_start_time_requirement: String
   project_deadline_requirement: String
   status: String!
-  created_at: String
-  updated_at: String
+  created_at: Date
+  updated_at: Date
   biotech_id: String
   biotech: Biotech
   customer_id: String
@@ -24,7 +24,8 @@ type ProjectRequest {
 }
 
 type Query {
-  projectRequests: [ProjectRequest]
+  projectRequests(status: [String]): [ProjectRequest]
+  projectRequest(id: String): ProjectRequest
 }
 
 type Mutation {
@@ -42,4 +43,5 @@ type Mutation {
     project_start_time_requirement: String
     project_deadline_requirement: String
   ): ProjectRequest
+  withdrawProjectRequest(project_request_id: String!): ProjectRequest
 }

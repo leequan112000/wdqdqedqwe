@@ -1,9 +1,8 @@
 import { Biotech, Chat, Customer } from "@prisma/client";
 import { Request } from "express";
-import { createBiotechCda, createBiotechViewCdaSession } from "../../helper/pandadoc";
-import { Context } from "../../context";
+import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../generated";
+import { MutationOnboardBiotechArgs, MutationUpdateBiotechArgs } from "../../generated";
 import { SubscriptionStatus } from "../../helper/constant";
 
 export default {
@@ -15,37 +14,21 @@ export default {
           status: SubscriptionStatus.ACTIVE
         }
       });
-      
+
       return subscriptions.length > 0 ? true : false;
     },
-    cda_url: async (parent: Biotech, _: void, context: Context & { req: Request }): Promise<String | null> => {
+    stripe_customer_id: async (parent: Biotech, _: void, context: Context): Promise<String> => {
       try {
-        const user = await context.prisma.user.findFirstOrThrow({
+        const subscription = await context.prisma.subscription.findFirstOrThrow({
           where: {
-            id: context.req.user_id,
-          },
-          include: {
-            customer: {
-              include: {
-                biotech: true
-              }
-            }
+            biotech_id: parent.id,
+            status: SubscriptionStatus.ACTIVE
           }
         });
 
-        if (user.customer?.biotech_id !== parent.id) {
-          // User has no access to this biotech
-          return null;
-        }
-  
-        if (parent.cda_pandadoc_file_id) {
-          const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, parent.cda_pandadoc_file_id);
-          return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-        }
-
-        return null;
+        return subscription?.stripe_customer_id ?? '';
       } catch (error) {
-        return null;
+        return '';
       }
     },
     customers: async (parent: Biotech, _: void, context: Context): Promise<Customer[] | null> => {
@@ -100,12 +83,17 @@ export default {
           if (!user.customer) {
             throw new PublicError('Customer not found.');
           }
-          
-          let cda_pandadoc_file_id = user?.customer?.biotech?.cda_pandadoc_file_id;
 
-          if (cda_pandadoc_file_id === null) {
-            const docResponse = await createBiotechCda(user);
-            cda_pandadoc_file_id = docResponse.id as string;
+          if (args.name) {
+            const existingBiotech = await trx.biotech.findFirst({
+              where: {
+                name: args.name
+              }
+            });
+
+            if (existingBiotech) {
+              throw new PublicError('Biotech name already exists.');
+            }
           }
 
           return await context.prisma.biotech.update({
@@ -116,12 +104,11 @@ export default {
               about: args.about,
               website: args.website,
               address: args.address,
-              cda_pandadoc_file_id,
               has_setup_profile: true,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }
@@ -150,7 +137,7 @@ export default {
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
-        }); 
+        });
       } catch (error) {
         return error;
       }

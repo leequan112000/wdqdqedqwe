@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
-import { context } from '../../context';
+import { pubsub } from "../../helper/pubsub";
+import { prisma } from '../../connectDB';
 import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
 
 /*
@@ -21,7 +22,7 @@ const verifySignature = (req: Request, signature: string): boolean => {
     return true;
   } else {
     return false;
-  }  
+  }
 }
 
 export const pandadocWebhook = async (req: Request, res: Response): Promise<void> => {
@@ -37,7 +38,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
   try {
     if (event_payload.event === 'document_state_changed' && data.metadata.recipient_type === 'client') {
       const doc_id = data.id;
-      const biotech = await context.prisma.biotech.findFirst({
+      const biotech = await prisma.biotech.findFirst({
         where: {
           cda_pandadoc_file_id: doc_id
         },
@@ -49,7 +50,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
         res.status(200).send('OK');
         return;
       }
-  
+
       if (data.status === 'document.draft') {
         // send document
         if (!biotech.cda_pandadoc_file_id) {
@@ -59,13 +60,18 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the customer who created the document in metadata
+        const channel = `cdaUrl:${biotech.id}`;
         if (biotech.customers.length > 1) {
           const recipient = data.recipients[0];
-          await createBiotechViewCdaSession(recipient.email, biotech.cda_pandadoc_file_id as string);
+          const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, biotech.cda_pandadoc_file_id as string);
+          const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+          pubsub.publish(channel, { cdaUrl });
         } else {
-          const user = await context.prisma.user.findFirst({ where: { id: biotech.customers[0].user_id }})
+          const user = await prisma.user.findFirst({ where: { id: biotech.customers[0].user_id } })
           if (user) {
-            await createBiotechViewCdaSession(user.email, biotech.cda_pandadoc_file_id as string);
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, biotech.cda_pandadoc_file_id as string);
+            const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+            pubsub.publish(channel, { cdaUrl });
           }
         }
       } else {
@@ -73,7 +79,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       }
     } else if (event_payload.event === 'document_state_changed' && data.metadata.recipient_type === 'vendor') {
       const doc_id = data.id;
-      const vendor_company = await context.prisma.vendorCompany.findFirst({
+      const vendor_company = await prisma.vendorCompany.findFirst({
         where: {
           cda_pandadoc_file_id: doc_id
         },
@@ -86,24 +92,29 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
         res.status(200).send('OK');
         return;
       }
-  
+
       if (data.status === 'document.draft') {
         // send document
         if (!vendor_company.cda_pandadoc_file_id) {
           throw new Error('Vendor company has no cda file id');
         }
-  
+
         await sendCda(vendor_company.cda_pandadoc_file_id);
       } else if (data.status === 'document.sent') {
         // generate session
         // TODO: store the vendor member who created the document in metadata
+        const channel = `cdaUrl:${vendor_company.id}`;
         if (vendor_company.vendor_members.length > 1) {
           const recipient = data.recipients[0];
-          await createBiotechViewCdaSession(recipient.email, vendor_company.cda_pandadoc_file_id as string);
+          const viewDocSessionResponse = await createBiotechViewCdaSession(recipient.email, vendor_company.cda_pandadoc_file_id as string);
+          const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+          pubsub.publish(channel, { cdaUrl });
         } else {
-          const user = await context.prisma.user.findFirst({ where: { id: vendor_company.vendor_members[0].user_id }})
+          const user = await prisma.user.findFirst({ where: { id: vendor_company.vendor_members[0].user_id } })
           if (user) {
-            await createBiotechViewCdaSession(user.email, vendor_company.cda_pandadoc_file_id as string);
+            const viewDocSessionResponse = await createBiotechViewCdaSession(user.email, vendor_company.cda_pandadoc_file_id as string);
+            const cdaUrl = `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`
+            pubsub.publish(channel, { cdaUrl });
           }
         }
       } else {
@@ -111,13 +122,13 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
       }
     } else if (event_payload.event === 'recipient_completed' && data.metadata.recipient_type === 'client') {
       const doc_id = data.id;
-      const biotech = await context.prisma.biotech.findFirst({ where: { cda_pandadoc_file_id: doc_id }});
+      const biotech = await prisma.biotech.findFirst({ where: { cda_pandadoc_file_id: doc_id } });
       if (!biotech) {
         res.status(200).send('OK');
         return;
       }
 
-      await context.prisma.biotech.update({
+      await prisma.biotech.update({
         where: {
           id: biotech.id
         },
@@ -125,15 +136,18 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
           cda_signed_at: new Date()
         }
       });
-    } else if (event_payload.event === 'recipient_completed' && data.metadata.recipient_type === 'vendor'){
+
+      const channel = `cdaSignedAt:${biotech.id}`;
+      pubsub.publish(channel, { cdaSignedAt: new Date() });
+    } else if (event_payload.event === 'recipient_completed' && data.metadata.recipient_type === 'vendor') {
       const doc_id = data.id;
-      const vendor_company = await context.prisma.vendorCompany.findFirst({ where: { cda_pandadoc_file_id: doc_id }});
+      const vendor_company = await prisma.vendorCompany.findFirst({ where: { cda_pandadoc_file_id: doc_id } });
       if (!vendor_company) {
         res.status(200).send('OK');
         return;
       }
 
-      await context.prisma.vendorCompany.update({
+      await prisma.vendorCompany.update({
         where: {
           id: vendor_company.id
         },
@@ -141,6 +155,9 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
           cda_signed_at: new Date()
         }
       });
+
+      const channel = `cdaSignedAt:${vendor_company.id}`;
+      pubsub.publish(channel, { cdaSignedAt: new Date() });
     }
     res.status(200).send('OK');
   } catch (error) {

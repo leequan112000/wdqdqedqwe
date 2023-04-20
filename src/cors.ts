@@ -2,14 +2,21 @@ let origin: string[] = [];
 
 // Loosen CORS for development and staging
 if (process.env.NODE_ENV === 'production') {
-  origin = [ 'https://cro-matic.com' ];
+  origin = [
+    'https://platform.cro-matic.com',
+    'https://www.cro-matic.com',
+  ];
+} else if (process.env.NODE_ENV === 'staging') {
+  origin = [
+    'https://caesar-staging.herokuapp.com',
+    'https://octavian-staging.herokuapp.com',
+  ];
 } else {
   origin = [
     'http://localhost:3000',
     'https://localhost:3000',
     'http://localhost:9000',
     'https://localhost:9000',
-    'https://cromatic-staging.herokuapp.com',
     'https://studio.apollographql.com',
   ];
 }
