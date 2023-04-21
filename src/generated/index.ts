@@ -17,6 +17,17 @@ export type Scalars = {
   Upload: any;
 };
 
+export type Admin = {
+  __typename?: 'Admin';
+  created_at?: Maybe<Scalars['Date']>;
+  email?: Maybe<Scalars['String']>;
+  encrypted_password?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  team?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+  username?: Maybe<Scalars['String']>;
+};
+
 export type AuthResponse = {
   __typename?: 'AuthResponse';
   access_token: Scalars['String'];
@@ -107,6 +118,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   addProjectCollaborator?: Maybe<User>;
+  createAdmin?: Maybe<Scalars['Boolean']>;
   createCda?: Maybe<Scalars['Boolean']>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
@@ -115,6 +127,7 @@ export type Mutation = {
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createVendorCompany?: Maybe<VendorCompany>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
+  deleteAdmin?: Maybe<Scalars['Boolean']>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   /** @deprecated Use `inviteCollaborator`. */
@@ -158,6 +171,14 @@ export type MutationAcceptProjectConnectionArgs = {
 export type MutationAddProjectCollaboratorArgs = {
   project_connection_id: Scalars['String'];
   user_id: Scalars['String'];
+};
+
+
+export type MutationCreateAdminArgs = {
+  email: Scalars['String'];
+  encrypted_password?: InputMaybe<Scalars['String']>;
+  team?: InputMaybe<Scalars['String']>;
+  username: Scalars['String'];
 };
 
 
@@ -216,6 +237,11 @@ export type MutationCreateVendorCompanyArgs = {
 
 
 export type MutationDeclinedProjectConnectionArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationDeleteAdminArgs = {
   id: Scalars['String'];
 };
 
@@ -708,6 +734,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Admin: ResolverTypeWrapper<Admin>;
   AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -738,6 +765,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  Admin: Admin;
   AuthResponse: AuthResponse;
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
@@ -764,6 +792,17 @@ export type ResolversParentTypes = ResolversObject<{
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
   VendorMemberConnection: VendorMemberConnection;
+}>;
+
+export type AdminResolvers<ContextType = any, ParentType extends ResolversParentTypes['Admin'] = ResolversParentTypes['Admin']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  encrypted_password?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  team?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
@@ -863,6 +902,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  createAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
@@ -871,6 +911,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
+  deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
@@ -1088,6 +1129,7 @@ export type VendorMemberConnectionResolvers<ContextType = any, ParentType extend
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
+  Admin?: AdminResolvers<ContextType>;
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;
