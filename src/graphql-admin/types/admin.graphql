@@ -1,0 +1,19 @@
+type Admin {
+  id: String
+  email: String
+  username: String
+  team: String
+  encrypted_password: String
+  created_at: Date
+  updated_at: Date
+}
+
+type Mutation {
+  createAdmin(
+    username: String!, 
+    email: String!, 
+    team: String,
+    encrypted_password: String,
+  ): Admin
+  deleteAdmin(id: String!): Boolean
+}
