@@ -15,7 +15,7 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('Admin already exists');
       }
 
-      await context.prisma.admin.create({
+      return await context.prisma.admin.create({
         data: {
           username: args.username,
           email: args.email,
@@ -23,8 +23,6 @@ const resolvers: Resolvers<Context> = {
           encrypted_password: "",
         }
       });
-
-      return true;
     },
     deleteAdmin: async (_, args, context) => {
       const existingAdmin = await context.prisma.admin.findFirst({

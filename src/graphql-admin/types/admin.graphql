@@ -14,6 +14,6 @@ type Mutation {
     email: String!, 
     team: String,
     encrypted_password: String,
-  ): Boolean
+  ): Admin
   deleteAdmin(id: String!): Boolean
 }
