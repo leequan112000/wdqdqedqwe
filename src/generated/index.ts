@@ -118,7 +118,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   addProjectCollaborator?: Maybe<User>;
-  createAdmin?: Maybe<Scalars['Boolean']>;
+  createAdmin?: Maybe<Admin>;
   createCda?: Maybe<Scalars['Boolean']>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
@@ -902,7 +902,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
-  createAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
+  createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
