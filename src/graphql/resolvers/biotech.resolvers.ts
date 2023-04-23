@@ -84,7 +84,7 @@ export default {
             throw new PublicError('Customer not found.');
           }
 
-          if (args.name) {
+          if (args.name && args.name !== user?.customer?.biotech?.name) {
             const existingBiotech = await trx.biotech.findFirst({
               where: {
                 name: args.name
