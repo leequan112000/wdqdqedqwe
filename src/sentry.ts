@@ -1,6 +1,4 @@
 import * as Sentry from '@sentry/node'
-// or use es6 import statements
-// import * as Sentry from '@sentry/node';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
