@@ -19,7 +19,7 @@ import routes from './routes';
 import schema from './graphql/index';
 import adminSchema from './graphql-admin/index';
 import { json } from 'body-parser';
-import { operationWhitelist } from './helper/graphql'
+import { ApolloServerPluginSentryMonitor, operationWhitelist } from './helper/graphql'
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
@@ -91,6 +91,7 @@ export const apolloServer = new ApolloServer<Context>({
         }
       },
     },
+    ApolloServerPluginSentryMonitor(),
   ],
 });
 
@@ -117,6 +118,9 @@ export const adminApolloServer = new ApolloServer<Context>({
 
     return formattedError;
   },
+  plugins: [
+    ApolloServerPluginSentryMonitor(),
+  ],
 });
 
 export async function startServer() {
