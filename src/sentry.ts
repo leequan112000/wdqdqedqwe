@@ -1,4 +1,4 @@
-const Sentry = require("@sentry/node");
+import * as Sentry from '@sentry/node'
 // or use es6 import statements
 // import * as Sentry from '@sentry/node';
 
