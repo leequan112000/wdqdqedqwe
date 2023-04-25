@@ -25,13 +25,23 @@ const resolvers: Resolvers<Context> = {
       })
     },
     url: async (parent, _, context) => {
+      const project_connection = await context.prisma.projectConnection.findFirst({
+        where: {
+          id: parent.params.project_connection_id
+        }
+      });
+
       switch (parent.notification_type) {
         case 'AcceptRequestNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'AdminInviteNotification':
           return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
         case 'CollaboratedNotification':
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          if (project_connection?.vendor_status === 'accepted') {
+            return `/app/project-connection/${parent.params.project_connection_id}`;
+          } else {
+            return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
+          }
         case 'FileUploadNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'FinalContractUploadNotification':
