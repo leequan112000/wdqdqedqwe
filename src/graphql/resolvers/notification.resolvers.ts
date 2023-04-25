@@ -39,9 +39,8 @@ const resolvers: Resolvers<Context> = {
         case 'CollaboratedNotification':
           if (project_connection?.vendor_status !== 'accepted') {
             return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
-          } else {
-            return `/app/project-connection/${parent.params.project_connection_id}`;
           }
+          return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'FileUploadNotification':
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case 'FinalContractUploadNotification':
