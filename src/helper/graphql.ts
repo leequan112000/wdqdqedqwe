@@ -24,7 +24,7 @@ export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({
 
         for (const err of ctx.errors) {
           // Skip public error. Public error is intened for user.
-          if (err instanceof PublicError) {
+          if (err.extensions.code === 'PUBLIC_ERROR_CODE') {
             continue;
           }
 
