@@ -77,10 +77,6 @@ const resolvers: Resolvers<Context> = {
         }
       })
 
-      if (!vendorMember) {
-        throw new InternalError('Vendor member not found.')
-      }
-
       return vendorMember;
     },
     notifications: async (parent, _, context) => {
