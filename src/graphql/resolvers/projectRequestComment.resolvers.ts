@@ -20,8 +20,16 @@ export default {
     createProjectRequestComment: async (_: void, args: MutationCreateProjectRequestCommentArgs, context: Context & { req: Request }) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
+          const customer = await trx.customer.findFirstOrThrow({
+            where: {
+              user_id: context.req.user_id,
+            },
+          });
+
+          // Ensure user has the right access to comment
           const projectRequest = await trx.projectRequest.findFirst({
             where: {
+              customer_id: customer.id,
               id: args.project_request_id
             },
             include: { biotech: true },
