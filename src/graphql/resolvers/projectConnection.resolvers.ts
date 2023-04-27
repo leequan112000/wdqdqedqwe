@@ -175,7 +175,6 @@ const resolvers: Resolvers<Context> = {
                 project_connection_id: parent.id,
               },
             },
-            has_setup_profile: true,
             biotech_id: currentUser.customer.biotech_id,
           },
           include: {
@@ -193,9 +192,6 @@ const resolvers: Resolvers<Context> = {
               none: {
                 project_connection_id: parent.id,
               },
-            },
-            title: {
-              not: null,
             },
             vendor_company_id: currentUser.vendor_member.vendor_company_id,
           },
