@@ -27,6 +27,18 @@ export default {
         }
       });
     },
+    primary_member: async (parent: VendorCompany, _: void, context: Context): Promise<VendorMember | null> => {
+      const { id } = parent;
+
+      const primaryMember = await context.prisma.vendorMember.findFirst({
+        where: {
+          vendor_company_id: id,
+          is_primary_member: true,
+        },
+      });
+
+      return primaryMember;
+    }
   },
   Query: {
     vendorCompany: async (_: void, args: void, context: Context & { req: Request }) => {
