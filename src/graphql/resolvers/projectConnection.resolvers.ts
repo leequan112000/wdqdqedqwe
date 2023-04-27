@@ -286,6 +286,11 @@ const resolvers: Resolvers<Context> = {
         const vendorConnections = await context.prisma.vendorMemberConnection.findMany({
           where: {
             project_connection_id: parent.id,
+            vendor_member: {
+              title: {
+                not: null,
+              },
+            },
           },
           include: {
             vendor_member: {
@@ -302,6 +307,12 @@ const resolvers: Resolvers<Context> = {
         const customerConnections = await context.prisma.customerConnection.findMany({
           where: {
             project_connection_id: parent.id,
+            customer: {
+              has_setup_profile: true,
+              job_title: {
+                not: null,
+              }
+            },
           },
           include: {
             customer: {
