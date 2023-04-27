@@ -34,9 +34,20 @@ const resolvers: Resolvers<Context> = {
         throw new Error('Missing id.');
       }
 
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
       return await context.prisma.projectConnection.findMany({
         where: {
-          project_request_id: parent.id
+          project_request_id: parent.id,
+          customer_connections: {
+            some: {
+              customer_id: customer?.id
+            },
+          },
         },
         orderBy: [
           { final_contract_uploaded_at: { sort: 'desc', nulls: 'last' } },
