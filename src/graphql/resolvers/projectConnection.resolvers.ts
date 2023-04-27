@@ -176,11 +176,6 @@ const resolvers: Resolvers<Context> = {
               },
             },
             has_setup_profile: true,
-            project_requests: {
-              every: {
-                id: parent.project_request_id,
-              },
-            },
             biotech_id: currentUser.customer.biotech_id,
           },
           include: {
