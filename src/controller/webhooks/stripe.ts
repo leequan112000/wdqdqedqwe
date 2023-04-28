@@ -119,32 +119,35 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
-
-        if (subItem) {
-          const { plan } = subItem;
-          const product = await stripe.products.retrieve(plan.product as string);
-          const { account_type } = product.metadata;
-          const subcription = await prisma.subscription.findFirst({
-            where: {
-              stripe_customer_id: stripeCustomerId,
-            },
-          });
-
-          if (!account_type) {
-            throw new Error('[Stripe Webhook] Missing metadata: account_type')
-          }
-
-          if (subcription && account_type) {
-            await prisma.biotech.update({
-              where: {
-                id: subcription?.biotech_id
-              },
-              data: {
-                account_type,
-              },
-            });
-          }
+        if (!subItem) {
+          throw new Error('[Stripe Webhook] Missing subscription item.');
         }
+        const { plan } = subItem;
+        const product = await stripe.products.retrieve(plan.product as string);
+        const { account_type } = product.metadata;
+        const subcription = await prisma.subscription.findFirst({
+          where: {
+            stripe_customer_id: stripeCustomerId,
+          },
+        });
+
+        if (!subcription) {
+          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
+        }
+
+        if (!account_type) {
+          throw new Error('[Stripe Webhook] Missing metadata: account_type.');
+        }
+
+        await prisma.biotech.update({
+          where: {
+            id: subcription.biotech_id,
+          },
+          data: {
+            account_type,
+          },
+        });
+
         res.status(200).json({ status: 200, message: 'OK' });
       } catch (error) {
         Sentry.captureException(error);
