@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import { SubscriptionStatus } from '../../helper/constant';
+import Sentry from '../../sentry';
 
 /*
  *   Stripe webhook endpoint
@@ -107,6 +108,46 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         res.status(200).json({ status: 200, message: 'OK' });
       } catch (error) {
         console.log(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+      break;
+    }
+    case 'customer.subscription.updated': {
+      // TODO: handle complete cancellation
+      try {
+        const { items, customer } = event.data.object as Stripe.Subscription;
+        const stripeCustomerId = customer as string;
+
+        const subItem = items.data.find((i) => !!i.plan);
+
+        if (subItem) {
+          const { plan } = subItem;
+          const product = await stripe.products.retrieve(plan.product as string);
+          const { account_type } = product.metadata;
+          const subcription = await prisma.subscription.findFirst({
+            where: {
+              stripe_customer_id: stripeCustomerId,
+            },
+          });
+
+          if (!account_type) {
+            throw new Error('[Stripe Webhook] Missing metadata: account_type')
+          }
+
+          if (subcription && account_type) {
+            await prisma.biotech.update({
+              where: {
+                id: subcription?.biotech_id
+              },
+              data: {
+                account_type,
+              },
+            });
+          }
+        }
+        res.status(200).json({ status: 200, message: 'OK' });
+      } catch (error) {
+        Sentry.captureException(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
