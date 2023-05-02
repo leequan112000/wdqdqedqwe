@@ -4,6 +4,7 @@ import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import { SubscriptionStatus } from '../../helper/constant';
 import Sentry from '../../sentry';
+import { getStripeInstance } from '../../helper/stripe';
 
 /*
  *   Stripe webhook endpoint
@@ -11,11 +12,6 @@ import Sentry from '../../sentry';
  *   Description :
  *   Listen for events on from Stripe account to automatically trigger reactions.
  */
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: '2022-11-15',
-  typescript: true,
-});
 
 const isUnitTest = process.env.NODE_ENV === 'test';
 
@@ -39,6 +35,7 @@ const createActiveSubscriptionIfNoneExists = async (
 }
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
+  const stripe = await getStripeInstance();
   // Only verify the event if endpoint secret defined.
   let sig = "";
   let endpointSecret = "";
