@@ -38,10 +38,14 @@ export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
   address?: Maybe<Scalars['String']>;
+  address1?: Maybe<Scalars['String']>;
+  address2?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
+  city?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customers?: Maybe<Array<Maybe<Customer>>>;
   has_active_subscription?: Maybe<Scalars['Boolean']>;
@@ -49,9 +53,11 @@ export type Biotech = {
   id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   number_of_reqs_allowed_without_subscription?: Maybe<Scalars['Int']>;
+  state?: Maybe<Scalars['String']>;
   stripe_customer_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   website?: Maybe<Scalars['String']>;
+  zipcode?: Maybe<Scalars['String']>;
 };
 
 export type Chat = {
@@ -310,17 +316,27 @@ export type MutationMarkNotificationsInProjectAsReadArgs = {
 
 export type MutationOnboardBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
-  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
 export type MutationOnboardVendorCompanyArgs = {
-  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -379,9 +395,14 @@ export type MutationSignUpUserArgs = {
 
 export type MutationUpdateBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
-  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -411,10 +432,15 @@ export type MutationUpdateUserInfoArgs = {
 
 
 export type MutationUpdateVendorCompanyArgs = {
-  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -623,19 +649,25 @@ export type User = {
 export type VendorCompany = {
   __typename?: 'VendorCompany';
   address?: Maybe<Scalars['String']>;
+  address1?: Maybe<Scalars['String']>;
+  address2?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
   chats?: Maybe<Array<Maybe<Chat>>>;
+  city?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   primary_member?: Maybe<VendorMember>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
+  state?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_members?: Maybe<Array<Maybe<VendorMember>>>;
   website?: Maybe<Scalars['String']>;
+  zipcode?: Maybe<Scalars['String']>;
 };
 
 export type VendorMember = {
@@ -815,10 +847,14 @@ export type AuthResponseResolvers<ContextType = any, ParentType extends Resolver
 export type BiotechResolvers<ContextType = any, ParentType extends ResolversParentTypes['Biotech'] = ResolversParentTypes['Biotech']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
+  city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Customer']>>>, ParentType, ContextType>;
   has_active_subscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -826,9 +862,11 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   number_of_reqs_allowed_without_subscription?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  zipcode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1087,19 +1125,25 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type VendorCompanyResolvers<ContextType = any, ParentType extends ResolversParentTypes['VendorCompany'] = ResolversParentTypes['VendorCompany']> = ResolversObject<{
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
+  city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   primary_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  zipcode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

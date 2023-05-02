@@ -85,7 +85,12 @@ export default {
             data: {
               description: args.description,
               website: args.website,
-              address: args.address,
+              address1: args.address1,
+              address2: args.address2,
+              city: args.city,
+              state: args.state,
+              country: args.country,
+              zipcode: args.zipcode,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
@@ -114,7 +119,12 @@ export default {
             data: {
               description: args.description,
               website: args.website,
-              address: args.address,
+              address1: args.address1,
+              address2: args.address2,
+              city: args.city,
+              state: args.state,
+              country: args.country,
+              zipcode: args.zipcode,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
