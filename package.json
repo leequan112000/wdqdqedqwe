@@ -12,7 +12,8 @@
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest",
+    "stripe:listen:local": "stripe listen --forward-to localhost:9000/webhook/stripe --skip-verify --events customer.subscription.updated,customer.subscription.deleted,checkout.session.completed"
   },
   "engines": {
     "node": "^18"
