@@ -79,6 +79,12 @@ model Biotech {
   updated_at                                  DateTime  @updatedAt
   has_setup_profile                           Boolean   @default(false)
   address                                     String?
+  address1                                    String?
+  address2                                    String?
+  city                                        String?
+  state                                       String?
+  country                                     String?
+  zipcode                                     String?
   website                                     String?
   about                                       String?
   cda_pandadoc_file_id                        String?
@@ -103,6 +109,12 @@ model VendorCompany {
   created_at           DateTime  @default(now())
   updated_at           DateTime  @updatedAt
   address              String?
+  address1             String?
+  address2             String?
+  city                 String?
+  state                String?
+  country              String?
+  zipcode              String?
   cda_pandadoc_file_id String?
   cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
