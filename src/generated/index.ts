@@ -316,6 +316,7 @@ export type MutationMarkNotificationsInProjectAsReadArgs = {
 
 export type MutationOnboardBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
+  address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
@@ -328,6 +329,7 @@ export type MutationOnboardBiotechArgs = {
 
 
 export type MutationOnboardVendorCompanyArgs = {
+  address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
@@ -395,6 +397,7 @@ export type MutationSignUpUserArgs = {
 
 export type MutationUpdateBiotechArgs = {
   about?: InputMaybe<Scalars['String']>;
+  address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
@@ -432,6 +435,7 @@ export type MutationUpdateUserInfoArgs = {
 
 
 export type MutationUpdateVendorCompanyArgs = {
+  address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;

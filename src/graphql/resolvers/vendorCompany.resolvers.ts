@@ -85,6 +85,7 @@ export default {
             data: {
               description: args.description,
               website: args.website,
+              address: args.address,
               address1: args.address1,
               address2: args.address2,
               city: args.city,
@@ -119,6 +120,7 @@ export default {
             data: {
               description: args.description,
               website: args.website,
+              address: args.address,
               address1: args.address1,
               address2: args.address2,
               city: args.city,

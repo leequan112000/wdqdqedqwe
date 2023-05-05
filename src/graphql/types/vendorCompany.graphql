@@ -28,6 +28,7 @@ type Query {
 type Mutation {
   onboardVendorCompany(
     name: String
+    address: String
     address1: String
     address2: String
     city: String
@@ -39,6 +40,7 @@ type Mutation {
   ): VendorCompany
   updateVendorCompany(
     name: String
+    address: String
     address1: String
     address2: String
     city: String
