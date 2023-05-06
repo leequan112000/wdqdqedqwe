@@ -20,10 +20,6 @@ const createActiveSubscriptionIfNoneExists = async (
   stripe_subscription_id: string,
   stripe_customer_id: string
 ) => {
-  if (customer.biotech.subscriptions.length > 0) {
-    return;
-  }
-
   await prisma.subscription.create({
     data: {
       stripe_subscription_id,
