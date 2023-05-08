@@ -1,0 +1,9 @@
+type Mutation {
+  submitCroInterest(
+    email: String!
+    company_name: String!
+    company_type: String!
+    service: String!
+    interest: String!
+  ): Boolean
+}

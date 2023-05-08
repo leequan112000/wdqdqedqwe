@@ -380,3 +380,15 @@ model MeetingAttendeeConnection {
 
   @@map("meeting_attendee_connections")
 }
+
+model InterestedCro {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name String
+  email        String
+  company_type String
+  service      String
+  interest     String
+  created_at   DateTime @default(now())
+
+  @@map("interested_cros")
+}
