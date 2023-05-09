@@ -1,5 +1,6 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
+import { sendAdminCROInterestNoticeQueue } from "../../queues/notification.queues";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -18,9 +19,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      // TODO: send email
-
       if (newInterestedCro) {
+        sendAdminCROInterestNoticeQueue.add({ companyName: company_name });
         return true;
       }
 
