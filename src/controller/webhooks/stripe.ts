@@ -20,10 +20,6 @@ const createActiveSubscriptionIfNoneExists = async (
   stripe_subscription_id: string,
   stripe_customer_id: string
 ) => {
-  if (customer.biotech.subscriptions.length > 0) {
-    return;
-  }
-
   await prisma.subscription.create({
     data: {
       stripe_subscription_id,
@@ -142,6 +138,37 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
           data: {
             account_type,
+          },
+        });
+
+        res.status(200).json({ status: 200, message: 'OK' });
+      } catch (error) {
+        Sentry.captureException(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+      break;
+    }
+    case 'customer.subscription.deleted': {
+      try {
+        const { status, customer } = event.data.object as Stripe.Subscription;
+        const stripeCustomerId = customer as string;
+
+        const subscription = await prisma.subscription.findFirst({
+          where: {
+            stripe_customer_id: stripeCustomerId,
+          },
+        });
+
+        if (!subscription) {
+          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
+        }
+
+        await prisma.subscription.update({
+          where: {
+            id: subscription.id,
+          },
+          data: {
+            status,
           },
         });
 
