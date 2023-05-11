@@ -678,7 +678,7 @@ const resolvers: Resolvers<Context> = {
       // 2. Create customer/vendor member connection
       // 3. Send invitation email
       return await context.prisma.$transaction(async (trx) => {
-        const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+        const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
