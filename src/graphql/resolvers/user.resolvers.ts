@@ -496,7 +496,7 @@ const resolvers: Resolvers<Context> = {
       if (!args.email) {
         throw new InternalError('Missing argument: email')
       }
-      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+      const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
 
       const user = await context.prisma.user.update({
         where: {
