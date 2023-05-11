@@ -508,7 +508,6 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('User not found.');
       }
 
-      // extend token expiration to 3 days
       const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
       const updatedUser = await context.prisma.user.update({
         where: {
