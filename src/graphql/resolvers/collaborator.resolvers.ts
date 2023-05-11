@@ -98,7 +98,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user not found');
       }
 
-      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+      const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
 
       return await context.prisma.$transaction(async (trx) => {
@@ -183,7 +183,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('User not found.')
       }
 
-      const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+      const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
       const updatedNewUser = await context.prisma.user.update({
         where: {

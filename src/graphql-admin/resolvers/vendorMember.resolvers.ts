@@ -33,7 +33,7 @@ const resolver: Resolvers<Context> = {
           throw new PublicError('Primary member exists');
         }
 
-        const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+        const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
         const newUser = await trx.user.create({
           data: {
             email: args.email,
