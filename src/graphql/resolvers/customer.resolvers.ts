@@ -158,7 +158,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        const resetTokenExpiration = new Date().getTime() + 60 * 60 * 1000;
+        const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
         const newUser = await trx.user.create({
           data: {
             first_name: args.first_name,
