@@ -3,6 +3,7 @@ import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import { ProjectRequestStatus } from "../../helper/constant";
+import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
 import { sendAdminNewProjectRequestEmailQueue } from "../../queues/notification.queues";
@@ -126,18 +127,76 @@ const resolvers: Resolvers<Context> = {
       return processed;
     },
     projectRequest: async (_, args, context) => {
-      const data = await context.prisma.projectRequest.findFirst({
+      const vendor = await context.prisma.vendorMember.findFirst({
         where: {
-          id: args.id!
+          user_id: context.req.user_id
         }
       });
-      if (data === null) {
-        throw new Error('')
+
+      try {
+        const projectRequest = await context.prisma.projectRequest.findFirst({
+          where: {
+            id: args.id!
+          }
+        });
+
+        if (!projectRequest) {
+          throw new PermissionDeniedError();
+        }
+
+        if (vendor) {
+          // Check if vendor is in the project connection
+          const projectConnection = await context.prisma.projectConnection.findFirst({
+            where: {
+              project_request_id: projectRequest.id,
+              vendor_member_connections: {
+                some: {
+                  vendor_member_id: vendor.id
+                }
+              }
+            }
+          });
+          if (!projectConnection) {
+            throw new PermissionDeniedError();
+          }
+        } else {
+          // Check if customer is the project request owner / collaborator
+          const customer = await context.prisma.customer.findFirst({
+            where: {
+              user_id: context.req.user_id
+            }
+          });
+          if (!customer) {
+            throw new PermissionDeniedError();
+          }
+
+          if (projectRequest.customer_id !== customer.id) {
+            const projectConnection = await context.prisma.projectConnection.findFirst({
+              where: {
+                project_request_id: projectRequest.id,
+                customer_connections: {
+                  some: {
+                    customer_id: customer.id
+                  }
+                }
+              }
+            });
+            if (!projectConnection) {
+              throw new PermissionDeniedError();
+            }
+          } 
+        }
+
+        return {
+          ...projectRequest,
+          max_budget: projectRequest.max_budget?.toNumber() || 0,
+        };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2023') {
+          throw new PermissionDeniedError();
+        }
+        throw error;
       }
-      return {
-        ...data,
-        max_budget: data.max_budget?.toNumber() || 0,
-      };
     }
   },
   Mutation: {
