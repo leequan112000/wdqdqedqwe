@@ -508,7 +508,7 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('User not found.');
       }
 
-      const resetTokenExpiration = new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const updatedUser = await context.prisma.user.update({
         where: {
           email: args.email,
@@ -544,7 +544,7 @@ const resolvers: Resolvers<Context> = {
 
       const timeElapsed = user.reset_password_expiration.getTime() - new Date().getTime();
 
-      if (timeElapsed <= 60 * 60 * 1000 && timeElapsed >= 0) {
+      if (timeElapsed <= 7 * 24 * 60 * 60 * 1000 && timeElapsed >= 0) {
         await context.prisma.user.update({
           where: {
             reset_password_token: args.reset_token
