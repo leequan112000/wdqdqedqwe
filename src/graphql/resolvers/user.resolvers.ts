@@ -544,7 +544,7 @@ const resolvers: Resolvers<Context> = {
 
       const timeElapsed = user.reset_password_expiration.getTime() - new Date().getTime();
 
-      if (timeElapsed <= 60 * 60 * 1000 && timeElapsed >= 0) {
+      if (timeElapsed <= 3 * 24 * 60 * 60 * 1000 && timeElapsed >= 0) {
         await context.prisma.user.update({
           where: {
             reset_password_token: args.reset_token
