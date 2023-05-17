@@ -35,3 +35,8 @@ export type AdminNewProjectRequestCommentNoticeData = {
   biotech_name: string;
   admin_name: string;
 }
+
+export type AdminCroInterestNoticeData = {
+  company_name: string;
+  admin_name: string;
+}

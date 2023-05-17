@@ -7,7 +7,7 @@ import createFinalContractUploadNotification from "../notification/finalContract
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import Queue from 'bull';
-import { sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail } from "../mailer/admin";
+import { sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminNewCroInterestNoticeEmail } from "../mailer/admin";
 import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
@@ -335,3 +335,25 @@ sendAdminNewProjectRequestCommentNotificationQueue.process(async (job) => {
     })
   );
 })
+
+export const sendAdminCROInterestNoticeQueue = new Queue<{ companyName: string }>(
+  `send_admin_cro_interest_notice_${Date.now()}`,
+  process.env.REDIS_URL!,
+);
+
+sendAdminCROInterestNoticeQueue.process(async (job) => {
+  const { companyName } = job.data;
+
+  const admins = await prisma.admin.findMany({
+    where: {
+      team: AdminTeam.SCIENCE
+    }
+  });
+
+  return await Promise.all(
+    admins.map((admin) => sendAdminNewCroInterestNoticeEmail({
+      admin_name: admin.username,
+      company_name: companyName,
+    }, admin.email))
+  );
+});

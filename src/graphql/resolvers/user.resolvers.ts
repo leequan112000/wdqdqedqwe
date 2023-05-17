@@ -7,6 +7,7 @@ import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
+import { Prisma } from "@prisma/client";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -496,9 +497,19 @@ const resolvers: Resolvers<Context> = {
       if (!args.email) {
         throw new InternalError('Missing argument: email')
       }
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
-      const user = await context.prisma.user.update({
+      const user = await context.prisma.user.findFirst({
+        where: {
+          email: args.email
+        }
+      });
+
+      if (!user) {
+        throw new PublicError('User not found.');
+      }
+
+      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const updatedUser = await context.prisma.user.update({
         where: {
           email: args.email,
         },
@@ -508,10 +519,10 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!user) {
+      if (!updatedUser) {
         return false;
       }
-      sendResetPasswordEmail(user);
+      sendResetPasswordEmail(updatedUser);
       return true;
     },
     resetPassword: async (_, args, context) => {

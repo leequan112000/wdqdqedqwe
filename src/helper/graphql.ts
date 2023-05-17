@@ -1,5 +1,4 @@
 import { ApolloServerPlugin } from "@apollo/server";
-import { PublicError } from "../graphql/errors/PublicError";
 import Sentry from "../sentry";
 
 // add operation name here to whitelist
@@ -8,6 +7,7 @@ export const operationWhitelist = [
   'signUpCustomerMutation',
   'ResetPassword_Mutation',
   'ForgotPassword_Mutation',
+  'SubmitCroInterest',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

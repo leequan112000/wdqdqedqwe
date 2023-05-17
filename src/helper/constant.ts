@@ -46,3 +46,9 @@ export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
 }
+
+export enum BiotechAccountType {
+  STARDARD = 'standard',
+  PREMIUM = 'premium',
+  ENTERPRISE = 'enterprise',
+}

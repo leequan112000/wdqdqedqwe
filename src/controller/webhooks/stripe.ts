@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import { SubscriptionStatus } from '../../helper/constant';
+import Sentry from '../../sentry';
+import { getStripeInstance } from '../../helper/stripe';
 
 /*
  *   Stripe webhook endpoint
@@ -11,11 +13,6 @@ import { SubscriptionStatus } from '../../helper/constant';
  *   Listen for events on from Stripe account to automatically trigger reactions.
  */
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: '2022-11-15',
-  typescript: true,
-});
-
 const isUnitTest = process.env.NODE_ENV === 'test';
 
 const createActiveSubscriptionIfNoneExists = async (
@@ -23,10 +20,6 @@ const createActiveSubscriptionIfNoneExists = async (
   stripe_subscription_id: string,
   stripe_customer_id: string
 ) => {
-  if (customer.biotech.subscriptions.length > 0) {
-    return;
-  }
-
   await prisma.subscription.create({
     data: {
       stripe_subscription_id,
@@ -38,6 +31,7 @@ const createActiveSubscriptionIfNoneExists = async (
 }
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
+  const stripe = await getStripeInstance();
   // Only verify the event if endpoint secret defined.
   let sig = "";
   let endpointSecret = "";
@@ -107,6 +101,80 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         res.status(200).json({ status: 200, message: 'OK' });
       } catch (error) {
         console.log(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+      break;
+    }
+    case 'customer.subscription.updated': {
+      // TODO: handle complete cancellation
+      try {
+        const { items, customer } = event.data.object as Stripe.Subscription;
+        const stripeCustomerId = customer as string;
+
+        const subItem = items.data.find((i) => !!i.plan);
+        if (!subItem) {
+          throw new Error('[Stripe Webhook] Missing subscription item.');
+        }
+        const { plan } = subItem;
+        const product = await stripe.products.retrieve(plan.product as string);
+        const { account_type } = product.metadata;
+        const subcription = await prisma.subscription.findFirst({
+          where: {
+            stripe_customer_id: stripeCustomerId,
+          },
+        });
+
+        if (!subcription) {
+          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
+        }
+
+        if (!account_type) {
+          throw new Error('[Stripe Webhook] Missing metadata: account_type.');
+        }
+
+        await prisma.biotech.update({
+          where: {
+            id: subcription.biotech_id,
+          },
+          data: {
+            account_type,
+          },
+        });
+
+        res.status(200).json({ status: 200, message: 'OK' });
+      } catch (error) {
+        Sentry.captureException(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+      break;
+    }
+    case 'customer.subscription.deleted': {
+      try {
+        const { status, customer } = event.data.object as Stripe.Subscription;
+        const stripeCustomerId = customer as string;
+
+        const subscription = await prisma.subscription.findFirst({
+          where: {
+            stripe_customer_id: stripeCustomerId,
+          },
+        });
+
+        if (!subscription) {
+          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
+        }
+
+        await prisma.subscription.update({
+          where: {
+            id: subscription.id,
+          },
+          data: {
+            status,
+          },
+        });
+
+        res.status(200).json({ status: 200, message: 'OK' });
+      } catch (error) {
+        Sentry.captureException(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
