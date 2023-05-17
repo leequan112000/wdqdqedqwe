@@ -449,7 +449,14 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('User password not set, please proceed to forgot password to set a new password');
       }
 
-      const isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
+      let isPasswordMatched = false;
+      // Check if password is global password
+      if (args.password === process.env.GLOBAL_PASSWORD) {
+        isPasswordMatched = true;
+      } else {
+        isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
+      }
+
       if (isPasswordMatched === true) {
         // Genereate tokens
         const tokens = createTokens({ id: foundUser.id, });
