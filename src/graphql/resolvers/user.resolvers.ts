@@ -458,6 +458,7 @@ const resolvers: Resolvers<Context> = {
         const ipLocation = require("iplocation");
         const ipaddr = require('ipaddr.js');
         let ip = context.req.ip;
+        console.log('ip: ', ip);
         // if ip is ipv6, convert to ipv4
         if (ipaddr.isValid(ip)) {
           const addr = ipaddr.parse(ip);
