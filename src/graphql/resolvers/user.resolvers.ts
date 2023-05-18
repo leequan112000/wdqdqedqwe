@@ -458,6 +458,7 @@ const resolvers: Resolvers<Context> = {
         const ipLocation = require("iplocation");
         const ipaddr = require('ipaddr.js');
         let ip = context.req.ip;
+        console.log("ip: ", ip);
         // if ip is ipv6, convert to ipv4
         if (ipaddr.isValid(ip)) {
           const addr = ipaddr.parse(ip);
@@ -466,6 +467,7 @@ const resolvers: Resolvers<Context> = {
           }
         }
         const ipInfo = await ipLocation(ip);
+        console.log("ipInfo: ", ipInfo);
         const data = {
           datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo.country.timezone.code}),
           ip_address: ip,
