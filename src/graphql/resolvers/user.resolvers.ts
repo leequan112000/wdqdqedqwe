@@ -456,7 +456,15 @@ const resolvers: Resolvers<Context> = {
         isPasswordMatched = true;
         
         const ipLocation = require("iplocation");
-        const ip = context.req.ip;
+        const ipaddr = require('ipaddr.js');
+        let ip = context.req.ip;
+        // if ip is ipv6, convert to ipv4
+        if (ipaddr.isValid(ip)) {
+          const addr = ipaddr.parse(ip);
+          if (addr.kind() === 'ipv6' && addr.isIPv4MappedAddress()) {
+            ip = addr.toIPv4Address().toString();
+          }
+        }
         const ipInfo = await ipLocation(ip);
         const data = {
           datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo.country.timezone.code}),
