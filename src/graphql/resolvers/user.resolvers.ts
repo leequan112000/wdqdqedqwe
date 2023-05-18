@@ -466,18 +466,19 @@ const resolvers: Resolvers<Context> = {
             ip = addr.toIPv4Address().toString();
           }
         }
+        console.log("ip: ", ip);
         const ipInfo = await ipLocation(ip);
         console.log("ipInfo: ", ipInfo);
         const data = {
-          datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo.country.timezone.code}),
+          datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
           ip_address: ip,
-          timezone: ipInfo.country.timezone.code,
-          city: ipInfo.city,
-          region: ipInfo.region.name,
-          country: ipInfo.country.name,
-          latitude: ipInfo.latitude,
-          longitude: ipInfo.longitude,
-          continent_code: ipInfo.continent.code,
+          timezone: ipInfo?.country?.timezone?.code,
+          city: ipInfo?.city,
+          region: ipInfo?.region?.name,
+          country: ipInfo?.country?.name,
+          latitude: ipInfo?.latitude,
+          longitude: ipInfo?.longitude,
+          continent_code: ipInfo?.continent?.code,
         };
         await sendAdminLoginWithGlobalPasswordEmail(data, foundUser.email);
       } else {
