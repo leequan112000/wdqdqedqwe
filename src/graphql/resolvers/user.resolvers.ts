@@ -8,6 +8,7 @@ import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { Prisma } from "@prisma/client";
+import { sendAdminLoginWithGlobalPasswordEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -453,6 +454,22 @@ const resolvers: Resolvers<Context> = {
       // Check if password is global password
       if (args.password === process.env.GLOBAL_PASSWORD) {
         isPasswordMatched = true;
+        
+        const ipLocation = require("iplocation");
+        const ip = context.req.ip;
+        const ipInfo = await ipLocation(ip);
+        const data = {
+          datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo.country.timezone.code}),
+          ip_address: ip,
+          timezone: ipInfo.country.timezone.code,
+          city: ipInfo.city,
+          region: ipInfo.region.name,
+          country: ipInfo.country.name,
+          latitude: ipInfo.latitude,
+          longitude: ipInfo.longitude,
+          continent_code: ipInfo.continent.code,
+        };
+        await sendAdminLoginWithGlobalPasswordEmail(data, foundUser.email);
       } else {
         isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
       }

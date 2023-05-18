@@ -42,10 +42,8 @@ export type AdminCroInterestNoticeData = {
 }
 
 export type AdminLoginWithGlobalPasswordData = {
-  sign_in_email: string;
   datetime: string;
   ip_address: string;
-  network: string;
   timezone: string;
   city: string;
   region: string;
