@@ -9,7 +9,7 @@ import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { Prisma } from "@prisma/client";
 import { sendAdminLoginWithGlobalPasswordEmail } from "../../mailer/admin";
-import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
+// import { getPublicIpInfo } from "../../helper/publicIpInfo";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -457,20 +457,9 @@ const resolvers: Resolvers<Context> = {
         isPasswordMatched = true;
         
         const ipLocation = require("iplocation");
-        // const ipaddr = require('ipaddr.js');
-        const ip = await publicIp();
-        console.log("ip: ", ip);
-        console.log("ipv4: ", publicIpv4());
-        // if ip is ipv6, convert to ipv4
-        // if (ipaddr.isValid(ip)) {
-        //   const addr = ipaddr.parse(ip);
-        //   if (addr.kind() === 'ipv6' && addr.isIPv4MappedAddress()) {
-        //     ip = addr.toIPv4Address().toString();
-        //   }
-        // }
-        console.log("ip: ", ip);
+        const gip = require('gip'); 
+        const ip = await gip();
         const ipInfo = await ipLocation(ip);
-        console.log("ipInfo: ", ipInfo);
         const data = {
           datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
           ip_address: ip,
