@@ -69,6 +69,7 @@ export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWith
       latitude: data.latitude,
       longitude: data.longitude,
       continent_code: data.continent_code,
+      environment: data.environment,
     },
   });
 

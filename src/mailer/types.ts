@@ -51,4 +51,5 @@ export type AdminLoginWithGlobalPasswordData = {
   latitude: string;
   longitude: string;
   continent_code: string;
+  environment: string;
 }

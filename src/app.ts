@@ -187,8 +187,6 @@ export async function startServer() {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
         const isWhitelisted = operationWhitelist.includes(operationName);
-        console.log("#####################");
-        console.log('ip', req.headers['x-forwarded-for']);
         if (
           // bypass authentication for codegen
           (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')

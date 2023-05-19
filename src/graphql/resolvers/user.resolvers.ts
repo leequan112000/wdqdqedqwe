@@ -456,15 +456,19 @@ const resolvers: Resolvers<Context> = {
         isPasswordMatched = true;
         
         const ipLocation = require("iplocation");
+        const ipaddr = require('ipaddr.js');
         const gip = require('gip');
-        const ip = await gip();
-        console.log('x-forward-for: ', context.req.headers['x-forwarded-for']);
-        console.log('ip: ', context.req.headers['x-real-ip']);
-        console.log('ip: ', ip);
+        var ip = context.req.headers['x-forwarded-for'] || "";
+        if (!ip) {
+          ip = context.req.ip.toString();
+          if (ipaddr.parse(ip).kind() === 'ipv6') {
+            ip = await gip();
+          }
+        };
         const ipInfo = await ipLocation(ip);
         const data = {
           datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
-          ip_address: ip,
+          ip_address: ip.toString(),
           timezone: ipInfo?.country?.timezone?.code,
           city: ipInfo?.city,
           region: ipInfo?.region?.name,
@@ -472,6 +476,7 @@ const resolvers: Resolvers<Context> = {
           latitude: ipInfo?.latitude,
           longitude: ipInfo?.longitude,
           continent_code: ipInfo?.continent?.code,
+          environment: process.env.NODE_ENV || "",
         };
         await sendAdminLoginWithGlobalPasswordEmail(data, foundUser.email);
       } else {
