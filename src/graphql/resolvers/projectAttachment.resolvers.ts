@@ -82,10 +82,9 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (files) {
-        const result = await Promise.all(files.map(async (f) => {
-          await f.promise;
+          const uploadData = await f;
           const { filename, key, filesize, contextType } = await storeUpload(
-            f,
+            uploadData,
             PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.FILE],
           );
           const attachment = await context.prisma.projectAttachment.create({
@@ -141,8 +140,9 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
+        const data = await file;
         const { filename, key, filesize, contextType } = await storeUpload(
-          file,
+          data,
           PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.REDLINE_FILE],
         );
 

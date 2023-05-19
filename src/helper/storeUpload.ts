@@ -6,9 +6,14 @@ import mime from 'mime-types';
 import { s3Client } from "./awsS3";
 import config from "../config";
 
-export default async function storeUpload(upload: any, path: string = '') {
+type UploadParamType = {
+  filename: string;
+  createReadStream: () => any;
+}
+
+export default async function storeUpload(upload: UploadParamType, path: string = '') {
   try {
-    const { createReadStream, filename } = await upload.file;
+    const { createReadStream, filename } = upload;
     const mimeType = mime.lookup(filename);
     const contextType = typeof mimeType === 'string' ? mimeType : undefined;
 
