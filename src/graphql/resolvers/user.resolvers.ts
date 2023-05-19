@@ -9,7 +9,6 @@ import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { Prisma } from "@prisma/client";
 import { sendAdminLoginWithGlobalPasswordEmail } from "../../mailer/admin";
-// import { getPublicIpInfo } from "../../helper/publicIpInfo";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -457,8 +456,11 @@ const resolvers: Resolvers<Context> = {
         isPasswordMatched = true;
         
         const ipLocation = require("iplocation");
-        const gip = require('gip'); 
+        const gip = require('gip');
         const ip = await gip();
+        console.log('x-forward-for: ', context.req.headers['x-forwarded-for']);
+        console.log('ip: ', context.req.headers['x-real-ip']);
+        console.log('ip: ', ip);
         const ipInfo = await ipLocation(ip);
         const data = {
           datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
