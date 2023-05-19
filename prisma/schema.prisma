@@ -92,6 +92,7 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
+  upload_limit                                Int       @default(1024)
 
   customers        Customer[]
   subscriptions    Subscription[]
