@@ -3,6 +3,7 @@ import { PublicError } from "../errors/PublicError";
 import { SubscriptionStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
+import UploadLimitTracker from "../../helper/uploadLimitTracker";
 
 const resolver: Resolvers<Context> = {
   Biotech: {
@@ -53,6 +54,17 @@ const resolver: Resolvers<Context> = {
         }
       });
     },
+    upload_used: async (parent) => {
+      if (!parent.id) {
+        throw new InternalError('Id not found');
+      }
+      const { id } = parent;
+      const uploadLimitTracker = new UploadLimitTracker();
+
+      await uploadLimitTracker.init(id)
+
+      return uploadLimitTracker.stats().used;
+    }
   },
   Query: {
     biotech: async (_, __, context) => {
