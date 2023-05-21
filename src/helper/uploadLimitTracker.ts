@@ -19,9 +19,9 @@ class UploadLimitTracker {
     });
     const aggregations = await prisma.projectAttachment.aggregate({
       where: {
-        project_connection: {
-          project_request: {
-            biotech_id: biotechId,
+        uploader: {
+          customer: {
+            isNot: null,
           },
         },
       },

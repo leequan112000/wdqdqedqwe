@@ -94,8 +94,9 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     uploadDocuments: async (parent, args, context) => {
       const { files, project_connection_id } = args;
+      const currectUserId = context.req.user_id;
 
-      if (!context.req.user_id) {
+      if (!currectUserId) {
         throw new InternalError('Current user id not found');
       }
 
@@ -110,7 +111,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          id: context.req.user_id,
+          id: currectUserId,
         },
         include: {
           customer: true,
@@ -152,6 +153,7 @@ const resolvers: Resolvers<Context> = {
               key,
               project_connection_id,
               content_type: contextType,
+              uploader_id: currectUserId,
             }
           });
 
@@ -189,14 +191,15 @@ const resolvers: Resolvers<Context> = {
     },
     uploadContract: async (parent, args, context, info) => {
       const { file, project_connection_id } = args;
+      const currectUserId = context.req.user_id;
 
-      if (!context.req.user_id) {
+      if (!currectUserId) {
         throw new InternalError('Current user id not found');
       }
 
       const user = await context.prisma.user.findFirst({
         where: {
-          id: context.req.user_id,
+          id: currectUserId,
         },
         include: {
           customer: true,
@@ -255,6 +258,7 @@ const resolvers: Resolvers<Context> = {
               byte_size: filesize,
               filename,
               key,
+              uploader_id: currectUserId,
             },
             where: {
               id: existingContract.id,
@@ -279,6 +283,7 @@ const resolvers: Resolvers<Context> = {
               key,
               project_connection_id,
               content_type: contextType,
+              uploader_id: currectUserId,
             }
           });
 
