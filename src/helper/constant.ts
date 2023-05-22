@@ -52,3 +52,13 @@ export enum BiotechAccountType {
   PREMIUM = 'premium',
   ENTERPRISE = 'enterprise',
 }
+
+export enum EmailType {
+  ADMIN_NEW_PROJECT_REQUEST = 'admin:new-project-request',
+  ADMIN_PROJECT_INVITATION = 'admin:project-invitation',
+  ADMIN_NEW_PROJECT_REQUEST_COMMENT = 'admin:new-project-request-comment',
+  ADMIN_CRO_INTEREST_NOTICE = 'admin:cro-interest-notice',
+  USER_FILE_UPLOAD_NOTICE = 'user:file-upload-notice',
+  USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
+  USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
+}
