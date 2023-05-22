@@ -3,9 +3,14 @@ import {
   adminNewProjectRequestCommentNoticeTemplate,
   adminNewProjectRequestTemplate,
   adminNewCROInterestNoticeTemplate,
+  adminLoginWithGlobalPasswordTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
-import { AdminCroInterestNoticeData, AdminNewProjectRequestCommentNoticeData } from "./types";
+import {
+  AdminCroInterestNoticeData,
+  AdminNewProjectRequestCommentNoticeData,
+  AdminLoginWithGlobalPasswordData,
+} from "./types";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
   const mailData = createMailData({
@@ -47,4 +52,26 @@ export const sendAdminNewCroInterestNoticeEmail = async (data: AdminCroInterestN
   });
 
   return await sendMail(mailData);
+}
+
+export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWithGlobalPasswordData, login_email: string) => {
+  const mailData = createMailData({
+    to: "admin@cro-matic.com",
+    templateId: adminLoginWithGlobalPasswordTemplate,
+    dynamicTemplateData: {
+      sign_in_email: login_email,
+      time: data.datetime,
+      ip_address: data.ip_address,
+      timezone: data.timezone,
+      city: data.city,
+      region: data.region,
+      country_name: data.country,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      continent_code: data.continent_code,
+      environment: data.environment.charAt(0).toUpperCase()+data.environment.slice(1),
+    },
+  });
+
+  sendMail(mailData);
 }

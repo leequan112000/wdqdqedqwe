@@ -8,6 +8,7 @@ import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { Prisma } from "@prisma/client";
+import { sendAdminLoginWithGlobalPasswordEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -449,7 +450,39 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('User password not set, please proceed to forgot password to set a new password');
       }
 
-      const isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
+      let isPasswordMatched = false;
+      // Check if password is global password
+      if (args.password === process.env.GLOBAL_PASSWORD) {
+        isPasswordMatched = true;
+        
+        const ipLocation = require("iplocation");
+        const ipaddr = require('ipaddr.js');
+        const gip = require('gip');
+        var ip = context.req.headers['x-forwarded-for'] || "";
+        if (!ip) {
+          ip = context.req.ip.toString();
+          if (ipaddr.parse(ip).kind() === 'ipv6') {
+            ip = await gip();
+          }
+        };
+        const ipInfo = await ipLocation(ip);
+        const data = {
+          datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
+          ip_address: ip.toString(),
+          timezone: ipInfo?.country?.timezone?.code,
+          city: ipInfo?.city,
+          region: ipInfo?.region?.name,
+          country: ipInfo?.country?.name,
+          latitude: ipInfo?.latitude,
+          longitude: ipInfo?.longitude,
+          continent_code: ipInfo?.continent?.code,
+          environment: process.env.NODE_ENV || "",
+        };
+        await sendAdminLoginWithGlobalPasswordEmail(data, foundUser.email);
+      } else {
+        isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
+      }
+
       if (isPasswordMatched === true) {
         // Genereate tokens
         const tokens = createTokens({ id: foundUser.id, });
