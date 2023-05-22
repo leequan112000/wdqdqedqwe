@@ -6,7 +6,6 @@ import createFileUploadNotification from "../notification/fileUploadNotification
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
-import Queue from 'bull';
 import { sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminNewCroInterestNoticeEmail } from "../mailer/admin";
 import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
@@ -14,13 +13,11 @@ import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "..
 import { User } from "@prisma/client";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
+import { createQueue } from "../helper/queue";
 
-export const sendAdminNewProjectRequestEmailQueue = new Queue(
-  `send_admin_new_project_request_email_${Date.now()}`,
-  process.env.REDIS_URL!
-);
+export const sendAdminNewProjectRequestEmailQueue = createQueue<{ biotechName: string }>('send_admin_new_project_request_email');
 
-sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName: string }>) => {
+sendAdminNewProjectRequestEmailQueue.process(async (job, done) => {
   const { biotechName } = job.data;
   const admins = await prisma.admin.findMany({
     where: {
@@ -33,20 +30,19 @@ sendAdminNewProjectRequestEmailQueue.process(async (job: Queue.Job<{ biotechName
       sendAdminNewProjectRequestEmail(admin, biotechName);
     })
   );
+
+  done();
 });
 
 
-export const sendFileUploadNotificationQueue = new Queue(
-  `send_file_upload_notice_email_${Date.now()}`,
-  process.env.REDIS_URL!
-);
+export const sendFileUploadNotificationQueue = createQueue<{
+  projectConnectionId: string;
+  uploaderUserId: string;
+  isFinalContract: boolean;
+  action?: string;
+}>('send_file_upload_notice_email');
 
-sendFileUploadNotificationQueue.process(async (job: Queue.Job<{
-  projectConnectionId: string,
-  uploaderUserId: string,
-  isFinalContract: boolean,
-  action?: string,
-}>) => {
+sendFileUploadNotificationQueue.process(async (job, done) => {
   const { projectConnectionId, uploaderUserId, isFinalContract, action } = job.data;
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
     where: {
@@ -135,14 +131,12 @@ sendFileUploadNotificationQueue.process(async (job: Queue.Job<{
       })
     );
   }
+  done();
 });
 
-export const sendNewMessageNotificationQueue = new Queue(
-  `send_new_message_notice_email_${Date.now()}`,
-  process.env.REDIS_URL!
-);
+export const sendNewMessageNotificationQueue = createQueue<{ projectConnectionId: string, senderUserId: string }>('send_new_message_notice_email');
 
-sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendNewMessageNotificationQueue.process(async (job, done) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
@@ -230,14 +224,13 @@ sendNewMessageNotificationQueue.process(async (job: Queue.Job<{ projectConnectio
       }
     })
   );
+
+  done();
 });
 
-export const sendAcceptProjectRequestNotificationQueue = new Queue(
-  `send_accept_project_request_notice_email_${Date.now()}`,
-  process.env.REDIS_URL!
-);
+export const sendAcceptProjectRequestNotificationQueue = createQueue<{ projectConnectionId: string, senderUserId: string }>('send_accept_project_request_notice_email');
 
-sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projectConnectionId: string, senderUserId: string }>) => {
+sendAcceptProjectRequestNotificationQueue.process(async (job, done) => {
   const { projectConnectionId, senderUserId } = job.data;
 
   const projectConnection = await prisma.projectConnection.findFirstOrThrow({
@@ -288,14 +281,15 @@ sendAcceptProjectRequestNotificationQueue.process(async (job: Queue.Job<{ projec
       })
     );
   }
+
+  done();
 });
 
-export const sendAdminProjectInvitationNotificationQueue = new Queue<{ receiverEmail: string; projectRequestName: string; projectRequestId: string; vendorCompanyId: string; primaryMemberUserId: string; projectConnectionId: string }>(
-  `send_admin_project_invitation_nofication_${Date.now()}`,
-  process.env.REDIS_URL!
+export const sendAdminProjectInvitationNotificationQueue = createQueue<{ receiverEmail: string; projectRequestName: string; projectRequestId: string; vendorCompanyId: string; primaryMemberUserId: string; projectConnectionId: string }>(
+  'send_admin_project_invitation_nofication'
 );
 
-sendAdminProjectInvitationNotificationQueue.process(async (job) => {
+sendAdminProjectInvitationNotificationQueue.process(async (job, done) => {
   const { receiverEmail, projectRequestName, projectRequestId, vendorCompanyId, primaryMemberUserId, projectConnectionId } = job.data;
   await sendVendorMemberProjectRequestInvitationByAdminEmail({
     login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/project-request`,
@@ -309,15 +303,16 @@ sendAdminProjectInvitationNotificationQueue.process(async (job) => {
     }
   })
 
-  await createAdminInviteNotification(primaryMemberUserId, projectConnection!.id)
+  await createAdminInviteNotification(primaryMemberUserId, projectConnection!.id);
+
+  done();
 });
 
-export const sendAdminNewProjectRequestCommentNotificationQueue = new Queue<{ biotechName: string }>(
-  `send_admin_new_project_request_comment_notification_${Date.now()}`,
-  process.env.REDIS_URL!
+export const sendAdminNewProjectRequestCommentNotificationQueue = createQueue<{ biotechName: string }>(
+  'send_admin_new_project_request_comment_notification',
 );
 
-sendAdminNewProjectRequestCommentNotificationQueue.process(async (job) => {
+sendAdminNewProjectRequestCommentNotificationQueue.process(async (job, done) => {
   const { biotechName } = job.data;
 
   const admins = await prisma.admin.findMany({
@@ -334,14 +329,15 @@ sendAdminNewProjectRequestCommentNotificationQueue.process(async (job) => {
       }, admin.email);
     })
   );
-})
 
-export const sendAdminCROInterestNoticeQueue = new Queue<{ companyName: string }>(
-  `send_admin_cro_interest_notice_${Date.now()}`,
-  process.env.REDIS_URL!,
+  done();
+});
+
+export const sendAdminCROInterestNoticeQueue = createQueue<{ companyName: string }>(
+  'send_admin_cro_interest_notice',
 );
 
-sendAdminCROInterestNoticeQueue.process(async (job) => {
+sendAdminCROInterestNoticeQueue.process(async (job, done) => {
   const { companyName } = job.data;
 
   const admins = await prisma.admin.findMany({
@@ -350,10 +346,12 @@ sendAdminCROInterestNoticeQueue.process(async (job) => {
     }
   });
 
-  return await Promise.all(
+  const results = await Promise.all(
     admins.map((admin) => sendAdminNewCroInterestNoticeEmail({
       admin_name: admin.username,
       company_name: companyName,
     }, admin.email))
   );
+
+  done(null, results);
 });

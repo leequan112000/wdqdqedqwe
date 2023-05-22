@@ -165,7 +165,7 @@ const resolvers: Resolvers<Context> = {
 
           sendFileUploadNotificationQueue.add({
             projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id,
+            uploaderUserId: context.req.user_id!,
             isFinalContract: true,
             action: 'update',
           });
@@ -184,7 +184,7 @@ const resolvers: Resolvers<Context> = {
 
           sendFileUploadNotificationQueue.add({
             projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id,
+            uploaderUserId: context.req.user_id!,
             isFinalContract: true,
             action: 'upload',
           });
