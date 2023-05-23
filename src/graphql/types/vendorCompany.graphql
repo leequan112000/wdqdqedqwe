@@ -1,6 +1,7 @@
 type VendorCompany {
   id: String
   name: String
+  legal_name: String
   website: String
   description: String
   created_at: Date
@@ -28,6 +29,7 @@ type Query {
 type Mutation {
   onboardVendorCompany(
     name: String
+    legal_name: String
     address: String
     address1: String
     address2: String
@@ -40,6 +42,7 @@ type Mutation {
   ): VendorCompany
   updateVendorCompany(
     name: String
+    legal_name: String
     address: String
     address1: String
     address2: String

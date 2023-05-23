@@ -83,6 +83,7 @@ export default {
               id: user.vendor_member.vendor_company_id
             },
             data: {
+              legal_name: args.legal_name,
               description: args.description,
               website: args.website,
               address: args.address,
@@ -118,6 +119,7 @@ export default {
               id: vendor_member.vendor_company_id
             },
             data: {
+              legal_name: args.legal_name,
               description: args.description,
               website: args.website,
               address: args.address,

@@ -101,6 +101,7 @@ export default {
               id: user.customer.biotech_id
             },
             data: {
+              legal_name: args.legal_name,
               about: args.about,
               website: args.website,
               address: args.address,
@@ -137,6 +138,7 @@ export default {
               id: customer.biotech_id
             },
             data: {
+              legal_name: args.legal_name,
               about: args.about,
               website: args.website,
               address: args.address,
