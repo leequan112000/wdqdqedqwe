@@ -21,6 +21,8 @@ type Biotech {
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   chats: [Chat]
+  upload_limit: Float
+  upload_used: Float
 }
 
 type Query {
