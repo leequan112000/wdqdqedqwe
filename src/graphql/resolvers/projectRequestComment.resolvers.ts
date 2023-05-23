@@ -4,7 +4,7 @@ import moment from "moment";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationCreateProjectRequestCommentArgs } from "../../generated";
-import { sendAdminNewProjectRequestCommentNotificationQueue } from "../../queues/notification.queues";
+import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
 
 export default {
   ProjectRequestComment: {
@@ -60,7 +60,7 @@ export default {
           // Simple anti spam mechanism.
           // Only send if there is no email sent in the past 15 minutes.
           if (!commentsWithinThePast15Min) {
-            sendAdminNewProjectRequestCommentNotificationQueue.add({
+            createSendAdminNewProjectRequestCommentJob({
               biotechName: projectRequest.biotech.name,
             });
 

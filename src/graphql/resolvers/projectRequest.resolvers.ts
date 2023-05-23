@@ -6,7 +6,7 @@ import { ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
-import { sendAdminNewProjectRequestEmailQueue } from "../../queues/notification.queues";
+import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -184,7 +184,7 @@ const resolvers: Resolvers<Context> = {
             if (!projectConnection) {
               throw new PermissionDeniedError();
             }
-          } 
+          }
         }
 
         return {
@@ -228,7 +228,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         sendProjectRequestSubmissionEmail(user);
-        sendAdminNewProjectRequestEmailQueue.add({ biotechName: user.customer.biotech.name });
+        createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
 
         return {
           ...projectRequest,

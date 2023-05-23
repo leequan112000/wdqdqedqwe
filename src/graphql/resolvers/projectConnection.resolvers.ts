@@ -7,10 +7,10 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRe
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { sendAcceptProjectRequestNotificationQueue } from "../../queues/notification.queues";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -457,7 +457,7 @@ const resolvers: Resolvers<Context> = {
         });
       });
 
-      sendAcceptProjectRequestNotificationQueue.add({
+      createSendUserAcceptProjectRequestNoticeJob({
         projectConnectionId: projectConnection.id,
         senderUserId: context.req.user_id,
       });
