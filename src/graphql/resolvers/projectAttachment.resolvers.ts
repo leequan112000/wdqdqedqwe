@@ -163,7 +163,7 @@ const resolvers: Resolvers<Context> = {
         if (result.filter((r) => r.status === 'fulfilled').length > 0) {
           createSendUserFileUploadNotice({
             projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id,
+            uploaderUserId: context.req.user_id!,
             isFinalContract: false,
           });
         }
