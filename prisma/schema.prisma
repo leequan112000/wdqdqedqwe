@@ -31,6 +31,7 @@ model User {
   sent_notifications         Notification[]              @relation("SenderNotifications")
   meetingAttendeeConnections MeetingAttendeeConnection[]
   meetingEvents              MeetingEvent[]
+  project_attachments        ProjectAttachment[]
 
   @@map("users")
 }
@@ -92,6 +93,7 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
+  upload_limit                                Int       @default(1048576)
 
   customers        Customer[]
   subscriptions    Subscription[]
@@ -343,6 +345,8 @@ model ProjectAttachment {
 
   project_connection_id String            @db.Uuid
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  uploader_id           String?           @db.Uuid
+  uploader              User?             @relation(fields: [uploader_id], references: [id])
 
   @@map("project_attachments")
 }

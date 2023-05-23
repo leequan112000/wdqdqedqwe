@@ -20,13 +20,11 @@ export const zohoWebhook = async (req: MulterRequest, res: Response): Promise<vo
 
   try {
     const fileContent = {
-      file: {
-        ...req.file,
-        filename: req.file.originalname,
-        createReadStream: () => {
-          return Readable.from(req.file.buffer);
-        },
-      }
+      ...req.file,
+      filename: req.file.originalname,
+      createReadStream: () => {
+        return Readable.from(req.file.buffer);
+      },
     }
 
     const { filename, key, filesize } = await storeUpload(

@@ -12,8 +12,14 @@ type ProjectAttachment {
   zoho_editor_url: String
 }
 
+type UploadResult {
+  success: Boolean!
+  error_message: String
+  data: ProjectAttachment
+}
+
 type Mutation {
-  uploadDocuments(files: [Upload]!, project_connection_id: String!): [ProjectAttachment]
-  uploadContract(file: Upload!, project_connection_id: String!): ProjectAttachment
+  uploadDocuments(files: [Upload]!, project_connection_id: String!): [UploadResult]
+  uploadContract(file: Upload!, project_connection_id: String!): UploadResult
   removeAttachment(id: String!): ProjectAttachment
 }
