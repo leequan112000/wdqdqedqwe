@@ -6,7 +6,7 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
-import { sendFileUploadNotificationQueue } from "../../queues/notification.queues";
+import { createSendUserFileUploadNotice } from "../../queues/email.queues";
 import { Readable } from 'stream';
 import UploadLimitTracker from '../../helper/uploadLimitTracker';
 import { PublicError } from '../errors/PublicError';
@@ -161,7 +161,7 @@ const resolvers: Resolvers<Context> = {
         }));
 
         if (result.filter((r) => r.status === 'fulfilled').length > 0) {
-          sendFileUploadNotificationQueue.add({
+          createSendUserFileUploadNotice({
             projectConnectionId: project_connection_id,
             uploaderUserId: context.req.user_id,
             isFinalContract: false,
@@ -267,9 +267,9 @@ const resolvers: Resolvers<Context> = {
           // delete the old contract s3 object
           await deleteObject(existingContract.key);
 
-          sendFileUploadNotificationQueue.add({
+          createSendUserFileUploadNotice({
             projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id,
+            uploaderUserId: context.req.user_id!,
             isFinalContract: true,
             action: 'update',
           });
@@ -287,9 +287,9 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          sendFileUploadNotificationQueue.add({
+          createSendUserFileUploadNotice({
             projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id,
+            uploaderUserId: context.req.user_id!,
             isFinalContract: true,
             action: 'upload',
           });

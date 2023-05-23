@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
-import { sendAdminProjectInvitationNotificationQueue } from "../../queues/notification.queues";
+import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -82,7 +82,7 @@ const resolvers: Resolvers<Context> = {
               });
 
               // Send email and notification
-              sendAdminProjectInvitationNotificationQueue.add({
+              createSendAdminProjectInvitationJob({
                 primaryMemberUserId: primaryVendorMember.user_id,
                 projectRequestId: projectRequest.id,
                 projectRequestName: projectRequest.title,
