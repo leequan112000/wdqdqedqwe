@@ -23,7 +23,7 @@ export const createBiotechCda = async (user: User & {customer: (Customer & { bio
     const biotech = customer.biotech;
     const result = await pandaDocClient.createDocument({
       documentCreateRequest: {
-        name: `Cromatic <> ${biotech.name}`,
+        name: `Cromatic <> ${biotech.legal_name}`,
         templateUuid: BIOTECH_CDA_TEMPLATE_ID,
         folderUuid: BIOTECH_CDA_FOLDER_ID,
         recipients: [
@@ -72,7 +72,7 @@ export const createVendorCompanyCda = async (user: User  & {vendor_member: (Vend
     const vendor_company = vendor_member.vendor_company;
     const result = await pandaDocClient.createDocument({
       documentCreateRequest: {
-        name: `Cromatic <> ${vendor_company.name}`,
+        name: `Cromatic <> ${vendor_company.legal_name}`,
         templateUuid: VENDOR_COMPANY_CDA_TEMPLATE_ID,
         folderUuid: VENDOR_COMPANY_CDA_FOLDER_ID,
         recipients: [
