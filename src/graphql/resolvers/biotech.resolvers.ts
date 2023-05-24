@@ -25,7 +25,7 @@ const resolver: Resolvers<Context> = {
       if (!parent.id) {
         throw new InternalError('Id not found');
       }
-      const subscription = await context.prisma.subscription.findFirstOrThrow({
+      const subscription = await context.prisma.subscription.findFirst({
         where: {
           biotech_id: parent.id,
           status: SubscriptionStatus.ACTIVE
