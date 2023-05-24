@@ -93,6 +93,7 @@ model Biotech {
   cda_signed_at                               DateTime?
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
+  legal_name                                  String?   @unique
   upload_limit                                Int       @default(1048576)
 
   customers        Customer[]
@@ -120,6 +121,7 @@ model VendorCompany {
   cda_pandadoc_file_id String?
   cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
+  legal_name           String?   @unique
 
   vendor_members      VendorMember[]
   project_connections ProjectConnection[]

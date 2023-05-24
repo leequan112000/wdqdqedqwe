@@ -1,6 +1,7 @@
 type Biotech {
   id: String
   name: String
+  legal_name: String
   created_at: Date
   updated_at: Date
   has_setup_profile: Boolean
@@ -32,6 +33,7 @@ type Query {
 type Mutation {
   onboardBiotech(
     name: String
+    legal_name: String
     address: String
     address1: String
     address2: String
@@ -44,6 +46,7 @@ type Mutation {
   ): Biotech
   updateBiotech(
     name: String
+    legal_name: String
     address: String
     address1: String
     address2: String
