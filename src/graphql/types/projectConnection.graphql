@@ -13,6 +13,7 @@ type ProjectConnection {
   project_attachments: [ProjectAttachment]
   chat: Chat
   messages: [Message]
+  unsubscribed_has_new_message: Boolean
   documents: [ProjectAttachment]
   final_contract: ProjectAttachment
   collaborators_not_invited: [User]
