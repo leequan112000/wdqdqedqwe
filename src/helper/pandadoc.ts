@@ -40,7 +40,7 @@ export const createBiotechCda = async (user: User & {customer: (Customer & { bio
         tokens: [
           {
             name: 'Client.Company',
-            value: biotech.name,
+            value: biotech.legal_name || "",
           },
           {
             name: 'Client.StreetAddress',
@@ -89,7 +89,7 @@ export const createVendorCompanyCda = async (user: User  & {vendor_member: (Vend
         tokens: [
           {
             name: 'Client.Company',
-            value: vendor_company.name,
+            value: vendor_company.legal_name || "",
           },
           {
             name: 'Client.StreetAddress',
