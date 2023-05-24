@@ -23,7 +23,7 @@ export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name
     },
   });
 
-  sendMail(mailData);
+  return sendMail(mailData);
 };
 
 export const sendAdminNewProjectRequestCommentEmail = async (data: AdminNewProjectRequestCommentNoticeData, receiverEmail: string) => {
