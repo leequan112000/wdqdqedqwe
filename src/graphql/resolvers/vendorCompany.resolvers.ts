@@ -27,17 +27,17 @@ export default {
         }
       });
     },
-    primary_member: async (parent: VendorCompany, _: void, context: Context): Promise<VendorMember | null> => {
+    primary_members: async (parent: VendorCompany, _: void, context: Context): Promise<VendorMember[] | null> => {
       const { id } = parent;
 
-      const primaryMember = await context.prisma.vendorMember.findFirst({
+      const primaryMembers = await context.prisma.vendorMember.findMany({
         where: {
           vendor_company_id: id,
           is_primary_member: true,
         },
       });
 
-      return primaryMember;
+      return primaryMembers;
     }
   },
   Query: {

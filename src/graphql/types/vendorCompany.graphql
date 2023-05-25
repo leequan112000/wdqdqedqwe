@@ -19,7 +19,7 @@ type VendorCompany {
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
-  primary_member: VendorMember
+  primary_members: [VendorMember]
 }
 
 type Query {
