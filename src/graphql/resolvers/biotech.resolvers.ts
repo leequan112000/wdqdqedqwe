@@ -120,6 +120,7 @@ const resolver: Resolvers<Context> = {
             id: user.customer.biotech_id
           },
           data: {
+            legal_name: args.legal_name,
             about: args.about,
             website: args.website,
             address: args.address,
@@ -152,6 +153,7 @@ const resolver: Resolvers<Context> = {
             id: customer.biotech_id
           },
           data: {
+            legal_name: args.legal_name,
             about: args.about,
             website: args.website,
             address: args.address,
