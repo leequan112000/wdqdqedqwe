@@ -690,7 +690,7 @@ export type VendorCompany = {
   id?: Maybe<Scalars['String']>;
   legal_name?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
-  primary_member?: Maybe<VendorMember>;
+  primary_members?: Maybe<Array<Maybe<VendorMember>>>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   state?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
@@ -1180,7 +1180,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  primary_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
+  primary_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;

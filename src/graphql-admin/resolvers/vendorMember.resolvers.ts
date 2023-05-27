@@ -21,16 +21,16 @@ const resolver: Resolvers<Context> = {
           throw new PublicError('User already exist');
         }
 
-        // Only allow admin invite one poc for one vendor company account
-        const primaryVendorMember = await trx.vendorMember.findFirst({
+        // Only allow admin invite two pocs for one vendor company account
+        const primaryVendorMembers = await trx.vendorMember.findMany({
           where: {
             is_primary_member: true,
             vendor_company_id: args.vendor_company_id,
           }
         });
 
-        if (primaryVendorMember) {
-          throw new PublicError('Primary member exists');
+        if (primaryVendorMembers.length >= 2) {
+          throw new PublicError('Primary member exists and full');
         }
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;

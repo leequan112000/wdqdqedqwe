@@ -47,7 +47,7 @@ const resolvers: Resolvers<Context> = {
               if (existingProjectConnection) {
                 throw new PublicError('Project connection exists');
               }
-              const primaryVendorMember = await trx.vendorMember.findFirst({
+              const primaryVendorMembers = await trx.vendorMember.findMany({
                 where: {
                   vendor_company_id: vendor_company_id as string,
                   is_primary_member: true,
@@ -57,7 +57,7 @@ const resolvers: Resolvers<Context> = {
                 }
               });
 
-              if (!primaryVendorMember) {
+              if (!primaryVendorMembers) {
                 throw new PublicError('No primary vendor member found.');
               }
 
@@ -68,28 +68,32 @@ const resolvers: Resolvers<Context> = {
                   vendor_status: ProjectConnectionVendorStatus.PENDING,
                 }
               });
-              await trx.vendorMemberConnection.create({
-                data: {
-                  project_connection_id: projectConnection.id,
-                  vendor_member_id: primaryVendorMember.id,
-                }
-              });
               await trx.customerConnection.create({
                 data: {
                   project_connection_id: projectConnection.id,
                   customer_id: projectRequest.customer_id,
                 }
               });
+              await Promise.all(
+                primaryVendorMembers.map(async (primaryVendorMember) => {
+                  await trx.vendorMemberConnection.create({
+                    data: {
+                      project_connection_id: projectConnection.id,
+                      vendor_member_id: primaryVendorMember.id,
+                    }
+                  });
 
-              // Send email and notification
-              createSendAdminProjectInvitationJob({
-                primaryMemberUserId: primaryVendorMember.user_id,
-                projectRequestId: projectRequest.id,
-                projectRequestName: projectRequest.title,
-                receiverEmail: primaryVendorMember.user.email,
-                vendorCompanyId: primaryVendorMember.vendor_company_id,
-                projectConnectionId: projectConnection.id,
-              });
+                  // Send email and notification
+                  createSendAdminProjectInvitationJob({
+                    primaryMemberUserId: primaryVendorMember.user_id,
+                    projectRequestId: projectRequest.id,
+                    projectRequestName: projectRequest.title,
+                    receiverEmail: primaryVendorMember.user.email,
+                    vendorCompanyId: primaryVendorMember.vendor_company_id,
+                    projectConnectionId: projectConnection.id,
+                  });
+                })
+              );
             })
           } catch (error) {
             // no-op
