@@ -74,24 +74,26 @@ const resolvers: Resolvers<Context> = {
                   customer_id: projectRequest.customer_id,
                 }
               });
-              await primaryVendorMembers.forEach(async (primaryVendorMember) => {
-                await trx.vendorMemberConnection.create({
-                  data: {
-                    project_connection_id: projectConnection.id,
-                    vendor_member_id: primaryVendorMember.id,
-                  }
-                });
+              await await Promise.all(
+                primaryVendorMembers.map(async (primaryVendorMember) => {
+                  await trx.vendorMemberConnection.create({
+                    data: {
+                      project_connection_id: projectConnection.id,
+                      vendor_member_id: primaryVendorMember.id,
+                    }
+                  });
 
-                // Send email and notification
-                createSendAdminProjectInvitationJob({
-                  primaryMemberUserId: primaryVendorMember.user_id,
-                  projectRequestId: projectRequest.id,
-                  projectRequestName: projectRequest.title,
-                  receiverEmail: primaryVendorMember.user.email,
-                  vendorCompanyId: primaryVendorMember.vendor_company_id,
-                  projectConnectionId: projectConnection.id,
-                });
-              });
+                  // Send email and notification
+                  createSendAdminProjectInvitationJob({
+                    primaryMemberUserId: primaryVendorMember.user_id,
+                    projectRequestId: projectRequest.id,
+                    projectRequestName: projectRequest.title,
+                    receiverEmail: primaryVendorMember.user.email,
+                    vendorCompanyId: primaryVendorMember.vendor_company_id,
+                    projectConnectionId: projectConnection.id,
+                  });
+                })
+              );
             })
           } catch (error) {
             // no-op
