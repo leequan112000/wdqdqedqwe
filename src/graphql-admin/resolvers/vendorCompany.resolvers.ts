@@ -74,7 +74,7 @@ const resolvers: Resolvers<Context> = {
                   customer_id: projectRequest.customer_id,
                 }
               });
-              primaryVendorMembers.forEach(async (primaryVendorMember) => {
+              await primaryVendorMembers.forEach(async (primaryVendorMember) => {
                 await trx.vendorMemberConnection.create({
                   data: {
                     project_connection_id: projectConnection.id,
