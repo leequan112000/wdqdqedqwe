@@ -74,7 +74,7 @@ const resolvers: Resolvers<Context> = {
                   customer_id: projectRequest.customer_id,
                 }
               });
-              await await Promise.all(
+              await Promise.all(
                 primaryVendorMembers.map(async (primaryVendorMember) => {
                   await trx.vendorMemberConnection.create({
                     data: {
