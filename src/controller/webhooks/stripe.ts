@@ -150,7 +150,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
     }
     case 'customer.subscription.deleted': {
       try {
-        const { status, customer } = event.data.object as Stripe.Subscription;
+        const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
         const subscription = await prisma.subscription.findFirst({
@@ -169,6 +169,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
           data: {
             status,
+            ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
           },
         });
 
