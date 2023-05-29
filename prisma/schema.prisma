@@ -368,7 +368,7 @@ model MeetingEvent {
   platform                   String
   platform_event_id          String?
   created_at                 DateTime                    @default(now())
-  updated_at                 DateTime                    @default(now())
+  updated_at                 DateTime                    @updatedAt
   project_connection_id      String                      @db.Uuid
   organizer_id               String                      @db.Uuid
   project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
