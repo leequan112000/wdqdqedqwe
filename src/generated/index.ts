@@ -527,6 +527,7 @@ export type ProjectConnection = {
   created_at?: Maybe<Scalars['Date']>;
   customer_connections?: Maybe<Array<Maybe<CustomerConnection>>>;
   documents?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  expired_at?: Maybe<Scalars['Date']>;
   external_collaborators?: Maybe<Array<Maybe<User>>>;
   final_contract?: Maybe<ProjectAttachment>;
   final_contract_uploaded_at?: Maybe<Scalars['Date']>;
@@ -1056,6 +1057,7 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CustomerConnection']>>>, ParentType, ContextType>;
   documents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  expired_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   external_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   final_contract?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType>;
   final_contract_uploaded_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;

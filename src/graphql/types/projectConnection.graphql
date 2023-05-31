@@ -19,6 +19,7 @@ type ProjectConnection {
   collaborators_not_invited: [User]
   internal_collaborators: [User]
   external_collaborators: [User]
+  expired_at: Date
 }
 
 type Query {
