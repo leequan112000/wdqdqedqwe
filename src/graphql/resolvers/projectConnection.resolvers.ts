@@ -506,6 +506,8 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {
+      const currentDate = new Date();
+
       if (!context.req.user_id) {
         throw new InternalError('Current user id not found');
       }
@@ -521,6 +523,10 @@ const resolvers: Resolvers<Context> = {
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
+      }
+
+      if (projectConnection.expired_at && currentDate <= projectConnection.expired_at) {
+        throw new PublicError('You can no longer accept this request');
       }
 
       const updatedProjectConnection = await context.prisma.$transaction(async (trx) => {
@@ -557,6 +563,7 @@ const resolvers: Resolvers<Context> = {
       return updatedProjectConnection;
     },
     declinedProjectConnection: async (_, args, context) => {
+      const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
@@ -564,6 +571,9 @@ const resolvers: Resolvers<Context> = {
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
+      }
+      if (projectConnection.expired_at && currentDate <= projectConnection.expired_at) {
+        throw new PublicError('You can no longer reject this request');
       }
       const updatedProjectConnection = await context.prisma.projectConnection.update({
         where: {

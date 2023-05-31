@@ -1,8 +1,11 @@
+import moment from "moment";
 import { Context } from "../../types/context";
 import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
+
+const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -30,6 +33,8 @@ const resolvers: Resolvers<Context> = {
       if (projectRequest.status === ProjectRequestStatus.WITHDRAWN) {
         throw new PublicError('Project request has already been withdrawn.');
       }
+
+      const newExpiryDate = moment().add(PROJECT_REQUEST_RESPONSE_PERIOD, 'd').endOf('d');
 
       await Promise.all(
         args.vendor_company_ids.map(async (vendor_company_id) => {
@@ -66,6 +71,7 @@ const resolvers: Resolvers<Context> = {
                   project_request_id: args.project_request_id,
                   vendor_company_id: vendor_company_id as string,
                   vendor_status: ProjectConnectionVendorStatus.PENDING,
+                  expired_at: newExpiryDate.toDate(),
                 }
               });
               await trx.customerConnection.create({
