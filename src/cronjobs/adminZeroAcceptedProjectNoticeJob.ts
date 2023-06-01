@@ -1,7 +1,8 @@
+import cron from 'cron';
 import { prisma } from "../connectDB";
 import { createSendAdminZeroAcceptedProjectNoticeJob } from '../queues/email.queues';
 
-const adminZeroAcceptedProjectNoticeJob = async () => {
+const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('0 10 * * *', async () => {
   const project_connections = await prisma.projectConnection.findMany({
     where: {
       AND: [
@@ -23,12 +24,8 @@ const adminZeroAcceptedProjectNoticeJob = async () => {
   const list = project_connections.map((pc) => 
     `${pc.project_request.biotech.name}: ${pc.project_request.title}`,
   ).join('; ');
-
-  const data = {
-    list: list,
-  };
   
-  createSendAdminZeroAcceptedProjectNoticeJob(data);
-};
+  createSendAdminZeroAcceptedProjectNoticeJob({ list: list });
+});
 
-adminZeroAcceptedProjectNoticeJob();
+adminZeroAcceptedProjectNoticeJob.start();

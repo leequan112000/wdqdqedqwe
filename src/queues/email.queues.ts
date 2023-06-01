@@ -435,5 +435,5 @@ export const createSendUserAcceptProjectRequestNoticeJob = (data: { projectConne
 }
 
 export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { list: string }) => {
-  emailQueue.add({ type: EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE, data }, { repeat: { cron: '10 16 * * *' }})
+  emailQueue.add({ type: EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE, data })
 }
