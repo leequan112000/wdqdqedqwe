@@ -91,6 +91,7 @@ model Biotech {
   cda_pandadoc_file_id                        String?
   cda_pandadoc_signer                         String?
   cda_signed_at                               DateTime?
+  skip_cda                                    Boolean   @default(false)
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
   legal_name                                  String?   @unique
@@ -121,6 +122,7 @@ model VendorCompany {
   cda_pandadoc_file_id String?
   cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
+  skip_cda             Boolean   @default(false)
   legal_name           String?   @unique
 
   vendor_members      VendorMember[]
