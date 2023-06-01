@@ -1,7 +1,7 @@
 import { AdminTeam, EmailType, NotificationType } from "../helper/constant";
 import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
-import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail } from "../mailer/admin";
+import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
 import { User } from "@prisma/client";
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
@@ -98,6 +98,42 @@ emailQueue.process(async (job, done) => {
         );
 
         done(null, results);
+        break;
+      }
+      case EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE: {
+        const project_connections = await prisma.projectConnection.findMany({
+          where: {
+            AND: [
+              { expired_at: { gt: new Date() }, }
+            ],
+            NOT: [
+              { vendor_status: "ACCEPTED", }
+            ],
+          },
+          include: {
+            project_request: {
+              include: {
+                biotech: true,
+              }
+            },
+          }
+        });
+
+        const data = project_connections.map((pc) => 
+          `${pc.project_request.biotech.name}: ${pc.project_request.title}`,
+        ).join('; ');
+
+        const admins = await prisma.admin.findMany({
+          where: {
+            team: AdminTeam.SCIENCE
+          }
+        });
+
+        await Promise.all(
+          admins.map((admin) => sendAdminZeroAcceptedProjectNoticeEmail(admin, data))
+        );
+
+        done();
         break;
       }
       case EmailType.USER_FILE_UPLOAD_NOTICE: {
@@ -396,4 +432,8 @@ export const createSendAdminCroInterestNoticeJob = (data: { companyName: string 
 
 export const createSendUserAcceptProjectRequestNoticeJob = (data: { projectConnectionId: string; senderUserId: string; }) => {
   emailQueue.add({ type: EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE, data })
+}
+
+export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { list: string }) => {
+  emailQueue.add({ type: EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE, data }, { repeat: { cron: '0 10 * * *' }})
 }

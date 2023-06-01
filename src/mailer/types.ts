@@ -53,3 +53,9 @@ export type AdminLoginWithGlobalPasswordData = {
   continent_code: string;
   environment: string;
 }
+
+export type AdminZeroAcceptedProjectNoticeData = {
+  admin_name: string;
+  biotech_name: string;
+  project_title: string;
+}

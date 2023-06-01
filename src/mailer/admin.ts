@@ -4,6 +4,7 @@ import {
   adminNewProjectRequestTemplate,
   adminNewCROInterestNoticeTemplate,
   adminLoginWithGlobalPasswordTemplate,
+  adminZeroAcceptedProjectNoticeTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
 import {
@@ -74,4 +75,18 @@ export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWith
   });
 
   sendMail(mailData);
+}
+
+export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, list: string) => {
+  const mailData = createMailData({
+    to: admin.email,
+    templateId: adminZeroAcceptedProjectNoticeTemplate,
+    dynamicTemplateData: {
+      retool_url: process.env.RETOOL_PROJECT_URL,
+      admin_name: admin.username,
+      list: list,
+    },
+  });
+
+  return sendMail(mailData);
 }
