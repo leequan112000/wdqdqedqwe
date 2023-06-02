@@ -6,4 +6,7 @@ type Mutation {
     service: String!
     interest: String!
   ): Boolean
+  subscribeEmailUpdates(
+    email: String!
+  ): Boolean
 }
