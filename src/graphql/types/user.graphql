@@ -15,6 +15,7 @@ type User {
   company_name: String
   cda_url: String
   cda_signed_at: Date
+  skip_cda: Boolean
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean
@@ -52,4 +53,5 @@ type Mutation {
     email: String!
   ): User
   createCda: Boolean
+  skipCda: Boolean
 }
