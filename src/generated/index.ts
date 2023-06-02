@@ -163,6 +163,7 @@ export type Mutation = {
   signUpUser: AuthResponse;
   skipCda?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
+  subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
@@ -409,6 +410,11 @@ export type MutationSubmitCroInterestArgs = {
   email: Scalars['String'];
   interest: Scalars['String'];
   service: Scalars['String'];
+};
+
+
+export type MutationSubscribeEmailUpdatesArgs = {
+  email: Scalars['String'];
 };
 
 
@@ -1015,6 +1021,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'interest' | 'service'>>;
+  subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
