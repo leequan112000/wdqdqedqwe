@@ -80,6 +80,28 @@ const resolvers: Resolvers<Context> = {
                   customer_id: projectRequest.customer_id,
                 }
               });
+              const projectRequest = await trx.projectRequest.findFirst({
+                where: {
+                  id: args.project_request_id,
+                }
+              });
+              if (!projectRequest?.initial_assigned_at) {
+                const initialProjectConnection = await trx.projectConnection.findFirst({
+                  where: {
+                    project_request_id: args.project_request_id,
+                    vendor_company_id: vendor_company_id as string,
+                  }
+                });
+                
+                await trx.projectRequest.update({
+                  where: {
+                    id: args.project_request_id,
+                  },
+                  data: {
+                    initial_assigned_at: initialProjectConnection[0]?.created_at,
+                  }
+                });
+              }
               await Promise.all(
                 primaryVendorMembers.map(async (primaryVendorMember) => {
                   await trx.vendorMemberConnection.create({
