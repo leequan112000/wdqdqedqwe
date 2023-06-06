@@ -55,7 +55,6 @@ export type AdminLoginWithGlobalPasswordData = {
 }
 
 export type AdminZeroAcceptedProjectNoticeData = {
-  admin_name: string;
-  biotech_name: string;
-  project_title: string;
+  zeroAcceptedList: string;
+  lessAcceptedList: string;
 }
