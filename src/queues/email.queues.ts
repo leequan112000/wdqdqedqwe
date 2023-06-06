@@ -126,7 +126,7 @@ emailQueue.process(async (job, done) => {
         });
 
         const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
-        // less than 5 accepted project for 24 hours
+        // less than 5 accepted projects
         const projectRequests =  await prisma.projectRequest.findMany({
           where: {
             project_connections: {
