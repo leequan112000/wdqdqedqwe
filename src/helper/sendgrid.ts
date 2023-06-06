@@ -23,3 +23,17 @@ export const upsertContacts = async (emails: string[]) => {
 
   return client.request(request);
 }
+
+export const searchContact = async (email: string) => {
+  const data: ClientRequest['body'] = {
+    "query": `email LIKE '${email}' AND CONTAINS(list_ids, '${NEWSLETTER_CONTACT_LIST_ID}')`,
+  };
+
+  const request: ClientRequest = {
+    url: `/v3/marketing/contacts/search`,
+    method: 'POST',
+    body: data
+  }
+
+  return client.request(request);
+}

@@ -13,6 +13,7 @@ import createFileUploadNotification from "../notification/fileUploadNotification
 import createMessageNotification from "../notification/messageNotification";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
+import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 
 type EmailJob = {
   type: EmailType;
@@ -345,6 +346,13 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
+      case EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL: {
+        const { receiverEmail } = data;
+        const resp = await sendNewSubscriptionEmail(receiverEmail);
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -396,4 +404,8 @@ export const createSendAdminCroInterestNoticeJob = (data: { companyName: string 
 
 export const createSendUserAcceptProjectRequestNoticeJob = (data: { projectConnectionId: string; senderUserId: string; }) => {
   emailQueue.add({ type: EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE, data })
+}
+
+export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: string }) => {
+  emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data })
 }
