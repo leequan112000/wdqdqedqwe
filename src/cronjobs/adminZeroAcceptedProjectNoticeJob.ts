@@ -52,10 +52,10 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
   });
 
   const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
-  const lessAcceptedList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+  const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
   
   
-  createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lessAcceptedList: lessAcceptedList });
+  createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lowAcceptanceList: lowAcceptanceList });
 });
 
 adminZeroAcceptedProjectNoticeJob.start();

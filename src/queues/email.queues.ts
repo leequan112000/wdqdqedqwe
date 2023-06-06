@@ -150,9 +150,9 @@ emailQueue.process(async (job, done) => {
         });
 
         const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
-        const lessAcceptedList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+        const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
         
-        const data = { zeroAcceptedList, lessAcceptedList };
+        const data = { zeroAcceptedList, lowAcceptanceList };
 
         const admins = await prisma.admin.findMany({
           where: {
@@ -465,6 +465,6 @@ export const createSendUserAcceptProjectRequestNoticeJob = (data: { projectConne
   emailQueue.add({ type: EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE, data })
 }
 
-export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { zeroAcceptedList: string; lessAcceptedList: string }) => {
+export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { zeroAcceptedList: string; lowAcceptanceList: string }) => {
   emailQueue.add({ type: EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE, data })
 }

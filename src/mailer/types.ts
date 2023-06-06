@@ -56,5 +56,5 @@ export type AdminLoginWithGlobalPasswordData = {
 
 export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
-  lessAcceptedList: string;
+  lowAcceptanceList: string;
 }
