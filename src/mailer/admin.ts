@@ -83,6 +83,7 @@ export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, data
     to: admin.email,
     templateId: adminZeroAcceptedProjectNoticeTemplate,
     dynamicTemplateData: {
+      date: new Date().toDateString(),
       retool_url: process.env.RETOOL_PROJECT_URL,
       admin_name: admin.username,
       zeroAcceptedList: data.zeroAcceptedList,
