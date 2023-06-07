@@ -70,6 +70,12 @@ export type Chat = {
   messages?: Maybe<Array<Maybe<Message>>>;
 };
 
+export type CreateMilestoneInput = {
+  amount: Scalars['Int'];
+  description: Scalars['String'];
+  due_at: Scalars['Date'];
+};
+
 export type Customer = {
   __typename?: 'Customer';
   biotech?: Maybe<Biotech>;
@@ -124,6 +130,14 @@ export type Message = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type Milestone = {
+  __typename?: 'Milestone';
+  amount?: Maybe<Scalars['Int']>;
+  description?: Maybe<Scalars['String']>;
+  due_at?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
@@ -135,6 +149,7 @@ export type Mutation = {
   createMeetingEvent?: Maybe<MeetingEvent>;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
+  createQuote?: Maybe<Quote>;
   createVendorCompany?: Maybe<VendorCompany>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
@@ -238,6 +253,13 @@ export type MutationCreateProjectRequestArgs = {
 export type MutationCreateProjectRequestCommentArgs = {
   content: Scalars['String'];
   project_request_id: Scalars['String'];
+};
+
+
+export type MutationCreateQuoteArgs = {
+  amount: Scalars['Int'];
+  milestones?: InputMaybe<Array<CreateMilestoneInput>>;
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -602,6 +624,7 @@ export type Query = {
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
+  quote?: Maybe<Quote>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
@@ -640,8 +663,20 @@ export type QueryProjectRequestsArgs = {
 };
 
 
+export type QueryQuoteArgs = {
+  project_connection_id: Scalars['String'];
+};
+
+
 export type QueryUpcomingMeetingEventsArgs = {
   project_connection_id?: InputMaybe<Scalars['String']>;
+};
+
+export type Quote = {
+  __typename?: 'Quote';
+  amount?: Maybe<Scalars['Int']>;
+  id?: Maybe<Scalars['String']>;
+  milestones?: Maybe<Array<Maybe<Milestone>>>;
 };
 
 export type Subscription = {
@@ -813,6 +848,7 @@ export type ResolversTypes = ResolversObject<{
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Chat: ResolverTypeWrapper<Chat>;
+  CreateMilestoneInput: CreateMilestoneInput;
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -821,6 +857,7 @@ export type ResolversTypes = ResolversObject<{
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
+  Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
   Notification: ResolverTypeWrapper<Notification>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
@@ -828,6 +865,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
+  Quote: ResolverTypeWrapper<Quote>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
@@ -845,6 +883,7 @@ export type ResolversParentTypes = ResolversObject<{
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
   Chat: Chat;
+  CreateMilestoneInput: CreateMilestoneInput;
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
@@ -853,6 +892,7 @@ export type ResolversParentTypes = ResolversObject<{
   JSON: Scalars['JSON'];
   MeetingEvent: MeetingEvent;
   Message: Message;
+  Milestone: Milestone;
   Mutation: {};
   Notification: Notification;
   ProjectAttachment: ProjectAttachment;
@@ -860,6 +900,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequest: ProjectRequest;
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
+  Quote: Quote;
   String: Scalars['String'];
   Subscription: {};
   Upload: Scalars['Upload'];
@@ -985,6 +1026,14 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MilestoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['Milestone'] = ResolversParentTypes['Milestone']> = ResolversObject<{
+  amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
@@ -995,6 +1044,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
+  createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
@@ -1137,11 +1187,19 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
+  quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<QueryQuoteArgs, 'project_connection_id'>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
+}>;
+
+export type QuoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Quote'] = ResolversParentTypes['Quote']> = ResolversObject<{
+  amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
@@ -1247,6 +1305,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   JSON?: GraphQLScalarType;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
+  Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
@@ -1254,6 +1313,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Quote?: QuoteResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   UploadResult?: UploadResultResolvers<ContextType>;

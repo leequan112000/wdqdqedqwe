@@ -1,0 +1,6 @@
+type Milestone {
+  id: String
+  description: String
+  amount: Int
+  due_at: Date
+}
