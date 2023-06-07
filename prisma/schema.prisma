@@ -184,6 +184,7 @@ model ProjectRequest {
   status                              String
   created_at                          DateTime @default(now())
   updated_at                          DateTime @updatedAt
+  initial_assigned_at                 DateTime?
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
