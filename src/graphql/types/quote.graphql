@@ -2,6 +2,8 @@ type Quote {
   id: String
   amount: Int
   milestones: [Milestone]
+  project_connection_id: String
+  project_connection: ProjectConnection
 }
 
 input CreateMilestoneInput {

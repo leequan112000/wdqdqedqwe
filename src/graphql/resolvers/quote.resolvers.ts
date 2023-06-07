@@ -1,19 +1,11 @@
+import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 
-// TODO: better utilities for currecy
-function toCent(num: number) {
-  return num * 100;
-}
-
-function toDollar(cent: number) {
-  return cent / 100;
-}
-
 const resolvers: Resolvers<Context> = {
   Quote: {
-    milestones: async (parent, args, context) => {
+    milestones: async (parent, _, context) => {
       if (parent.milestones) {
         return parent.milestones;
       }
@@ -32,10 +24,20 @@ const resolvers: Resolvers<Context> = {
         ...m,
         amount: toDollar(m.amount.toNumber()),
       }));
-    }
+    },
+    project_connection: async (parent, _, context) => {
+      if (!parent.project_connection_id) {
+        throw new InternalError("Project connection id not found.");
+      }
+      return await context.prisma.projectConnection.findFirst({
+        where: {
+          id: parent.project_connection_id,
+        },
+      });
+    },
   },
   Query: {
-    quote: async (parent, args, context) => {
+    quote: async (_, args, context) => {
       const { project_connection_id } = args;
       const quote = await context.prisma.quote.findFirst({
         where: {
@@ -52,7 +54,7 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    createQuote: async (parent, args, context) => {
+    createQuote: async (_, args, context) => {
       const { amount, project_connection_id, milestones } = args
 
       return await context.prisma.$transaction(async (trx) => {
@@ -91,7 +93,7 @@ const resolvers: Resolvers<Context> = {
         };
       })
     },
-    updateQuote: async (parent, args, context) => {
+    updateQuote: async (_, args, context) => {
       const { id, amount, milestones } = args;
 
       return await context.prisma.$transaction(async (trx) => {
