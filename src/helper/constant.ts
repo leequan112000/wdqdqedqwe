@@ -22,6 +22,7 @@ export enum QuoteStatus {
   DRAFT = 'draft',
   SENT = 'sent',
   APPROVED = 'approved',
+  DECLINED = 'declined',
   COMPLETED = 'completed',
 }
 
