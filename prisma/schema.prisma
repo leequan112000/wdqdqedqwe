@@ -124,6 +124,8 @@ model VendorCompany {
   cda_signed_at        DateTime?
   skip_cda             Boolean   @default(false)
   legal_name           String?   @unique
+  is_on_marketplace    Boolean?  @default(true)
+  invited_by           String?
 
   vendor_members      VendorMember[]
   project_connections ProjectConnection[]
