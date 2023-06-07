@@ -10,6 +10,13 @@ input CreateMilestoneInput {
   due_at: Date!
 }
 
+input UpdateMilestoneInput {
+  id: String
+  description: String!
+  amount: Int!
+  due_at: Date!
+}
+
 type Query {
   quote(project_connection_id: String!): Quote
 }
@@ -19,5 +26,10 @@ type Mutation {
     amount: Int!
     project_connection_id: String!
     milestones: [CreateMilestoneInput!]
+  ): Quote
+  updateQuote(
+    id: String!
+    amount: Int!
+    milestones: [UpdateMilestoneInput!]!
   ): Quote
 }

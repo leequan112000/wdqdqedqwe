@@ -182,6 +182,7 @@ export type Mutation = {
   updateBiotech?: Maybe<Biotech>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
+  updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
@@ -473,6 +474,13 @@ export type MutationUpdateMeetingEventArgs = {
 };
 
 
+export type MutationUpdateQuoteArgs = {
+  amount: Scalars['Int'];
+  id: Scalars['String'];
+  milestones: Array<UpdateMilestoneInput>;
+};
+
+
 export type MutationUpdateUserInfoArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
@@ -691,6 +699,13 @@ export type SubscriptionNewMessageArgs = {
   chat_id: Scalars['String'];
 };
 
+export type UpdateMilestoneInput = {
+  amount: Scalars['Int'];
+  description: Scalars['String'];
+  due_at: Scalars['Date'];
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type UploadResult = {
   __typename?: 'UploadResult';
   data?: Maybe<ProjectAttachment>;
@@ -868,6 +883,7 @@ export type ResolversTypes = ResolversObject<{
   Quote: ResolverTypeWrapper<Quote>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
+  UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   UploadResult: ResolverTypeWrapper<UploadResult>;
   User: ResolverTypeWrapper<User>;
@@ -903,6 +919,7 @@ export type ResolversParentTypes = ResolversObject<{
   Quote: Quote;
   String: Scalars['String'];
   Subscription: {};
+  UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: Scalars['Upload'];
   UploadResult: UploadResult;
   User: User;
@@ -1075,6 +1092,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
+  updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
