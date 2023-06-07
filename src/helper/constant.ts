@@ -62,4 +62,5 @@ export enum EmailType {
   USER_FILE_UPLOAD_NOTICE = 'user:file-upload-notice',
   USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
+  USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
 }

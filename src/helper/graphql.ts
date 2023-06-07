@@ -8,6 +8,7 @@ export const operationWhitelist = [
   'ResetPassword_Mutation',
   'ForgotPassword_Mutation',
   'SubmitCroInterest',
+  'SubscribeEmailUpdates',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

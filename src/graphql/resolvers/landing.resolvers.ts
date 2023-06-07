@@ -1,6 +1,8 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
-import { createSendAdminCroInterestNoticeJob } from "../../queues/email.queues";
+import { createSendAdminCroInterestNoticeJob, createSendNewBlogSubscriptionEmailJob } from "../../queues/email.queues";
+import { searchContact, upsertContacts } from '../../helper/sendgrid';
+import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -25,8 +27,28 @@ const resolvers: Resolvers<Context> = {
       }
 
       return false;
-    }
-  }
-}
+    },
+    subscribeEmailUpdates: async (parent, args, context) => {
+      const { email } = args;
+
+      const [searchResp] = await searchContact(email);
+      // Skip if exists
+      if ((searchResp.body as any).contact_count > 0) {
+        return true;
+      }
+
+      const [response, body] = await upsertContacts([email]);
+
+      const { statusCode } = response;
+
+      if (statusCode === 202) {
+        createSendNewBlogSubscriptionEmailJob({ receiverEmail: email });
+        return true;
+      }
+
+      throw new PublicError('Something went wrong');
+    },
+  },
+};
 
 export default resolvers;
