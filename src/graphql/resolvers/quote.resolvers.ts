@@ -2,6 +2,7 @@ import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
+import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Quote: {
@@ -61,7 +62,7 @@ const resolvers: Resolvers<Context> = {
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
-            status: 'new',
+            status: QuoteStatus.DRAFT,
             project_connection_id,
           },
         });
@@ -74,8 +75,10 @@ const resolvers: Resolvers<Context> = {
                 amount: m.amount,
                 due_at: m.due_at,
                 description: m.description,
-                status: 'pending',
                 quote_id: newQuote.id,
+                status: MilestoneStatus.NOT_STARTED,
+                payment_status: MilestonePaymentStatus.UNPAID,
+                vendor_payment_status: MilestonePaymentStatus.UNPAID,
               }
             })
           });
@@ -138,9 +141,11 @@ const resolvers: Resolvers<Context> = {
             data: {
               amount: toCent(nm.amount),
               description: nm.description,
-              status: 'draft',
               due_at: new Date(),
               quote_id: updatedQuote.id,
+              status: MilestoneStatus.NOT_STARTED,
+              payment_status: MilestonePaymentStatus.UNPAID,
+              vendor_payment_status: MilestonePaymentStatus.UNPAID,
             },
           });
         });

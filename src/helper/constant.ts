@@ -18,6 +18,25 @@ export enum ProjectConnectionVendorStatus {
   DECLINED = 'declined',
 }
 
+export enum QuoteStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  APPROVED = 'approved',
+  COMPLETED = 'completed',
+}
+
+export enum MilestoneStatus {
+  NOT_STARTED = 'not_started',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
+export enum MilestonePaymentStatus {
+  UNPAID = 'unpaid',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+}
+
 export enum AdminTeam {
   ENGINEER = 'engineer',
   PRODUCT = 'product',
