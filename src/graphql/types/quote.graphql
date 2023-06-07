@@ -4,6 +4,7 @@ type Quote {
   milestones: [Milestone]
   project_connection_id: String
   project_connection: ProjectConnection
+  status: String
 }
 
 input CreateMilestoneInput {

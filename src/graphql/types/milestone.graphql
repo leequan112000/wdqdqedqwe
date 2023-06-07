@@ -3,4 +3,7 @@ type Milestone {
   description: String
   amount: Int
   due_at: Date
+  status: String
+  payment_status: String
+  vendor_payment_status: String
 }
