@@ -575,6 +575,7 @@ export type ProjectConnection = {
   project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
+  quotes?: Maybe<Array<Maybe<Quote>>>;
   unsubscribed_has_new_message?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_company?: Maybe<VendorCompany>;
@@ -685,6 +686,8 @@ export type Quote = {
   amount?: Maybe<Scalars['Int']>;
   id?: Maybe<Scalars['String']>;
   milestones?: Maybe<Array<Maybe<Milestone>>>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
 };
 
 export type Subscription = {
@@ -1148,6 +1151,7 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quotes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Quote']>>>, ParentType, ContextType>;
   unsubscribed_has_new_message?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
@@ -1217,6 +1221,8 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

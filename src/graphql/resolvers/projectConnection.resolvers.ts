@@ -12,6 +12,7 @@ import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
 import { Prisma } from "@prisma/client";
+import { toDollar } from "../../helper/money";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -83,6 +84,23 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
+    },
+    quotes: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      const quotes = await context.prisma.quote.findMany({
+        where: {
+          project_connection_id: parent.id,
+        }
+      });
+
+      return quotes.map((quote) => {
+        return {
+          ...quote,
+          amount: toDollar(quote.amount.toNumber())
+        }
+      });
     },
     chat: async (parent, _, context) => {
       if (!parent?.id) {
