@@ -16,6 +16,7 @@ const resolvers: Resolvers<Context> = {
           website: args.website,
           description: args.description,
           address: args.address,
+          invited_by: 'admin',
         }
       });
     },
