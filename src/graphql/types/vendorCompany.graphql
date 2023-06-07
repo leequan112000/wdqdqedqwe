@@ -54,4 +54,12 @@ type Mutation {
     website: String
     description: String
   ): VendorCompany
+  createVendorCompany(
+    name: String!
+    address: String
+    website: String
+    description: String
+    is_on_marketplace: Boolean
+    invited_by: String
+  ): VendorCompany
 }

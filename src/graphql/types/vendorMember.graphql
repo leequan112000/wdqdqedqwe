@@ -30,4 +30,10 @@ type Mutation {
     email: String!
     custom_message: String
   ): VendorMember @deprecated(reason: "Use `inviteCollaborator`.")
+  inviteVendorMemberByBiotech(
+    first_name: String!
+    last_name: String!
+    email: String!
+    vendor_company_id: String!
+  ): VendorMember
 }

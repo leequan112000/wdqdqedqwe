@@ -2,7 +2,11 @@ import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/cl
 import { Request } from "express";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../../generated";
+import {
+  MutationOnboardVendorCompanyArgs,
+  MutationUpdateVendorCompanyArgs,
+  MutationCreateVendorCompanyArgs,
+} from "../../generated";
 
 export default {
   VendorCompany: {
@@ -136,6 +140,18 @@ export default {
       } catch (error) {
         return error;
       }
+    },
+    createVendorCompany: async (_: void, args: MutationCreateVendorCompanyArgs, context: Context & { req: Request }) => {
+      return await context.prisma.vendorCompany.create({
+        data: {
+          name: args.name,
+          website: args.website,
+          description: args.description,
+          address: args.address,
+          is_on_marketplace: false,
+          invited_by: 'admin',
+        }
+      });
     },
   }
 };
