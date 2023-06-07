@@ -21,7 +21,7 @@ input UpdateMilestoneInput {
 }
 
 type Query {
-  quote(project_connection_id: String!): Quote
+  quote(project_connection_id: String, id: String): Quote
 }
 
 type Mutation {

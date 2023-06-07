@@ -39,10 +39,11 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     quote: async (_, args, context) => {
-      const { project_connection_id } = args;
+      const { project_connection_id, id } = args;
       const quote = await context.prisma.quote.findFirst({
         where: {
-          project_connection_id,
+          ...(project_connection_id ? { project_connection_id } : {}),
+          ...(id ? { id } : {}),
         }
       });
 
@@ -72,7 +73,7 @@ const resolvers: Resolvers<Context> = {
           const tasks = milestones.map(async (m) => {
             return await trx.milestone.create({
               data: {
-                amount: m.amount,
+                amount: toCent(m.amount),
                 due_at: m.due_at,
                 description: m.description,
                 quote_id: newQuote.id,
