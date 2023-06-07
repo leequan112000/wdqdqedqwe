@@ -405,15 +405,17 @@ model InterestedCro {
 }
 
 model Milestone {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description String
-  amount      Decimal  @db.Decimal(14, 2)
-  due_at      DateTime
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  quote       Quote    @relation(fields: [quote_id], references: [id])
-  quote_id    String   @db.Uuid
-  status      String
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description           String
+  amount                Decimal  @db.Decimal(14, 2)
+  due_at                DateTime
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  quote                 Quote    @relation(fields: [quote_id], references: [id])
+  quote_id              String   @db.Uuid
+  status                String
+  payment_status        String
+  vendor_payment_status String
 
   @@map("milestones")
 }
