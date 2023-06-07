@@ -231,6 +231,7 @@ model ProjectConnection {
   chats                     Chat[]
   project_attachments       ProjectAttachment[]
   MeetingEvent              MeetingEvent[]
+  quotes                    Quote[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -401,4 +402,31 @@ model InterestedCro {
   created_at   DateTime @default(now())
 
   @@map("interested_cros")
+}
+
+model Milestone {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description String
+  amount      Decimal  @db.Decimal(14, 2)
+  due_at      DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  quote       Quote    @relation(fields: [quote_id], references: [id])
+  quote_id    String   @db.Uuid
+  status      String
+
+  @@map("milestones")
+}
+
+model Quote {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  amount                Decimal           @db.Decimal(14, 2)
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  project_connection_id String            @db.Uuid
+  milestones            Milestone[]
+  status                String
+
+  @@map("quotes")
 }
