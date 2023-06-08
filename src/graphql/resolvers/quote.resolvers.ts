@@ -18,7 +18,10 @@ const resolvers: Resolvers<Context> = {
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
-        }
+        },
+        orderBy: {
+          due_at: 'asc',
+        },
       });
 
       return milestones.map((m) => ({
@@ -169,15 +172,21 @@ const resolvers: Resolvers<Context> = {
           where: {
             id: updatedQuote.id,
           },
-          include: {
-            milestones: true,
-          }
+        });
+
+        const latestMilestones = await trx.milestone.findMany({
+          where: {
+            quote_id: quote?.id,
+          },
+          orderBy: {
+            due_at: 'asc',
+          },
         })
 
         return {
           ...quote,
           amount: toDollar(quote!.amount.toNumber()),
-          milestones: (quote!.milestones || []).map((m) => ({
+          milestones: (latestMilestones || []).map((m) => ({
             ...m,
             amount: toDollar(m.amount.toNumber()),
           })),

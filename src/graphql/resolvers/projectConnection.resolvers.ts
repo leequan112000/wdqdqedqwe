@@ -118,6 +118,9 @@ const resolvers: Resolvers<Context> = {
 
       const quotes = await context.prisma.quote.findMany({
         where: filter,
+        orderBy: {
+          created_at: 'asc',
+        }
       });
 
       return quotes.map((quote) => {
