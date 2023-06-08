@@ -152,8 +152,20 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               res.status(200).json({ status: 200, message: 'OK' });
             }
             case 'payment': {
-              // TODO: mark milestone as payment as paid
-              // update quote as completed if all milestones done
+              if (!checkoutSession?.metadata?.milestone_id) {
+                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              }
+
+              const { quote_id, milestone_id } = checkoutSession.metadata;
+              await prisma.milestone.update({
+                where: {
+                  id: milestone_id,
+                },
+                data: {
+                  payment_status: MilestonePaymentStatus.PAID,
+                }
+              });
+              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
             }
             default: {
@@ -189,7 +201,20 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               res.status(200).json({ status: 200, message: 'OK' });
             }
             case 'payment': {
-              // TODO: mark milestone as payment as failed
+              if (!checkoutSession?.metadata?.milestone_id) {
+                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              }
+
+              const { quote_id, milestone_id } = checkoutSession.metadata;
+              await prisma.milestone.update({
+                where: {
+                  id: milestone_id,
+                },
+                data: {
+                  payment_status: MilestonePaymentStatus.UNPAID,
+                }
+              });
+              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
             }
             default: {
