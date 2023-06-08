@@ -23,10 +23,12 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      return milestones.map((m) => ({
-        ...m,
-        amount: toDollar(m.amount.toNumber()),
-      }));
+      return milestones
+        .sort((a, b) => a.due_at.getTime() - b.due_at.getTime())
+        .map((m) => ({
+          ...m,
+          amount: toDollar(m.amount.toNumber()),
+        }));
     },
     project_connection: async (parent, _, context) => {
       if (!parent.project_connection_id) {
