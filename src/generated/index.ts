@@ -245,6 +245,7 @@ export type MutationCreateVendorCompanyArgs = {
   address?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
+  vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
 };
 
