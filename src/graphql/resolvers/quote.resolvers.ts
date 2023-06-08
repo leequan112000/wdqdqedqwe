@@ -148,10 +148,6 @@ const resolvers: Resolvers<Context> = {
               product_data: {
                 name: quote.project_connection.project_request.title,
                 description: nextUnpaidMilestone.description,
-                metadata: {
-                  quote_id: id,
-                  milestone_id: nextUnpaidMilestone.id,
-                }
               },
               unit_amount: Number(nextUnpaidMilestone.amount),
             },
@@ -161,6 +157,10 @@ const resolvers: Resolvers<Context> = {
         mode: 'payment',
         customer: customer.biotech.subscriptions[0].stripe_customer_id,
         client_reference_id: customer.id,
+        metadata: {
+          quote_id: id,
+          milestone_id: nextUnpaidMilestone.id,
+        },
         payment_method_types: ['us_bank_account'],
         success_url,
         cancel_url,
