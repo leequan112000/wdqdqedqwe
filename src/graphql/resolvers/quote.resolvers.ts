@@ -160,6 +160,7 @@ const resolvers: Resolvers<Context> = {
         ],
         mode: 'payment',
         customer: customer.biotech.subscriptions[0].stripe_customer_id,
+        client_reference_id: customer.biotech.subscriptions[0].stripe_customer_id,
         payment_method_types: ['us_bank_account'],
         success_url,
         cancel_url,
