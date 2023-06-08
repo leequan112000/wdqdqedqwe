@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { Request, Response } from 'express';
 import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
-import { SubscriptionStatus } from '../../helper/constant';
+import { MilestonePaymentStatus, MilestoneStatus, SubscriptionStatus } from '../../helper/constant';
 import Sentry from '../../sentry';
 import { getStripeInstance } from '../../helper/stripe';
 
@@ -99,7 +99,21 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               res.status(200).json({ status: 200, message: 'OK' });
             }
             case 'payment': {
-              // TODO: mark milestone as processing payments
+              if (!checkoutSession?.metadata?.milestone_id) {
+                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              }
+
+              const { quote_id, milestone_id } = checkoutSession.metadata;
+              await prisma.milestone.update({
+                where: {
+                  id: milestone_id,
+                },
+                data: {
+                  status: MilestoneStatus.IN_PROGRESS,
+                  payment_status: MilestonePaymentStatus.PROCESSING,
+                }
+              });
+              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
             }
             case 'setup': {
