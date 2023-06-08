@@ -66,7 +66,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       try {
         // https://stripe.com/docs/api/checkout/sessions/object
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
-        const customer = await prisma.customer.findFirstOrThrow({
+        const customer = await prisma.customer.findFirst({
           where: {
             id: checkoutSession.client_reference_id!
           },
@@ -79,34 +79,119 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           }
         });
         if (customer) {
-          if (checkoutSession.subscription) {
-            await createActiveSubscriptionIfNoneExists(customer, checkoutSession.subscription as string, checkoutSession.customer as string);
-          } else {
-            // Increment number_of_reqs_allowed_without_subscription by 1
-            const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
-            await prisma.biotech.update({
-              where: {
-                id: customer.biotech_id
-              },
-              data: {
-                number_of_reqs_allowed_without_subscription: incremented_number_of_request
+          switch (checkoutSession.mode) {
+            case 'subscription': {
+              if (checkoutSession.subscription) {
+                await createActiveSubscriptionIfNoneExists(customer, checkoutSession.subscription as string, checkoutSession.customer as string);
+              } else {
+                // Increment number_of_reqs_allowed_without_subscription by 1
+                const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
+                await prisma.biotech.update({
+                  where: {
+                    id: customer.biotech_id
+                  },
+                  data: {
+                    number_of_reqs_allowed_without_subscription: incremented_number_of_request
+                  }
+                })
               }
-            })
+              console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            case 'payment': {
+              // TODO: mark milestone as processing payments
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            case 'setup': {
+              res.status(200).json({ status: 200, message: 'Payment method setup complete' });
+            }
+            default: {
+              res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+            }
           }
-          console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
         } else {
           // This can happen in because stripe sends webhooks for both staging and production traffic.
           console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
         }
-        res.status(200).json({ status: 200, message: 'OK' });
       } catch (error) {
         console.log(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
     }
+    case 'checkout.session.async_payment_succeeded': {
+      try {
+        // https://stripe.com/docs/api/checkout/sessions/object
+        const checkoutSession = event.data.object as Stripe.Checkout.Session;
+        const customer = await prisma.customer.findFirst({
+          where: {
+            id: checkoutSession.client_reference_id!
+          },
+          include: {
+            biotech: true
+          }
+        });
+        if (customer) {
+          switch (checkoutSession.mode) {
+            case 'setup':
+            case 'subscription': {
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            case 'payment': {
+              // TODO: mark milestone as payment as paid
+              // update quote as completed if all milestones done
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            default: {
+              res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+            }
+          }
+        } else {
+          // This can happen in because stripe sends webhooks for both staging and production traffic.
+          console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+    }
+    case 'checkout.session.async_payment_failed': {
+      try {
+        // https://stripe.com/docs/api/checkout/sessions/object
+        const checkoutSession = event.data.object as Stripe.Checkout.Session;
+        const customer = await prisma.customer.findFirst({
+          where: {
+            id: checkoutSession.client_reference_id!
+          },
+          include: {
+            biotech: true
+          }
+        });
+        if (customer) {
+          switch (checkoutSession.mode) {
+            case 'setup':
+            case 'subscription': {
+              // Subscription will auto canceled by Stripe
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            case 'payment': {
+              // TODO: mark milestone as payment as failed
+              res.status(200).json({ status: 200, message: 'OK' });
+            }
+            default: {
+              res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+            }
+          }
+        } else {
+          // This can happen in because stripe sends webhooks for both staging and production traffic.
+          console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+    }
     case 'customer.subscription.updated': {
-      // TODO: handle complete cancellation
       try {
         const { items, customer } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
