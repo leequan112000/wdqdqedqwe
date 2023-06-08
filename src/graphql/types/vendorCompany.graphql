@@ -17,6 +17,9 @@ type VendorCompany {
   cda_pandadoc_signer: String
   cda_signed_at: Date
   skip_cda: Boolean
+  university_name: String
+  vendor_type: String
+  principal_investigator_name: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
@@ -40,6 +43,9 @@ type Mutation {
     zipcode: String
     website: String
     description: String
+    university_name: String
+    vendor_type: String
+    principal_investigator_name: String
   ): VendorCompany
   updateVendorCompany(
     name: String
@@ -53,5 +59,8 @@ type Mutation {
     zipcode: String
     website: String
     description: String
+    university_name: String
+    vendor_type: String
+    principal_investigator_name: String
   ): VendorCompany
 }

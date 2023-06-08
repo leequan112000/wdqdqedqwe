@@ -93,6 +93,9 @@ export default {
               state: args.state,
               country: args.country,
               zipcode: args.zipcode,
+              university_name: args.university_name,
+              vendor_type: args.vendor_type,
+              principal_investigator_name: args.principal_investigator_name,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
@@ -129,6 +132,9 @@ export default {
               state: args.state,
               country: args.country,
               zipcode: args.zipcode,
+              university_name: args.university_name,
+              vendor_type: args.vendor_type,
+              principal_investigator_name: args.principal_investigator_name,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
