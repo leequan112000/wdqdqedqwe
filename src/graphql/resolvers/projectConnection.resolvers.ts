@@ -3,7 +3,7 @@ import createCollaboratedNotification from '../../notification/collaboratedNotif
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus } from "../../helper/constant";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
@@ -89,10 +89,35 @@ const resolvers: Resolvers<Context> = {
       if (!parent?.id) {
         throw new InternalError('Project connection id not found');
       }
-      const quotes = await context.prisma.quote.findMany({
+
+      const currentUserId = context.req.user_id;
+
+      const currentUser = await context.prisma.user.findFirst({
         where: {
-          project_connection_id: parent.id,
+          id: currentUserId,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
         }
+      });
+
+      if (!currentUser) {
+        throw new InternalError('User not found');
+      }
+
+      const filter: Prisma.QuoteWhereInput = {
+        project_connection_id: parent.id,
+      };
+
+      if (currentUser.customer) {
+        filter.status = {
+          not: QuoteStatus.DRAFT,
+        };
+      }
+
+      const quotes = await context.prisma.quote.findMany({
+        where: filter,
       });
 
       return quotes.map((quote) => {

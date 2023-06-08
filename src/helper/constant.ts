@@ -20,8 +20,8 @@ export enum ProjectConnectionVendorStatus {
 
 export enum QuoteStatus {
   DRAFT = 'draft',
-  SENT = 'sent',
-  APPROVED = 'approved',
+  PENDING_DECISION = 'pending_decision',
+  ACCEPTED = 'accepted',
   DECLINED = 'declined',
   COMPLETED = 'completed',
 }

@@ -63,7 +63,7 @@ const resolvers: Resolvers<Context> = {
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
-            status: send_to_biotech ? QuoteStatus.SENT : QuoteStatus.DRAFT,
+            status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
             project_connection_id,
           },
         });
@@ -104,7 +104,7 @@ const resolvers: Resolvers<Context> = {
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
-            ...(send_to_biotech ? { status: QuoteStatus.SENT } : {})
+            ...(send_to_biotech ? { status: QuoteStatus.PENDING_DECISION } : {})
           },
           where: {
             id,
@@ -183,7 +183,39 @@ const resolvers: Resolvers<Context> = {
           })),
         };
       })
-    }
+    },
+    acceptQuote: async (_, args, context) => {
+      const { id } = args
+      const updatedQuote = await context.prisma.quote.update({
+        where: {
+          id,
+        },
+        data: {
+          status: QuoteStatus.ACCEPTED,
+        },
+      });
+
+      return {
+        ...updatedQuote,
+        amount: updatedQuote.amount.toNumber(),
+      }
+    },
+    declineQuote: async (_, args, context) => {
+      const { id } = args
+      const updatedQuote = await context.prisma.quote.update({
+        where: {
+          id,
+        },
+        data: {
+          status: QuoteStatus.DECLINED,
+        },
+      });
+
+      return {
+        ...updatedQuote,
+        amount: updatedQuote.amount.toNumber(),
+      }
+    },
   }
 }
 

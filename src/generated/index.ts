@@ -144,6 +144,7 @@ export type Milestone = {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
+  acceptQuote?: Maybe<Quote>;
   addProjectCollaborator?: Maybe<User>;
   createAdmin?: Maybe<Admin>;
   createCda?: Maybe<Scalars['Boolean']>;
@@ -154,6 +155,7 @@ export type Mutation = {
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createQuote?: Maybe<Quote>;
   createVendorCompany?: Maybe<VendorCompany>;
+  declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
@@ -196,6 +198,11 @@ export type Mutation = {
 
 
 export type MutationAcceptProjectConnectionArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationAcceptQuoteArgs = {
   id: Scalars['String'];
 };
 
@@ -273,6 +280,11 @@ export type MutationCreateVendorCompanyArgs = {
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
   website?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeclineQuoteArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -1066,6 +1078,7 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
+  acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -1076,6 +1089,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
+  declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
