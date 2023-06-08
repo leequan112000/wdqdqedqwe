@@ -57,13 +57,13 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createQuote: async (_, args, context) => {
-      const { amount, project_connection_id, milestones } = args
+      const { amount, project_connection_id, milestones, send_to_biotech = false } = args
 
       return await context.prisma.$transaction(async (trx) => {
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
-            status: QuoteStatus.DRAFT,
+            status: send_to_biotech ? QuoteStatus.SENT : QuoteStatus.DRAFT,
             project_connection_id,
           },
         });
@@ -98,12 +98,13 @@ const resolvers: Resolvers<Context> = {
       })
     },
     updateQuote: async (_, args, context) => {
-      const { id, amount, milestones } = args;
+      const { id, amount, milestones, send_to_biotech } = args;
 
       return await context.prisma.$transaction(async (trx) => {
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
+            ...(send_to_biotech ? { status: QuoteStatus.SENT } : {})
           },
           where: {
             id,
@@ -114,15 +115,16 @@ const resolvers: Resolvers<Context> = {
         });
 
         const newMilestones = milestones.filter((m) => !m.id);
-        const updateMilestons = milestones.filter((m) => !!m.id)
-        const removedMilestones = updateMilestons
+        const updateMilestones = milestones.filter((m) => !!m.id)
+        const removedMilestones = updatedQuote.milestones
+          // Find milestones which are not in the existing milestones list for removal.
           .filter((el) => {
-            return !updatedQuote.milestones.some((f) => {
+            return !updateMilestones.some((f) => {
               return f.id === el.id;
             });
           });
 
-        const updateMilestoneTasks = updateMilestons.map(async (um) => {
+        const updateMilestoneTasks = updateMilestones.map(async (um) => {
           return await trx.milestone.update({
             data: {
               amount: toCent(um.amount),

@@ -264,6 +264,7 @@ export type MutationCreateQuoteArgs = {
   amount: Scalars['Int'];
   milestones?: InputMaybe<Array<CreateMilestoneInput>>;
   project_connection_id: Scalars['String'];
+  send_to_biotech?: InputMaybe<Scalars['Boolean']>;
 };
 
 
@@ -481,6 +482,7 @@ export type MutationUpdateQuoteArgs = {
   amount: Scalars['Int'];
   id: Scalars['String'];
   milestones: Array<UpdateMilestoneInput>;
+  send_to_biotech?: InputMaybe<Scalars['Boolean']>;
 };
 
 

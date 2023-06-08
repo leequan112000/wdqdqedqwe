@@ -29,10 +29,12 @@ type Mutation {
     amount: Int!
     project_connection_id: String!
     milestones: [CreateMilestoneInput!]
+    send_to_biotech: Boolean
   ): Quote
   updateQuote(
     id: String!
     amount: Int!
     milestones: [UpdateMilestoneInput!]!
+    send_to_biotech: Boolean
   ): Quote
 }
