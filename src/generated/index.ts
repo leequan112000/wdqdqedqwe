@@ -651,6 +651,7 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
+  quoteCheckoutUrl?: Maybe<Scalars['String']>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
@@ -692,6 +693,13 @@ export type QueryProjectRequestsArgs = {
 export type QueryQuoteArgs = {
   id?: InputMaybe<Scalars['String']>;
   project_connection_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryQuoteCheckoutUrlArgs = {
+  cancel_url: Scalars['String'];
+  id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -1234,6 +1242,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
+  quoteCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryQuoteCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;

@@ -2,7 +2,9 @@ import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus } from "../../helper/constant";
+import { PublicError } from "../errors/PublicError";
+import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { getStripeInstance } from "../../helper/stripe";
 
 const resolvers: Resolvers<Context> = {
   Quote: {
@@ -53,6 +55,86 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(quote.amount.toNumber())
         }
         : {};
+    },
+    quoteCheckoutUrl: async (_, args, context) => {
+      const { id, success_url, cancel_url } = args
+      const quote = await context.prisma.quote.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          milestones: true,
+          project_connection: {
+            include: {
+              project_request: true
+            }
+          }
+        }
+      });
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+        include: {
+          biotech: {
+            include: {
+              subscriptions: {
+                where: {
+                  status: SubscriptionStatus.ACTIVE
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!quote) {
+        throw new PublicError('Quotation not found.');
+      }
+
+      if (!customer) {
+        throw new PublicError('Customer not found.');
+      }
+
+      if (quote.status === QuoteStatus.COMPLETED) {
+        throw new PublicError('The quotation has completed all the milestones; there are no remaining milestones to be paid.');
+      }
+
+      if (quote.milestones.every(milestone => milestone.payment_status === MilestonePaymentStatus.PAID)) {
+        throw new PublicError('All the milestones in the quotation have been paid.');
+      }
+
+      if (quote.status !== QuoteStatus.ACCEPTED) {
+        throw new PublicError('The quotation must be accepted before proceeding with the payment.');
+      }
+
+      const nextUnpaidMilestone = quote.milestones
+        .sort((a, b) => a.due_at.getTime() - b.due_at.getTime())
+        .filter(m => m.payment_status === MilestonePaymentStatus.UNPAID)[0];
+
+      const stripe = await getStripeInstance();
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: quote.project_connection.project_request.title,
+                description: nextUnpaidMilestone.description,
+              },
+              unit_amount: Number(nextUnpaidMilestone.amount),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        customer: customer.biotech.subscriptions[0].stripe_customer_id,
+        payment_method_types: ['us_bank_account'],
+        success_url,
+        cancel_url,
+      });
+
+      return session.url;
     },
   },
   Mutation: {

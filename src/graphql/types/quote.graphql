@@ -22,6 +22,11 @@ input UpdateMilestoneInput {
 
 type Query {
   quote(project_connection_id: String, id: String): Quote
+  quoteCheckoutUrl(
+    id: String!
+    success_url: String!
+    cancel_url: String!
+  ): String
 }
 
 type Mutation {
