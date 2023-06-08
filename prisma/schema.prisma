@@ -400,6 +400,8 @@ model InterestedCro {
   service      String
   interest     String
   created_at   DateTime @default(now())
+  first_name   String?
+  last_name    String?
 
   @@map("interested_cros")
 }
