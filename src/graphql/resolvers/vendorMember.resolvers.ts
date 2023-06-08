@@ -102,86 +102,89 @@ export default {
       }
     },
     inviteVendorMemberByBiotech: async (_: void, args: MutationInviteVendorMemberByBiotechArgs, context: Context & { req: Request }) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const vendorCompany = await trx.vendorCompany.findFirst({
-          where: {
-            name: args.vendor_company_name,
-          },
-        });
-
-        if (vendorCompany) {
-          throw new PublicError('Vendor company already exist');
-        }
-
-        const user = await trx.user.findFirst({
-          where: {
-            email: args.email,
-          },
-        });
-
-        if (user) {
-          throw new PublicError('User already exist');
-        }
-
-        const customer = await trx.user.findFirst({
-          where: {
-            id: args.customer_user_id,
-          },
-        });
-
-        if (!customer) {
-          throw new PublicError('Customer not found');
-        }
-
-        const biotech = await trx.biotech.findFirst({
-          where: {
-            id: args.biotech_id,
-          },
-        });
-
-        if (!biotech) {
-          throw new PublicError('Biotech not found');
-        }
-        
-        const newVendorCompany = await context.prisma.vendorCompany.create({
-          data: {
-            name: args.vendor_company_name,
-            website: args.website,
-            description: args.description,
-            address: args.address,
-            is_on_marketplace: false,
+      if (process.env.BIOTECH_INVITE_CRO) {
+        return await context.prisma.$transaction(async (trx) => {
+          const vendorCompany = await trx.vendorCompany.findFirst({
+            where: {
+              name: args.vendor_company_name,
+            },
+          });
+  
+          if (vendorCompany) {
+            throw new PublicError('Vendor company already exist');
           }
-        });
-
-        const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-        const newUser = await trx.user.create({
-          data: {
-            email: args.email,
-            first_name: args.first_name,
-            last_name: args.last_name,
-            reset_password_token: createResetPasswordToken(),
-            reset_password_expiration: new Date(resetTokenExpiration),
+  
+          const user = await trx.user.findFirst({
+            where: {
+              email: args.email,
+            },
+          });
+  
+          if (user) {
+            throw new PublicError('User already exist');
           }
-        });
-
-        const newVendorMember = await trx.vendorMember.create({
-          data: {
-            user_id: newUser.id,
-            vendor_company_id: newVendorCompany.id,
-            is_primary_member: true,
+  
+          const customer = await trx.user.findFirst({
+            where: {
+              id: args.customer_user_id,
+            },
+          });
+  
+          if (!customer) {
+            throw new PublicError('Customer not found');
           }
+  
+          const biotech = await trx.biotech.findFirst({
+            where: {
+              id: args.biotech_id,
+            },
+          });
+  
+          if (!biotech) {
+            throw new PublicError('Biotech not found');
+          }
+          
+          const newVendorCompany = await context.prisma.vendorCompany.create({
+            data: {
+              name: args.vendor_company_name,
+              website: args.website,
+              description: args.description,
+              address: args.address,
+              is_on_marketplace: false,
+            }
+          });
+  
+          const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+          const newUser = await trx.user.create({
+            data: {
+              email: args.email,
+              first_name: args.first_name,
+              last_name: args.last_name,
+              reset_password_token: createResetPasswordToken(),
+              reset_password_expiration: new Date(resetTokenExpiration),
+            }
+          });
+  
+          const newVendorMember = await trx.vendorMember.create({
+            data: {
+              user_id: newUser.id,
+              vendor_company_id: newVendorCompany.id,
+              is_primary_member: true,
+            }
+          });
+  
+          const data: BiotechInviteVendorMemberData = {
+            inviter_first_name: customer.first_name,
+            inviter_last_name: customer.last_name,
+            biotech_name: biotech.name,
+          }
+  
+          // TODO: send email to new vendor member by biotech
+          sendVendorMemberInvitationByBiotechEmail(newUser, data);        
+          return newVendorMember;
         });
-
-        const data: BiotechInviteVendorMemberData = {
-          inviter_first_name: customer.first_name,
-          inviter_last_name: customer.last_name,
-          biotech_name: biotech.name,
-        }
-
-        // TODO: send email to new vendor member by biotech
-        sendVendorMemberInvitationByBiotechEmail(newUser, data);        
-        return newVendorMember;
-      });
+      }
+      return null;
     },
   }
 };
