@@ -58,3 +58,9 @@ export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
   lowAcceptanceList: string;
 }
+
+export type BiotechInviteVendorMemberData = {
+  inviter_first_name: string;
+  inviter_last_name: string;
+  biotech_name: string;
+}

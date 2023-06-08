@@ -1,8 +1,13 @@
 import { User } from "@prisma/client";
 import { createMailData, mailSender, sendMail } from "./config";
-import { vendorMemberInvitationByAdminTemplate, vendorMemberInvitationByExistingMemberTemplate, vendorMemberInvitationToProjectRequestByAdminTemplate } from "./templates";
+import {
+  vendorMemberInvitationByAdminTemplate,
+  vendorMemberInvitationByExistingMemberTemplate,
+  vendorMemberInvitationToProjectRequestByAdminTemplate,
+  vendorMemberInvitationByBiotechTemplate
+} from "./templates";
 import { app_env } from "../environment";
-import { ProjectRequestInvitationByAdminData } from "./types";
+import { ProjectRequestInvitationByAdminData, BiotechInviteVendorMemberData } from "./types";
 
 export const sendVendorMemberInvitationByExistingMemberEmail = (inviter: User, receiver: User, custom_message: string = '') => {
   const mailData = {
@@ -47,4 +52,21 @@ export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (email
   });
 
   await sendMail(mailData);
+};
+
+export const sendVendorMemberInvitationByBiotechEmail = (receiver: User, inviterData: BiotechInviteVendorMemberData) => {
+  const mailData = {
+    from: `Cromatic <${mailSender}>`,
+    to: receiver.email,
+    replyTo: mailSender,
+    templateId: vendorMemberInvitationByBiotechTemplate,
+    dynamicTemplateData: {
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
+      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+      inviter_full_name: `${inviterData.inviter_first_name} ${inviterData.inviter_last_name}`,
+      biotech_name: inviterData.biotech_name,
+    },
+  };
+
+  sendMail(mailData);
 };
