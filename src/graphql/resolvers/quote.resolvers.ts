@@ -20,15 +20,40 @@ const resolvers: Resolvers<Context> = {
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
-        }
+        },
+        orderBy: {
+          due_at: 'asc',
+        },
       });
 
       return milestones
-        .sort((a, b) => a.due_at.getTime() - b.due_at.getTime())
         .map((m) => ({
           ...m,
           amount: toDollar(m.amount.toNumber()),
         }));
+    },
+    next_unpaid_milestone: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Missing quote ID');
+      }
+      
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          quote_id: parent.id,
+          payment_status: MilestonePaymentStatus.UNPAID
+        },
+        orderBy: {
+          due_at: 'asc',
+        },
+      });
+
+      if (milestone) {
+        return {
+          ...milestone,
+          amount: toDollar(milestone.amount.toNumber())
+        };
+      }
+      return null;
     },
     project_connection: async (parent, _, context) => {
       if (!parent.project_connection_id) {

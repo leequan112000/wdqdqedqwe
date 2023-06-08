@@ -712,6 +712,7 @@ export type Quote = {
   amount?: Maybe<Scalars['Int']>;
   id?: Maybe<Scalars['String']>;
   milestones?: Maybe<Array<Maybe<Milestone>>>;
+  next_unpaid_milestone?: Maybe<Milestone>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
@@ -1254,6 +1255,7 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
+  next_unpaid_milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
