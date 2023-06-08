@@ -245,8 +245,6 @@ export type MutationCreateProjectRequestCommentArgs = {
 export type MutationCreateVendorCompanyArgs = {
   address?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
-  invited_by?: InputMaybe<Scalars['String']>;
-  is_on_marketplace?: InputMaybe<Scalars['Boolean']>;
   name: Scalars['String'];
   website?: InputMaybe<Scalars['String']>;
 };
@@ -315,10 +313,17 @@ export type MutationInviteVendorMemberByAdminArgs = {
 
 
 export type MutationInviteVendorMemberByBiotechArgs = {
+  address?: InputMaybe<Scalars['String']>;
+  biotech_id: Scalars['String'];
+  customer_user_id: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
+  invited_by?: InputMaybe<Scalars['String']>;
+  is_on_marketplace?: InputMaybe<Scalars['Boolean']>;
   last_name: Scalars['String'];
-  vendor_company_id: Scalars['String'];
+  vendor_company_name: Scalars['String'];
+  website?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1016,7 +1021,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
-  inviteVendorMemberByBiotech?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByBiotechArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
+  inviteVendorMemberByBiotech?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByBiotechArgs, 'biotech_id' | 'customer_user_id' | 'email' | 'first_name' | 'last_name' | 'vendor_company_name'>>;
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;

@@ -5,7 +5,6 @@ import { PublicError } from "../errors/PublicError";
 import {
   MutationOnboardVendorCompanyArgs,
   MutationUpdateVendorCompanyArgs,
-  MutationCreateVendorCompanyArgs,
 } from "../../generated";
 
 export default {
@@ -140,18 +139,6 @@ export default {
       } catch (error) {
         return error;
       }
-    },
-    createVendorCompany: async (_: void, args: MutationCreateVendorCompanyArgs, context: Context & { req: Request }) => {
-      return await context.prisma.vendorCompany.create({
-        data: {
-          name: args.name,
-          website: args.website,
-          description: args.description,
-          address: args.address,
-          is_on_marketplace: false,
-          invited_by: 'admin',
-        }
-      });
     },
   }
 };
