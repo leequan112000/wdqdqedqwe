@@ -97,6 +97,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               }
               console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             case 'payment': {
               if (!checkoutSession?.metadata?.milestone_id) {
@@ -115,12 +116,15 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               });
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             case 'setup': {
               res.status(200).json({ status: 200, message: 'Payment method setup complete' });
+              break;
             }
             default: {
               res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+              break;
             }
           }
         } else {
@@ -150,6 +154,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             case 'setup':
             case 'subscription': {
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             case 'payment': {
               if (!checkoutSession?.metadata?.milestone_id) {
@@ -167,9 +172,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               });
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             default: {
               res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+              break;
             }
           }
         } else {
@@ -180,6 +187,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         console.log(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
+      break;
     }
     case 'checkout.session.async_payment_failed': {
       try {
@@ -199,6 +207,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             case 'subscription': {
               // Subscription will auto canceled by Stripe
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             case 'payment': {
               if (!checkoutSession?.metadata?.milestone_id) {
@@ -216,9 +225,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               });
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
+              break;
             }
             default: {
               res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
+              break;
             }
           }
         } else {
@@ -229,6 +240,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         console.log(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
+      break;
     }
     case 'customer.subscription.updated': {
       try {
