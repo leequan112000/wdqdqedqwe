@@ -148,6 +148,10 @@ const resolvers: Resolvers<Context> = {
               product_data: {
                 name: quote.project_connection.project_request.title,
                 description: nextUnpaidMilestone.description,
+                metadata: {
+                  quote_id: id,
+                  milestone_id: nextUnpaidMilestone.id,
+                }
               },
               unit_amount: Number(nextUnpaidMilestone.amount),
             },
