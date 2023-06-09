@@ -16,6 +16,8 @@ const resolvers: Resolvers<Context> = {
           website: args.website,
           description: args.description,
           address: args.address,
+          vendor_type: args.vendor_type,
+          skip_cda: args.skip_cda || false,
         }
       });
     },
