@@ -96,6 +96,7 @@ export default {
               university_name: args.university_name,
               vendor_type: args.vendor_type,
               principal_investigator_name: args.principal_investigator_name,
+              google_scholar_url: args.google_scholar_url,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
@@ -135,6 +136,7 @@ export default {
               university_name: args.university_name,
               vendor_type: args.vendor_type,
               principal_investigator_name: args.principal_investigator_name,
+              google_scholar_url: args.google_scholar_url,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })

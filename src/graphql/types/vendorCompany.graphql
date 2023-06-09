@@ -20,6 +20,7 @@ type VendorCompany {
   university_name: String
   vendor_type: String
   principal_investigator_name: String
+  google_scholar_url: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
@@ -46,6 +47,7 @@ type Mutation {
     university_name: String
     vendor_type: String
     principal_investigator_name: String
+    google_scholar_url: String
   ): VendorCompany
   updateVendorCompany(
     name: String
@@ -62,5 +64,6 @@ type Mutation {
     university_name: String
     vendor_type: String
     principal_investigator_name: String
+    google_scholar_url: String
   ): VendorCompany
 }

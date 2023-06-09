@@ -345,6 +345,7 @@ export type MutationOnboardVendorCompanyArgs = {
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
@@ -472,6 +473,7 @@ export type MutationUpdateVendorCompanyArgs = {
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
@@ -708,6 +710,7 @@ export type VendorCompany = {
   country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
+  google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   legal_name?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
@@ -1208,6 +1211,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
