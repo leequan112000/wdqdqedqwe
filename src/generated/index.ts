@@ -170,6 +170,8 @@ export type Mutation = {
   /** @deprecated Use `inviteCollaborator`. */
   inviteVendorMember?: Maybe<VendorMember>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
+  markMilestoneAsCompleted?: Maybe<Milestone>;
+  markMilestoneAsPaid?: Maybe<Milestone>;
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
@@ -178,6 +180,7 @@ export type Mutation = {
   removeAttachment?: Maybe<ProjectAttachment>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
+  requestMilestonePayment?: Maybe<Milestone>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
@@ -185,6 +188,7 @@ export type Mutation = {
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
   skipCda?: Maybe<Scalars['Boolean']>;
+  startMilestone?: Maybe<Milestone>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
@@ -196,6 +200,8 @@ export type Mutation = {
   updateVendorMember?: Maybe<VendorMember>;
   uploadContract?: Maybe<UploadResult>;
   uploadDocuments?: Maybe<Array<Maybe<UploadResult>>>;
+  verifyMilestoneAsCompleted?: Maybe<Milestone>;
+  verifyMilestoneAsPaid?: Maybe<Milestone>;
   withdrawProjectRequest?: Maybe<ProjectRequest>;
 };
 
@@ -353,6 +359,16 @@ export type MutationInviteVendorMemberByAdminArgs = {
 };
 
 
+export type MutationMarkMilestoneAsCompletedArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationMarkMilestoneAsPaidArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationMarkNotificationAsReadArgs = {
   id: Scalars['String'];
 };
@@ -409,6 +425,11 @@ export type MutationRemoveProjectCollaboratorArgs = {
 };
 
 
+export type MutationRequestMilestonePaymentArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationResendInvitationArgs = {
   user_id: Scalars['String'];
 };
@@ -443,6 +464,11 @@ export type MutationSignUpUserArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
+};
+
+
+export type MutationStartMilestoneArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -540,6 +566,16 @@ export type MutationUploadContractArgs = {
 export type MutationUploadDocumentsArgs = {
   files: Array<InputMaybe<Scalars['Upload']>>;
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationVerifyMilestoneAsCompletedArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationVerifyMilestoneAsPaidArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -648,6 +684,7 @@ export type Query = {
   customer?: Maybe<Customer>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
+  milestone?: Maybe<Milestone>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
@@ -670,6 +707,11 @@ export type QueryMeetingEventsArgs = {
 
 export type QueryMeetingFormAttendeesArgs = {
   project_connection_id: Scalars['String'];
+};
+
+
+export type QueryMilestoneArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -1115,6 +1157,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
+  markMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsCompletedArgs, 'id'>>;
+  markMilestoneAsPaid?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsPaidArgs, 'id'>>;
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
@@ -1123,6 +1167,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  requestMilestonePayment?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationRequestMilestonePaymentArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
@@ -1130,6 +1175,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  startMilestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationStartMilestoneArgs, 'id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'interest' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
@@ -1141,6 +1187,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
+  verifyMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationVerifyMilestoneAsCompletedArgs, 'id'>>;
+  verifyMilestoneAsPaid?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationVerifyMilestoneAsPaidArgs, 'id'>>;
   withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;
 
@@ -1244,6 +1292,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
+  milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
