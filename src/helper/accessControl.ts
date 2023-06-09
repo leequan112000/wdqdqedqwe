@@ -47,8 +47,57 @@ export const checkProjectConnectionPermission = async (context: Context, project
     const projectRequestUserId = projectConnection.project_request.customer.user_id;
     const accessableCustomerUserIds = projectConnection.customer_connections.map((cc) => cc.customer.user_id);
     const accessableVendorMemberIds = projectConnection.vendor_member_connections.map((vmc) => vmc.vendor_member.user_id);
-  
     if (![projectRequestUserId, ...accessableCustomerUserIds, ...accessableVendorMemberIds].includes(currentUser.id)) {
+      throw new PermissionDeniedError();
+    }
+  } catch (error) {
+    throw new PermissionDeniedError();
+  }
+}
+
+export const checkMilestonePermission = async (context: Context, milestoneId: string) => {
+  try {
+    const milestone = await context.prisma.quote.findFirst({
+      where: {
+        id: milestoneId,
+      }
+    });
+
+    if (!milestone) {
+      throw new PermissionDeniedError();
+    }
+
+    await checkProjectConnectionPermission(context, milestone.project_connection_id);
+  } catch (error) {
+    throw new PermissionDeniedError();
+  }
+}
+
+export const checkAllowVendorOnlyPermission = async (context: Context) => {
+  try {
+    const vendor = await context.prisma.vendorMember.findFirst({
+      where: {
+        user_id: context.req.user_id
+      }
+    });
+    
+    if (!vendor) {
+      throw new PermissionDeniedError();
+    }
+  } catch (error) {
+    throw new PermissionDeniedError();
+  }
+}
+
+export const checkAllowCustomerOnlyPermission = async (context: Context) => {
+  try {
+    const customer = await context.prisma.customer.findFirst({
+      where: {
+        user_id: context.req.user_id
+      }
+    });
+
+    if (!customer) {
       throw new PermissionDeniedError();
     }
   } catch (error) {
