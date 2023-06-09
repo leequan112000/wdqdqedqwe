@@ -132,7 +132,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
         }
       } catch (error) {
-        console.log(error);
+        Sentry.captureException(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
@@ -184,7 +184,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
         }
       } catch (error) {
-        console.log(error);
+        Sentry.captureException(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
@@ -237,7 +237,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
         }
       } catch (error) {
-        console.log(error);
+        Sentry.captureException(error);
         res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
       break;
