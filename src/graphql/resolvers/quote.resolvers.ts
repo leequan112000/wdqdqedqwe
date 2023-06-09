@@ -5,6 +5,15 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
+import shortUUID from "short-uuid";
+
+function generateQuoteShortId() {
+  return `qt_${shortUUID.generate()}`;
+}
+
+function generateMilestoneShortId() {
+  return `ms_${shortUUID.generate()}`;
+}
 
 const resolvers: Resolvers<Context> = {
   Quote: {
@@ -36,7 +45,7 @@ const resolvers: Resolvers<Context> = {
       if (!parent.id) {
         throw new InternalError('Missing quote ID');
       }
-      
+
       const milestone = await context.prisma.milestone.findFirst({
         where: {
           quote_id: parent.id,
@@ -147,7 +156,7 @@ const resolvers: Resolvers<Context> = {
               currency: 'usd',
               product_data: {
                 name: quote.project_connection.project_request.title,
-                description: nextUnpaidMilestone.description,
+                description: nextUnpaidMilestone.title,
               },
               unit_amount: Number(nextUnpaidMilestone.amount),
             },
@@ -179,12 +188,14 @@ const resolvers: Resolvers<Context> = {
             amount: toCent(amount),
             status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
             project_connection_id,
+            short_id: generateQuoteShortId(),
           },
         });
 
         let newMilestones;
         if (milestones && milestones.length > 0) {
           const tasks = milestones.map(async (m) => {
+            console.log(m);
             return await trx.milestone.create({
               data: {
                 amount: toCent(m.amount),
@@ -194,6 +205,8 @@ const resolvers: Resolvers<Context> = {
                 status: MilestoneStatus.NOT_STARTED,
                 payment_status: MilestonePaymentStatus.UNPAID,
                 vendor_payment_status: MilestonePaymentStatus.UNPAID,
+                short_id: generateMilestoneShortId(),
+                title: m.title,
               }
             })
           });
@@ -257,12 +270,14 @@ const resolvers: Resolvers<Context> = {
           return await trx.milestone.create({
             data: {
               amount: toCent(nm.amount),
+              title: nm.title,
               description: nm.description,
-              due_at: new Date(),
+              due_at: nm.due_at,
               quote_id: updatedQuote.id,
               status: MilestoneStatus.NOT_STARTED,
               payment_status: MilestonePaymentStatus.UNPAID,
               vendor_payment_status: MilestonePaymentStatus.UNPAID,
+              short_id: generateMilestoneShortId(),
             },
           });
         });
