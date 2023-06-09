@@ -53,7 +53,12 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
-      if (result?.customer?.biotech?.cda_signed_at || result?.vendor_member?.vendor_company?.cda_signed_at) {
+      if (
+        result?.customer?.biotech?.cda_signed_at ||
+        (!result?.customer?.biotech?.cda_signed_at && result?.customer?.biotech?.skip_cda) ||
+        result?.vendor_member?.vendor_company?.cda_signed_at ||
+        (!result?.vendor_member?.vendor_company?.cda_signed_at && result?.vendor_member?.vendor_company?.skip_cda)
+      ) {
         return true;
       }
 
@@ -289,6 +294,54 @@ const resolvers: Resolvers<Context> = {
           },
         });
         return customer?.biotech?.cda_signed_at;
+      }
+    },
+    skip_cda: async (parent, _, context) => {
+      if (parent.customer?.biotech?.skip_cda) {
+        return parent.customer.biotech.skip_cda;
+      }
+      if (parent.vendor_member?.vendor_company?.skip_cda) {
+        return parent.vendor_member.vendor_company.skip_cda;
+      }
+
+      if (!parent.id) {
+        throw new InternalError('Missing user id');
+      }
+
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: parent.id
+        }
+      });
+
+      if (vendor) {
+        const vendorMember = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            vendor_company: {
+              select: {
+                skip_cda: true,
+              },
+            },
+          },
+        });
+        return vendorMember?.vendor_company?.skip_cda as boolean;
+      } else {
+        const customer = await context.prisma.customer.findFirst({
+          where: {
+            user_id: parent.id,
+          },
+          include: {
+            biotech: {
+              select: {
+                skip_cda: true,
+              },
+            },
+          },
+        });
+        return customer?.biotech?.skip_cda as boolean;
       }
     },
     full_name: async (parent, args, context) => {
@@ -683,6 +736,76 @@ const resolvers: Resolvers<Context> = {
               data: {
                 cda_pandadoc_file_id,
                 cda_pandadoc_signer: user.email,
+              }
+            })
+          });
+        }
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    skipCda: async (_, __, context) => {
+      try {
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id
+          }
+        });
+
+        if (vendor) {
+          await context.prisma.$transaction(async (trx) => {
+            const user = await trx.user.findFirstOrThrow({
+              where: {
+                id: context.req.user_id,
+              },
+              include: {
+                vendor_member: {
+                  include: {
+                    vendor_company: true
+                  }
+                }
+              }
+            });
+
+            if (!user.vendor_member) {
+              throw new PublicError('Vendor member not found.');
+            }
+
+            return await trx.vendorCompany.update({
+              where: {
+                id: user.vendor_member.vendor_company_id
+              },
+              data: {
+                skip_cda: true,
+              }
+            })
+          });
+        } else {
+          await context.prisma.$transaction(async (trx) => {
+            const user = await trx.user.findFirstOrThrow({
+              where: {
+                id: context.req.user_id,
+              },
+              include: {
+                customer: {
+                  include: {
+                    biotech: true
+                  }
+                }
+              }
+            });
+
+            if (!user.customer) {
+              throw new PublicError('Customer not found.');
+            }
+
+            return await context.prisma.biotech.update({
+              where: {
+                id: user.customer.biotech_id
+              },
+              data: {
+                skip_cda: true,
               }
             })
           });

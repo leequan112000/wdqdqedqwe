@@ -376,7 +376,6 @@ const resolvers: Resolvers<Context> = {
         // Update meeting event record.
         const updatedMeetingEvent = await trx.meetingEvent.update({
           data: {
-            updated_at: new Date(),
             title,
             description,
             end_time,

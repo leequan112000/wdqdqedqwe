@@ -16,10 +16,11 @@ type VendorCompany {
   cda_pandadoc_file_id: String
   cda_pandadoc_signer: String
   cda_signed_at: Date
+  skip_cda: Boolean
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
-  primary_member: VendorMember
+  primary_members: [VendorMember]
 }
 
 type Query {

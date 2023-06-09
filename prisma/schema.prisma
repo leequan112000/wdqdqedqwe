@@ -91,6 +91,7 @@ model Biotech {
   cda_pandadoc_file_id                        String?
   cda_pandadoc_signer                         String?
   cda_signed_at                               DateTime?
+  skip_cda                                    Boolean   @default(false)
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
   legal_name                                  String?   @unique
@@ -121,6 +122,7 @@ model VendorCompany {
   cda_pandadoc_file_id String?
   cda_pandadoc_signer  String?
   cda_signed_at        DateTime?
+  skip_cda             Boolean   @default(false)
   legal_name           String?   @unique
 
   vendor_members      VendorMember[]
@@ -151,12 +153,13 @@ model VendorMember {
 }
 
 model Subscription {
-  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   stripe_subscription_id String
   stripe_customer_id     String
   status                 String
-  created_at             DateTime @default(now())
-  updated_at             DateTime @updatedAt
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  ended_at               DateTime?
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
@@ -181,6 +184,7 @@ model ProjectRequest {
   status                              String
   created_at                          DateTime @default(now())
   updated_at                          DateTime @updatedAt
+  initial_assigned_at                 DateTime?
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
@@ -215,6 +219,7 @@ model ProjectConnection {
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
   final_contract_uploaded_at DateTime?
+  expired_at                 DateTime?
 
   project_request_id String         @db.Uuid
   project_request    ProjectRequest @relation(fields: [project_request_id], references: [id])
@@ -367,7 +372,7 @@ model MeetingEvent {
   platform                   String
   platform_event_id          String?
   created_at                 DateTime                    @default(now())
-  updated_at                 DateTime                    @default(now())
+  updated_at                 DateTime                    @updatedAt
   project_connection_id      String                      @db.Uuid
   organizer_id               String                      @db.Uuid
   project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
@@ -395,6 +400,8 @@ model InterestedCro {
   service      String
   interest     String
   created_at   DateTime @default(now())
+  first_name   String?
+  last_name    String?
 
   @@map("interested_cros")
 }

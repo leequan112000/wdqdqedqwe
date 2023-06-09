@@ -3,7 +3,7 @@ import createCollaboratedNotification from '../../notification/collaboratedNotif
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus } from "../../helper/constant";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
@@ -11,6 +11,7 @@ import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
+import { Prisma } from "@prisma/client";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -94,19 +95,110 @@ const resolvers: Resolvers<Context> = {
       });
     },
     messages: async (parent, args, context) => {
+      const currectUserId = context.req.user_id;
       if (!parent?.id) {
         throw new InternalError('Project connection id not found');
       }
-      const chat = await context.prisma.chat.findFirst({
+      if (!currectUserId) {
+        throw new InternalError('Current user not found')
+      }
+      const user = await context.prisma.user.findFirst({
         where: {
-          project_connection_id: parent.id,
+          id: currectUserId,
         },
         include: {
-          messages: true,
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          updated_at: 'desc',
         },
       });
 
-      return chat?.messages || [];
+      // This only applies to biotech.
+      // Because only biotech has subscriptions.
+      let messageFilter: Prisma.MessageWhereInput = {};
+      const subscriptions = user?.customer?.biotech.subscriptions;
+      if (subscriptions) {
+        const noActiveSubscription = subscriptions?.filter((s) => s.status === SubscriptionStatus.ACTIVE)?.length === 0;
+        if (noActiveSubscription && subscriptions?.[0]?.ended_at) {
+          messageFilter.created_at = {
+            lte: subscriptions[0].ended_at,
+          }
+        }
+      }
+
+
+      const messages = await context.prisma.message.findMany({
+        where: {
+          chat: {
+            project_connection_id: parent.id,
+          },
+          ...messageFilter,
+        },
+      })
+
+      return messages || [];
+    },
+    unsubscribed_has_new_message: async (parent, _, context) => {
+      const currectUserId = context.req.user_id;
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+      if (!currectUserId) {
+        throw new InternalError('Current user not found')
+      }
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: currectUserId,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          updated_at: 'desc',
+        },
+      });
+
+      // This only applies to biotech.
+      // Because only biotech has subscriptions.
+      const subscriptions = user?.customer?.biotech.subscriptions;
+      if (subscriptions) {
+        const noActiveSubscription = subscriptions?.filter((s) => s.status === SubscriptionStatus.ACTIVE)?.length === 0;
+        if (noActiveSubscription && subscriptions?.[0]?.ended_at) {
+          const messages = await context.prisma.message.findMany({
+            where: {
+              chat: {
+                project_connection_id: parent.id,
+              },
+              created_at: {
+                gt: subscriptions[0].ended_at,
+              }
+            },
+          })
+
+          return messages.length > 0;
+        }
+      }
+
+
+      return false;
     },
     documents: async (parent, _, context) => {
       if (!parent?.id) {
@@ -414,6 +506,8 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {
+      const currentDate = new Date();
+
       if (!context.req.user_id) {
         throw new InternalError('Current user id not found');
       }
@@ -429,6 +523,10 @@ const resolvers: Resolvers<Context> = {
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
+      }
+
+      if (projectConnection.expired_at && currentDate >= projectConnection.expired_at) {
+        throw new PublicError('You can no longer accept this request');
       }
 
       const updatedProjectConnection = await context.prisma.$transaction(async (trx) => {
@@ -465,6 +563,7 @@ const resolvers: Resolvers<Context> = {
       return updatedProjectConnection;
     },
     declinedProjectConnection: async (_, args, context) => {
+      const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
@@ -472,6 +571,9 @@ const resolvers: Resolvers<Context> = {
       });
       if (!projectConnection) {
         throw new InternalError('Project connection not found');
+      }
+      if (projectConnection.expired_at && currentDate >= projectConnection.expired_at) {
+        throw new PublicError('You can no longer reject this request');
       }
       const updatedProjectConnection = await context.prisma.projectConnection.update({
         where: {

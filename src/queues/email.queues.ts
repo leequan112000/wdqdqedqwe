@@ -1,7 +1,7 @@
 import { AdminTeam, EmailType, NotificationType } from "../helper/constant";
 import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
-import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail } from "../mailer/admin";
+import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
 import { User } from "@prisma/client";
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
@@ -13,6 +13,7 @@ import createFileUploadNotification from "../notification/fileUploadNotification
 import createMessageNotification from "../notification/messageNotification";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
+import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 
 type EmailJob = {
   type: EmailType;
@@ -98,6 +99,73 @@ emailQueue.process(async (job, done) => {
         );
 
         done(null, results);
+        break;
+      }
+      case EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE: {
+        // Get the timestamp for 24 hours ago
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        // zero accepted project for 24 hours
+        const zeroAcceptedProjectRequests = await prisma.projectRequest.findMany({
+          where: {
+            initial_assigned_at: {
+              lte: twentyFourHoursAgo,
+            },
+            project_connections: {
+              none: {
+                vendor_status: "accepted",
+              },
+            },
+          },
+          select: {
+            title: true,
+            biotech: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+        // less than 5 accepted projects
+        const projectRequests =  await prisma.projectRequest.findMany({
+          where: {
+            project_connections: {
+              some: {
+                vendor_status: "accepted",
+              },
+            },
+          },
+          include: {
+            project_connections: {
+              where: {
+                vendor_status: "accepted",
+              },
+            },
+            biotech: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
+        const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+        
+        const data = { zeroAcceptedList, lowAcceptanceList };
+
+        const admins = await prisma.admin.findMany({
+          where: {
+            team: AdminTeam.SCIENCE
+          }
+        });
+
+        await Promise.all(
+          admins.map((admin) => sendAdminZeroAcceptedProjectNoticeEmail(admin, data))
+        );
+
+        done();
         break;
       }
       case EmailType.USER_FILE_UPLOAD_NOTICE: {
@@ -345,6 +413,13 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
+      case EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL: {
+        const { receiverEmail } = data;
+        const resp = await sendNewSubscriptionEmail(receiverEmail);
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -396,4 +471,12 @@ export const createSendAdminCroInterestNoticeJob = (data: { companyName: string 
 
 export const createSendUserAcceptProjectRequestNoticeJob = (data: { projectConnectionId: string; senderUserId: string; }) => {
   emailQueue.add({ type: EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE, data })
+}
+
+export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { zeroAcceptedList: string; lowAcceptanceList: string }) => {
+  emailQueue.add({ type: EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE, data })
+}
+
+export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: string }) => {
+  emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data })
 }

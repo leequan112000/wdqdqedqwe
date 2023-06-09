@@ -58,7 +58,9 @@ export enum EmailType {
   ADMIN_PROJECT_INVITATION = 'admin:project-invitation',
   ADMIN_NEW_PROJECT_REQUEST_COMMENT = 'admin:new-project-request-comment',
   ADMIN_CRO_INTEREST_NOTICE = 'admin:cro-interest-notice',
+  ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE = 'admin:zero-accepted-project-notice',
   USER_FILE_UPLOAD_NOTICE = 'user:file-upload-notice',
   USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
+  USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
 }
