@@ -1,5 +1,6 @@
 type Quote {
   id: String
+  short_id: String
   amount: Int
   milestones: [Milestone]
   next_unpaid_milestone: Milestone
@@ -9,14 +10,16 @@ type Quote {
 }
 
 input CreateMilestoneInput {
-  description: String!
+  title: String!
+  description: String
   amount: Int!
   due_at: Date!
 }
 
 input UpdateMilestoneInput {
   id: String
-  description: String!
+  title: String!
+  description: String
   amount: Int!
   due_at: Date!
 }

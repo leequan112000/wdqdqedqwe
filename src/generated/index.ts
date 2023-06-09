@@ -72,8 +72,9 @@ export type Chat = {
 
 export type CreateMilestoneInput = {
   amount: Scalars['Int'];
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   due_at: Scalars['Date'];
+  title: Scalars['String'];
 };
 
 export type Customer = {
@@ -137,7 +138,9 @@ export type Milestone = {
   due_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
+  short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
   vendor_payment_status?: Maybe<Scalars['String']>;
 };
 
@@ -715,6 +718,7 @@ export type Quote = {
   next_unpaid_milestone?: Maybe<Milestone>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
+  short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
 };
 
@@ -732,9 +736,10 @@ export type SubscriptionNewMessageArgs = {
 
 export type UpdateMilestoneInput = {
   amount: Scalars['Int'];
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   due_at: Scalars['Date'];
   id?: InputMaybe<Scalars['String']>;
+  title: Scalars['String'];
 };
 
 export type UploadResult = {
@@ -1080,7 +1085,9 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
   due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -1258,6 +1265,7 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   next_unpaid_milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -406,7 +406,9 @@ model InterestedCro {
 
 model Milestone {
   id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description           String
+  short_id              String   @unique
+  title                 String
+  description           String?
   amount                Decimal  @db.Decimal(14, 2)
   due_at                DateTime
   created_at            DateTime @default(now())
@@ -422,6 +424,7 @@ model Milestone {
 
 model Quote {
   id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  short_id              String            @unique
   amount                Decimal           @db.Decimal(14, 2)
   created_at            DateTime          @default(now())
   updated_at            DateTime          @updatedAt
