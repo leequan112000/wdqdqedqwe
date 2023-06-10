@@ -73,7 +73,7 @@ export type Chat = {
 export type CreateMilestoneInput = {
   amount: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
-  due_at: Scalars['Date'];
+  timeline?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
 };
 
@@ -135,11 +135,11 @@ export type Milestone = {
   __typename?: 'Milestone';
   amount?: Maybe<Scalars['Int']>;
   description?: Maybe<Scalars['String']>;
-  due_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  timeline?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   vendor_payment_status?: Maybe<Scalars['String']>;
 };
@@ -779,8 +779,8 @@ export type SubscriptionNewMessageArgs = {
 export type UpdateMilestoneInput = {
   amount: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
-  due_at: Scalars['Date'];
   id?: InputMaybe<Scalars['String']>;
+  timeline?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
 };
 
@@ -1124,11 +1124,11 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MilestoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['Milestone'] = ResolversParentTypes['Milestone']> = ResolversObject<{
   amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

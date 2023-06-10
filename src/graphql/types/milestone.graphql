@@ -4,7 +4,7 @@ type Milestone {
   title: String
   description: String
   amount: Int
-  due_at: Date
+  timeline: String
   status: String
   payment_status: String
   vendor_payment_status: String
