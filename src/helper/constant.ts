@@ -28,6 +28,8 @@ export enum QuoteStatus {
 
 export enum MilestoneStatus {
   NOT_STARTED = 'not_started',
+  PENDING_PAYMENT = 'pending_payment',
+  PENDING_COMPLETION_APPROVAL = 'pending_completion_approval',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
 }
