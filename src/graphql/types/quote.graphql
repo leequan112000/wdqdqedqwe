@@ -13,7 +13,7 @@ input CreateMilestoneInput {
   title: String!
   description: String
   amount: Int!
-  due_at: Date!
+  timeline: String
 }
 
 input UpdateMilestoneInput {
@@ -21,7 +21,7 @@ input UpdateMilestoneInput {
   title: String!
   description: String
   amount: Int!
-  due_at: Date!
+  timeline: String
 }
 
 type Query {

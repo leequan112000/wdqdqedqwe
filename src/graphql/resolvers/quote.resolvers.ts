@@ -31,7 +31,7 @@ const resolvers: Resolvers<Context> = {
           quote_id: parent.id,
         },
         orderBy: {
-          due_at: 'asc',
+          created_at: 'asc',
         },
       });
 
@@ -52,7 +52,7 @@ const resolvers: Resolvers<Context> = {
           payment_status: MilestonePaymentStatus.UNPAID
         },
         orderBy: {
-          due_at: 'asc',
+          created_at: 'asc',
         },
       });
 
@@ -145,7 +145,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       const nextUnpaidMilestone = quote.milestones
-        .sort((a, b) => a.due_at.getTime() - b.due_at.getTime())
+        .sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
         .filter(m => m.payment_status === MilestonePaymentStatus.UNPAID)[0];
 
       const stripe = await getStripeInstance();
@@ -195,11 +195,10 @@ const resolvers: Resolvers<Context> = {
         let newMilestones;
         if (milestones && milestones.length > 0) {
           const tasks = milestones.map(async (m) => {
-            console.log(m);
             return await trx.milestone.create({
               data: {
                 amount: toCent(m.amount),
-                due_at: m.due_at,
+                timeline: m.timeline,
                 description: m.description,
                 quote_id: newQuote.id,
                 status: MilestoneStatus.NOT_STARTED,
@@ -256,7 +255,7 @@ const resolvers: Resolvers<Context> = {
             data: {
               amount: toCent(um.amount),
               description: um.description,
-              due_at: um.due_at,
+              timeline: um.timeline,
             },
             where: {
               id: um.id!
@@ -272,7 +271,7 @@ const resolvers: Resolvers<Context> = {
               amount: toCent(nm.amount),
               title: nm.title,
               description: nm.description,
-              due_at: nm.due_at,
+              timeline: nm.timeline,
               quote_id: updatedQuote.id,
               status: MilestoneStatus.NOT_STARTED,
               payment_status: MilestonePaymentStatus.UNPAID,
@@ -305,7 +304,7 @@ const resolvers: Resolvers<Context> = {
             quote_id: quote?.id,
           },
           orderBy: {
-            due_at: 'asc',
+            created_at: 'asc',
           },
         })
 
