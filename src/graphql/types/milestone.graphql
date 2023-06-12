@@ -20,10 +20,6 @@ type Query {
 }
 
 type Mutation {
-  startMilestone(id: String!): Milestone
-  requestMilestonePayment(id: String!): Milestone
-  markMilestoneAsPaid(id: String!): Milestone
-  verifyMilestoneAsPaid(id: String!): Milestone
   markMilestoneAsCompleted(id: String!): Milestone
   verifyMilestoneAsCompleted(id: String!): Milestone
 }
