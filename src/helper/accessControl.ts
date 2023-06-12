@@ -57,9 +57,12 @@ export const checkProjectConnectionPermission = async (context: Context, project
 
 export const checkMilestonePermission = async (context: Context, milestoneId: string) => {
   try {
-    const milestone = await context.prisma.quote.findFirst({
+    const milestone = await context.prisma.milestone.findFirst({
       where: {
         id: milestoneId,
+      },
+      include: {
+        quote: true
       }
     });
 
@@ -67,7 +70,7 @@ export const checkMilestonePermission = async (context: Context, milestoneId: st
       throw new PermissionDeniedError();
     }
 
-    await checkProjectConnectionPermission(context, milestone.project_connection_id);
+    await checkProjectConnectionPermission(context, milestone.quote.project_connection_id);
   } catch (error) {
     throw new PermissionDeniedError();
   }

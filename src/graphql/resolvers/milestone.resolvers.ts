@@ -27,6 +27,8 @@ const resolvers: Resolvers<Context> = {
     },
     milestoneCheckoutUrl: async (_, args, context) => {
       const { id, success_url, cancel_url } = args
+      await checkAllowCustomerOnlyPermission(context);
+      await checkMilestonePermission(context, id);
       const milestone = await context.prisma.milestone.findFirst({
         where: {
           id,
