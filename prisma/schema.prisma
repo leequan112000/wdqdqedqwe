@@ -124,6 +124,7 @@ model VendorCompany {
   cda_signed_at        DateTime?
   skip_cda             Boolean   @default(false)
   legal_name           String?   @unique
+  stripe_account       String?
 
   vendor_members      VendorMember[]
   project_connections ProjectConnection[]
