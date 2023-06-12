@@ -35,7 +35,6 @@ export enum MilestoneStatus {
 
 export enum MilestonePaymentStatus {
   UNPAID = 'unpaid',
-  PENDING_PAYMENT = 'pending_payment',
   PROCESSING = 'processing',
   PAID = 'paid',
 }
