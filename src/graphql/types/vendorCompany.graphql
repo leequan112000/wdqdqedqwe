@@ -25,6 +25,7 @@ type VendorCompany {
 
 type Query {
   vendorCompany: VendorCompany
+  vendorCompanyStripeConnectUrl: String
 }
 
 type Mutation {

@@ -1,7 +1,9 @@
+import { app_env } from "../../environment";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
+import { getStripeInstance } from "../../helper/stripe";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -64,6 +66,61 @@ const resolvers: Resolvers<Context> = {
             id: vendorMember.vendor_company_id
           }
         })
+      });
+    },
+    vendorCompanyStripeConnectUrl: async (_, __, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const vendorMember = await trx.vendorMember.findFirstOrThrow({
+          where: {
+            user_id: context.req.user_id,
+          },
+          include: {
+            vendor_company: true
+          }
+        });
+
+        if (vendorMember.vendor_company) {
+          try {
+            const { vendor_company } = vendorMember;
+            let stripeAccount = vendor_company.stripe_account as string;
+            const stripe = await getStripeInstance();
+            if (vendor_company.stripe_account === null) {
+              const account = await stripe.accounts.create({
+                country: 'US',
+                type: 'express',
+                capabilities: {
+                  us_bank_account_ach_payments: {
+                    requested: true,
+                  }
+                }
+              });
+
+              stripeAccount = account.id;
+  
+              await trx.vendorCompany.update({
+                where: {
+                  id: vendor_company.id
+                },
+                data: {
+                  stripe_account: account.id,
+                }
+              });
+            }
+
+            const accountLink = await stripe.accountLinks.create({
+              account: stripeAccount,
+              refresh_url: `${app_env.APP_URL}/app?stripe_connect=refresh&stripe_account_id=${stripeAccount}`,
+              return_url: `${app_env.APP_URL}/app?stripe_connect=success&stripe_account_id=${stripeAccount}`,
+              type: 'account_onboarding',
+            });
+        
+            return accountLink.url;
+          } catch (error) {
+            throw new PublicError(error as string);
+          }
+        } else {
+          return null;
+        }
       });
     },
   },
