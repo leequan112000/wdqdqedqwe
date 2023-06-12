@@ -93,6 +93,9 @@ const resolvers: Resolvers<Context> = {
           milestone_id: milestone.id,
         },
         payment_method_types: ['us_bank_account'],
+        payment_intent_data: {
+          setup_future_usage: 'on_session',
+        },
         success_url,
         cancel_url,
       });
