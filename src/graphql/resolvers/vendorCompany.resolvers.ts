@@ -1,38 +1,48 @@
-import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
-import { Request } from "express";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { MutationOnboardVendorCompanyArgs, MutationUpdateVendorCompanyArgs } from "../../generated";
+import { Resolvers } from "../../generated";
+import { InternalError } from "../errors/InternalError";
 
-export default {
+const resolvers: Resolvers<Context> = {
   VendorCompany: {
-    vendor_members: async (parent: VendorCompany, _: void, context: Context): Promise<VendorMember[] | null> => {
+    vendor_members: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Vendor company id not found.')
+      }
       return await context.prisma.vendorMember.findMany({
         where: {
           vendor_company_id: parent.id
         }
       });
     },
-    project_connections: async (parent: VendorCompany, _: void, context: Context): Promise<ProjectConnection[] | null> => {
+    project_connections: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Vendor company id not found.')
+      }
       return await context.prisma.projectConnection.findMany({
         where: {
           vendor_company_id: parent.id
         }
       })
     },
-    chats: async (parent: VendorCompany, _: void, context: Context): Promise<Chat[] | null> => {
+    chats: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Vendor company id not found.')
+      }
       return await context.prisma.chat.findMany({
         where: {
           vendor_company_id: parent.id
         }
       });
     },
-    primary_members: async (parent: VendorCompany, _: void, context: Context): Promise<VendorMember[] | null> => {
-      const { id } = parent;
+    primary_members: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Vendor company id not found.')
+      }
 
       const primaryMembers = await context.prisma.vendorMember.findMany({
         where: {
-          vendor_company_id: id,
+          vendor_company_id: parent.id,
           is_primary_member: true,
         },
       });
@@ -41,7 +51,7 @@ export default {
     }
   },
   Query: {
-    vendorCompany: async (_: void, args: void, context: Context & { req: Request }) => {
+    vendorCompany: async (_, __, context) => {
       return await context.prisma.$transaction(async (trx) => {
         const vendorMember = await trx.vendorMember.findFirstOrThrow({
           where: {
@@ -58,84 +68,78 @@ export default {
     },
   },
   Mutation: {
-    onboardVendorCompany: async (_: void, args: MutationOnboardVendorCompanyArgs, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const user = await trx.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              vendor_member: {
-                include: {
-                  vendor_company: true
-                }
+    onboardVendorCompany: async (_, args, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const user = await trx.user.findFirstOrThrow({
+          where: {
+            id: context.req.user_id,
+          },
+          include: {
+            vendor_member: {
+              include: {
+                vendor_company: true
               }
             }
-          });
-
-          if (!user.vendor_member) {
-            throw new PublicError('Vendor member not found.');
           }
-
-          return await trx.vendorCompany.update({
-            where: {
-              id: user.vendor_member.vendor_company_id
-            },
-            data: {
-              legal_name: args.legal_name,
-              description: args.description,
-              website: args.website,
-              address: args.address,
-              address1: args.address1,
-              address2: args.address2,
-              city: args.city,
-              state: args.state,
-              country: args.country,
-              zipcode: args.zipcode,
-              ...(args.name !== null ? { name: args.name } : {}),
-            }
-          })
         });
-      } catch (error) {
-        return error;
-      }
+
+        if (!user.vendor_member) {
+          throw new PublicError('Vendor member not found.');
+        }
+
+        return await trx.vendorCompany.update({
+          where: {
+            id: user.vendor_member.vendor_company_id
+          },
+          data: {
+            legal_name: args.legal_name,
+            description: args.description,
+            website: args.website,
+            address: args.address,
+            address1: args.address1,
+            address2: args.address2,
+            city: args.city,
+            state: args.state,
+            country: args.country,
+            zipcode: args.zipcode,
+            ...(args.name !== null ? { name: args.name } : {}),
+          }
+        })
+      });
     },
-    updateVendorCompany: async (_: void, args: MutationUpdateVendorCompanyArgs, context: Context & { req: Request }) => {
-      try {
-        return await context.prisma.$transaction(async (trx) => {
-          const vendor_member = await trx.vendorMember.findFirst({
-            where: {
-              user_id: context.req.user_id,
-            },
-          });
-
-          if (!vendor_member) {
-            throw new PublicError('Vendor member not found.');
-          }
-
-          return await trx.vendorCompany.update({
-            where: {
-              id: vendor_member.vendor_company_id
-            },
-            data: {
-              legal_name: args.legal_name,
-              description: args.description,
-              website: args.website,
-              address: args.address,
-              address1: args.address1,
-              address2: args.address2,
-              city: args.city,
-              state: args.state,
-              country: args.country,
-              zipcode: args.zipcode,
-              ...(args.name !== null ? { name: args.name } : {}),
-            }
-          })
+    updateVendorCompany: async (_, args, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const vendor_member = await trx.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id,
+          },
         });
-      } catch (error) {
-        return error;
-      }
+
+        if (!vendor_member) {
+          throw new PublicError('Vendor member not found.');
+        }
+
+        return await trx.vendorCompany.update({
+          where: {
+            id: vendor_member.vendor_company_id
+          },
+          data: {
+            legal_name: args.legal_name,
+            description: args.description,
+            website: args.website,
+            address: args.address,
+            address1: args.address1,
+            address2: args.address2,
+            city: args.city,
+            state: args.state,
+            country: args.country,
+            zipcode: args.zipcode,
+            ...(args.name !== null ? { name: args.name } : {}),
+          }
+        })
+      });
     },
   }
 };
+
+export default resolvers;
