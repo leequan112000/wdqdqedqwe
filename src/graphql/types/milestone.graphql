@@ -12,6 +12,11 @@ type Milestone {
 
 type Query {
   milestone(id: String!): Milestone
+  milestoneCheckoutUrl(
+    id: String!
+    success_url: String!
+    cancel_url: String!
+  ): String
 }
 
 type Mutation {
