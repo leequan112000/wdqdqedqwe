@@ -2,17 +2,15 @@ import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { PublicError } from "../errors/PublicError";
-import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
-import { getStripeInstance } from "../../helper/stripe";
-import shortUUID from "short-uuid";
+import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus } from "../../helper/constant";
+import { nanoid } from "nanoid";
 
 function generateQuoteShortId() {
-  return `qt_${shortUUID.generate()}`;
+  return `qt_${nanoid(10)}`;
 }
 
 function generateMilestoneShortId() {
-  return `ms_${shortUUID.generate()}`;
+  return `ms_${nanoid(10)}`;
 }
 
 const resolvers: Resolvers<Context> = {
