@@ -418,6 +418,7 @@ model Milestone {
   payment_status        String
   vendor_payment_status String
   timeline              String?
+  ordinal               Int      @default(0)
 
   @@map("milestones")
 }
