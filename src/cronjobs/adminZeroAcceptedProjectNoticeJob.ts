@@ -27,7 +27,7 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
     },
   });
 
-  const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+  const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; \n');
   // less than 5 accepted projects
   const projectRequests =  await prisma.projectRequest.findMany({
     where: {
@@ -52,7 +52,7 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
   });
 
   const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
-  const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; ');
+  const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('; \n');
   
   
   createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lowAcceptanceList: lowAcceptanceList });
