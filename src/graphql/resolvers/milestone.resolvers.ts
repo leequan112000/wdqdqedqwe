@@ -53,7 +53,7 @@ const resolvers: Resolvers<Context> = {
           id,
         },
         data: {
-          status: MilestoneStatus.PENDING_PAYMENT,
+          payment_status: MilestonePaymentStatus.PENDING_PAYMENT,
         },
       });
 
