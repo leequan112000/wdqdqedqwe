@@ -668,7 +668,6 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
-  quoteCheckoutUrl?: Maybe<Scalars['String']>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
@@ -725,13 +724,6 @@ export type QueryQuoteArgs = {
 };
 
 
-export type QueryQuoteCheckoutUrlArgs = {
-  cancel_url: Scalars['String'];
-  id: Scalars['String'];
-  success_url: Scalars['String'];
-};
-
-
 export type QueryUpcomingMeetingEventsArgs = {
   project_connection_id?: InputMaybe<Scalars['String']>;
 };
@@ -741,7 +733,6 @@ export type Quote = {
   amount?: Maybe<Scalars['Int']>;
   id?: Maybe<Scalars['String']>;
   milestones?: Maybe<Array<Maybe<Milestone>>>;
-  next_unpaid_milestone?: Maybe<Milestone>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
@@ -1280,7 +1271,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
-  quoteCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryQuoteCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -1292,7 +1282,6 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
-  next_unpaid_milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

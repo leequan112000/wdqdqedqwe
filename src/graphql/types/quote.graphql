@@ -3,7 +3,6 @@ type Quote {
   short_id: String
   amount: Int
   milestones: [Milestone]
-  next_unpaid_milestone: Milestone
   project_connection_id: String
   project_connection: ProjectConnection
   status: String
@@ -26,11 +25,6 @@ input UpdateMilestoneInput {
 
 type Query {
   quote(project_connection_id: String, id: String): Quote
-  quoteCheckoutUrl(
-    id: String!
-    success_url: String!
-    cancel_url: String!
-  ): String
 }
 
 type Mutation {
