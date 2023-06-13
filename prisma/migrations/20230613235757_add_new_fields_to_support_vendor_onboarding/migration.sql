@@ -1,6 +1,10 @@
 -- AlterTable
-ALTER TABLE "vendor_companies" ADD COLUMN     "founded_year" INTEGER,
-ADD COLUMN     "team_size" TEXT;
+ALTER TABLE "vendor_companies" ADD COLUMN     "cro_details" TEXT,
+ADD COLUMN     "facebook_url" TEXT,
+ADD COLUMN     "founded_year" INTEGER,
+ADD COLUMN     "linkedin_url" TEXT,
+ADD COLUMN     "team_size" TEXT,
+ADD COLUMN     "twitter_url" TEXT;
 
 -- CreateTable
 CREATE TABLE "certification_tags" (
