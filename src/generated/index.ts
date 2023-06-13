@@ -672,6 +672,7 @@ export type Query = {
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
+  vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
 };
@@ -729,6 +730,12 @@ export type QueryUpcomingMeetingEventsArgs = {
   project_connection_id?: InputMaybe<Scalars['String']>;
 };
 
+
+export type QueryVendorCompanyStripeConnectUrlArgs = {
+  refresh_url?: InputMaybe<Scalars['String']>;
+  return_url?: InputMaybe<Scalars['String']>;
+};
+
 export type Quote = {
   __typename?: 'Quote';
   amount?: Maybe<Scalars['Int']>;
@@ -737,6 +744,56 @@ export type Quote = {
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+};
+
+export type StripeAccountCapabilities = {
+  __typename?: 'StripeAccountCapabilities';
+  tax_reporting_us_1099_k?: Maybe<Scalars['String']>;
+  transfers?: Maybe<Scalars['String']>;
+};
+
+export type StripeAccountData = {
+  __typename?: 'StripeAccountData';
+  capabilities?: Maybe<StripeAccountCapabilities>;
+  charges_enabled?: Maybe<Scalars['Boolean']>;
+  details_submitted?: Maybe<Scalars['Boolean']>;
+  external_accounts?: Maybe<StripeExternalAccount>;
+  payouts_enabled?: Maybe<Scalars['Boolean']>;
+  requirements?: Maybe<StripeAccountRequirements>;
+};
+
+export type StripeAccountRequirementError = {
+  __typename?: 'StripeAccountRequirementError';
+  code?: Maybe<Scalars['String']>;
+};
+
+export type StripeAccountRequirements = {
+  __typename?: 'StripeAccountRequirements';
+  current_deadline?: Maybe<Scalars['String']>;
+  currently_due?: Maybe<Array<Maybe<Scalars['String']>>>;
+  disabled_reason?: Maybe<Scalars['String']>;
+  errors?: Maybe<Array<Maybe<StripeAccountRequirementError>>>;
+  eventually_due?: Maybe<Array<Maybe<Scalars['String']>>>;
+  past_due?: Maybe<Array<Maybe<Scalars['String']>>>;
+  pending_verification?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+export type StripeExternalAccount = {
+  __typename?: 'StripeExternalAccount';
+  data?: Maybe<Array<Maybe<StripeExternalAccountData>>>;
+};
+
+export type StripeExternalAccountData = {
+  __typename?: 'StripeExternalAccountData';
+  bank_name?: Maybe<Scalars['String']>;
+  brand?: Maybe<Scalars['String']>;
+  currency?: Maybe<Scalars['String']>;
+  exp_month?: Maybe<Scalars['Int']>;
+  exp_year?: Maybe<Scalars['Int']>;
+  last4?: Maybe<Scalars['String']>;
+  object?: Maybe<Scalars['String']>;
+  routing_number?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
 };
 
@@ -809,6 +866,7 @@ export type VendorCompany = {
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
+  stripe_account?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_members?: Maybe<Array<Maybe<VendorMember>>>;
   website?: Maybe<Scalars['String']>;
@@ -936,6 +994,12 @@ export type ResolversTypes = ResolversObject<{
   Query: ResolverTypeWrapper<{}>;
   Quote: ResolverTypeWrapper<Quote>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
+  StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
+  StripeAccountRequirementError: ResolverTypeWrapper<StripeAccountRequirementError>;
+  StripeAccountRequirements: ResolverTypeWrapper<StripeAccountRequirements>;
+  StripeExternalAccount: ResolverTypeWrapper<StripeExternalAccount>;
+  StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
   Subscription: ResolverTypeWrapper<{}>;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
@@ -972,6 +1036,12 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   Quote: Quote;
   String: Scalars['String'];
+  StripeAccountCapabilities: StripeAccountCapabilities;
+  StripeAccountData: StripeAccountData;
+  StripeAccountRequirementError: StripeAccountRequirementError;
+  StripeAccountRequirements: StripeAccountRequirements;
+  StripeExternalAccount: StripeExternalAccount;
+  StripeExternalAccountData: StripeExternalAccountData;
   Subscription: {};
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: Scalars['Upload'];
@@ -1276,7 +1346,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
-  vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendorCompanyStripeAccount?: Resolver<Maybe<ResolversTypes['StripeAccountData']>, ParentType, ContextType>;
+  vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryVendorCompanyStripeConnectUrlArgs>>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
 }>;
 
@@ -1287,6 +1358,56 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeAccountCapabilitiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountCapabilities'] = ResolversParentTypes['StripeAccountCapabilities']> = ResolversObject<{
+  tax_reporting_us_1099_k?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  transfers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeAccountDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountData'] = ResolversParentTypes['StripeAccountData']> = ResolversObject<{
+  capabilities?: Resolver<Maybe<ResolversTypes['StripeAccountCapabilities']>, ParentType, ContextType>;
+  charges_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  details_submitted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  external_accounts?: Resolver<Maybe<ResolversTypes['StripeExternalAccount']>, ParentType, ContextType>;
+  payouts_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  requirements?: Resolver<Maybe<ResolversTypes['StripeAccountRequirements']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeAccountRequirementErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountRequirementError'] = ResolversParentTypes['StripeAccountRequirementError']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeAccountRequirementsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountRequirements'] = ResolversParentTypes['StripeAccountRequirements']> = ResolversObject<{
+  current_deadline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  currently_due?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  disabled_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['StripeAccountRequirementError']>>>, ParentType, ContextType>;
+  eventually_due?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  past_due?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  pending_verification?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeExternalAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeExternalAccount'] = ResolversParentTypes['StripeExternalAccount']> = ResolversObject<{
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['StripeExternalAccountData']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StripeExternalAccountDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeExternalAccountData'] = ResolversParentTypes['StripeExternalAccountData']> = ResolversObject<{
+  bank_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  brand?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  exp_month?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  exp_year?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  object?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  routing_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -1349,6 +1470,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stripe_account?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1403,6 +1525,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;
+  StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
+  StripeAccountData?: StripeAccountDataResolvers<ContextType>;
+  StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;
+  StripeAccountRequirements?: StripeAccountRequirementsResolvers<ContextType>;
+  StripeExternalAccount?: StripeExternalAccountResolvers<ContextType>;
+  StripeExternalAccountData?: StripeExternalAccountDataResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   UploadResult?: UploadResultResolvers<ContextType>;
