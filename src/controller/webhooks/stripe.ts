@@ -316,6 +316,43 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       }
       break;
     }
+    case 'payout.paid':
+    case 'payout.failed': {
+      try {
+        const payout = event.data.object as Stripe.Payout;
+        if (!payout?.metadata?.milestone_id) {
+          throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+        }
+        
+        const { milestone_id } = payout.metadata;
+        const milestone = await prisma.milestone.findFirst({
+          where: {
+            id: milestone_id,
+          },
+        });
+
+        if (!milestone) {
+          throw new Error('[Stripe Webhook] Milestone not found.');
+        }
+
+        await prisma.milestone.update({
+          where: {
+            id: milestone.id,
+          },
+          data: {
+            status: payout.status === 'paid' ? MilestonePaymentStatus.PAID :  MilestonePaymentStatus.UNPAID,
+          },
+        });
+
+        // TODO notify admin payout if failed
+
+        res.status(200).json({ status: 200, message: 'OK' });
+      } catch (error) {
+        Sentry.captureException(error);
+        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+      }
+      break;
+    }
     default: {
       console.warn(`Unhandled webhook: event type=${event.type}`);
       res.status(400).json({ status: 400, message: 'Unhandled Event Type' });

@@ -50,7 +50,7 @@ const resolvers: Resolvers<Context> = {
           amount: milestone.amount.toNumber(),
           currency: 'usd',
           destination: vendorCompany.stripe_account,
-          metadata: { vendorCompanyId: vendorCompany.id, milestoneId: milestone.id, quoteId: milestone.quote_id },
+          metadata: { vendor_company_id: vendorCompany.id, milestone_id: milestone.id, quote_id: milestone.quote_id },
         });
 
         // Check if stripe transfer success
