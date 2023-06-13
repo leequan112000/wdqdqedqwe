@@ -2,7 +2,7 @@ import cron from 'cron';
 import { prisma } from "../connectDB";
 import { createSendAdminZeroAcceptedProjectNoticeJob } from '../queues/email.queues';
 
-const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async () => {
+const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('*/10 * * * *', async () => {
   // Get the timestamp for 24 hours ago
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   // zero accepted project for 24 hours
@@ -27,7 +27,7 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
     },
   });
 
-  const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('<br/>');
+  const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
   // less than 5 accepted projects
   const projectRequests =  await prisma.projectRequest.findMany({
     where: {
@@ -52,7 +52,7 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
   });
 
   const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
-  const lowAcceptanceList = filteredProjectRequests.map((pc) => `${pc.biotech.name}: ${pc.title}`).join('<br/>');
+  const lowAcceptanceList = filteredProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
   
   
   createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lowAcceptanceList: lowAcceptanceList });
