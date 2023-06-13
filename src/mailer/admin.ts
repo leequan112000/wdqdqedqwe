@@ -86,8 +86,8 @@ export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, data
       date: new Date().toDateString(),
       retool_url: process.env.RETOOL_PROJECT_URL,
       admin_name: admin.username,
-      zeroAcceptedList: data.zeroAcceptedList,
-      lowAcceptanceList: data.lowAcceptanceList,
+      zeroAcceptedList: data.zeroAcceptedList ? data.zeroAcceptedList : "[None]",
+      lowAcceptanceList: data.lowAcceptanceList ? data.lowAcceptanceList : "[None]",
     },
   });
 
