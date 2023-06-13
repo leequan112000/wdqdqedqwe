@@ -29,7 +29,7 @@ const resolvers: Resolvers<Context> = {
           quote_id: parent.id,
         },
         orderBy: {
-          created_at: 'asc',
+          ordinal: 'asc',
         },
       });
 
@@ -84,7 +84,7 @@ const resolvers: Resolvers<Context> = {
 
         let newMilestones;
         if (milestones && milestones.length > 0) {
-          const tasks = milestones.map(async (m) => {
+          const tasks = milestones.map(async (m, i) => {
             return await trx.milestone.create({
               data: {
                 amount: toCent(m.amount),
@@ -96,6 +96,7 @@ const resolvers: Resolvers<Context> = {
                 vendor_payment_status: MilestonePaymentStatus.UNPAID,
                 short_id: generateMilestoneShortId(),
                 title: m.title,
+                ordinal: i
               }
             })
           });
@@ -143,9 +144,11 @@ const resolvers: Resolvers<Context> = {
         const updateMilestoneTasks = updateMilestones.map(async (um) => {
           return await trx.milestone.update({
             data: {
+              title: um.title,
               amount: toCent(um.amount),
               description: um.description,
               timeline: um.timeline,
+              ordinal: milestones.findIndex((m) => m === um) || 0
             },
             where: {
               id: um.id!
@@ -167,6 +170,7 @@ const resolvers: Resolvers<Context> = {
               payment_status: MilestonePaymentStatus.UNPAID,
               vendor_payment_status: MilestonePaymentStatus.UNPAID,
               short_id: generateMilestoneShortId(),
+              ordinal: milestones.findIndex((m) => m === nm) || 0
             },
           });
         });
@@ -194,7 +198,7 @@ const resolvers: Resolvers<Context> = {
             quote_id: quote?.id,
           },
           orderBy: {
-            created_at: 'asc',
+            ordinal: 'asc',
           },
         })
 
