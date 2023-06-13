@@ -86,13 +86,8 @@ const resolvers: Resolvers<Context> = {
             const stripe = await getStripeInstance();
             if (vendor_company.stripe_account === null) {
               const account = await stripe.accounts.create({
+                type: 'standard',
                 country: 'US',
-                type: 'express',
-                capabilities: {
-                  us_bank_account_ach_payments: {
-                    requested: true,
-                  }
-                }
               });
 
               stripeAccount = account.id;
@@ -109,8 +104,8 @@ const resolvers: Resolvers<Context> = {
 
             const accountLink = await stripe.accountLinks.create({
               account: stripeAccount,
-              refresh_url: `${app_env.APP_URL}/app?stripe_connect=refresh&stripe_account_id=${stripeAccount}`,
-              return_url: `${app_env.APP_URL}/app?stripe_connect=success&stripe_account_id=${stripeAccount}`,
+              refresh_url: `${app_env.APP_URL}/app/profile?stripe_connect=refresh&stripe_account_id=${stripeAccount}`,
+              return_url: `${app_env.APP_URL}/app/profile?stripe_connect=success&stripe_account_id=${stripeAccount}`,
               type: 'account_onboarding',
             });
         
