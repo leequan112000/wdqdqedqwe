@@ -131,11 +131,11 @@ model VendorCompany {
   founded_year                Int?
   team_size                   String?
 
-  vendor_members                         VendorMember[]
-  project_connections                    ProjectConnection[]
-  chats                                  Chat[]
-  certification_tags_on_vendor_companies CertificationTagsOnVendorCompanies[]
-  lab_specialization_on_vendor_companies LabSpecializationOnVendorCompanies[]
+  vendor_members                 VendorMember[]
+  project_connections            ProjectConnection[]
+  chats                          Chat[]
+  certification_tag_connections  CertificationTagConnection[]
+  lab_specialization_connections LabSpecializationConnection[]
 
   @@map("vendor_companies")
 }
@@ -422,12 +422,12 @@ model CertificationTag {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  certification_tags_on_vendor_companies CertificationTagsOnVendorCompanies[]
+  certification_tag_connections CertificationTagConnection[]
 
   @@map("certification_tags")
 }
 
-model CertificationTagsOnVendorCompanies {
+model CertificationTagConnection {
   id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendor_company_id    String           @db.Uuid
   vendor_company       VendorCompany    @relation(fields: [vendor_company_id], references: [id])
@@ -437,7 +437,7 @@ model CertificationTagsOnVendorCompanies {
   updated_at           DateTime         @updatedAt
 
   @@unique([vendor_company_id, certification_tag_id])
-  @@map("certification_tags_on_vendor_companies")
+  @@map("certification_tag_connections")
 }
 
 model LabSpecialization {
@@ -448,12 +448,12 @@ model LabSpecialization {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  lab_specializations_on_vendor_companies LabSpecializationOnVendorCompanies[]
+  lab_specializations_connections LabSpecializationConnection[]
 
   @@map("lab_specializations")
 }
 
-model LabSpecializationOnVendorCompanies {
+model LabSpecializationConnection {
   id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendor_company_id     String            @db.Uuid
   vendor_company        VendorCompany     @relation(fields: [vendor_company_id], references: [id])
@@ -463,5 +463,5 @@ model LabSpecializationOnVendorCompanies {
   updated_at            DateTime          @updatedAt
 
   @@unique([vendor_company_id, lab_specialization_id])
-  @@map("lab_specializations_on_vendor_companies")
+  @@map("lab_specialization_connections")
 }
