@@ -345,11 +345,13 @@ export type MutationOnboardVendorCompanyArgs = {
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['Int']>;
   google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
   university_name?: InputMaybe<Scalars['String']>;
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
@@ -473,11 +475,13 @@ export type MutationUpdateVendorCompanyArgs = {
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['Int']>;
   google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
   university_name?: InputMaybe<Scalars['String']>;
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
@@ -710,6 +714,7 @@ export type VendorCompany = {
   country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
+  founded_year?: Maybe<Scalars['Int']>;
   google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   legal_name?: Maybe<Scalars['String']>;
@@ -719,6 +724,7 @@ export type VendorCompany = {
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
+  team_size?: Maybe<Scalars['String']>;
   university_name?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_members?: Maybe<Array<Maybe<VendorMember>>>;
@@ -1211,6 +1217,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  founded_year?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1220,6 +1227,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  team_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   university_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;

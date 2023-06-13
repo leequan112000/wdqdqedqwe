@@ -97,6 +97,8 @@ export default {
               vendor_type: args.vendor_type,
               principal_investigator_name: args.principal_investigator_name,
               google_scholar_url: args.google_scholar_url,
+              founded_year: args.founded_year,
+              team_size: args.team_size,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
@@ -137,6 +139,8 @@ export default {
               vendor_type: args.vendor_type,
               principal_investigator_name: args.principal_investigator_name,
               google_scholar_url: args.google_scholar_url,
+              founded_year: args.founded_year,
+              team_size: args.team_size,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
