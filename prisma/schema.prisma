@@ -128,10 +128,14 @@ model VendorCompany {
   vendor_type                 String?
   principal_investigator_name String?
   google_scholar_url          String?
+  founded_year                Int?
+  team_size                   String?
 
-  vendor_members      VendorMember[]
-  project_connections ProjectConnection[]
-  chats               Chat[]
+  vendor_members                         VendorMember[]
+  project_connections                    ProjectConnection[]
+  chats                                  Chat[]
+  certification_tags_on_vendor_companies CertificationTagsOnVendorCompanies[]
+  lab_specialization_on_vendor_companies LabSpecializationOnVendorCompanies[]
 
   @@map("vendor_companies")
 }
@@ -408,4 +412,56 @@ model InterestedCro {
   last_name    String?
 
   @@map("interested_cros")
+}
+
+model CertificationTag {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name  String   @unique
+  short_name String
+  priority   Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  certification_tags_on_vendor_companies CertificationTagsOnVendorCompanies[]
+
+  @@map("certification_tags")
+}
+
+model CertificationTagsOnVendorCompanies {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_company_id    String           @db.Uuid
+  vendor_company       VendorCompany    @relation(fields: [vendor_company_id], references: [id])
+  certification_tag_id String           @db.Uuid
+  certification_tag    CertificationTag @relation(fields: [certification_tag_id], references: [id])
+  created_at           DateTime         @default(now())
+  updated_at           DateTime         @updatedAt
+
+  @@unique([vendor_company_id, certification_tag_id])
+  @@map("certification_tags_on_vendor_companies")
+}
+
+model LabSpecialization {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name  String   @unique
+  short_name String
+  priority   Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  lab_specializations_on_vendor_companies LabSpecializationOnVendorCompanies[]
+
+  @@map("lab_specializations")
+}
+
+model LabSpecializationOnVendorCompanies {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_company_id     String            @db.Uuid
+  vendor_company        VendorCompany     @relation(fields: [vendor_company_id], references: [id])
+  lab_specialization_id String            @db.Uuid
+  lab_specialization    LabSpecialization @relation(fields: [lab_specialization_id], references: [id])
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
+
+  @@unique([vendor_company_id, lab_specialization_id])
+  @@map("lab_specializations_on_vendor_companies")
 }
