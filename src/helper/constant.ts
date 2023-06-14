@@ -57,11 +57,13 @@ export enum NotificationType {
 export enum ProjectAttachmentDocumentType {
   FILE,
   REDLINE_FILE,
+  MILESTONE_FILE
 }
 
 export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.FILE]: 'file',
   [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
+  [ProjectAttachmentDocumentType.MILESTONE_FILE]: 'milestone_file',
 }
 
 export enum MeetingPlatform {
