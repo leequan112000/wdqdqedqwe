@@ -1,11 +1,13 @@
 import { toDollar } from "../../helper/money";
-import { Resolvers } from "../../generated";
+import { Resolvers, UploadResult } from "../../generated";
 import { Context } from "../../types/context";
+
 import { PublicError } from "../errors/PublicError";
 
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
+import storeUpload from "../../helper/storeUpload";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -105,9 +107,70 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     markMilestoneAsCompleted: async (_, args, context) => {
-      const { id } = args
+      const { id, files } = args
       await checkAllowVendorOnlyPermission(context);
       await checkMilestonePermission(context, id);
+
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          quote: {
+            include: {
+              project_connection: true
+            }
+          }
+        }
+      });
+
+      if (!milestone) {
+        throw new PublicError('Milestone not found.');
+      }
+
+      let upload_results: UploadResult[] = [];
+      if (files) {
+        const result = await Promise.allSettled(files.map(async (f) => {
+          const uploadData = await f;
+          const { filename, key, filesize, contextType } = await storeUpload(
+            uploadData,
+            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
+          );
+          const attachment = await context.prisma.projectAttachment.create({
+            data: {
+              byte_size: filesize,
+              document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
+              filename,
+              key,
+              project_connection_id: milestone.quote.project_connection_id,
+              milestone_id: milestone.id,
+              content_type: contextType,
+              uploader_id: context.req.user_id,
+            }
+          });
+
+          return attachment;
+        }));
+
+        upload_results = result.map((r) => {
+          if (r.status === 'fulfilled') {
+            return {
+              success: true,
+              data: {
+                ...r.value,
+                byte_size: Number(r.value.byte_size),
+                document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.value.document_type],
+              },
+            };
+          }
+
+          return {
+            success: false,
+            error_message: r.reason.message,
+          }
+        });
+      }
+
       const updatedMilestone = await context.prisma.milestone.update({
         where: {
           id,
@@ -120,8 +183,11 @@ const resolvers: Resolvers<Context> = {
       // TODO Send notification to biotech
 
       return {
-        ...updatedMilestone,
-        amount: updatedMilestone.amount.toNumber(),
+        milestone: {
+          ...updatedMilestone,
+          amount: updatedMilestone.amount.toNumber(),
+        },
+        upload_results,
       }
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {

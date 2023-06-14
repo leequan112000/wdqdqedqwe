@@ -10,6 +10,11 @@ type Milestone {
   vendor_payment_status: String
 }
 
+type MarkMilestoneCompleteResponse {
+  milestone: Milestone
+  upload_results: [UploadResult]
+}
+
 type Query {
   milestone(id: String!): Milestone
   milestoneCheckoutUrl(
@@ -20,6 +25,6 @@ type Query {
 }
 
 type Mutation {
-  markMilestoneAsCompleted(id: String!): Milestone
+  markMilestoneAsCompleted(id: String!, files: [Upload]): MarkMilestoneCompleteResponse
   verifyMilestoneAsCompleted(id: String!): Milestone
 }
