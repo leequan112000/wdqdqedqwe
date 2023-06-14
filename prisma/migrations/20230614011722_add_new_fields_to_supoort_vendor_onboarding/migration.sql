@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE "vendor_companies" ADD COLUMN     "cro_details" TEXT,
+ALTER TABLE "vendor_companies" ADD COLUMN     "cro_extra_info" TEXT,
 ADD COLUMN     "facebook_url" TEXT,
 ADD COLUMN     "founded_year" INTEGER,
 ADD COLUMN     "linkedin_url" TEXT,
