@@ -353,6 +353,8 @@ model ProjectAttachment {
 
   project_connection_id String            @db.Uuid
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  milestone_id          String?           @db.Uuid
+  milestone             Milestone?        @relation(fields: [milestone_id], references: [id])
   uploader_id           String?           @db.Uuid
   uploader              User?             @relation(fields: [uploader_id], references: [id])
 
@@ -406,20 +408,21 @@ model InterestedCro {
 }
 
 model Milestone {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  short_id              String   @unique
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  short_id              String              @unique
   title                 String
   description           String?
-  amount                Decimal  @db.Decimal(14, 2)
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
-  quote                 Quote    @relation(fields: [quote_id], references: [id])
-  quote_id              String   @db.Uuid
+  amount                Decimal             @db.Decimal(14, 2)
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @updatedAt
+  quote                 Quote               @relation(fields: [quote_id], references: [id])
+  quote_id              String              @db.Uuid
   status                String
   payment_status        String
   vendor_payment_status String
   timeline              String?
-  ordinal               Int      @default(0)
+  ordinal               Int                 @default(0)
+  ProjectAttachment     ProjectAttachment[]
 
   @@map("milestones")
 }
