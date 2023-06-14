@@ -347,7 +347,7 @@ export type MutationOnboardVendorCompanyArgs = {
   cro_extra_info?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   facebook_url?: InputMaybe<Scalars['String']>;
-  founded_year?: InputMaybe<Scalars['Int']>;
+  founded_year?: InputMaybe<Scalars['String']>;
   google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   linkedin_url?: InputMaybe<Scalars['String']>;
@@ -481,7 +481,7 @@ export type MutationUpdateVendorCompanyArgs = {
   cro_extra_info?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   facebook_url?: InputMaybe<Scalars['String']>;
-  founded_year?: InputMaybe<Scalars['Int']>;
+  founded_year?: InputMaybe<Scalars['String']>;
   google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
   linkedin_url?: InputMaybe<Scalars['String']>;
@@ -724,7 +724,7 @@ export type VendorCompany = {
   cro_extra_info?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   facebook_url?: Maybe<Scalars['String']>;
-  founded_year?: Maybe<Scalars['Int']>;
+  founded_year?: Maybe<Scalars['String']>;
   google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   legal_name?: Maybe<Scalars['String']>;
@@ -1231,7 +1231,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   cro_extra_info?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   facebook_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  founded_year?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  founded_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -128,7 +128,7 @@ model VendorCompany {
   vendor_type                 String?
   principal_investigator_name String?
   google_scholar_url          String?
-  founded_year                Int?
+  founded_year                String?
   team_size                   String?
   linkedin_url                String?
   twitter_url                 String?
