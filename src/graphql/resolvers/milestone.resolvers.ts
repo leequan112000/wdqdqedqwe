@@ -3,6 +3,7 @@ import { Resolvers, UploadResult } from "../../generated";
 import { Context } from "../../types/context";
 
 import { PublicError } from "../errors/PublicError";
+import { InternalError } from "../errors/InternalError";
 
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
 import { MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
@@ -10,6 +11,24 @@ import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 
 const resolvers: Resolvers<Context> = {
+  Milestone: {
+    project_attachments: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Missing milestone id.')
+      }
+      const projectAttachments = await context.prisma.projectAttachment.findMany({
+        where: {
+          project_connection_id: parent.id
+        },
+      });
+
+      return projectAttachments.map((a) => ({
+        ...a,
+        byte_size: Number(a.byte_size),
+        document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
+      }));
+    },
+  },
   Query: {
     milestone: async (_, args, context) => {
       const { id } = args;

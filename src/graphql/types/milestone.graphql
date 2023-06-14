@@ -8,6 +8,7 @@ type Milestone {
   status: String
   payment_status: String
   vendor_payment_status: String
+  project_attachments: [ProjectAttachment]
 }
 
 type MarkMilestoneCompleteResponse {

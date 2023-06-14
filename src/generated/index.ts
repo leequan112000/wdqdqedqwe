@@ -104,6 +104,12 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type MarkMilestoneCompleteResponse = {
+  __typename?: 'MarkMilestoneCompleteResponse';
+  milestone?: Maybe<Milestone>;
+  upload_results?: Maybe<Array<Maybe<UploadResult>>>;
+};
+
 export type MeetingEvent = {
   __typename?: 'MeetingEvent';
   description?: Maybe<Scalars['String']>;
@@ -137,6 +143,7 @@ export type Milestone = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
+  project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   timeline?: Maybe<Scalars['String']>;
@@ -170,7 +177,7 @@ export type Mutation = {
   /** @deprecated Use `inviteCollaborator`. */
   inviteVendorMember?: Maybe<VendorMember>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
-  markMilestoneAsCompleted?: Maybe<Milestone>;
+  markMilestoneAsCompleted?: Maybe<MarkMilestoneCompleteResponse>;
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
@@ -357,6 +364,7 @@ export type MutationInviteVendorMemberByAdminArgs = {
 
 
 export type MutationMarkMilestoneAsCompletedArgs = {
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']>>>;
   id: Scalars['String'];
 };
 
@@ -590,6 +598,8 @@ export type ProjectAttachment = {
   formatted_filesize?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   key?: Maybe<Scalars['String']>;
+  milestone?: Maybe<Milestone>;
+  milestone_id?: Maybe<Scalars['String']>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   signed_url?: Maybe<Scalars['String']>;
@@ -988,6 +998,7 @@ export type ResolversTypes = ResolversObject<{
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
+  MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
   Milestone: ResolverTypeWrapper<Milestone>;
@@ -1030,6 +1041,7 @@ export type ResolversParentTypes = ResolversObject<{
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
+  MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   Message: Message;
   Milestone: Milestone;
@@ -1146,6 +1158,12 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'JSON';
 }
 
+export type MarkMilestoneCompleteResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkMilestoneCompleteResponse'] = ResolversParentTypes['MarkMilestoneCompleteResponse']> = ResolversObject<{
+  milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
+  upload_results?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -1178,6 +1196,7 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1209,7 +1228,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
-  markMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsCompletedArgs, 'id'>>;
+  markMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['MarkMilestoneCompleteResponse']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsCompletedArgs, 'id'>>;
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
@@ -1265,6 +1284,8 @@ export type ProjectAttachmentResolvers<ContextType = any, ParentType extends Res
   formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
+  milestone_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1521,6 +1542,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
+  MarkMilestoneCompleteResponse?: MarkMilestoneCompleteResponseResolvers<ContextType>;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   Milestone?: MilestoneResolvers<ContextType>;
