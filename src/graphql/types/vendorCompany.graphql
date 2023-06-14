@@ -23,6 +23,10 @@ type VendorCompany {
   founded_year: Int
   team_size: String
   google_scholar_url: String
+  linkedin_url: String
+  twitter_url: String
+  facebook_url: String
+  cro_extra_info: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
@@ -52,6 +56,10 @@ type Mutation {
     google_scholar_url: String
     founded_year: Int
     team_size: String
+    linkedin_url: String
+    twitter_url: String
+    facebook_url: String
+    cro_extra_info: String
   ): VendorCompany
   updateVendorCompany(
     name: String
@@ -71,5 +79,9 @@ type Mutation {
     google_scholar_url: String
     founded_year: Int
     team_size: String
+    linkedin_url: String
+    twitter_url: String
+    facebook_url: String
+    cro_extra_info: String
   ): VendorCompany
 }

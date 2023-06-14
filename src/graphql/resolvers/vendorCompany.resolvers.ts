@@ -99,6 +99,10 @@ export default {
               google_scholar_url: args.google_scholar_url,
               founded_year: args.founded_year,
               team_size: args.team_size,
+              linkedin_url: args.linkedin_url,
+              twitter_url: args.twitter_url,
+              facebook_url: args.facebook_url,
+              cro_extra_info: args.cro_extra_info,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
@@ -141,6 +145,10 @@ export default {
               google_scholar_url: args.google_scholar_url,
               founded_year: args.founded_year,
               team_size: args.team_size,
+              linkedin_url: args.linkedin_url,
+              twitter_url: args.twitter_url,
+              facebook_url: args.facebook_url,
+              cro_extra_info: args.cro_extra_info,
               ...(args.name !== null ? { name: args.name } : {}),
             }
           })
