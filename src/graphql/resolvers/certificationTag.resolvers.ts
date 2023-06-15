@@ -29,6 +29,16 @@ export default {
     createCertificationTag: async (_: void, args: { full_name: string }, context: Context & { req: Request }) => {
       const { full_name } = args;
 
+      const existingCertificationTag = await context.prisma.certificationTag.findFirst({
+        where: {
+          full_name: full_name,
+        }
+      });
+
+      if (existingCertificationTag) {
+        throw new Error("Certification tag already exists");
+      }
+
       return await context.prisma.certificationTag.create({
         data: {
           full_name: full_name,
