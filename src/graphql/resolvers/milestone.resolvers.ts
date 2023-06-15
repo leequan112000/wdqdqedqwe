@@ -173,8 +173,9 @@ const resolvers: Resolvers<Context> = {
           }));
 
           if (!result.every(r => r.status === 'fulfilled')) {
-            throw new PublicError('Milestone not found.');
+            throw new PublicError('Some files failed to upload please try again.');
           }
+
           upload_results = result.map((r) => {
             if (r.status === 'fulfilled') {
               return {
