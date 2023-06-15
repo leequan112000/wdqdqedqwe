@@ -18,7 +18,7 @@ const resolvers: Resolvers<Context> = {
       }
       const projectAttachments = await context.prisma.projectAttachment.findMany({
         where: {
-          project_connection_id: parent.id
+          milestone_id: parent.id
         },
       });
 
