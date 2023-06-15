@@ -10,7 +10,7 @@ ADD COLUMN     "twitter_url" TEXT;
 CREATE TABLE "certification_tags" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "full_name" TEXT NOT NULL,
-    "short_name" TEXT NOT NULL,
+    "short_name" TEXT,
     "priority" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE "certification_tag_connections" (
 CREATE TABLE "lab_specializations" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "full_name" TEXT NOT NULL,
-    "short_name" TEXT NOT NULL,
+    "short_name" TEXT,
     "priority" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,

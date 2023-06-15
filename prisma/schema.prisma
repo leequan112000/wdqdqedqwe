@@ -421,7 +421,7 @@ model InterestedCro {
 model CertificationTag {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   full_name  String   @unique
-  short_name String
+  short_name String?
   priority   Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -447,7 +447,7 @@ model CertificationTagConnection {
 model LabSpecialization {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   full_name  String   @unique
-  short_name String
+  short_name String?
   priority   Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
