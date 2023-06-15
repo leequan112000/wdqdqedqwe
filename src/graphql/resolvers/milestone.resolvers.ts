@@ -148,66 +148,71 @@ const resolvers: Resolvers<Context> = {
       }
 
       let upload_results: UploadResult[] = [];
-      if (files) {
-        const result = await Promise.allSettled(files.map(async (f) => {
-          const uploadData = await f;
-          const { filename, key, filesize, contextType } = await storeUpload(
-            uploadData,
-            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
-          );
-          const attachment = await context.prisma.projectAttachment.create({
-            data: {
-              byte_size: filesize,
-              document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
-              filename,
-              key,
-              project_connection_id: milestone.quote.project_connection_id,
-              milestone_id: milestone.id,
-              content_type: contextType,
-              uploader_id: context.req.user_id,
+      return await context.prisma.$transaction(async (trx) => {
+        if (files) {
+          const result = await Promise.allSettled(files.map(async (f) => {
+            const uploadData = await f;
+            const { filename, key, filesize, contextType } = await storeUpload(
+              uploadData,
+              PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
+            );
+            const attachment = await trx.projectAttachment.create({
+              data: {
+                byte_size: filesize,
+                document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
+                filename,
+                key,
+                project_connection_id: milestone.quote.project_connection_id,
+                milestone_id: milestone.id,
+                content_type: contextType,
+                uploader_id: context.req.user_id,
+              }
+            });
+
+            return attachment;
+          }));
+
+          if (!result.every(r => r.status === 'fulfilled')) {
+            throw new PublicError('Milestone not found.');
+          }
+          upload_results = result.map((r) => {
+            if (r.status === 'fulfilled') {
+              return {
+                success: true,
+                data: {
+                  ...r.value,
+                  byte_size: Number(r.value.byte_size),
+                  document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.value.document_type],
+                },
+              };
+            }
+
+            return {
+              success: false,
+              error_message: r.reason.message,
             }
           });
+        }
 
-          return attachment;
-        }));
-
-        upload_results = result.map((r) => {
-          if (r.status === 'fulfilled') {
-            return {
-              success: true,
-              data: {
-                ...r.value,
-                byte_size: Number(r.value.byte_size),
-                document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.value.document_type],
-              },
-            };
-          }
-
-          return {
-            success: false,
-            error_message: r.reason.message,
-          }
+        const updatedMilestone = await trx.milestone.update({
+          where: {
+            id,
+          },
+          data: {
+            status: MilestoneStatus.PENDING_COMPLETION_APPROVAL,
+          },
         });
-      }
 
-      const updatedMilestone = await context.prisma.milestone.update({
-        where: {
-          id,
-        },
-        data: {
-          status: MilestoneStatus.PENDING_COMPLETION_APPROVAL,
-        },
-      });
+        // TODO Send notification to biotech
 
-      // TODO Send notification to biotech
-
-      return {
-        milestone: {
-          ...updatedMilestone,
-          amount: updatedMilestone.amount.toNumber(),
-        },
-        upload_results,
-      }
+        return {
+          milestone: {
+            ...updatedMilestone,
+            amount: updatedMilestone.amount.toNumber(),
+          },
+          upload_results,
+        }
+      })
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
       const { id } = args
