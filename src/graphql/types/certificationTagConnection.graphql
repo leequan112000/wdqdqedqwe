@@ -8,7 +8,7 @@ type CertificationTagConnection {
 
 type Query {
   certification_tag_connection(id: String): CertificationTagConnection
-  certification_tag_connections: [CertificationTagConnection]
+  certification_tag_connections(vendor_company_id: String): [CertificationTagConnection]
 }
 
 type Mutation {
