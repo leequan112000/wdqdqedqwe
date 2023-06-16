@@ -52,12 +52,12 @@ const resolvers: Resolvers<Context> = {
       if (result?.vendor_member && !result.vendor_member.title) {
         return false
       }
-
-      if (result?.customer && !result.customer.job_title) {
+      
+      if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0) {
         return false
       }
 
-      if (result?.vendor_member?.vendor_company?.certification_tag_connections?.length === 0) {
+      if (result?.customer && !result.customer.job_title) {
         return false
       }
 
