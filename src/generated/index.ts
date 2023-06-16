@@ -201,7 +201,6 @@ export type Mutation = {
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
-  onboardVendorCompany?: Maybe<VendorCompany>;
   payVendor?: Maybe<Milestone>;
   refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
@@ -427,31 +426,6 @@ export type MutationOnboardBiotechArgs = {
   legal_name?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
-  website?: InputMaybe<Scalars['String']>;
-  zipcode?: InputMaybe<Scalars['String']>;
-};
-
-
-export type MutationOnboardVendorCompanyArgs = {
-  address?: InputMaybe<Scalars['String']>;
-  address1?: InputMaybe<Scalars['String']>;
-  address2?: InputMaybe<Scalars['String']>;
-  city?: InputMaybe<Scalars['String']>;
-  country?: InputMaybe<Scalars['String']>;
-  cro_extra_info?: InputMaybe<Scalars['String']>;
-  description?: InputMaybe<Scalars['String']>;
-  facebook_url?: InputMaybe<Scalars['String']>;
-  founded_year?: InputMaybe<Scalars['String']>;
-  google_scholar_url?: InputMaybe<Scalars['String']>;
-  legal_name?: InputMaybe<Scalars['String']>;
-  linkedin_url?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  principal_investigator_name?: InputMaybe<Scalars['String']>;
-  state?: InputMaybe<Scalars['String']>;
-  team_size?: InputMaybe<Scalars['String']>;
-  twitter_url?: InputMaybe<Scalars['String']>;
-  university_name?: InputMaybe<Scalars['String']>;
-  vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
 };
@@ -949,7 +923,7 @@ export type VendorCompany = {
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
-  certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
+  certification_tags?: Maybe<Array<Maybe<CertificationTag>>>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   city?: Maybe<Scalars['String']>;
   country?: Maybe<Scalars['String']>;
@@ -1346,7 +1320,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
-  onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   payVendor?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayVendorArgs, 'id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
@@ -1604,7 +1577,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType>;
+  certification_tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -50,7 +50,7 @@ const resolvers: Resolvers<Context> = {
 
       return primaryMembers;
     },
-    certification_tag_connections: async (parent, _, context) => {
+    certification_tags: async (parent, _, context) => {
       if (!parent.id) {
         throw new InternalError('Vendor company id not found.')
       }
@@ -59,9 +59,14 @@ const resolvers: Resolvers<Context> = {
         where: {
           vendor_company_id: parent.id,
         },
+        include: {
+          certification_tag: true
+        }
       });
 
-      return certificationTagConnections;
+      const certificationTags = certificationTagConnections.map(c => c.certification_tag);
+
+      return certificationTags;
     },
   },
   Query: {
@@ -159,55 +164,6 @@ const resolvers: Resolvers<Context> = {
     }
   },
   Mutation: {
-    onboardVendorCompany: async (_, args, context) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const user = await trx.user.findFirstOrThrow({
-          where: {
-            id: context.req.user_id,
-          },
-          include: {
-            vendor_member: {
-              include: {
-                vendor_company: true
-              }
-            }
-          }
-        });
-
-        if (!user.vendor_member) {
-          throw new PublicError('Vendor member not found.');
-        }
-
-        return await trx.vendorCompany.update({
-          where: {
-            id: user.vendor_member.vendor_company_id
-          },
-          data: {
-            legal_name: args.legal_name,
-            description: args.description,
-            website: args.website,
-            address: args.address,
-            address1: args.address1,
-            address2: args.address2,
-            city: args.city,
-            state: args.state,
-            country: args.country,
-            zipcode: args.zipcode,
-            university_name: args.university_name,
-            vendor_type: args.vendor_type,
-            principal_investigator_name: args.principal_investigator_name,
-            google_scholar_url: args.google_scholar_url,
-            founded_year: args.founded_year,
-            team_size: args.team_size,
-            linkedin_url: args.linkedin_url,
-            twitter_url: args.twitter_url,
-            facebook_url: args.facebook_url,
-            cro_extra_info: args.cro_extra_info,
-            ...(args.name !== null ? { name: args.name } : {}),
-          }
-        })
-      });
-    },
     updateVendorCompany: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
         const vendor_member = await trx.vendorMember.findFirst({
