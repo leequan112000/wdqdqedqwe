@@ -3,7 +3,7 @@ import { Context } from "../../types/context";
 
 export default {
   Query: {
-    preloadCertificationTags: async (_: void, args: void, context: Context & { req: Request }) => {
+    suggestedCertificationTags: async (_: void, args: void, context: Context & { req: Request }) => {
       return await context.prisma.certificationTag.findMany({
         where: {
           NOT: [

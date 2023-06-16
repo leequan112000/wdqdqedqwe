@@ -6,7 +6,7 @@ type CertificationTag {
 }
 
 type Query {
-  preloadCertificationTags: [CertificationTag]
+  suggestedCertificationTags: [CertificationTag]
   searchCertificationTags(search_content: String): [CertificationTag]
 }
 
