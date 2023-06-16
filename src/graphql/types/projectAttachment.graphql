@@ -6,6 +6,8 @@ type ProjectAttachment {
   created_at: Date
   project_connection_id: String
   project_connection: ProjectConnection
+  milestone_id: String
+  milestone: Milestone
   signed_url: String
   formatted_filesize: String
   document_type: String

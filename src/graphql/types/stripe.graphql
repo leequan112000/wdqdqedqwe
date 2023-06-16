@@ -1,0 +1,43 @@
+type StripeAccountCapabilities {
+  tax_reporting_us_1099_k: String
+  transfers: String
+}
+
+type StripeAccountRequirementError {
+  code: String
+}
+
+type StripeAccountRequirements {
+  eventually_due: [String]
+  current_deadline: String
+  currently_due: [String]
+  past_due: [String]
+  disabled_reason: String
+  pending_verification: [String]
+  errors:[StripeAccountRequirementError]
+}
+
+type StripeExternalAccountData {
+  object: String
+  bank_name: String
+  routing_number: String
+  currency: String
+  last4: String
+  status: String
+  brand: String
+  exp_month: Int
+  exp_year: Int
+}
+
+type StripeExternalAccount {
+  data: [StripeExternalAccountData]
+}
+
+type StripeAccountData {
+  payouts_enabled: Boolean
+  charges_enabled: Boolean
+  details_submitted: Boolean
+  capabilities: StripeAccountCapabilities
+  requirements: StripeAccountRequirements
+  external_accounts: StripeExternalAccount
+}
