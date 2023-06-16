@@ -109,7 +109,7 @@ const resolvers: Resolvers<Context> = {
               });
 
               stripeAccount = account.id;
-  
+
               await trx.vendorCompany.update({
                 where: {
                   id: vendor_company.id
@@ -126,7 +126,7 @@ const resolvers: Resolvers<Context> = {
               return_url: `${return_url}?stripe_connect=success&stripe_account_id=${stripeAccount}`,
               type: 'account_onboarding',
             });
-        
+
             return accountLink.url;
           } catch (error) {
             throw new PublicError(error as string);
@@ -202,6 +202,106 @@ const resolvers: Resolvers<Context> = {
             facebook_url: args.facebook_url,
             cro_extra_info: args.cro_extra_info,
             ...(args.name !== null ? { name: args.name } : {}),
+          }
+        })
+      });
+    },
+    updateVendorCompanyCertificationTags: async (_, args, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const vendor_member = await trx.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id,
+          },
+          include: {
+            vendor_company: true
+          }
+        });
+
+        if (!vendor_member) {
+          throw new PublicError('Vendor member not found.');
+        }
+
+        const { certification_tag_ids, new_certification_tag_names } = args;
+
+        const certificationTagConnections = await trx.certificationTagConnection.findMany({
+          where: {
+            vendor_company_id: vendor_member.vendor_company_id,
+          },
+          include: {
+            certification_tag: true
+          }
+        });
+
+        let newTagIds = [];
+        // Check if certification tag exist
+        if (new_certification_tag_names && new_certification_tag_names.length > 0) {
+          const existingCertificationTag = await trx.certificationTag.findMany({
+            where: {
+              full_name: {
+                in: new_certification_tag_names as string[]
+              }
+            },
+          });
+
+          if (existingCertificationTag.length > 0) {
+            newTagIds.push(existingCertificationTag.map(c => c.id));
+
+            const verifiedNewCertificationTagNames = new_certification_tag_names.filter(
+              n => !existingCertificationTag.map(c => c.full_name).includes(n as string)
+            )
+
+            // Create new tag by user
+            if (verifiedNewCertificationTagNames.length > 0) {
+              await trx.certificationTag.createMany({
+                data: verifiedNewCertificationTagNames.map(name => {
+                  return {
+                    full_name: name as string,
+                  }
+                }),
+              });
+
+              const newCertificationTags = await trx.certificationTag.findMany({
+                where: {
+                  full_name: {
+                    in: verifiedNewCertificationTagNames as string[]
+                  }
+                }
+              });
+
+              newTagIds.push(newCertificationTags.map(c => c.id));
+            }
+          }
+        }
+
+        const certificationTags = certificationTagConnections.map(c => c.certification_tag);
+        // Disconnect the existing certification tag connections
+        await trx.certificationTagConnection.deleteMany({
+          where: {
+            vendor_company_id: vendor_member.vendor_company_id,
+            certification_tag_id: {
+              in: certificationTags.map((c) => c.id)
+            }
+          },
+        });
+
+        // Connect the new certification tags
+        if (certification_tag_ids && certification_tag_ids?.length > 0) {
+          await context.prisma.certificationTagConnection.createMany({
+            data: [
+              ...certification_tag_ids,
+              ...newTagIds,
+            ].map(id => {
+              return {
+                certification_tag_id: id as string,
+                vendor_company_id: vendor_member.vendor_company_id
+              }
+            }),
+          });
+        }
+
+        return await trx.vendorCompany.findFirst({
+          where: {
+            id: vendor_member.vendor_company_id,
           }
         })
       });

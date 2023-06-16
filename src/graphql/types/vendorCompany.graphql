@@ -68,4 +68,8 @@ type Mutation {
     facebook_url: String
     cro_extra_info: String
   ): VendorCompany
+  updateVendorCompanyCertificationTags(
+    certification_tag_ids: [String]
+    new_certification_tag_names: [String]
+  ): VendorCompany
 }

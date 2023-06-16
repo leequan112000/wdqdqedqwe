@@ -221,6 +221,7 @@ export type Mutation = {
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
   updateVendorCompany?: Maybe<VendorCompany>;
+  updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
   uploadContract?: Maybe<UploadResult>;
   uploadDocuments?: Maybe<Array<Maybe<UploadResult>>>;
@@ -575,6 +576,12 @@ export type MutationUpdateVendorCompanyArgs = {
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateVendorCompanyCertificationTagsArgs = {
+  certification_tag_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  new_certification_tag_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -1340,6 +1347,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
+  updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
