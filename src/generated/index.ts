@@ -772,6 +772,7 @@ export type VendorCompany = {
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
+  certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   city?: Maybe<Scalars['String']>;
   country?: Maybe<Scalars['String']>;
@@ -1307,6 +1308,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

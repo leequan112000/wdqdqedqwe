@@ -31,6 +31,7 @@ type VendorCompany {
   project_connections: [ProjectConnection]
   chats: [Chat]
   primary_members: [VendorMember]
+  certification_tag_connections: [CertificationTagConnection]
 }
 
 type Query {

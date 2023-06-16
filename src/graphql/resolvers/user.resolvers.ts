@@ -39,7 +39,11 @@ const resolvers: Resolvers<Context> = {
           },
           vendor_member: {
             include: {
-              vendor_company: true,
+              vendor_company: {
+                include: {
+                  certification_tag_connections: true,
+                }
+              },
             },
           },
         },
@@ -50,6 +54,10 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (result?.customer && !result.customer.job_title) {
+        return false
+      }
+
+      if (result?.vendor_member?.vendor_company?.certification_tag_connections?.length === 0) {
         return false
       }
 

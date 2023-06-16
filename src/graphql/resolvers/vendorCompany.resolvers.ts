@@ -1,4 +1,4 @@
-import { Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
+import { CertificationTagConnection, Chat, ProjectConnection, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
@@ -38,7 +38,29 @@ export default {
       });
 
       return primaryMembers;
-    }
+    },
+    certification_tag_connections: async (parent: VendorCompany, _: void, context: Context): Promise<CertificationTagConnection[] | null> => {
+      const { id } = parent;
+
+      const certificationTagConnections = await context.prisma.certificationTagConnection.findMany({
+        where: {
+          vendor_company_id: id,
+        },
+      });
+
+      return certificationTagConnections;
+    },
+    // lab_specialization_connections: async (parent: VendorCompany, _: void, context: Context): Promise<LabSpecializationConnection[] | null> => {
+    //   const { id } = parent;
+
+    //   const labSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
+    //     where: {
+    //       vendor_company_id: id,
+    //     },
+    //   });
+
+    //   return labSpecializationConnections;
+    // },
   },
   Query: {
     vendorCompany: async (_: void, args: void, context: Context & { req: Request }) => {
