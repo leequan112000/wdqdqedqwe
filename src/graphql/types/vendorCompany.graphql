@@ -13,6 +13,7 @@ type VendorCompany {
   state: String
   country: String
   zipcode: String
+  stripe_account: String
   cda_pandadoc_file_id: String
   cda_pandadoc_signer: String
   cda_signed_at: Date
@@ -36,6 +37,11 @@ type VendorCompany {
 
 type Query {
   vendorCompany: VendorCompany
+  vendorCompanyStripeConnectUrl(
+    refresh_url: String
+    return_url: String
+  ): String
+  vendorCompanyStripeAccount: StripeAccountData
 }
 
 type Mutation {

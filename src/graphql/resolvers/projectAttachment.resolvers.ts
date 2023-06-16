@@ -11,6 +11,7 @@ import { Readable } from 'stream';
 import UploadLimitTracker from '../../helper/uploadLimitTracker';
 import { PublicError } from '../errors/PublicError';
 import { byteToKB } from "../../helper/filesize";
+import { toDollar } from "../../helper/money";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -58,6 +59,23 @@ const resolvers: Resolvers<Context> = {
           id: parent.project_connection_id,
         },
       });
+    },
+    milestone: async (parent, _, context) => {
+      if (!parent.milestone_id) {
+        throw new InternalError("Milestone id not found.");
+      }
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id: parent.milestone_id,
+        },
+      });
+
+      return milestone
+        ? {
+          ...milestone,
+          amount: toDollar(milestone.amount.toNumber())
+        }
+        : null;
     },
     signed_url: async (parent) => {
       if (!parent.key) {

@@ -1,0 +1,49 @@
+type Quote {
+  id: String
+  short_id: String
+  amount: Int
+  milestones: [Milestone]
+  project_connection_id: String
+  project_connection: ProjectConnection
+  status: String
+}
+
+input CreateMilestoneInput {
+  title: String!
+  description: String
+  amount: Int!
+  timeline: String
+}
+
+input UpdateMilestoneInput {
+  id: String
+  title: String!
+  description: String
+  amount: Int!
+  timeline: String
+}
+
+type Query {
+  quote(project_connection_id: String, id: String): Quote
+}
+
+type Mutation {
+  createQuote(
+    amount: Int!
+    project_connection_id: String!
+    milestones: [CreateMilestoneInput!]
+    send_to_biotech: Boolean
+  ): Quote
+  updateQuote(
+    id: String!
+    amount: Int!
+    milestones: [UpdateMilestoneInput!]!
+    send_to_biotech: Boolean
+  ): Quote
+  acceptQuote(
+    id: String!
+  ): Quote
+  declineQuote(
+    id: String!
+  ): Quote
+}

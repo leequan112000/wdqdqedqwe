@@ -18,6 +18,27 @@ export enum ProjectConnectionVendorStatus {
   DECLINED = 'declined',
 }
 
+export enum QuoteStatus {
+  DRAFT = 'draft',
+  PENDING_DECISION = 'pending_decision',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+  COMPLETED = 'completed',
+}
+
+export enum MilestoneStatus {
+  NOT_STARTED = 'not_started',
+  PENDING_COMPLETION_APPROVAL = 'pending_completion_approval',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
+export enum MilestonePaymentStatus {
+  UNPAID = 'unpaid',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+}
+
 export enum AdminTeam {
   ENGINEER = 'engineer',
   PRODUCT = 'product',
@@ -36,11 +57,13 @@ export enum NotificationType {
 export enum ProjectAttachmentDocumentType {
   FILE,
   REDLINE_FILE,
+  MILESTONE_FILE
 }
 
 export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.FILE]: 'file',
   [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
+  [ProjectAttachmentDocumentType.MILESTONE_FILE]: 'milestone_file',
 }
 
 export enum MeetingPlatform {

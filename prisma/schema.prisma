@@ -134,6 +134,7 @@ model VendorCompany {
   twitter_url                 String?
   facebook_url                String?
   cro_extra_info              String?
+  stripe_account              String?
 
   vendor_members                 VendorMember[]
   project_connections            ProjectConnection[]
@@ -244,6 +245,7 @@ model ProjectConnection {
   chats                     Chat[]
   project_attachments       ProjectAttachment[]
   MeetingEvent              MeetingEvent[]
+  quotes                    Quote[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -364,6 +366,8 @@ model ProjectAttachment {
 
   project_connection_id String            @db.Uuid
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  milestone_id          String?           @db.Uuid
+  milestone             Milestone?        @relation(fields: [milestone_id], references: [id])
   uploader_id           String?           @db.Uuid
   uploader              User?             @relation(fields: [uploader_id], references: [id])
 
@@ -468,4 +472,38 @@ model LabSpecializationConnection {
 
   @@unique([vendor_company_id, lab_specialization_id])
   @@map("lab_specialization_connections")
+}
+
+model Milestone {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  short_id              String              @unique
+  title                 String
+  description           String?
+  amount                Decimal             @db.Decimal(14, 2)
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @updatedAt
+  quote                 Quote               @relation(fields: [quote_id], references: [id])
+  quote_id              String              @db.Uuid
+  status                String
+  payment_status        String
+  vendor_payment_status String
+  timeline              String?
+  ordinal               Int                 @default(0)
+  ProjectAttachment     ProjectAttachment[]
+
+  @@map("milestones")
+}
+
+model Quote {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  short_id              String            @unique
+  amount                Decimal           @db.Decimal(14, 2)
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
+  project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
+  project_connection_id String            @db.Uuid
+  milestones            Milestone[]
+  status                String
+
+  @@map("quotes")
 }

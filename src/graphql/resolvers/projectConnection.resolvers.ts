@@ -1,17 +1,21 @@
 import { app_env } from "../../environment";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus } from "../../helper/constant";
-import { PublicError } from "../errors/PublicError";
+import { Prisma } from "@prisma/client";
 import { Resolvers } from "../../generated";
+
+import { InternalError } from "../errors/InternalError";
+import { PublicError } from "../errors/PublicError";
+
+import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
 import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
-import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
-import { Prisma } from "@prisma/client";
+
+import { createResetPasswordToken } from "../../helper/auth";
+import { checkProjectConnectionPermission } from "../../helper/accessControl";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus } from "../../helper/constant";
+import { toDollar } from "../../helper/money";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -83,6 +87,51 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
+    },
+    quotes: async (parent, _, context) => {
+      if (!parent?.id) {
+        throw new InternalError('Project connection id not found');
+      }
+
+      const currentUserId = context.req.user_id;
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: currentUserId,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        }
+      });
+
+      if (!currentUser) {
+        throw new InternalError('User not found');
+      }
+
+      const filter: Prisma.QuoteWhereInput = {
+        project_connection_id: parent.id,
+      };
+
+      if (currentUser.customer) {
+        filter.status = {
+          not: QuoteStatus.DRAFT,
+        };
+      }
+
+      const quotes = await context.prisma.quote.findMany({
+        where: filter,
+        orderBy: {
+          created_at: 'asc',
+        }
+      });
+
+      return quotes.map((quote) => {
+        return {
+          ...quote,
+          amount: toDollar(quote.amount.toNumber())
+        }
+      });
     },
     chat: async (parent, _, context) => {
       if (!parent?.id) {
@@ -422,63 +471,12 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     projectConnection: async (parent, args, context) => {
+      await checkProjectConnectionPermission(context, args.id);
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: args.id,
         },
-        include: {
-          customer_connections: {
-            include: {
-              customer: true,
-            },
-          },
-          vendor_member_connections: {
-            include: {
-              vendor_member: true,
-            },
-          },
-        },
       });
-
-      const projectRequest = await context.prisma.projectRequest.findFirst({
-        where: {
-          id: projectConnection?.project_request_id,
-        },
-        include: {
-          customer: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      if (!projectConnection) {
-        throw new PublicError('Project connection not found');
-      }
-
-      if (!projectRequest) {
-        throw new PublicError('Project request not found');
-      }
-
-      const currentUser = await context.prisma.user.findFirst({
-        where: {
-          id: context.req.user_id
-        },
-      });
-
-      if (!currentUser) {
-        throw new PermissionDeniedError();
-      }
-
-      const projectRequestUserId = projectRequest.customer.user_id;
-      const accessableCustomerUserIds = projectConnection.customer_connections.map((cc) => cc.customer.user_id);
-      const accessableVendorMemberIds = projectConnection.vendor_member_connections.map((vmc) => vmc.vendor_member.user_id);
-
-      if (![projectRequestUserId, ...accessableCustomerUserIds, ...accessableVendorMemberIds].includes(currentUser.id)) {
-        throw new PermissionDeniedError();
-      }
-
       return projectConnection;
     },
     projectConnections: async (parent, args, context) => {
