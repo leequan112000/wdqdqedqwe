@@ -773,6 +773,10 @@ export type Quote = {
   project_connection_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  total_amount?: Maybe<Scalars['Float']>;
+  total_in_escrow?: Maybe<Scalars['Float']>;
+  total_milestones_paid?: Maybe<Scalars['Float']>;
+  total_payment?: Maybe<Scalars['Float']>;
 };
 
 export type StripeAccountCapabilities = {
@@ -1403,6 +1407,10 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_in_escrow?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_milestones_paid?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_payment?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

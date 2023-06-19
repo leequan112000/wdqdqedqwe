@@ -49,6 +49,79 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    total_amount: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Quote id not found');
+      }
+      const milestones = await context.prisma.milestone.findMany({
+        where: {
+          quote_id: parent.id,
+        },
+      });
+
+      const totalAmount = milestones.reduce((acc, cur) => {
+        return acc + cur.amount.toNumber();
+      }, 0)
+
+      return toDollar(totalAmount)
+    },
+    total_in_escrow: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Quote id not found');
+      }
+      const milestones = await context.prisma.milestone.findMany({
+        where: {
+          quote_id: parent.id,
+        },
+      });
+
+      const amountInEscrow = milestones.reduce((acc, cur) => {
+        if (cur.payment_status === MilestonePaymentStatus.PROCESSING && cur.vendor_payment_status === MilestonePaymentStatus.UNPAID) {
+          return acc + cur.amount.toNumber();
+        }
+        return acc;
+      }, 0)
+
+      return toDollar(amountInEscrow)
+    },
+    total_payment: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Quote id not found');
+      }
+      const milestones = await context.prisma.milestone.findMany({
+        where: {
+          quote_id: parent.id,
+        },
+      });
+
+      const amountPaid = milestones.reduce((acc, cur) => {
+        if ([MilestonePaymentStatus.PAID, MilestonePaymentStatus.PROCESSING].includes(cur.payment_status as MilestonePaymentStatus)) {
+          return acc + cur.amount.toNumber();
+        }
+        return acc;
+      }, 0)
+
+      return toDollar(amountPaid)
+    },
+    total_milestones_paid: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Quote id not found');
+      }
+      const milestones = await context.prisma.milestone.findMany({
+        where: {
+          quote_id: parent.id,
+        },
+      });
+
+      const amountPaid = milestones.reduce((acc, cur) => {
+        if ([MilestonePaymentStatus.PAID, MilestonePaymentStatus.PROCESSING].includes(cur.payment_status as MilestonePaymentStatus)) {
+          return acc + cur.amount.toNumber();
+        }
+        return acc;
+      }, 0)
+
+      return toDollar(amountPaid)
+    },
   },
   Query: {
     quote: async (_, args, context) => {
