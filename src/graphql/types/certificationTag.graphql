@@ -12,6 +12,6 @@ type Query {
 
 type Mutation {
   createCertificationTag(
-    full_name: String
+    full_name: String!
   ): CertificationTag
 }
