@@ -18,8 +18,8 @@ const resolvers: Resolvers<Context> = {
         return await context.prisma.certificationTag.findMany({
           where: {
             OR: [
-              { full_name: { contains: search_content } },
-              { short_name: { contains: search_content } },
+              { full_name: { contains: search_content, mode: 'insensitive' } },
+              { short_name: { contains: search_content, mode: 'insensitive' } },
             ]
           }
         });
