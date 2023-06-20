@@ -232,7 +232,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        let newTagIds = [];
+        let newTagIds: string[] = [];
         // Check if certification tag exist
         if (new_certification_tag_names && new_certification_tag_names.length > 0) {
           const existingCertificationTag = await trx.certificationTag.findMany({
@@ -243,33 +243,34 @@ const resolvers: Resolvers<Context> = {
             },
           });
 
+          let verifiedNewCertificationTagNames = new_certification_tag_names;
           if (existingCertificationTag.length > 0) {
-            newTagIds.push(existingCertificationTag.map(c => c.id));
+            newTagIds = newTagIds.concat(existingCertificationTag.map(c => c.id));
 
-            const verifiedNewCertificationTagNames = new_certification_tag_names.filter(
+            verifiedNewCertificationTagNames = new_certification_tag_names.filter(
               n => !existingCertificationTag.map(c => c.full_name).includes(n as string)
             )
+          }
 
-            // Create new tag by user
-            if (verifiedNewCertificationTagNames.length > 0) {
-              await trx.certificationTag.createMany({
-                data: verifiedNewCertificationTagNames.map(name => {
-                  return {
-                    full_name: name as string,
-                  }
-                }),
-              });
-
-              const newCertificationTags = await trx.certificationTag.findMany({
-                where: {
-                  full_name: {
-                    in: verifiedNewCertificationTagNames as string[]
-                  }
+          // Create new tag by user
+          if (verifiedNewCertificationTagNames.length > 0) {
+            await trx.certificationTag.createMany({
+              data: verifiedNewCertificationTagNames.map(name => {
+                return {
+                  full_name: name as string,
                 }
-              });
+              }),
+            });
 
-              newTagIds.push(newCertificationTags.map(c => c.id));
-            }
+            const newCertificationTags = await trx.certificationTag.findMany({
+              where: {
+                full_name: {
+                  in: verifiedNewCertificationTagNames as string[]
+                }
+              }
+            });
+
+            newTagIds = newTagIds.concat(newCertificationTags.map(c => c.id.toString()));
           }
         }
 
@@ -286,7 +287,7 @@ const resolvers: Resolvers<Context> = {
 
         // Connect the new certification tags
         if (certification_tag_ids && certification_tag_ids?.length > 0) {
-          await context.prisma.certificationTagConnection.createMany({
+          await trx.certificationTagConnection.createMany({
             data: [
               ...certification_tag_ids,
               ...newTagIds,
