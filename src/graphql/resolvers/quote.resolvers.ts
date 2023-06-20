@@ -77,8 +77,8 @@ const resolvers: Resolvers<Context> = {
 
       // Customer's payments are processing or paid, but not yet pay to vendor.
       const amountInEscrow = milestones.reduce((acc, cur) => {
-        if (cur.payment_status !== MilestonePaymentStatus.UNPAID
-          && cur.vendor_payment_status !== MilestonePaymentStatus.PAID) {
+        if ([MilestonePaymentStatus.PROCESSING, MilestonePaymentStatus.PAID].includes(cur.payment_status as MilestonePaymentStatus)
+          && [MilestonePaymentStatus.UNPAID, MilestonePaymentStatus.PROCESSING].includes(cur.vendor_payment_status as MilestonePaymentStatus)) {
           return acc + cur.amount.toNumber();
         }
         return acc;
