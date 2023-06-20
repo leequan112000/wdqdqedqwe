@@ -75,8 +75,10 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      // Customer's payments are processing or paid, but not yet pay to vendor.
       const amountInEscrow = milestones.reduce((acc, cur) => {
-        if (cur.payment_status === MilestonePaymentStatus.PROCESSING && cur.vendor_payment_status === MilestonePaymentStatus.UNPAID) {
+        if (cur.payment_status !== MilestonePaymentStatus.UNPAID
+          && cur.vendor_payment_status !== MilestonePaymentStatus.PAID) {
           return acc + cur.amount.toNumber();
         }
         return acc;
@@ -95,7 +97,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const amountPaid = milestones.reduce((acc, cur) => {
-        if ([MilestonePaymentStatus.PAID, MilestonePaymentStatus.PROCESSING].includes(cur.payment_status as MilestonePaymentStatus)) {
+        if (cur.payment_status === MilestonePaymentStatus.PAID) {
           return acc + cur.amount.toNumber();
         }
         return acc;
@@ -114,7 +116,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const amountPaid = milestones.reduce((acc, cur) => {
-        if ([MilestonePaymentStatus.PAID, MilestonePaymentStatus.PROCESSING].includes(cur.payment_status as MilestonePaymentStatus)) {
+        if (cur.vendor_payment_status === MilestonePaymentStatus.PAID) {
           return acc + cur.amount.toNumber();
         }
         return acc;
