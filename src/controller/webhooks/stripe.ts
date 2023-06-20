@@ -323,7 +323,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         if (!payout?.metadata?.milestone_id) {
           throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
         }
-        
+
         const { milestone_id } = payout.metadata;
         const milestone = await prisma.milestone.findFirst({
           where: {
@@ -340,7 +340,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             id: milestone.id,
           },
           data: {
-            status: payout.status === 'paid' ? MilestonePaymentStatus.PAID :  MilestonePaymentStatus.UNPAID,
+            vendor_payment_status: payout.status === 'paid' ? MilestonePaymentStatus.PAID :  MilestonePaymentStatus.UNPAID,
           },
         });
 
