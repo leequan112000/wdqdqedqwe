@@ -32,6 +32,7 @@ model User {
   meetingAttendeeConnections MeetingAttendeeConnection[]
   meetingEvents              MeetingEvent[]
   project_attachments        ProjectAttachment[]
+  CompanyAttachment          CompanyAttachment[]
 
   @@map("users")
 }
@@ -141,6 +142,7 @@ model VendorCompany {
   chats                          Chat[]
   certification_tag_connections  CertificationTagConnection[]
   lab_specialization_connections LabSpecializationConnection[]
+  CompanyAttachment              CompanyAttachment[]
 
   @@map("vendor_companies")
 }
@@ -506,4 +508,21 @@ model Quote {
   status                String
 
   @@map("quotes")
+}
+
+model CompanyAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
+
+  vendor_company_id String?        @db.Uuid
+  vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
+  uploader_id       String?        @db.Uuid
+  uploader          User?          @relation(fields: [uploader_id], references: [id])
+
+  @@map("company_attachments")
 }
