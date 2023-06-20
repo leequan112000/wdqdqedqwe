@@ -127,6 +127,11 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     markMilestoneAsCompleted: async (_, args, context) => {
       const { id, files } = args
+
+      if (!files || files.length === 0) {
+        throw new PublicError('Please make sure you upload a file.')
+      }
+
       await checkAllowVendorOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
@@ -148,53 +153,70 @@ const resolvers: Resolvers<Context> = {
       }
 
       let upload_results: UploadResult[] = [];
+      let uploadedFiles: Array<{
+        key: string;
+        filename: string;
+        filesize: number;
+        contextType: string | undefined;
+      }> = [];
+
+      const result = await Promise.allSettled(files.map(async (f) => {
+        try {
+          const uploadData = await f;
+          const uploadedFile = await storeUpload(
+            uploadData,
+            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
+          );
+
+          uploadedFiles.push(uploadedFile);
+        } catch (error) {
+          throw error;
+        }
+      }));
+
+      if (!result.every(r => r.status === 'fulfilled')) {
+        throw new PublicError('Some files failed to upload please try again.');
+      }
+
       return await context.prisma.$transaction(async (trx) => {
-        if (files) {
-          const result = await Promise.allSettled(files.map(async (f) => {
-            const uploadData = await f;
-            const { filename, key, filesize, contextType } = await storeUpload(
-              uploadData,
-              PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
-            );
-            const attachment = await trx.projectAttachment.create({
-              data: {
-                byte_size: filesize,
-                document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
-                filename,
-                key,
-                project_connection_id: milestone.quote.project_connection_id,
-                milestone_id: milestone.id,
-                content_type: contextType,
-                uploader_id: context.req.user_id,
-              }
-            });
+        if (uploadedFiles.length > 0) {
+          const attachments = await Promise.allSettled(
+            uploadedFiles.map(async ({ filesize, filename, key, contextType }) => {
+              const attachment = await trx.projectAttachment.create({
+                data: {
+                  byte_size: filesize,
+                  document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
+                  filename,
+                  key,
+                  project_connection_id: milestone.quote.project_connection_id,
+                  milestone_id: milestone.id,
+                  content_type: contextType,
+                  uploader_id: context.req.user_id,
+                }
+              });
 
-            return attachment;
-          }));
+              return attachment;
+            })
+          );
 
-          if (!result.every(r => r.status === 'fulfilled')) {
-            throw new PublicError('Some files failed to upload please try again.');
-          }
-
-          upload_results = result.map((r) => {
-            if (r.status === 'fulfilled') {
+          upload_results = attachments.map((f) => {
+            if (f.status === 'fulfilled') {
               return {
                 success: true,
                 data: {
-                  ...r.value,
-                  byte_size: Number(r.value.byte_size),
-                  document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[r.value.document_type],
+                  ...f.value,
+                  byte_size: Number(f.value.byte_size),
+                  document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[f.value.document_type],
                 },
               };
             }
 
             return {
               success: false,
-              error_message: r.reason.message,
+              error_message: f.reason.message,
             }
           });
         }
-
         const updatedMilestone = await trx.milestone.update({
           where: {
             id,
