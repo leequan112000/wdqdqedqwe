@@ -66,6 +66,14 @@ export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.MILESTONE_FILE]: 'milestone_file',
 }
 
+export enum CompanyAttachmentDocumentType {
+  VENDOR_COMPANY_FILE,
+}
+
+export const COMPANY_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE]: 'vendor_company_file',
+}
+
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
 }

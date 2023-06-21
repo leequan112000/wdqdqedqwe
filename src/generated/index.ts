@@ -87,6 +87,27 @@ export type Chat = {
   messages?: Maybe<Array<Maybe<Message>>>;
 };
 
+export type CompanyAttachment = {
+  __typename?: 'CompanyAttachment';
+  byte_size?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
+  filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
+export type CompanyAttachmentUploadResult = {
+  __typename?: 'CompanyAttachmentUploadResult';
+  data?: Maybe<CompanyAttachment>;
+  error_message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
+};
+
 export type CreateMilestoneInput = {
   amount: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
@@ -204,6 +225,7 @@ export type Mutation = {
   payVendor?: Maybe<Milestone>;
   refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
+  removeCompanyAttachment?: Maybe<CompanyAttachment>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
   resendInvitation?: Maybe<User>;
@@ -223,6 +245,7 @@ export type Mutation = {
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
   uploadDocuments?: Maybe<Array<Maybe<UploadResult>>>;
   verifyMilestoneAsCompleted?: Maybe<Milestone>;
@@ -442,6 +465,11 @@ export type MutationRemoveAttachmentArgs = {
 };
 
 
+export type MutationRemoveCompanyAttachmentArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationRemoveMeetingEventArgs = {
   meeting_event_id: Scalars['String'];
 };
@@ -590,6 +618,12 @@ export type MutationUpdateVendorMemberArgs = {
   is_primary_member?: InputMaybe<Scalars['Boolean']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUploadCompanyAttachmentArgs = {
+  file: Scalars['Upload'];
+  vendor_company_id: Scalars['String'];
 };
 
 
@@ -1064,6 +1098,8 @@ export type ResolversTypes = ResolversObject<{
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
   Chat: ResolverTypeWrapper<Chat>;
+  CompanyAttachment: ResolverTypeWrapper<CompanyAttachment>;
+  CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
   CreateMilestoneInput: CreateMilestoneInput;
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
@@ -1109,6 +1145,8 @@ export type ResolversParentTypes = ResolversObject<{
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
   Chat: Chat;
+  CompanyAttachment: CompanyAttachment;
+  CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
   CreateMilestoneInput: CreateMilestoneInput;
   Customer: Customer;
   CustomerConnection: CustomerConnection;
@@ -1212,6 +1250,27 @@ export type CertificationTagConnectionResolvers<ContextType = any, ParentType ex
 export type ChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chat'] = ResolversParentTypes['Chat']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CompanyAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CompanyAttachment'] = ResolversParentTypes['CompanyAttachment']> = ResolversObject<{
+  byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CompanyAttachmentUploadResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CompanyAttachmentUploadResult'] = ResolversParentTypes['CompanyAttachmentUploadResult']> = ResolversObject<{
+  data?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType>;
+  error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1330,6 +1389,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   payVendor?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayVendorArgs, 'id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
+  removeCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveCompanyAttachmentArgs, 'id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
@@ -1349,6 +1409,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
   verifyMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationVerifyMilestoneAsCompletedArgs, 'id'>>;
@@ -1650,6 +1711,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;
+  CompanyAttachment?: CompanyAttachmentResolvers<ContextType>;
+  CompanyAttachmentUploadResult?: CompanyAttachmentUploadResultResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
