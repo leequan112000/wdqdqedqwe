@@ -25,6 +25,11 @@ type Biotech {
   chats: [Chat]
   upload_limit: Float
   upload_used: Float
+  founded_year: String
+  linkedin_url: String
+  twitter_url: String
+  facebook_url: String
+  biotech_extra_info: String
 }
 
 type Query {
@@ -44,6 +49,11 @@ type Mutation {
     zipcode: String
     website: String
     about: String
+    founded_year: String
+    linkedin_url: String
+    twitter_url: String
+    facebook_url: String
+    biotech_extra_info: String
   ): Biotech
   updateBiotech(
     name: String
@@ -57,5 +67,10 @@ type Mutation {
     zipcode: String
     website: String
     about: String
+    founded_year: String
+    linkedin_url: String
+    twitter_url: String
+    facebook_url: String
+    biotech_extra_info: String
   ): Biotech
 }

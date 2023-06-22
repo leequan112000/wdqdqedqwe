@@ -130,6 +130,11 @@ const resolver: Resolvers<Context> = {
             state: args.state,
             country: args.country,
             zipcode: args.zipcode,
+            founded_year: args.founded_year,
+            linkedin_url: args.linkedin_url,
+            twitter_url: args.twitter_url,
+            facebook_url: args.facebook_url,
+            biotech_extra_info: args.biotech_extra_info,
             has_setup_profile: true,
             ...(args.name !== null ? { name: args.name } : {}),
           }
@@ -163,6 +168,11 @@ const resolver: Resolvers<Context> = {
             state: args.state,
             country: args.country,
             zipcode: args.zipcode,
+            founded_year: args.founded_year,
+            linkedin_url: args.linkedin_url,
+            twitter_url: args.twitter_url,
+            facebook_url: args.facebook_url,
+            biotech_extra_info: args.biotech_extra_info,
             ...(args.name !== null ? { name: args.name } : {}),
           }
         })
