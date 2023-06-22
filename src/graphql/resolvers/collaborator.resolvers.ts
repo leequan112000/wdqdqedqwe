@@ -180,11 +180,12 @@ const resolvers: Resolvers<Context> = {
       }
 
       const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-      const resetToken = createResetPasswordToken();
 
       let newUsers;
       if (collaborators && collaborators.length > 0) {
         const collabs = collaborators.map(async (collaborator) => {
+          const resetToken = createResetPasswordToken();
+          
           return await context.prisma.$transaction(async (trx) => {
             // Create new user
             const newUser = await trx.user.create({
