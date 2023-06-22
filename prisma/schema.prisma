@@ -97,6 +97,11 @@ model Biotech {
   account_type                                String?
   legal_name                                  String?   @unique
   upload_limit                                Int       @default(1048576)
+  founded_year                                String?
+  linkedin_url                                String?
+  twitter_url                                 String?
+  facebook_url                                String?
+  biotech_extra_info                              String?
 
   customers        Customer[]
   subscriptions    Subscription[]
