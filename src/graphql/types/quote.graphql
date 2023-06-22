@@ -6,6 +6,11 @@ type Quote {
   project_connection_id: String
   project_connection: ProjectConnection
   status: String
+
+  total_amount: Float
+  total_in_escrow: Float
+  total_payment: Float
+  total_milestones_paid: Float
 }
 
 input CreateMilestoneInput {
