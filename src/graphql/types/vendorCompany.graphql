@@ -33,6 +33,7 @@ type VendorCompany {
   chats: [Chat]
   primary_members: [VendorMember]
   certification_tags: [CertificationTag]
+  lab_specializations: [LabSpecialization]
 }
 
 type Query {
@@ -71,5 +72,9 @@ type Mutation {
   updateVendorCompanyCertificationTags(
     certification_tag_ids: [String]
     new_certification_tag_names: [String]
+  ): VendorCompany
+  updateVendorCompanyLabSpecializations(
+    lab_specialization_ids: [String]
+    new_lab_specialization_names: [String]
   ): VendorCompany
 }

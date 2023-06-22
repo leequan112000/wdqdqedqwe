@@ -3,6 +3,7 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers, StripeAccountData } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { getStripeInstance } from "../../helper/stripe";
+import { VendorCompany } from "@prisma/client";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -67,6 +68,24 @@ const resolvers: Resolvers<Context> = {
       const certificationTags = certificationTagConnections.map(c => c.certification_tag);
 
       return certificationTags;
+    },
+    lab_specializations: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Vendor company id not found.')
+      }
+
+      const labSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
+        where: {
+          vendor_company_id: parent.id,
+        },
+        include: {
+          lab_specialization: true
+        }
+      });
+
+      const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
+
+      return labSpecializations;
     },
   },
   Query: {
@@ -294,6 +313,107 @@ const resolvers: Resolvers<Context> = {
             ].map(id => {
               return {
                 certification_tag_id: id as string,
+                vendor_company_id: vendor_member.vendor_company_id
+              }
+            }),
+          });
+        }
+
+        return await trx.vendorCompany.findFirst({
+          where: {
+            id: vendor_member.vendor_company_id,
+          }
+        })
+      });
+    },
+    updateVendorCompanyLabSpecializations: async (_, args, context) => {
+      return await context.prisma.$transaction(async (trx) => {
+        const vendor_member = await trx.vendorMember.findFirst({
+          where: {
+            user_id: context.req.user_id,
+          },
+          include: {
+            vendor_company: true
+          }
+        });
+
+        if (!vendor_member) {
+          throw new PublicError('Vendor member not found.');
+        }
+
+        const { lab_specialization_ids, new_lab_specialization_names } = args;
+
+        const labSpecializationConnections = await trx.labSpecializationConnection.findMany({
+          where: {
+            vendor_company_id: vendor_member.vendor_company_id,
+          },
+          include: {
+            lab_specialization: true
+          }
+        });
+
+        let newSpecializationIds: string[] = [];
+        // Check if lab specialization exist
+        if (new_lab_specialization_names && new_lab_specialization_names.length > 0) {
+          const existingLabSpecialization = await trx.labSpecialization.findMany({
+            where: {
+              full_name: {
+                in: new_lab_specialization_names as string[]
+              }
+            },
+          });
+
+          let verifiedNewLabSpecializationNames = new_lab_specialization_names;
+          if (existingLabSpecialization.length > 0) {
+            newSpecializationIds = newSpecializationIds.concat(existingLabSpecialization.map(c => c.id));
+
+            verifiedNewLabSpecializationNames = new_lab_specialization_names.filter(
+              n => !existingLabSpecialization.map(c => c.full_name).includes(n as string)
+            )
+          }
+
+          // Create new specialization by user
+          if (verifiedNewLabSpecializationNames.length > 0) {
+            await trx.labSpecialization.createMany({
+              data: verifiedNewLabSpecializationNames.map(name => {
+                return {
+                  full_name: name as string,
+                }
+              }),
+            });
+
+            const newLabSpecializations = await trx.labSpecialization.findMany({
+              where: {
+                full_name: {
+                  in: verifiedNewLabSpecializationNames as string[]
+                }
+              }
+            });
+
+            newSpecializationIds = newSpecializationIds.concat(newLabSpecializations.map(c => c.id.toString()));
+          }
+        }
+
+        const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
+        // Disconnect the existing lab specialization connections
+        await trx.labSpecializationConnection.deleteMany({
+          where: {
+            vendor_company_id: vendor_member.vendor_company_id,
+            lab_specialization_id: {
+              in: labSpecializations.map((c) => c.id)
+            }
+          },
+        });
+
+        // Connect the new lab specializations
+        if (lab_specialization_ids && lab_specialization_ids?.length > 0) {
+          await trx.labSpecializationConnection.createMany({
+            data: [
+              ...lab_specialization_ids,
+              ...newSpecializationIds,
+            ].map(id => {
+              return {
+                lab_specialization_id: id as string,
                 vendor_company_id: vendor_member.vendor_company_id
               }
             }),

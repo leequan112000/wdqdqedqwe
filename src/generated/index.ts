@@ -271,6 +271,7 @@ export type Mutation = {
   updateUserInfo?: Maybe<User>;
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
+  updateVendorCompanyLabSpecializations?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
   uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
@@ -661,6 +662,12 @@ export type MutationUpdateVendorCompanyCertificationTagsArgs = {
 };
 
 
+export type MutationUpdateVendorCompanyLabSpecializationsArgs = {
+  lab_specialization_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  new_lab_specialization_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
 export type MutationUpdateVendorMemberArgs = {
   department?: InputMaybe<Scalars['String']>;
   is_primary_member?: InputMaybe<Scalars['Boolean']>;
@@ -1042,6 +1049,7 @@ export type VendorCompany = {
   founded_year?: Maybe<Scalars['String']>;
   google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  lab_specializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   legal_name?: Maybe<Scalars['String']>;
   linkedin_url?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
@@ -1502,6 +1510,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
+  updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
@@ -1755,6 +1764,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   founded_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lab_specializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
