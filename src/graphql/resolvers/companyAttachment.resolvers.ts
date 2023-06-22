@@ -164,3 +164,5 @@ const resolvers: Resolvers<Context> = {
   },
   },
 };
+
+export default resolvers;
