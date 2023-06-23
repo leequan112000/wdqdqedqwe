@@ -19,7 +19,6 @@ export enum ProjectConnectionVendorStatus {
 }
 
 export enum ProjectConnectionCollaborationStatus {
-  PENDING = 'pending',
   ONGOING = 'on-going',
   COMPLETED = 'completed',
 }
