@@ -19,7 +19,7 @@ type ProjectRequest {
   biotech: Biotech
   customer_id: String
   customer: Customer
-  project_connections: [ProjectConnection]
+  project_connections(filter: ProjectConnectionFilter): [ProjectConnection]
   project_request_comments: [ProjectRequestComment]
 }
 

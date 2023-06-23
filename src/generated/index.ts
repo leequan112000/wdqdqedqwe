@@ -644,6 +644,11 @@ export type ProjectConnection = {
   vendor_status?: Maybe<Scalars['String']>;
 };
 
+export type ProjectConnectionFilter = {
+  collaboration_status?: InputMaybe<Scalars['String']>;
+  vendor_status?: InputMaybe<Scalars['String']>;
+};
+
 export type ProjectRequest = {
   __typename?: 'ProjectRequest';
   biotech?: Maybe<Biotech>;
@@ -668,6 +673,11 @@ export type ProjectRequest = {
   vendor_location_requirement?: Maybe<Scalars['String']>;
   vendor_requirement: Scalars['String'];
   vendor_search_timeframe: Scalars['String'];
+};
+
+
+export type ProjectRequestProject_ConnectionsArgs = {
+  filter?: InputMaybe<ProjectConnectionFilter>;
 };
 
 export type ProjectRequestComment = {
@@ -1026,6 +1036,7 @@ export type ResolversTypes = ResolversObject<{
   Notification: ResolverTypeWrapper<Notification>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
+  ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   Query: ResolverTypeWrapper<{}>;
@@ -1069,6 +1080,7 @@ export type ResolversParentTypes = ResolversObject<{
   Notification: Notification;
   ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
+  ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ProjectRequest;
   ProjectRequestComment: ProjectRequestComment;
   Query: {};
@@ -1352,7 +1364,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   objective_description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   preparation_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_challenge_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
+  project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<ProjectRequestProject_ConnectionsArgs>>;
   project_deadline_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_request_comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestComment']>>>, ParentType, ContextType>;
   project_start_time_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -2,11 +2,12 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectRequestStatus } from "../../helper/constant";
+import { ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
+import { filterByCollaborationStatus } from "../../helper/projectConnection";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -35,13 +36,15 @@ const resolvers: Resolvers<Context> = {
         throw new Error('Missing id.');
       }
 
+      const { filter } = args;
+
       const customer = await context.prisma.customer.findFirst({
         where: {
           user_id: context.req.user_id,
         },
       });
 
-      return await context.prisma.projectConnection.findMany({
+      const projectConnections = await context.prisma.projectConnection.findMany({
         where: {
           project_request_id: parent.id,
           customer_connections: {
@@ -49,12 +52,30 @@ const resolvers: Resolvers<Context> = {
               customer_id: customer?.id
             },
           },
+          vendor_status: filter?.vendor_status
+            ? {
+              equals: filter.vendor_status,
+            }
+            : {},
         },
         orderBy: [
           { final_contract_uploaded_at: { sort: 'desc', nulls: 'last' } },
           { updated_at: 'desc' }
-        ]
-      })
+        ],
+        include: {
+          quotes: {
+            include: {
+              milestones: true,
+            },
+          },
+        },
+      });
+
+      if (filter?.collaboration_status) {
+        return filterByCollaborationStatus(projectConnections, filter.collaboration_status as ProjectConnectionCollaborationStatus);
+      }
+
+      return projectConnections.map(({ quotes, ...pc }) => pc);
     },
     project_request_comments: async (parent, _, context) => {
       if (!parent.id) {
