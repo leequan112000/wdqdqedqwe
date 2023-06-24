@@ -1,3 +1,8 @@
+input ProjectRequestProjectConnectionFilter {
+  vendor_status: String
+  collaboration_status: String
+}
+
 type ProjectRequest {
   id: String
   title: String!
@@ -19,7 +24,7 @@ type ProjectRequest {
   biotech: Biotech
   customer_id: String
   customer: Customer
-  project_connections(filter: ProjectConnectionFilter): [ProjectConnection]
+  project_connections(filter: ProjectRequestProjectConnectionFilter): [ProjectConnection]
   project_request_comments: [ProjectRequestComment]
 }
 

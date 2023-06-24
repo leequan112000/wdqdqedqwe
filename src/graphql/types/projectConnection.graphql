@@ -21,16 +21,16 @@ type ProjectConnection {
   internal_collaborators: [User]
   external_collaborators: [User]
   expired_at: Date
+  vendor_display_status: String
 }
 
 input ProjectConnectionFilter {
-  vendor_status: String
-  collaboration_status: String
+  status: String
 }
 
 type Query {
   projectConnection(id: String!): ProjectConnection
-  projectConnections: [ProjectConnection]
+  projectConnections(filter: ProjectConnectionFilter): [ProjectConnection]
 }
 
 type Mutation {
