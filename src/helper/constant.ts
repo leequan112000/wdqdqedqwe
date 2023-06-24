@@ -18,6 +18,11 @@ export enum ProjectConnectionVendorStatus {
   DECLINED = 'declined',
 }
 
+export enum ProjectConnectionCollaborationStatus {
+  ONGOING = 'on-going',
+  COMPLETED = 'completed',
+}
+
 export enum QuoteStatus {
   DRAFT = 'draft',
   PENDING_DECISION = 'pending_decision',

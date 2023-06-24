@@ -23,6 +23,11 @@ type ProjectConnection {
   expired_at: Date
 }
 
+input ProjectConnectionFilter {
+  vendor_status: String
+  collaboration_status: String
+}
+
 type Query {
   projectConnection(id: String!): ProjectConnection
   projectConnections: [ProjectConnection]
