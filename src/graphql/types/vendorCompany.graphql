@@ -21,11 +21,19 @@ type VendorCompany {
   university_name: String
   vendor_type: String
   principal_investigator_name: String
+  founded_year: String
+  team_size: String
   google_scholar_url: String
+  linkedin_url: String
+  twitter_url: String
+  facebook_url: String
+  cro_extra_info: String
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]
   primary_members: [VendorMember]
+  certification_tags: [CertificationTag]
+  lab_specializations: [LabSpecialization]
 }
 
 type Query {
@@ -38,23 +46,6 @@ type Query {
 }
 
 type Mutation {
-  onboardVendorCompany(
-    name: String
-    legal_name: String
-    address: String
-    address1: String
-    address2: String
-    city: String
-    state: String
-    country: String
-    zipcode: String
-    website: String
-    description: String
-    university_name: String
-    vendor_type: String
-    principal_investigator_name: String
-    google_scholar_url: String
-  ): VendorCompany
   updateVendorCompany(
     name: String
     legal_name: String
@@ -71,5 +62,19 @@ type Mutation {
     vendor_type: String
     principal_investigator_name: String
     google_scholar_url: String
+    founded_year: String
+    team_size: String
+    linkedin_url: String
+    twitter_url: String
+    facebook_url: String
+    cro_extra_info: String
+  ): VendorCompany
+  updateVendorCompanyCertificationTags(
+    certification_tag_ids: [String]
+    new_certification_tag_names: [String]
+  ): VendorCompany
+  updateVendorCompanyLabSpecializations(
+    lab_specialization_ids: [String]
+    new_lab_specialization_names: [String]
   ): VendorCompany
 }

@@ -139,6 +139,96 @@ const resolvers: Resolvers<Context> = {
         return newUser;
       })
     },
+    inviteCollaborators: async (parent, args, context) => {
+      const { collaborators } = args;
+
+      collaborators.map(async (collaborator) => {
+        // Check for existing user
+        const existingUser = await context.prisma.user.findFirst({
+          where: {
+            email: collaborator.email,
+          },
+        });
+
+        if (existingUser) {
+          throw new PublicError(`User ${existingUser.email} already exists!`)
+        }
+      });
+
+      // Get current user data with company id
+      const userId = context.req.user_id;
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+        include: {
+          customer: {
+            select: {
+              biotech_id: true,
+            },
+          },
+          vendor_member: {
+            select: {
+              vendor_company_id: true,
+            },
+          },
+        },
+      });
+
+      if (!currentUser) {
+        throw new InternalError('Current user not found');
+      }
+
+      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+
+      let newUsers;
+      if (collaborators && collaborators.length > 0) {
+        const collabs = collaborators.map(async (collaborator) => {
+          const resetToken = createResetPasswordToken();
+          
+          return await context.prisma.$transaction(async (trx) => {
+            // Create new user
+            const newUser = await trx.user.create({
+              data: {
+                first_name: collaborator.first_name,
+                last_name: collaborator.last_name,
+                email: collaborator.email,
+                reset_password_token: resetToken,
+                reset_password_expiration: new Date(resetTokenExpiration),
+              },
+            });
+
+            // If current user is a biotech member, create customer data for the new user.
+            if (currentUser.customer?.biotech_id) {
+              await trx.customer.create({
+                data: {
+                  user_id: newUser.id,
+                  biotech_id: currentUser.customer.biotech_id,
+                },
+              });
+              sendCustomerInvitationEmail(currentUser, newUser, "");
+            }
+
+            // If current user is a vendor member, create vendor member data for the new user.
+            if (currentUser.vendor_member?.vendor_company_id) {
+              await trx.vendorMember.create({
+                data: {
+                  user_id: newUser.id,
+                  vendor_company_id: currentUser.vendor_member.vendor_company_id,
+                }
+              });
+              sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, "");
+            }
+
+            return newUser;
+          });
+        });
+
+        newUsers = await Promise.all(collabs);
+      }
+
+      return newUsers || [];
+    },
     resendInvitation: async (parent, args, context) => {
       const currentUser = await context.prisma.user.findFirst({
         where: {

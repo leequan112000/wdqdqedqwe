@@ -40,6 +40,7 @@ export type Biotech = {
   address?: Maybe<Scalars['String']>;
   address1?: Maybe<Scalars['String']>;
   address2?: Maybe<Scalars['String']>;
+  biotech_extra_info?: Maybe<Scalars['String']>;
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
@@ -48,15 +49,19 @@ export type Biotech = {
   country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customers?: Maybe<Array<Maybe<Customer>>>;
+  facebook_url?: Maybe<Scalars['String']>;
+  founded_year?: Maybe<Scalars['String']>;
   has_active_subscription?: Maybe<Scalars['Boolean']>;
   has_setup_profile?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   legal_name?: Maybe<Scalars['String']>;
+  linkedin_url?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   number_of_reqs_allowed_without_subscription?: Maybe<Scalars['Int']>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
   stripe_customer_id?: Maybe<Scalars['String']>;
+  twitter_url?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   upload_limit?: Maybe<Scalars['Float']>;
   upload_used?: Maybe<Scalars['Float']>;
@@ -64,10 +69,48 @@ export type Biotech = {
   zipcode?: Maybe<Scalars['String']>;
 };
 
+export type CertificationTag = {
+  __typename?: 'CertificationTag';
+  full_name?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  priority?: Maybe<Scalars['Int']>;
+  short_name?: Maybe<Scalars['String']>;
+};
+
+export type CertificationTagConnection = {
+  __typename?: 'CertificationTagConnection';
+  certification_tag?: Maybe<CertificationTag>;
+  certification_tag_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
 export type Chat = {
   __typename?: 'Chat';
   id?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<Message>>>;
+};
+
+export type CompanyAttachment = {
+  __typename?: 'CompanyAttachment';
+  byte_size?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
+  filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
+export type CompanyAttachmentUploadResult = {
+  __typename?: 'CompanyAttachmentUploadResult';
+  data?: Maybe<CompanyAttachment>;
+  error_message?: Maybe<Scalars['String']>;
+  success: Scalars['Boolean'];
 };
 
 export type CreateMilestoneInput = {
@@ -102,6 +145,29 @@ export type CustomerConnection = {
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type InviteCollaboratorInput = {
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+};
+
+export type LabSpecialization = {
+  __typename?: 'LabSpecialization';
+  full_name?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  priority?: Maybe<Scalars['Int']>;
+  short_name?: Maybe<Scalars['String']>;
+};
+
+export type LabSpecializationConnection = {
+  __typename?: 'LabSpecializationConnection';
+  id?: Maybe<Scalars['String']>;
+  lab_specialization?: Maybe<LabSpecializationConnection>;
+  lab_specialization_id?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
 };
 
 export type MarkMilestoneCompleteResponse = {
@@ -158,8 +224,12 @@ export type Mutation = {
   addProjectCollaborator?: Maybe<User>;
   createAdmin?: Maybe<Admin>;
   createCda?: Maybe<Scalars['Boolean']>;
+  createCertificationTag?: Maybe<CertificationTag>;
+  createCertificationTagConnection?: Maybe<CertificationTagConnection>;
   createChat?: Maybe<Chat>;
   createCustomer: Customer;
+  createLabSpecialization?: Maybe<LabSpecialization>;
+  createLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
   createMeetingEvent?: Maybe<MeetingEvent>;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
@@ -168,8 +238,11 @@ export type Mutation = {
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
+  deleteCertificationTagConnection?: Maybe<CertificationTagConnection>;
+  deleteLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
+  inviteCollaborators?: Maybe<Array<Maybe<User>>>;
   /** @deprecated Use `inviteCollaborator`. */
   inviteCustomer?: Maybe<Customer>;
   inviteProjectCollaboratorViaEmail?: Maybe<User>;
@@ -181,10 +254,10 @@ export type Mutation = {
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
-  onboardVendorCompany?: Maybe<VendorCompany>;
   payVendor?: Maybe<Milestone>;
   refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
+  removeCompanyAttachment?: Maybe<CompanyAttachment>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
   resendInvitation?: Maybe<User>;
@@ -202,7 +275,10 @@ export type Mutation = {
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
   updateVendorCompany?: Maybe<VendorCompany>;
+  updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
+  updateVendorCompanyLabSpecializations?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
   uploadDocuments?: Maybe<Array<Maybe<UploadResult>>>;
   verifyMilestoneAsCompleted?: Maybe<Milestone>;
@@ -234,6 +310,17 @@ export type MutationCreateAdminArgs = {
 };
 
 
+export type MutationCreateCertificationTagArgs = {
+  full_name: Scalars['String'];
+};
+
+
+export type MutationCreateCertificationTagConnectionArgs = {
+  certification_tag_id?: InputMaybe<Scalars['String']>;
+  vendor_company_id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationCreateChatArgs = {
   project_connection_id: Scalars['String'];
 };
@@ -244,6 +331,17 @@ export type MutationCreateCustomerArgs = {
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
   user_id: Scalars['String'];
+};
+
+
+export type MutationCreateLabSpecializationArgs = {
+  full_name: Scalars['String'];
+};
+
+
+export type MutationCreateLabSpecializationConnectionArgs = {
+  lab_specialization_id?: InputMaybe<Scalars['String']>;
+  vendor_company_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -313,6 +411,16 @@ export type MutationDeleteAdminArgs = {
 };
 
 
+export type MutationDeleteCertificationTagConnectionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteLabSpecializationConnectionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationForgotPasswordArgs = {
   email?: InputMaybe<Scalars['String']>;
 };
@@ -323,6 +431,11 @@ export type MutationInviteCollaboratorArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+};
+
+
+export type MutationInviteCollaboratorsArgs = {
+  collaborators: Array<InviteCollaboratorInput>;
 };
 
 
@@ -386,30 +499,16 @@ export type MutationOnboardBiotechArgs = {
   address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
+  biotech_extra_info?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
+  facebook_url?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
+  linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
-  website?: InputMaybe<Scalars['String']>;
-  zipcode?: InputMaybe<Scalars['String']>;
-};
-
-
-export type MutationOnboardVendorCompanyArgs = {
-  address?: InputMaybe<Scalars['String']>;
-  address1?: InputMaybe<Scalars['String']>;
-  address2?: InputMaybe<Scalars['String']>;
-  city?: InputMaybe<Scalars['String']>;
-  country?: InputMaybe<Scalars['String']>;
-  description?: InputMaybe<Scalars['String']>;
-  google_scholar_url?: InputMaybe<Scalars['String']>;
-  legal_name?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  principal_investigator_name?: InputMaybe<Scalars['String']>;
-  state?: InputMaybe<Scalars['String']>;
-  university_name?: InputMaybe<Scalars['String']>;
-  vendor_type?: InputMaybe<Scalars['String']>;
+  twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
 };
@@ -421,6 +520,11 @@ export type MutationPayVendorArgs = {
 
 
 export type MutationRemoveAttachmentArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationRemoveCompanyAttachmentArgs = {
   id: Scalars['String'];
 };
 
@@ -494,11 +598,16 @@ export type MutationUpdateBiotechArgs = {
   address?: InputMaybe<Scalars['String']>;
   address1?: InputMaybe<Scalars['String']>;
   address2?: InputMaybe<Scalars['String']>;
+  biotech_extra_info?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
+  facebook_url?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
+  linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
 };
@@ -543,16 +652,34 @@ export type MutationUpdateVendorCompanyArgs = {
   address2?: InputMaybe<Scalars['String']>;
   city?: InputMaybe<Scalars['String']>;
   country?: InputMaybe<Scalars['String']>;
+  cro_extra_info?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  facebook_url?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['String']>;
   google_scholar_url?: InputMaybe<Scalars['String']>;
   legal_name?: InputMaybe<Scalars['String']>;
+  linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
+  twitter_url?: InputMaybe<Scalars['String']>;
   university_name?: InputMaybe<Scalars['String']>;
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateVendorCompanyCertificationTagsArgs = {
+  certification_tag_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  new_certification_tag_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationUpdateVendorCompanyLabSpecializationsArgs = {
+  lab_specialization_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  new_lab_specialization_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -561,6 +688,12 @@ export type MutationUpdateVendorMemberArgs = {
   is_primary_member?: InputMaybe<Scalars['Boolean']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUploadCompanyAttachmentArgs = {
+  file: Scalars['Upload'];
+  vendor_company_id: Scalars['String'];
 };
 
 
@@ -684,8 +817,12 @@ export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
   biotech?: Maybe<Biotech>;
+  certification_tag_connection?: Maybe<CertificationTagConnection>;
+  certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  lab_specialization_connection?: Maybe<LabSpecializationConnection>;
+  lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   milestone?: Maybe<Milestone>;
@@ -696,13 +833,37 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
+  searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
+  searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
+  suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
+  suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryCertification_Tag_ConnectionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryCertification_Tag_ConnectionsArgs = {
+  vendor_company_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryLab_Specialization_ConnectionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryLab_Specialization_ConnectionsArgs = {
+  vendor_company_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -751,6 +912,16 @@ export type QueryProjectRequestsArgs = {
 export type QueryQuoteArgs = {
   id?: InputMaybe<Scalars['String']>;
   project_connection_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QuerySearchCertificationTagsArgs = {
+  search_content?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QuerySearchLabSpecializationsArgs = {
+  search_content?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -886,14 +1057,20 @@ export type VendorCompany = {
   cda_pandadoc_file_id?: Maybe<Scalars['String']>;
   cda_pandadoc_signer?: Maybe<Scalars['String']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
+  certification_tags?: Maybe<Array<Maybe<CertificationTag>>>;
   chats?: Maybe<Array<Maybe<Chat>>>;
   city?: Maybe<Scalars['String']>;
   country?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
+  cro_extra_info?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
+  facebook_url?: Maybe<Scalars['String']>;
+  founded_year?: Maybe<Scalars['String']>;
   google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  lab_specializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   legal_name?: Maybe<Scalars['String']>;
+  linkedin_url?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   primary_members?: Maybe<Array<Maybe<VendorMember>>>;
   principal_investigator_name?: Maybe<Scalars['String']>;
@@ -901,6 +1078,8 @@ export type VendorCompany = {
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
   stripe_account?: Maybe<Scalars['String']>;
+  team_size?: Maybe<Scalars['String']>;
+  twitter_url?: Maybe<Scalars['String']>;
   university_name?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_members?: Maybe<Array<Maybe<VendorMember>>>;
@@ -1010,14 +1189,21 @@ export type ResolversTypes = ResolversObject<{
   AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Biotech: ResolverTypeWrapper<Biotech>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CertificationTag: ResolverTypeWrapper<CertificationTag>;
+  CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
   Chat: ResolverTypeWrapper<Chat>;
+  CompanyAttachment: ResolverTypeWrapper<CompanyAttachment>;
+  CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
   CreateMilestoneInput: CreateMilestoneInput;
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  InviteCollaboratorInput: InviteCollaboratorInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
+  LabSpecialization: ResolverTypeWrapper<LabSpecialization>;
+  LabSpecializationConnection: ResolverTypeWrapper<LabSpecializationConnection>;
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
@@ -1053,14 +1239,21 @@ export type ResolversParentTypes = ResolversObject<{
   AuthResponse: AuthResponse;
   Biotech: Biotech;
   Boolean: Scalars['Boolean'];
+  CertificationTag: CertificationTag;
+  CertificationTagConnection: CertificationTagConnection;
   Chat: Chat;
+  CompanyAttachment: CompanyAttachment;
+  CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
   CreateMilestoneInput: CreateMilestoneInput;
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
   Float: Scalars['Float'];
   Int: Scalars['Int'];
+  InviteCollaboratorInput: InviteCollaboratorInput;
   JSON: Scalars['JSON'];
+  LabSpecialization: LabSpecialization;
+  LabSpecializationConnection: LabSpecializationConnection;
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   Message: Message;
@@ -1112,6 +1305,7 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  biotech_extra_info?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -1120,15 +1314,19 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Customer']>>>, ParentType, ContextType>;
+  facebook_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  founded_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   has_active_subscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_setup_profile?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   number_of_reqs_allowed_without_subscription?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  twitter_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   upload_limit?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   upload_used?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -1137,9 +1335,47 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CertificationTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertificationTag'] = ResolversParentTypes['CertificationTag']> = ResolversObject<{
+  full_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  priority?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  short_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CertificationTagConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertificationTagConnection'] = ResolversParentTypes['CertificationTagConnection']> = ResolversObject<{
+  certification_tag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType>;
+  certification_tag_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chat'] = ResolversParentTypes['Chat']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CompanyAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CompanyAttachment'] = ResolversParentTypes['CompanyAttachment']> = ResolversObject<{
+  byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CompanyAttachmentUploadResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CompanyAttachmentUploadResult'] = ResolversParentTypes['CompanyAttachmentUploadResult']> = ResolversObject<{
+  data?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType>;
+  error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1177,6 +1413,23 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
   name: 'JSON';
 }
+
+export type LabSpecializationResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabSpecialization'] = ResolversParentTypes['LabSpecialization']> = ResolversObject<{
+  full_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  priority?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  short_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type LabSpecializationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabSpecializationConnection'] = ResolversParentTypes['LabSpecializationConnection']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lab_specialization?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType>;
+  lab_specialization_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
 export type MarkMilestoneCompleteResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkMilestoneCompleteResponse'] = ResolversParentTypes['MarkMilestoneCompleteResponse']> = ResolversObject<{
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
@@ -1231,8 +1484,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
+  createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<MutationCreateCertificationTagConnectionArgs>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
+  createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
+  createLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<MutationCreateLabSpecializationConnectionArgs>>;
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
@@ -1241,8 +1498,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
+  deleteCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<MutationDeleteCertificationTagConnectionArgs>>;
+  deleteLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<MutationDeleteLabSpecializationConnectionArgs>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
+  inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteProjectCollaboratorViaEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteProjectCollaboratorViaEmailArgs, 'email' | 'first_name' | 'last_name' | 'project_connection_id'>>;
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
@@ -1252,10 +1512,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
-  onboardVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationOnboardVendorCompanyArgs>>;
   payVendor?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayVendorArgs, 'id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
+  removeCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveCompanyAttachmentArgs, 'id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
@@ -1273,7 +1533,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
+  updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
+  updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
   verifyMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationVerifyMilestoneAsCompletedArgs, 'id'>>;
@@ -1378,8 +1641,12 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  certification_tag_connection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionArgs>>;
+  certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
+  lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
@@ -1390,7 +1657,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
+  searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
+  searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
+  suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
@@ -1510,14 +1781,20 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_pandadoc_signer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  certification_tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   chats?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  cro_extra_info?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  facebook_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  founded_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lab_specializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   primary_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   principal_investigator_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1525,6 +1802,8 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_account?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  team_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  twitter_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   university_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
@@ -1565,11 +1844,17 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Admin?: AdminResolvers<ContextType>;
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
+  CertificationTag?: CertificationTagResolvers<ContextType>;
+  CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;
+  CompanyAttachment?: CompanyAttachmentResolvers<ContextType>;
+  CompanyAttachmentUploadResult?: CompanyAttachmentUploadResultResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
+  LabSpecialization?: LabSpecializationResolvers<ContextType>;
+  LabSpecializationConnection?: LabSpecializationConnectionResolvers<ContextType>;
   MarkMilestoneCompleteResponse?: MarkMilestoneCompleteResponseResolvers<ContextType>;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;

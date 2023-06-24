@@ -32,6 +32,7 @@ model User {
   meetingAttendeeConnections MeetingAttendeeConnection[]
   meetingEvents              MeetingEvent[]
   project_attachments        ProjectAttachment[]
+  CompanyAttachment          CompanyAttachment[]
 
   @@map("users")
 }
@@ -96,6 +97,11 @@ model Biotech {
   account_type                                String?
   legal_name                                  String?   @unique
   upload_limit                                Int       @default(1048576)
+  founded_year                                String?
+  linkedin_url                                String?
+  twitter_url                                 String?
+  facebook_url                                String?
+  biotech_extra_info                              String?
 
   customers        Customer[]
   subscriptions    Subscription[]
@@ -128,11 +134,20 @@ model VendorCompany {
   vendor_type                 String?
   principal_investigator_name String?
   google_scholar_url          String?
+  founded_year                String?
+  team_size                   String?
+  linkedin_url                String?
+  twitter_url                 String?
+  facebook_url                String?
+  cro_extra_info              String?
   stripe_account              String?
 
-  vendor_members      VendorMember[]
-  project_connections ProjectConnection[]
-  chats               Chat[]
+  vendor_members                 VendorMember[]
+  project_connections            ProjectConnection[]
+  chats                          Chat[]
+  certification_tag_connections  CertificationTagConnection[]
+  lab_specialization_connections LabSpecializationConnection[]
+  CompanyAttachment              CompanyAttachment[]
 
   @@map("vendor_companies")
 }
@@ -414,6 +429,58 @@ model InterestedCro {
   @@map("interested_cros")
 }
 
+model CertificationTag {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name  String   @unique
+  short_name String?
+  priority   Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  certification_tag_connections CertificationTagConnection[]
+
+  @@map("certification_tags")
+}
+
+model CertificationTagConnection {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_company_id    String           @db.Uuid
+  vendor_company       VendorCompany    @relation(fields: [vendor_company_id], references: [id])
+  certification_tag_id String           @db.Uuid
+  certification_tag    CertificationTag @relation(fields: [certification_tag_id], references: [id])
+  created_at           DateTime         @default(now())
+  updated_at           DateTime         @updatedAt
+
+  @@unique([vendor_company_id, certification_tag_id])
+  @@map("certification_tag_connections")
+}
+
+model LabSpecialization {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name  String   @unique
+  short_name String?
+  priority   Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  lab_specializations_connections LabSpecializationConnection[]
+
+  @@map("lab_specializations")
+}
+
+model LabSpecializationConnection {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_company_id     String            @db.Uuid
+  vendor_company        VendorCompany     @relation(fields: [vendor_company_id], references: [id])
+  lab_specialization_id String            @db.Uuid
+  lab_specialization    LabSpecialization @relation(fields: [lab_specialization_id], references: [id])
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
+
+  @@unique([vendor_company_id, lab_specialization_id])
+  @@map("lab_specialization_connections")
+}
+
 model Milestone {
   id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   short_id              String              @unique
@@ -446,4 +513,21 @@ model Quote {
   status                String
 
   @@map("quotes")
+}
+
+model CompanyAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
+
+  vendor_company_id String?        @db.Uuid
+  vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
+  uploader_id       String?        @db.Uuid
+  uploader          User?          @relation(fields: [uploader_id], references: [id])
+
+  @@map("company_attachments")
 }
