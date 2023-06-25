@@ -773,13 +773,13 @@ export type ProjectConnection = {
   updated_at?: Maybe<Scalars['Date']>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
+  vendor_display_status?: Maybe<Scalars['String']>;
   vendor_member_connections?: Maybe<Array<Maybe<VendorMemberConnection>>>;
   vendor_status?: Maybe<Scalars['String']>;
 };
 
 export type ProjectConnectionFilter = {
-  collaboration_status?: InputMaybe<Scalars['String']>;
-  vendor_status?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['String']>;
 };
 
 export type ProjectRequest = {
@@ -810,7 +810,7 @@ export type ProjectRequest = {
 
 
 export type ProjectRequestProject_ConnectionsArgs = {
-  filter?: InputMaybe<ProjectConnectionFilter>;
+  filter?: InputMaybe<ProjectRequestProjectConnectionFilter>;
 };
 
 export type ProjectRequestComment = {
@@ -821,6 +821,11 @@ export type ProjectRequestComment = {
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['String']>;
+};
+
+export type ProjectRequestProjectConnectionFilter = {
+  collaboration_status?: InputMaybe<Scalars['String']>;
+  vendor_status?: InputMaybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -906,6 +911,11 @@ export type QueryNotificationsArgs = {
 
 export type QueryProjectConnectionArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryProjectConnectionsArgs = {
+  filter?: InputMaybe<ProjectConnectionFilter>;
 };
 
 
@@ -1225,6 +1235,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
+  ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: ResolverTypeWrapper<{}>;
   Quote: ResolverTypeWrapper<Quote>;
   String: ResolverTypeWrapper<Scalars['String']>;
@@ -1276,6 +1287,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ProjectRequest;
   ProjectRequestComment: ProjectRequestComment;
+  ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: {};
   Quote: Quote;
   String: Scalars['String'];
@@ -1609,6 +1621,7 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_display_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_member_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMemberConnection']>>>, ParentType, ContextType>;
   vendor_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1665,7 +1678,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
-  projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
+  projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;

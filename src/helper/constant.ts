@@ -23,6 +23,23 @@ export enum ProjectConnectionCollaborationStatus {
   COMPLETED = 'completed',
 }
 
+export enum ProjectConnectionVendorExperimentStatus {
+  UNOPEN = 'unopen',
+  PENDING = 'pending',
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired',
+}
+
+export enum ProjectConnectionVendorDisplayStatus {
+  PENDING_DECISION = 'pending-decision',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired',
+  WITHDRAWN = 'withdrawn',
+}
+
 export enum QuoteStatus {
   DRAFT = 'draft',
   PENDING_DECISION = 'pending_decision',

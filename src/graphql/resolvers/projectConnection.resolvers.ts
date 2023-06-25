@@ -14,8 +14,9 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
+import { filterByCollaborationStatus } from "../../helper/projectConnection";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -467,6 +468,51 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('Current user is not customer nor vendor member');
+    },
+    vendor_display_status: async (parent, args, context) => {
+      const { vendor_status, project_request: parentProjectRequest, project_request_id } = parent;
+      const now = new Date();
+
+      if (!parent.id) throw new InternalError('Missing project connection id');
+
+      if (parent.vendor_display_status) {
+        return parent.vendor_display_status;
+      }
+
+      if (!project_request_id) throw new InternalError("Mssing project request id")
+
+      const projectRequest = parentProjectRequest
+        || await context.prisma.projectRequest.findFirst({
+          where: {
+            id: project_request_id,
+          },
+        });
+
+      if (!projectRequest) throw new InternalError('Project request not found')
+
+      if (projectRequest.status === ProjectRequestStatus.WITHDRAWN) {
+        return ProjectConnectionVendorDisplayStatus.WITHDRAWN;
+      }
+
+      if (
+        vendor_status === ProjectConnectionVendorStatus.DECLINED
+      ) {
+        return ProjectConnectionVendorDisplayStatus.REJECTED;
+      }
+
+      if (vendor_status === ProjectConnectionVendorStatus.PENDING) {
+        if (now >= parent.expired_at) {
+          return ProjectConnectionVendorDisplayStatus.EXPIRED;
+        }
+
+        return ProjectConnectionVendorDisplayStatus.PENDING_DECISION;
+      }
+
+      if (vendor_status === ProjectConnectionVendorStatus.ACCEPTED) {
+        return ProjectConnectionVendorDisplayStatus.ACCEPTED;
+      }
+
+      return null
     }
   },
   Query: {
@@ -480,6 +526,7 @@ const resolvers: Resolvers<Context> = {
       return projectConnection;
     },
     projectConnections: async (parent, args, context) => {
+      const { filter } = args;
       // find vendor member id
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
@@ -495,11 +542,90 @@ const resolvers: Resolvers<Context> = {
           vendor_member_id: vendorMember.id,
         },
         include: {
-          project_connection: true,
-        }
+          project_connection: {
+            include: {
+              quotes: {
+                include: {
+                  milestones: true,
+                },
+              },
+              project_request: true,
+            },
+          },
+        },
       });
-      // find project connections, return project connections
-      return vendorMemberConnections.map((vmc) => vmc.project_connection);
+
+      const now = new Date();
+      const projectConnections = vendorMemberConnections.map((vmc) => vmc.project_connection);
+      let result = [...projectConnections];
+
+      if (filter?.status) {
+        // not expired project connections
+        const validProjectConnections = projectConnections.filter((pc) => (pc?.expired_at && now < pc.expired_at));
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.UNOPEN) {
+          const notiQueryTasks = validProjectConnections.map(async (pc) => {
+            const notifications = await context.prisma.notification.findMany({
+              where: {
+                params: {
+                  path: ["project_connection_id"],
+                  equals: pc.id,
+                },
+                read_at: null,
+                notification_type: NotificationType.ADMIN_INVITE_NOTIFICATION,
+              },
+            });
+            return {
+              ...pc,
+              notifications,
+            };
+          });
+          const projectConnectionWithNotifications = await Promise.all(notiQueryTasks);
+
+          result = projectConnectionWithNotifications.filter((pc) => pc.notifications.length > 0)
+        }
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.PENDING) {
+          result = validProjectConnections.filter((pc) => pc.vendor_status === ProjectConnectionVendorStatus.PENDING);
+        }
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.ONGOING) {
+          result = filterByCollaborationStatus(projectConnections, ProjectConnectionCollaborationStatus.ONGOING)
+            .filter((pc) => pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED && pc.project_request.status !== ProjectRequestStatus.WITHDRAWN);
+        }
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.COMPLETED) {
+          result = filterByCollaborationStatus(projectConnections, ProjectConnectionCollaborationStatus.COMPLETED)
+        }
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.REJECTED) {
+          result = projectConnections.filter((pc) => pc.vendor_status === ProjectConnectionVendorStatus.DECLINED)
+        }
+
+        if (filter.status === ProjectConnectionVendorExperimentStatus.EXPIRED) {
+          result = projectConnections.filter((pc) =>
+            pc.vendor_status === ProjectConnectionVendorStatus.PENDING
+            && (pc?.expired_at && now >= pc.expired_at)
+          );
+        }
+      }
+
+
+      return result.map((pc) => ({
+        ...pc,
+        project_request: {
+          ...pc.project_request,
+          max_budget: pc.project_request.max_budget?.toNumber() || 0,
+        },
+        quotes: pc.quotes.map((q) => ({
+          ...q,
+          amount: q.amount.toNumber(),
+          milestones: q.milestones.map((m) => ({
+            ...m,
+            amount: m.amount.toNumber(),
+          }))
+        })),
+      }));
     }
   },
   Mutation: {
