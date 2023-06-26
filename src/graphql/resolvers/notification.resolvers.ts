@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
+import { NotificationType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Notification: {
@@ -32,21 +33,25 @@ const resolvers: Resolvers<Context> = {
       });
 
       switch (parent.notification_type) {
-        case 'AcceptRequestNotification':
+        case NotificationType.ACCEPT_REQUEST_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
-        case 'AdminInviteNotification':
+        case NotificationType.ADMIN_INVITE_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
-        case 'CollaboratedNotification':
+        case NotificationType.COLLABORATED_NOTIFICATION:
           if (project_connection?.vendor_status !== 'accepted') {
             return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
           }
           return `/app/project-connection/${parent.params.project_connection_id}`;
-        case 'FileUploadNotification':
+        case NotificationType.FILE_UPLOAD_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
-        case 'FinalContractUploadNotification':
+        case NotificationType.FINAL_CONTRACT_UPLOAD_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
-        case 'MessageNotification':
+        case NotificationType.MESSAGE_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
+        case NotificationType.QUOTATION_NOTIFICATION:
+        case NotificationType.MILESTONE_NOTIFICATION:
+        case NotificationType.MILESTONE_PAYMENT_FAILED_NOTIFICATION:
+          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`
         default:
           return `/app`;
       }
