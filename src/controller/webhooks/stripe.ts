@@ -7,7 +7,7 @@ import Sentry from '../../sentry';
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, SubscriptionStatus } from '../../helper/constant';
 import { getStripeInstance } from '../../helper/stripe';
 
-import { createSendUserMilestoneNoticeJob } from '../../queues/email.queues';
+import { createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
 
 /*
  *   Stripe webhook endpoint
@@ -242,6 +242,8 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                   payment_status: MilestonePaymentStatus.UNPAID,
                 }
               });
+
+              createSendUserMilestonePaymentFailedNoticeJob({ milestoneId: milestone_id });
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
               break;

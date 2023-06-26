@@ -12,8 +12,8 @@ import createAdminInviteNotification from "../notification/adminInviteNotificati
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
 import createFileUploadNotification from "../notification/fileUploadNotification";
 import createMessageNotification from "../notification/messageNotification";
-import createMilestoneNotification from "../notification/milestoneNotification";
 import createQuotationNotification from "../notification/quoteNotification";
+import { createMilestoneNotification, createMilestonePaymentFailedNotification } from "../notification/milestoneNotification";
 import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuotationNoticeEmail } from "../mailer/quote";
@@ -373,6 +373,57 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
+      case EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL: {
+        const { milestoneId } = data;
+        const milestone = await prisma.milestone.findFirstOrThrow({
+          where: {
+            id: milestoneId,
+          },
+          include: {
+            quote: {
+              include: {
+                project_connection: {
+                  include: {
+                    customer_connections: true,
+                    project_request: true,
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const receivers = await prisma.user.findMany({
+          where: {
+            customer: {
+              id: {
+                in: milestone.quote.project_connection.customer_connections.map(cc => cc.customer_id),
+              }
+            }
+          }
+        });
+
+        const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendMilestoneNoticeEmail(
+              {
+                sender_name: "Cromatic Admin",
+                project_title: milestone.quote.project_connection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                milestone_update_content: milestoneUpdateContent,
+                milestone_url: `${app_env.APP_URL}/app/project-connection/${milestone.quote.project_connection_id}/quote/${milestone.quote.id}`,
+              },
+              receiver.email,
+            );
+
+            await createMilestonePaymentFailedNotification(milestoneUpdateContent, receiver.id, milestone.quote.project_connection_id);
+          })
+        );
+
+        done();
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -420,6 +471,12 @@ export const createSendUserMilestoneNoticeJob = (data: {
   milestoneEventType: MilestoneEventType;
 }) => {
   emailQueue.add({ type: EmailType.USER_MILESTONE_NOTICE_EMAIL, data })
+}
+
+export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
+  milestoneId: string;
+}) => {
+  emailQueue.add({ type: EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL, data })
 }
 
 export const createSendAdminProjectInvitationJob = (data: {

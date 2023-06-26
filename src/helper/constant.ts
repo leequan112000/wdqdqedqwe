@@ -76,6 +76,7 @@ export enum NotificationType {
   MESSAGE_NOTIFICATION = 'MessageNotification',
   QUOTATION_NOTIFICATION = 'QuotationNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
+  MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
 }
 
 export enum QuotationNotificationActionContent {
@@ -132,4 +133,5 @@ export enum EmailType {
   USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
   USER_QUOTATION_NOTICE_EMAIL = 'user:quotation-notice-email',
   USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
+  USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
 }
