@@ -2,8 +2,9 @@ import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
-import { MilestonePaymentStatus, MilestoneStatus, QuoteStatus } from "../../helper/constant";
 import { nanoid } from "nanoid";
+import { MilestonePaymentStatus, MilestoneStatus, QuotationNotificationActionContent, QuoteStatus } from "../../helper/constant";
+import { createSendUserQuotationNoticeJob } from "../../queues/email.queues";
 
 function generateQuoteShortId() {
   return `qt_${nanoid(10)}`;
@@ -147,7 +148,7 @@ const resolvers: Resolvers<Context> = {
     createQuote: async (_, args, context) => {
       const { amount, project_connection_id, milestones, send_to_biotech = false } = args
 
-      return await context.prisma.$transaction(async (trx) => {
+      const newQuote = await context.prisma.$transaction(async (trx) => {
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
@@ -187,12 +188,23 @@ const resolvers: Resolvers<Context> = {
             amount: toDollar(m.amount.toNumber()),
           })),
         };
-      })
+      });
+
+      if (send_to_biotech) {
+        createSendUserQuotationNoticeJob({
+          projectConnectionId: project_connection_id,
+          senderUserId: context.req.user_id!,
+          quoteId: newQuote.id,
+          action: QuotationNotificationActionContent.SUBMITTED,
+        });
+      }
+
+      return newQuote;
     },
     updateQuote: async (_, args, context) => {
       const { id, amount, milestones, send_to_biotech } = args;
 
-      return await context.prisma.$transaction(async (trx) => {
+      const updatedQuote = await context.prisma.$transaction(async (trx) => {
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
@@ -285,7 +297,18 @@ const resolvers: Resolvers<Context> = {
             amount: toDollar(m.amount.toNumber()),
           })),
         };
-      })
+      });
+
+      if (send_to_biotech) {
+        createSendUserQuotationNoticeJob({
+          projectConnectionId: updatedQuote.project_connection_id!,
+          senderUserId: context.req.user_id!,
+          quoteId: id,
+          action: QuotationNotificationActionContent.SUBMITTED,
+        });
+      }
+
+      return updatedQuote;
     },
     acceptQuote: async (_, args, context) => {
       const { id } = args
@@ -296,6 +319,13 @@ const resolvers: Resolvers<Context> = {
         data: {
           status: QuoteStatus.ACCEPTED,
         },
+      });
+
+      createSendUserQuotationNoticeJob({
+        projectConnectionId: updatedQuote.project_connection_id!,
+        senderUserId: context.req.user_id!,
+        quoteId: id,
+        action: QuotationNotificationActionContent.ACCEPTED,
       });
 
       return {
@@ -312,6 +342,13 @@ const resolvers: Resolvers<Context> = {
         data: {
           status: QuoteStatus.DECLINED,
         },
+      });
+
+      createSendUserQuotationNoticeJob({
+        projectConnectionId: updatedQuote.project_connection_id!,
+        senderUserId: context.req.user_id!,
+        quoteId: id,
+        action: QuotationNotificationActionContent.DECLINED,
       });
 
       return {
