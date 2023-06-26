@@ -697,7 +697,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Project connection not found');
       }
       if (projectConnection.expired_at && currentDate >= projectConnection.expired_at) {
-        throw new PublicError('You can no longer reject this request');
+        throw new PublicError('You can no longer decline this request');
       }
       const updatedProjectConnection = await context.prisma.projectConnection.update({
         where: {
