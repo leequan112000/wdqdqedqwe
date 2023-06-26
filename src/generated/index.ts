@@ -61,6 +61,7 @@ export type Biotech = {
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
   stripe_customer_id?: Maybe<Scalars['String']>;
+  team_size?: Maybe<Scalars['String']>;
   twitter_url?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
   upload_limit?: Maybe<Scalars['Float']>;
@@ -508,6 +509,7 @@ export type MutationOnboardBiotechArgs = {
   linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
   twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
@@ -607,6 +609,7 @@ export type MutationUpdateBiotechArgs = {
   linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
   twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
@@ -1350,6 +1353,7 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  team_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   twitter_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   upload_limit?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
