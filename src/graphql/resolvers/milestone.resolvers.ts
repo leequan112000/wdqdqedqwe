@@ -129,11 +129,6 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     markMilestoneAsCompleted: async (_, args, context) => {
       const { id, files } = args
-
-      if (!files || files.length === 0) {
-        throw new PublicError('Please make sure you upload a file.')
-      }
-
       await checkAllowVendorOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
@@ -162,22 +157,25 @@ const resolvers: Resolvers<Context> = {
         contextType: string | undefined;
       }> = [];
 
-      const result = await Promise.allSettled(files.map(async (f) => {
-        try {
-          const uploadData = await f;
-          const uploadedFile = await storeUpload(
-            uploadData,
-            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
-          );
 
-          uploadedFiles.push(uploadedFile);
-        } catch (error) {
-          throw error;
+      if (files && files.length > 0) {
+        const result = await Promise.allSettled(files.map(async (f) => {
+          try {
+            const uploadData = await f;
+            const uploadedFile = await storeUpload(
+              uploadData,
+              PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
+            );
+  
+            uploadedFiles.push(uploadedFile);
+          } catch (error) {
+            throw error;
+          }
+        }));
+  
+        if (!result.every(r => r.status === 'fulfilled')) {
+          throw new PublicError('Some files failed to upload please try again.');
         }
-      }));
-
-      if (!result.every(r => r.status === 'fulfilled')) {
-        throw new PublicError('Some files failed to upload please try again.');
       }
 
       return await context.prisma.$transaction(async (trx) => {
