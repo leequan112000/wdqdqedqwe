@@ -5,8 +5,10 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { InternalError } from "../errors/InternalError";
 
+import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
+
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 
@@ -127,11 +129,6 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     markMilestoneAsCompleted: async (_, args, context) => {
       const { id, files } = args
-
-      if (!files || files.length === 0) {
-        throw new PublicError('Please make sure you upload a file.')
-      }
-
       await checkAllowVendorOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
@@ -160,22 +157,25 @@ const resolvers: Resolvers<Context> = {
         contextType: string | undefined;
       }> = [];
 
-      const result = await Promise.allSettled(files.map(async (f) => {
-        try {
-          const uploadData = await f;
-          const uploadedFile = await storeUpload(
-            uploadData,
-            PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
-          );
 
-          uploadedFiles.push(uploadedFile);
-        } catch (error) {
-          throw error;
+      if (files && files.length > 0) {
+        const result = await Promise.allSettled(files.map(async (f) => {
+          try {
+            const uploadData = await f;
+            const uploadedFile = await storeUpload(
+              uploadData,
+              PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
+            );
+  
+            uploadedFiles.push(uploadedFile);
+          } catch (error) {
+            throw error;
+          }
+        }));
+  
+        if (!result.every(r => r.status === 'fulfilled')) {
+          throw new PublicError('Some files failed to upload please try again.');
         }
-      }));
-
-      if (!result.every(r => r.status === 'fulfilled')) {
-        throw new PublicError('Some files failed to upload please try again.');
       }
 
       return await context.prisma.$transaction(async (trx) => {
@@ -226,7 +226,13 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        // TODO Send notification to biotech
+        createSendUserMilestoneNoticeJob({
+          projectConnectionId: milestone.quote.project_connection_id,
+          milestoneTitle: milestone.title,
+          quoteId: milestone.quote.id,
+          senderUserId: context.req.user_id!,
+          milestoneEventType: MilestoneEventType.VENDOR_MARKED_AS_COMPLETE,
+        });
 
         return {
           milestone: {
@@ -245,12 +251,25 @@ const resolvers: Resolvers<Context> = {
         where: {
           id,
         },
+        include: {
+          quote: {
+            include: {
+              project_connection: true,
+            }
+          }
+        },
         data: {
           status: MilestoneStatus.COMPLETED,
         },
       });
 
-      // TODO Send notification to vendor
+      createSendUserMilestoneNoticeJob({
+        projectConnectionId: updatedMilestone.quote.project_connection_id,
+        milestoneTitle: updatedMilestone.title,
+        quoteId: updatedMilestone.quote.id,
+        senderUserId: context.req.user_id!,
+        milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
+      });
 
       return {
         ...updatedMilestone,

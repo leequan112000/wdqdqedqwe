@@ -2,9 +2,12 @@ import Stripe from 'stripe';
 import { Request, Response } from 'express';
 import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
-import { MilestonePaymentStatus, MilestoneStatus, SubscriptionStatus } from '../../helper/constant';
 import Sentry from '../../sentry';
+
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, SubscriptionStatus } from '../../helper/constant';
 import { getStripeInstance } from '../../helper/stripe';
+
+import { createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
 
 /*
  *   Stripe webhook endpoint
@@ -162,14 +165,30 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               }
 
               const { quote_id, milestone_id } = checkoutSession.metadata;
-              await prisma.milestone.update({
+              const updatedMilestone = await prisma.milestone.update({
                 where: {
                   id: milestone_id,
+                },
+                include: {
+                  quote: {
+                    include: {
+                      project_connection: true,
+                    }
+                  }
                 },
                 data: {
                   payment_status: MilestonePaymentStatus.PAID,
                 }
               });
+
+              createSendUserMilestoneNoticeJob({
+                projectConnectionId: updatedMilestone.quote.project_connection_id,
+                milestoneTitle: updatedMilestone.title,
+                quoteId: updatedMilestone.quote.id,
+                senderUserId: customer.user_id!,
+                milestoneEventType: MilestoneEventType.BIOTECH_PAID,
+              });
+
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
               break;
@@ -223,6 +242,8 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                   payment_status: MilestonePaymentStatus.UNPAID,
                 }
               });
+
+              createSendUserMilestonePaymentFailedNoticeJob({ milestoneId: milestone_id });
               console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
               res.status(200).json({ status: 200, message: 'OK' });
               break;
