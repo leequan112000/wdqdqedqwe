@@ -5,8 +5,10 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { InternalError } from "../errors/InternalError";
 
+import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
+
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 
@@ -226,7 +228,13 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        // TODO Send notification to biotech
+        createSendUserMilestoneNoticeJob({
+          projectConnectionId: milestone.quote.project_connection_id,
+          milestoneTitle: milestone.title,
+          quoteId: milestone.quote.id,
+          senderUserId: context.req.user_id!,
+          milestoneEventType: MilestoneEventType.VENDOR_MARKED_AS_COMPLETE,
+        });
 
         return {
           milestone: {
@@ -245,12 +253,25 @@ const resolvers: Resolvers<Context> = {
         where: {
           id,
         },
+        include: {
+          quote: {
+            include: {
+              project_connection: true,
+            }
+          }
+        },
         data: {
           status: MilestoneStatus.COMPLETED,
         },
       });
 
-      // TODO Send notification to vendor
+      createSendUserMilestoneNoticeJob({
+        projectConnectionId: updatedMilestone.quote.project_connection_id,
+        milestoneTitle: updatedMilestone.title,
+        quoteId: updatedMilestone.quote.id,
+        senderUserId: context.req.user_id!,
+        milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
+      });
 
       return {
         ...updatedMilestone,
