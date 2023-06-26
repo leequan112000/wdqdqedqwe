@@ -242,6 +242,8 @@ const resolvers: Resolvers<Context> = {
 
         const { certification_tag_ids, new_certification_tag_names } = args;
 
+        const certificationTagIds = certification_tag_ids || [];
+
         const certificationTagConnections = await trx.certificationTagConnection.findMany({
           where: {
             vendor_company_id: vendor_member.vendor_company_id,
@@ -305,12 +307,10 @@ const resolvers: Resolvers<Context> = {
         });
 
         // Connect the new certification tags
-        if (certification_tag_ids && certification_tag_ids?.length > 0) {
+        const tagsToBeConnected = [...certificationTagIds, ...newTagIds];
+        if (tagsToBeConnected.length > 0) {
           await trx.certificationTagConnection.createMany({
-            data: [
-              ...certification_tag_ids,
-              ...newTagIds,
-            ].map(id => {
+            data: tagsToBeConnected.map(id => {
               return {
                 certification_tag_id: id as string,
                 vendor_company_id: vendor_member.vendor_company_id
@@ -342,6 +342,8 @@ const resolvers: Resolvers<Context> = {
         }
 
         const { lab_specialization_ids, new_lab_specialization_names } = args;
+
+        const labSpecializationIds = lab_specialization_ids || [];
 
         const labSpecializationConnections = await trx.labSpecializationConnection.findMany({
           where: {
@@ -406,12 +408,10 @@ const resolvers: Resolvers<Context> = {
         });
 
         // Connect the new lab specializations
-        if (lab_specialization_ids && lab_specialization_ids?.length > 0) {
+        const specializationsToBeConnected = [...labSpecializationIds, ... newSpecializationIds];
+        if (specializationsToBeConnected.length > 0) {
           await trx.labSpecializationConnection.createMany({
-            data: [
-              ...lab_specialization_ids,
-              ...newSpecializationIds,
-            ].map(id => {
+            data: specializationsToBeConnected.map(id => {
               return {
                 lab_specialization_id: id as string,
                 vendor_company_id: vendor_member.vendor_company_id
