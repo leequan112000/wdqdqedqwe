@@ -2,7 +2,7 @@ import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 
-const createQuotationNotification = async (sender_id: string, sender_company_name: string, action: string, recipient_id: string, project_connection_id: string) => {
+const createQuotationNotification = async (sender_id: string, sender_company_name: string, quote_id: string, action: string, recipient_id: string, project_connection_id: string) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,
@@ -34,11 +34,12 @@ const createQuotationNotification = async (sender_id: string, sender_company_nam
     data: {
       notification_type: NotificationType.QUOTATION_NOTIFICATION,
       message: `**${sender_company_name}** has ${action} quotation for **${project_connection?.project_request.title}**`,
-      sender_id: sender_id,
+      sender_id,
       params: {
-        project_connection_id: project_connection_id,
+        project_connection_id,
+        quote_id,
       },
-      recipient_id: recipient_id,
+      recipient_id,
     },
   });
 

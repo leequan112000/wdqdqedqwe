@@ -330,7 +330,7 @@ emailQueue.process(async (job, done) => {
               receiver.email,
             );
 
-            await createQuotationNotification(senderUserId, senderCompanyName, action, receiver.id, projectConnection.id);
+            await createQuotationNotification(senderUserId, senderCompanyName, quoteId, action, receiver.id, projectConnection.id);
           })
         );
 
@@ -366,7 +366,7 @@ emailQueue.process(async (job, done) => {
               receiver.email,
             );
 
-            await createMilestoneNotification(senderUserId, milestoneUpdateContent, receiver.id, projectConnection.id);
+            await createMilestoneNotification(senderUserId, quoteId, milestoneUpdateContent, receiver.id, projectConnection.id);
           })
         );
 
@@ -417,7 +417,7 @@ emailQueue.process(async (job, done) => {
               receiver.email,
             );
 
-            await createMilestonePaymentFailedNotification(milestoneUpdateContent, receiver.id, milestone.quote.project_connection_id);
+            await createMilestonePaymentFailedNotification(milestone.quote_id, milestoneUpdateContent, receiver.id, milestone.quote.project_connection_id);
           })
         );
 
