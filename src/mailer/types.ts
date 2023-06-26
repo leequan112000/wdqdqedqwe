@@ -19,6 +19,22 @@ export type NewMessageNoticeData = {
   company_name: string;
 }
 
+export type QuotationNoticeData = {
+  sender_name: string;
+  project_title: string;
+  receiver_full_name: string;
+  action: string;
+  quotation_url: string;
+}
+
+export type MilestoneNoticeData = {
+  sender_name: string;
+  project_title: string;
+  receiver_full_name: string;
+  milestone_update_content: string;
+  milestone_url: string;
+}
+
 export type AcceptProjectRequestNoticeData = {
   login_url: string;
   vendor_company_name: string;

@@ -74,6 +74,20 @@ export enum NotificationType {
   FILE_UPLOAD_NOTIFICATION = 'FileUploadNotification',
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
+  QUOTATION_NOTIFICATION = 'QuotationNotification',
+  MILESTONE_NOTIFICATION = 'MilestoneNotification',
+}
+
+export enum QuotationNotificationActionContent {
+  SUBMITTED = 'submitted a new',
+  ACCEPTED = 'accepted your',
+  DECLINED = 'declined your',
+}
+
+export enum MilestoneEventType {
+  BIOTECH_PAID = 'biotech paid',
+  VENDOR_MARKED_AS_COMPLETE = 'vendor marked as complete',
+  BIOTECH_VERIFIED_AS_COMPLETED = 'biotech verified as completed',
 }
 
 export enum ProjectAttachmentDocumentType {
@@ -116,4 +130,6 @@ export enum EmailType {
   USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
   USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
+  USER_QUOTATION_NOTICE_EMAIL = 'user:quotation-notice-email',
+  USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
 }
