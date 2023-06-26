@@ -26,6 +26,7 @@ type Biotech {
   upload_limit: Float
   upload_used: Float
   founded_year: String
+  team_size: String
   linkedin_url: String
   twitter_url: String
   facebook_url: String
@@ -50,6 +51,7 @@ type Mutation {
     website: String
     about: String
     founded_year: String
+    team_size: String
     linkedin_url: String
     twitter_url: String
     facebook_url: String
@@ -68,6 +70,7 @@ type Mutation {
     website: String
     about: String
     founded_year: String
+    team_size: String
     linkedin_url: String
     twitter_url: String
     facebook_url: String
