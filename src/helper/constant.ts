@@ -28,14 +28,14 @@ export enum ProjectConnectionVendorExperimentStatus {
   PENDING = 'pending',
   ONGOING = 'ongoing',
   COMPLETED = 'completed',
-  REJECTED = 'rejected',
+  DECLINED = 'declined',
   EXPIRED = 'expired',
 }
 
 export enum ProjectConnectionVendorDisplayStatus {
   PENDING_DECISION = 'pending-decision',
   ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
+  DECLINED = 'declined',
   EXPIRED = 'expired',
   WITHDRAWN = 'withdrawn',
 }

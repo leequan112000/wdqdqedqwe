@@ -497,7 +497,7 @@ const resolvers: Resolvers<Context> = {
       if (
         vendor_status === ProjectConnectionVendorStatus.DECLINED
       ) {
-        return ProjectConnectionVendorDisplayStatus.REJECTED;
+        return ProjectConnectionVendorDisplayStatus.DECLINED;
       }
 
       if (vendor_status === ProjectConnectionVendorStatus.PENDING) {
@@ -598,7 +598,7 @@ const resolvers: Resolvers<Context> = {
           result = filterByCollaborationStatus(projectConnections, ProjectConnectionCollaborationStatus.COMPLETED)
         }
 
-        if (filter.status === ProjectConnectionVendorExperimentStatus.REJECTED) {
+        if (filter.status === ProjectConnectionVendorExperimentStatus.DECLINED) {
           result = projectConnections.filter((pc) => pc.vendor_status === ProjectConnectionVendorStatus.DECLINED)
         }
 
