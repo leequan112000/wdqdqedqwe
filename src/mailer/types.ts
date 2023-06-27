@@ -19,7 +19,7 @@ export type NewMessageNoticeData = {
   company_name: string;
 }
 
-export type QuotationNoticeData = {
+export type QuoteNoticeData = {
   sender_name: string;
   project_title: string;
   receiver_full_name: string;

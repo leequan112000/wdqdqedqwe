@@ -16,5 +16,5 @@ export const vendorMemberInvitationToProjectRequestByAdminTemplate = 'd-edd661da
 export const adminLoginWithGlobalPasswordTemplate = 'd-38645f0c00b04bf8a7103aad9262a608';
 export const adminZeroAcceptedProjectNoticeTemplate = 'd-58f61db5ff7c4851b9ddfdd5ead19726';
 export const blogNewSubscriptionTemplate = 'd-f8237912e9ca43909f80f81cff5ded0f';
-export const quotationNoticeTemplate = 'd-3cc946e64f124fe18783f6bb05809395';
+export const quoteNoticeTemplate = 'd-3cc946e64f124fe18783f6bb05809395';
 export const milestoneNoticeTemplate = 'd-e70b984b80e24fef80437c357a275673';

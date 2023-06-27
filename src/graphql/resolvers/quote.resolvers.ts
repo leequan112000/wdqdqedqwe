@@ -3,8 +3,8 @@ import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { nanoid } from "nanoid";
-import { MilestonePaymentStatus, MilestoneStatus, QuotationNotificationActionContent, QuoteStatus } from "../../helper/constant";
-import { createSendUserQuotationNoticeJob } from "../../queues/email.queues";
+import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent, QuoteStatus } from "../../helper/constant";
+import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
 
 function generateQuoteShortId() {
   return `qt_${nanoid(10)}`;
@@ -191,11 +191,11 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (send_to_biotech) {
-        createSendUserQuotationNoticeJob({
+        createSendUserQuoteNoticeJob({
           projectConnectionId: project_connection_id,
           senderUserId: context.req.user_id!,
           quoteId: newQuote.id,
-          action: QuotationNotificationActionContent.SUBMITTED,
+          action: QuoteNotificationActionContent.SUBMITTED,
         });
       }
 
@@ -300,11 +300,11 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (send_to_biotech) {
-        createSendUserQuotationNoticeJob({
+        createSendUserQuoteNoticeJob({
           projectConnectionId: updatedQuote.project_connection_id!,
           senderUserId: context.req.user_id!,
           quoteId: id,
-          action: QuotationNotificationActionContent.SUBMITTED,
+          action: QuoteNotificationActionContent.SUBMITTED,
         });
       }
 
@@ -321,11 +321,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      createSendUserQuotationNoticeJob({
+      createSendUserQuoteNoticeJob({
         projectConnectionId: updatedQuote.project_connection_id!,
         senderUserId: context.req.user_id!,
         quoteId: id,
-        action: QuotationNotificationActionContent.ACCEPTED,
+        action: QuoteNotificationActionContent.ACCEPTED,
       });
 
       return {
@@ -344,11 +344,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      createSendUserQuotationNoticeJob({
+      createSendUserQuoteNoticeJob({
         projectConnectionId: updatedQuote.project_connection_id!,
         senderUserId: context.req.user_id!,
         quoteId: id,
-        action: QuotationNotificationActionContent.DECLINED,
+        action: QuoteNotificationActionContent.DECLINED,
       });
 
       return {

@@ -87,7 +87,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (milestone.quote.status !== QuoteStatus.ACCEPTED) {
-        throw new PublicError('The quotation must be accepted before proceeding with the payment.');
+        throw new PublicError('The quote must be accepted before proceeding with the payment.');
       }
 
       if (milestone.payment_status === MilestonePaymentStatus.PAID) {

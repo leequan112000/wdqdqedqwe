@@ -1,4 +1,4 @@
-import { AdminTeam, EmailType, MilestoneEventType, NotificationType, QuotationNotificationActionContent } from "../helper/constant";
+import { AdminTeam, EmailType, MilestoneEventType, NotificationType, QuoteNotificationActionContent } from "../helper/constant";
 import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
@@ -12,11 +12,11 @@ import createAdminInviteNotification from "../notification/adminInviteNotificati
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
 import createFileUploadNotification from "../notification/fileUploadNotification";
 import createMessageNotification from "../notification/messageNotification";
-import createQuotationNotification from "../notification/quoteNotification";
+import createQuoteNotification from "../notification/quoteNotification";
 import { createMilestoneNotification, createMilestonePaymentFailedNotification } from "../notification/milestoneNotification";
 import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
-import { sendQuotationNoticeEmail } from "../mailer/quote";
+import { sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
 
 type EmailJob = {
@@ -314,12 +314,12 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
-      case EmailType.USER_QUOTATION_NOTICE_EMAIL: {
+      case EmailType.USER_QUOTE_NOTICE_EMAIL: {
         const { projectConnectionId, quoteId, senderUserId, action } = data;
         const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, senderUserId);
         await Promise.all(
           receivers.map(async (receiver) => {
-            await sendQuotationNoticeEmail(
+            await sendQuoteNoticeEmail(
               {
                 sender_name: senderCompanyName,
                 project_title: projectConnection.project_request.title,
@@ -330,7 +330,7 @@ emailQueue.process(async (job, done) => {
               receiver.email,
             );
 
-            await createQuotationNotification(senderUserId, senderCompanyName, quoteId, action, receiver.id, projectConnection.id);
+            await createQuoteNotification(senderUserId, senderCompanyName, quoteId, action, receiver.id, projectConnection.id);
           })
         );
 
@@ -454,13 +454,13 @@ export const createSendUserNewMessageNoticeJob = (data: { projectConnectionId: s
   emailQueue.add({ type: EmailType.USER_NEW_MESSAGE_NOTICE, data })
 }
 
-export const createSendUserQuotationNoticeJob = (data: {
+export const createSendUserQuoteNoticeJob = (data: {
   projectConnectionId: string;
   senderUserId: string;
   quoteId: string;
-  action: QuotationNotificationActionContent;
+  action: QuoteNotificationActionContent;
 }) => {
-  emailQueue.add({ type: EmailType.USER_QUOTATION_NOTICE_EMAIL, data })
+  emailQueue.add({ type: EmailType.USER_QUOTE_NOTICE_EMAIL, data })
 }
 
 export const createSendUserMilestoneNoticeJob = (data: {

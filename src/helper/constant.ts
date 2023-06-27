@@ -74,12 +74,12 @@ export enum NotificationType {
   FILE_UPLOAD_NOTIFICATION = 'FileUploadNotification',
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
-  QUOTATION_NOTIFICATION = 'QuotationNotification',
+  QUOTE_NOTIFICATION = 'QuoteNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
 }
 
-export enum QuotationNotificationActionContent {
+export enum QuoteNotificationActionContent {
   SUBMITTED = 'submitted a new',
   ACCEPTED = 'accepted your',
   DECLINED = 'declined your',
@@ -131,7 +131,7 @@ export enum EmailType {
   USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
   USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
-  USER_QUOTATION_NOTICE_EMAIL = 'user:quotation-notice-email',
+  USER_QUOTE_NOTICE_EMAIL = 'user:quote-notice-email',
   USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
   USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
 }

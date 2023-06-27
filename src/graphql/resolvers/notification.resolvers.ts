@@ -48,7 +48,7 @@ const resolvers: Resolvers<Context> = {
           return `/app/project-connection/${parent.params.project_connection_id}`;
         case NotificationType.MESSAGE_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
-        case NotificationType.QUOTATION_NOTIFICATION:
+        case NotificationType.QUOTE_NOTIFICATION:
         case NotificationType.MILESTONE_NOTIFICATION:
         case NotificationType.MILESTONE_PAYMENT_FAILED_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`
