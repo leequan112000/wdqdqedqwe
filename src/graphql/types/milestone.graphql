@@ -27,5 +27,5 @@ type Query {
 
 type Mutation {
   markMilestoneAsCompleted(id: String!, files: [Upload]): MarkMilestoneCompleteResponse
-  verifyMilestoneAsCompleted(id: String!): Milestone
+  verifyMilestoneAsCompleted(id: String!, password: String!): Milestone
 }

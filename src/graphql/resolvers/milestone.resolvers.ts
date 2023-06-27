@@ -8,6 +8,7 @@ import { InternalError } from "../errors/InternalError";
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";
 
+import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
@@ -245,39 +246,52 @@ const resolvers: Resolvers<Context> = {
       })
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
-      const { id } = args
+      const { id, password } = args
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
-      const updatedMilestone = await context.prisma.milestone.update({
+
+      const user = await context.prisma.user.findFirstOrThrow({
         where: {
-          id,
-        },
-        include: {
-          quote: {
-            include: {
-              project_connection: true,
+          id: context.req.user_id
+        }
+      });
+
+      const isPasswordMatched = await checkPassword(password, user, context);
+
+      if (isPasswordMatched === true) {
+        const updatedMilestone = await context.prisma.milestone.update({
+          where: {
+            id,
+          },
+          include: {
+            quote: {
+              include: {
+                project_connection: true,
+              }
             }
-          }
-        },
-        data: {
-          status: MilestoneStatus.COMPLETED,
-        },
-      });
-
-      payVendorJob({ milestoneId: id });
-
-      createSendUserMilestoneNoticeJob({
-        projectConnectionId: updatedMilestone.quote.project_connection_id,
-        milestoneTitle: updatedMilestone.title,
-        quoteId: updatedMilestone.quote.id,
-        senderUserId: context.req.user_id!,
-        milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
-      });
-
-      return {
-        ...updatedMilestone,
-        amount: updatedMilestone.amount.toNumber(),
+          },
+          data: {
+            status: MilestoneStatus.COMPLETED,
+          },
+        });
+  
+        payVendorJob({ milestoneId: id });
+  
+        createSendUserMilestoneNoticeJob({
+          projectConnectionId: updatedMilestone.quote.project_connection_id,
+          milestoneTitle: updatedMilestone.title,
+          quoteId: updatedMilestone.quote.id,
+          senderUserId: context.req.user_id!,
+          milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
+        });
+  
+        return {
+          ...updatedMilestone,
+          amount: updatedMilestone.amount.toNumber(),
+        }
       }
+
+      throw new PublicError('Invalid password.');      
     },
   }
 }
