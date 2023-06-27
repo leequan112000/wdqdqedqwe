@@ -6,6 +6,7 @@ import { PublicError } from "../errors/PublicError";
 import { InternalError } from "../errors/InternalError";
 
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
+import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
@@ -262,6 +263,8 @@ const resolvers: Resolvers<Context> = {
           status: MilestoneStatus.COMPLETED,
         },
       });
+
+      payVendorJob({ milestoneId: id });
 
       createSendUserMilestoneNoticeJob({
         projectConnectionId: updatedMilestone.quote.project_connection_id,
