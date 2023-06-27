@@ -501,7 +501,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (vendor_status === ProjectConnectionVendorStatus.PENDING) {
-        if (now >= parent.expired_at) {
+        if (parent.expired_at && now >= parent.expired_at) {
           return ProjectConnectionVendorDisplayStatus.EXPIRED;
         }
 
