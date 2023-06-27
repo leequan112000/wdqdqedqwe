@@ -81,16 +81,16 @@ payoutQueue.process(async (job, done) => {
       }
     });
 
-    if (error.raw) {
-      await prisma.milestone.update({
-        where: {
-          id,
-        },
-        data: {
-          vendor_payment_status: error.raw.code || MilestonePaymentStatus.UNPAID
-        }
-      });
+    await prisma.milestone.update({
+      where: {
+        id,
+      },
+      data: {
+        vendor_payment_status: MilestonePaymentStatus.UNPAID
+      }
+    });
 
+    if (error.raw) {
       errorMessage = `${error.raw.code} (Milestone #${milestone.id}) Transfer to connected account failed for ${vendorCompany.name}`;
     } else if (error instanceof Error) {
       errorMessage = error.message;
