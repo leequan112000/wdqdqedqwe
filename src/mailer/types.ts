@@ -74,3 +74,13 @@ export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
   lowAcceptanceList: string;
 }
+
+export type AdminGeneralNoticeData = {
+  subject: string;
+  preheader: string;
+  content_title: string;
+  content_body: string;
+  content_footer: string;
+  button_label: string;
+  button_url?: string;
+}
