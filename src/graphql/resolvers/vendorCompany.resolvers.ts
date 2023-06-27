@@ -66,8 +66,10 @@ const resolvers: Resolvers<Context> = {
       });
 
       const certificationTags = certificationTagConnections.map(c => c.certification_tag);
+      const priorityTags = certificationTags.filter((tag) => tag.priority && tag.priority > 0);
+      const nonPriorityTags = certificationTags.filter((tag) => tag.priority === null);
 
-      return certificationTags;
+      return [...priorityTags, ...nonPriorityTags];
     },
     lab_specializations: async (parent, _, context) => {
       if (!parent.id) {
@@ -408,7 +410,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         // Connect the new lab specializations
-        const specializationsToBeConnected = [...labSpecializationIds, ... newSpecializationIds];
+        const specializationsToBeConnected = [...labSpecializationIds, ...newSpecializationIds];
         if (specializationsToBeConnected.length > 0) {
           await trx.labSpecializationConnection.createMany({
             data: specializationsToBeConnected.map(id => {
