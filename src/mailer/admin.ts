@@ -5,6 +5,7 @@ import {
   adminNewCROInterestNoticeTemplate,
   adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,
+  adminGeneralNoticeTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
 import {
@@ -12,6 +13,7 @@ import {
   AdminNewProjectRequestCommentNoticeData,
   AdminLoginWithGlobalPasswordData,
   AdminZeroAcceptedProjectNoticeData,
+  AdminGeneralNoticeData,
 } from "./types";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
@@ -88,6 +90,25 @@ export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, data
       admin_name: admin.username,
       zeroAcceptedList: data.zeroAcceptedList ? data.zeroAcceptedList : "[None]",
       lowAcceptanceList: data.lowAcceptanceList ? data.lowAcceptanceList : "[None]",
+    },
+  });
+
+  return sendMail(mailData);
+}
+
+export const sendAdminGeneralNoticeEmail = async (admin: Admin, data: AdminGeneralNoticeData) => {
+  const mailData = createMailData({
+    to: admin.email,
+    templateId: adminGeneralNoticeTemplate,
+    dynamicTemplateData: {
+      admin_name: admin.username,
+      button_label: data.button_label,
+      button_url: data.button_url ?? process.env.RETOOL_PROJECT_URL,
+      content_title: data.content_title,
+      content_body: data.content_body,
+      content_footer: data.content_footer,
+      subject: data.subject,
+      preheader: data.preheader,
     },
   });
 
