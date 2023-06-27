@@ -1,11 +1,11 @@
 import { createMailData, sendMail } from "./config";
-import type { QuotationNoticeData } from "./types";
-import { quotationNoticeTemplate } from "./templates";
+import type { QuoteNoticeData } from "./types";
+import { quoteNoticeTemplate } from "./templates";
 
-export const sendQuotationNoticeEmail = async (emailData: QuotationNoticeData, receiverEmail: string) => {
+export const sendQuoteNoticeEmail = async (emailData: QuoteNoticeData, receiverEmail: string) => {
   const mailData = createMailData({
     to: receiverEmail,
-    templateId: quotationNoticeTemplate,
+    templateId: quoteNoticeTemplate,
     dynamicTemplateData: {
       sender_name: emailData.sender_name,
       project_title: emailData.project_title,

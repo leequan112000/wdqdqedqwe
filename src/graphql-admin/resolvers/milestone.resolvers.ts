@@ -82,7 +82,6 @@ const resolvers: Resolvers<Context> = {
             }
           });
           throw new PublicError(`${error.raw.code} (Milestone #${milestone.id}) Transfer to connected account failed for ${vendorCompany.name}`);
-          // await Order.query(trx).findById(order.id).patch({ transfer_status: e.raw.code });
         }
 
         throw new PublicError(error as string);

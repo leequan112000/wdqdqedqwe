@@ -19,7 +19,7 @@ export type NewMessageNoticeData = {
   company_name: string;
 }
 
-export type QuotationNoticeData = {
+export type QuoteNoticeData = {
   sender_name: string;
   project_title: string;
   receiver_full_name: string;
@@ -73,4 +73,14 @@ export type AdminLoginWithGlobalPasswordData = {
 export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
   lowAcceptanceList: string;
+}
+
+export type AdminGeneralNoticeData = {
+  subject: string;
+  preheader: string;
+  content_title: string;
+  content_body: string;
+  content_footer: string;
+  button_label: string;
+  button_url?: string;
 }

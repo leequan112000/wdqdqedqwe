@@ -1,6 +1,7 @@
 export const adminNewCROInterestNoticeTemplate = 'd-1cacc8f508354da981b5ce65a09a6613';
 export const adminNewProjectRequestTemplate = 'd-f72cc7b30afe432f9eecf8b11a09cd2a';
 export const adminNewProjectRequestCommentNoticeTemplate = 'd-f7b5d94910b84122b64a2d07b6a799f0';
+export const adminGeneralNoticeTemplate = 'd-af33cb0772a541f6bdfc83b0cd99bb84';
 export const acceptProjectRequestNoticeTemplate = 'd-012fca87103443949a1543b196c71ff1';
 export const customerInvitationTemplate = 'd-8138d95b7956431ca8d32687c6f37cce';
 export const contractUploadNoticeTemplate = 'd-70785c0ac4374d9ead9863061a22d131';
@@ -15,5 +16,5 @@ export const vendorMemberInvitationToProjectRequestByAdminTemplate = 'd-edd661da
 export const adminLoginWithGlobalPasswordTemplate = 'd-38645f0c00b04bf8a7103aad9262a608';
 export const adminZeroAcceptedProjectNoticeTemplate = 'd-58f61db5ff7c4851b9ddfdd5ead19726';
 export const blogNewSubscriptionTemplate = 'd-f8237912e9ca43909f80f81cff5ded0f';
-export const quotationNoticeTemplate = 'd-3cc946e64f124fe18783f6bb05809395';
+export const quoteNoticeTemplate = 'd-3cc946e64f124fe18783f6bb05809395';
 export const milestoneNoticeTemplate = 'd-e70b984b80e24fef80437c357a275673';
