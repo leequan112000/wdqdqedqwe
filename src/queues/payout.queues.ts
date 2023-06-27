@@ -102,7 +102,7 @@ payoutQueue.process(async (job, done) => {
         preheader: "Vendor payout failed",
         button_label: "Retry payout",
         content_title: `Vendor payout failure`,
-        content_body: `We regret to inform you that the vendor payout to ${vendorCompany.name} with milestone: ${milestone.title} (${milestone.id}) has failed due to - ${errorMessage}`,
+        content_body: `We regret to inform you that the vendor payout to ${vendorCompany.name} with milestone: ${milestone.title} (${milestone.id}) has failed due to “${errorMessage}”`,
         content_footer: "Please kindly reach out to the vendor or engineering team if necessary to investigate and resolve this issue",
       }))
     );
