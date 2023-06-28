@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { toCent, toDollar } from "../../helper/money";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
@@ -5,6 +6,9 @@ import { InternalError } from "../errors/InternalError";
 import { nanoid } from "nanoid";
 import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent, QuoteStatus } from "../../helper/constant";
 import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
+import { PublicError } from '../errors/PublicError';
+
+const EXPIRY_DAYS = 7;
 
 function generateQuoteShortId() {
   return `qt_${nanoid(10)}`;
@@ -125,6 +129,18 @@ const resolvers: Resolvers<Context> = {
 
       return toDollar(amountPaid)
     },
+    status: async (parent) => {
+      const now = new Date();
+      if (parent.expired_at && parent.status) {
+        if (parent.status === QuoteStatus.PENDING_DECISION && now >= new Date(parent.expired_at)) {
+          return QuoteStatus.EXPIRED;
+        }
+      }
+      if (parent.status) {
+        return parent.status;
+      }
+      return null;
+    },
   },
   Query: {
     quote: async (_, args, context) => {
@@ -149,12 +165,14 @@ const resolvers: Resolvers<Context> = {
       const { amount, project_connection_id, milestones, send_to_biotech = false } = args
 
       const newQuote = await context.prisma.$transaction(async (trx) => {
+        const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
             status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
             project_connection_id,
             short_id: generateQuoteShortId(),
+            expired_at: send_to_biotech ? expiryDate.toDate() : null,
           },
         });
 
@@ -205,10 +223,14 @@ const resolvers: Resolvers<Context> = {
       const { id, amount, milestones, send_to_biotech } = args;
 
       const updatedQuote = await context.prisma.$transaction(async (trx) => {
+        const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
-            ...(send_to_biotech ? { status: QuoteStatus.PENDING_DECISION } : {})
+            ...(send_to_biotech ? {
+              status: QuoteStatus.PENDING_DECISION,
+              expired_at: expiryDate.toDate()
+            } : {})
           },
           where: {
             id,
@@ -312,6 +334,21 @@ const resolvers: Resolvers<Context> = {
     },
     acceptQuote: async (_, args, context) => {
       const { id } = args
+      const now = new Date()
+
+      const quote = await context.prisma.quote.findFirst({
+        where: {
+          id,
+        }
+      });
+      if (!quote) {
+        throw new InternalError('Quote not found')
+      }
+
+      if (quote.expired_at && now >= quote.expired_at) {
+        throw new PublicError('The quote is expired.')
+      }
+
       const updatedQuote = await context.prisma.quote.update({
         where: {
           id,
@@ -335,6 +372,21 @@ const resolvers: Resolvers<Context> = {
     },
     declineQuote: async (_, args, context) => {
       const { id } = args
+      const now = new Date()
+
+      const quote = await context.prisma.quote.findFirst({
+        where: {
+          id,
+        }
+      });
+      if (!quote) {
+        throw new InternalError('Quote not found')
+      }
+
+      if (quote.expired_at && now >= quote.expired_at) {
+        throw new PublicError('The quote is expired.')
+      }
+
       const updatedQuote = await context.prisma.quote.update({
         where: {
           id,
@@ -355,6 +407,27 @@ const resolvers: Resolvers<Context> = {
         ...updatedQuote,
         amount: updatedQuote.amount.toNumber(),
       }
+    },
+    resendExpiredQuote: async (_, args, context) => {
+      const { id } = args;
+
+      const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd')
+
+      const updatedQuote = await context.prisma.quote.update({
+        where: {
+          id,
+        },
+        data: {
+          expired_at: expiryDate.toDate(),
+        }
+      });
+
+      // TODO: email
+
+      return {
+        ...updatedQuote,
+        amount: updatedQuote.amount.toNumber(),
+      };
     },
   }
 }
