@@ -6,6 +6,7 @@ type Quote {
   project_connection_id: String
   project_connection: ProjectConnection
   status: String
+  expired_at: Date
 
   total_amount: Float
   total_in_escrow: Float
@@ -51,4 +52,5 @@ type Mutation {
   declineQuote(
     id: String!
   ): Quote
+  resendExpiredQuote(id: String!): Quote
 }

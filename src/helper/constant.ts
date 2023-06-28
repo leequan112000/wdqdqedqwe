@@ -46,6 +46,7 @@ export enum QuoteStatus {
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
   COMPLETED = 'completed',
+  EXPIRED = 'expired',
 }
 
 export enum MilestoneStatus {

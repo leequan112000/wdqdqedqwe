@@ -512,6 +512,7 @@ model Quote {
   project_connection_id String            @db.Uuid
   milestones            Milestone[]
   status                String
+  expired_at            DateTime?
 
   @@map("quotes")
 }
