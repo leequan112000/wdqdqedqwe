@@ -8,6 +8,8 @@ import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent
 import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
 import { PublicError } from '../errors/PublicError';
 
+const EXPIRY_DAYS = 7;
+
 function generateQuoteShortId() {
   return `qt_${nanoid(10)}`;
 }
@@ -163,14 +165,14 @@ const resolvers: Resolvers<Context> = {
       const { amount, project_connection_id, milestones, send_to_biotech = false } = args
 
       const newQuote = await context.prisma.$transaction(async (trx) => {
-        const dateAfter7Days = moment().endOf('d').add(7, 'd');
+        const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
             status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
             project_connection_id,
             short_id: generateQuoteShortId(),
-            expired_at: send_to_biotech ? dateAfter7Days.toDate() : null,
+            expired_at: send_to_biotech ? expiryDate.toDate() : null,
           },
         });
 
@@ -221,13 +223,13 @@ const resolvers: Resolvers<Context> = {
       const { id, amount, milestones, send_to_biotech } = args;
 
       const updatedQuote = await context.prisma.$transaction(async (trx) => {
-        const dateAfter7Days = moment().endOf('d').add(7, 'd');
+        const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
             ...(send_to_biotech ? {
               status: QuoteStatus.PENDING_DECISION,
-              expired_at: dateAfter7Days.toDate()
+              expired_at: expiryDate.toDate()
             } : {})
           },
           where: {
@@ -409,14 +411,14 @@ const resolvers: Resolvers<Context> = {
     resendExpiredQuote: async (_, args, context) => {
       const { id } = args;
 
-      const next7Days = moment().endOf('d').add(7, 'd')
+      const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd')
 
       const updatedQuote = await context.prisma.quote.update({
         where: {
           id,
         },
         data: {
-          expired_at: next7Days.toDate(),
+          expired_at: expiryDate.toDate(),
         }
       });
 
