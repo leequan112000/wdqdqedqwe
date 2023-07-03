@@ -239,6 +239,7 @@ export type Mutation = {
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
+  deleteCertificationTag?: Maybe<Scalars['Boolean']>;
   deleteCertificationTagConnection?: Maybe<CertificationTagConnection>;
   deleteLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
@@ -272,6 +273,7 @@ export type Mutation = {
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
+  updateCertificationTag?: Maybe<CertificationTag>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
   updateQuote?: Maybe<Quote>;
@@ -314,6 +316,8 @@ export type MutationCreateAdminArgs = {
 
 export type MutationCreateCertificationTagArgs = {
   full_name: Scalars['String'];
+  priority?: InputMaybe<Scalars['Int']>;
+  short_name?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -409,6 +413,11 @@ export type MutationDeclinedProjectConnectionArgs = {
 
 
 export type MutationDeleteAdminArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationDeleteCertificationTagArgs = {
   id: Scalars['String'];
 };
 
@@ -619,6 +628,14 @@ export type MutationUpdateBiotechArgs = {
   twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateCertificationTagArgs = {
+  full_name: Scalars['String'];
+  id: Scalars['String'];
+  priority?: InputMaybe<Scalars['Int']>;
+  short_name?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1534,6 +1551,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
+  deleteCertificationTag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagArgs, 'id'>>;
   deleteCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<MutationDeleteCertificationTagConnectionArgs>>;
   deleteLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<MutationDeleteLabSpecializationConnectionArgs>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
@@ -1565,6 +1583,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
+  updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
