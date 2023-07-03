@@ -65,7 +65,7 @@ const resolvers: Resolvers<Context> = {
           ...(!!args.unread_only ? { read_at: null } : {}),
         },
         orderBy: {
-          updated_at: 'desc'
+          created_at: 'desc'
         }
       });
     },
