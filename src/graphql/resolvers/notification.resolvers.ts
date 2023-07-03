@@ -51,7 +51,10 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_NOTIFICATION:
         case NotificationType.MILESTONE_NOTIFICATION:
         case NotificationType.MILESTONE_PAYMENT_FAILED_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`
+          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
+        case NotificationType.QUOTE_EXPIRED_NOTIFICATION:
+        case NotificationType.QUOTE_EXPIRING_NOTIFICATION:
+          return `/app/project-connection/${parent.params.project_connection_id}`;
         default:
           return `/app`;
       }
@@ -115,7 +118,7 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-      
+
       await Promise.all(
         notifications.map(async (notification) => {
           await context.prisma.notification.update({

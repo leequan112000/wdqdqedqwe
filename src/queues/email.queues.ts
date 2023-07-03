@@ -16,8 +16,11 @@ import createQuoteNotification from "../notification/quoteNotification";
 import { createMilestoneNotification, createMilestonePaymentFailedNotification } from "../notification/milestoneNotification";
 import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
-import { sendQuoteNoticeEmail } from "../mailer/quote";
+import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
+import { CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
+import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -424,6 +427,60 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
+      case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
+        const { receiverId, receiverEmail, receiverName, projectConnectionId, expiringIn, projectRequestTitle, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const resp = await sendQuoteExpiringNoticeEmail({
+          button_url: buttonUrl,
+          expiring_in: expiringIn,
+          project_request_title: projectRequestTitle,
+          receiver_full_name: receiverName,
+          quotes: quotes,
+        }, receiverEmail);
+
+
+        const createNotificationTasks = quotes.map(async (q) => {
+          return await createQuoteExpiringNotification({
+            expiring_in: expiringIn,
+            project_connection_id: projectConnectionId,
+            project_name: projectRequestTitle,
+            quote_id: q.id,
+            recipient_id: receiverId,
+            vendor_full_name: q.vendor_full_name,
+          })
+        });
+
+        await Promise.all(createNotificationTasks);
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
+        const { receiverId, receiverEmail, receiverName, projectConnectionId, projectRequestTitle, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const resp = await sendQuoteExpiredNoticeEmail({
+          button_url: buttonUrl,
+          project_request_title: projectRequestTitle,
+          receiver_full_name: receiverName,
+          quotes: quotes,
+        }, receiverEmail);
+
+
+        const createNotificationTasks = quotes.map(async (q) => {
+          return await createQuoteExpiredNotification({
+            project_connection_id: projectConnectionId,
+            project_name: projectRequestTitle,
+            quote_id: q.id,
+            vendor_full_name: receiverName,
+            recipient_id: receiverId,
+          });
+        });
+
+        await Promise.all(createNotificationTasks);
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -508,4 +565,16 @@ export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { zeroAccepted
 
 export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: string }) => {
   emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data })
+}
+
+export const createSendUserExpiringQuoteNoticeEmailJob = (
+  data: CreateSendUserExpiringQuoteNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
+}
+
+export const createSendUserExpiredQuoteNoticeEmailJob = (
+  data: CreateSendUserExpiredQuoteNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
 }
