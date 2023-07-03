@@ -1,6 +1,7 @@
 import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
+import { PublicError } from "../../graphql/errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -60,6 +61,16 @@ const resolvers: Resolvers<Context> = {
 
       if (!existingCertificationTag) {
         throw new InternalError('Certification Tag not found.');
+      }
+
+      const existingCertificationTagConnections = await context.prisma.certificationTagConnection.findMany({
+        where: {
+          certification_tag_id: id,
+        },
+      });
+
+      if (existingCertificationTagConnections.length > 0) {
+        throw new PublicError('Certification Tag is still connected to a Vendor Company, please remove the connection first.');
       }
 
       await context.prisma.certificationTag.delete({
