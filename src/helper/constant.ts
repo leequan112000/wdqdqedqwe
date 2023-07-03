@@ -76,6 +76,8 @@ export enum NotificationType {
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
   QUOTE_NOTIFICATION = 'QuoteNotification',
+  QUOTE_EXPIRED_NOTIFICATION = 'QuoteExpiredNotification',
+  QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
 }
