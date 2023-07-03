@@ -42,6 +42,31 @@ export type AcceptProjectRequestNoticeData = {
   receiver_full_name: string;
 }
 
+export type QuoteExpiringNoticeData = {
+  receiver_full_name: string;
+  project_request_title: string;
+  button_url: string;
+  expiring_in: string;
+  quotes: Array<{
+    id: string;
+    short_id: string;
+    project_request_title: string;
+    vendor_full_name: string;
+  }>;
+}
+
+export type QuoteExpiredNoticeData = {
+  receiver_full_name: string;
+  project_request_title: string;
+  button_url: string;
+  quotes: Array<{
+    id: string;
+    short_id: string;
+    project_request_title: string;
+    vendor_full_name: string;
+  }>;
+}
+
 export type ProjectRequestInvitationByAdminData = {
   project_request_name: string;
   login_url: string;

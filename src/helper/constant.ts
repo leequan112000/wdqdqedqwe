@@ -76,6 +76,8 @@ export enum NotificationType {
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
   QUOTE_NOTIFICATION = 'QuoteNotification',
+  QUOTE_EXPIRED_NOTIFICATION = 'QuoteExpiredNotification',
+  QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
 }
@@ -135,4 +137,6 @@ export enum EmailType {
   USER_QUOTE_NOTICE_EMAIL = 'user:quote-notice-email',
   USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
   USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
+  USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
+  USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
 }
