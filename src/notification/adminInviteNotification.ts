@@ -24,7 +24,7 @@ const createAdminInviteNotification = async (recipient_id: string, project_conne
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.ADMIN_INVITE_NOTIFICATION,
-      message: `**Cromatic Admin** invited you to review a new request has been submitted by a Cromatic client, the project name is **${project_connection?.project_request.title}**`,
+      message: `You have a new client request to review: **${project_connection?.project_request.title}**`,
       params: {
         project_connection_id: project_connection_id,
       },
