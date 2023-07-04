@@ -1,6 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
+import { publishNewNotification } from '../helper/pubsub';
 
 const createQuoteNotification = async (sender_id: string, sender_company_name: string, quote_id: string, action: string, recipient_id: string, project_connection_id: string) => {
   const sender = await prisma.user.findFirst({
@@ -46,6 +47,8 @@ const createQuoteNotification = async (sender_id: string, sender_company_name: s
   if (!notification) {
     throw new InternalError('Notification not created');
   }
+
+  publishNewNotification(notification);
 };
 
 export default createQuoteNotification;

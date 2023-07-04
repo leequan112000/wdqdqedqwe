@@ -2,6 +2,8 @@ import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import { NotificationType } from "../../helper/constant";
+import { withFilter } from "graphql-subscriptions";
+import { pubsub } from "../../helper/pubsub";
 
 const resolvers: Resolvers<Context> = {
   Notification: {
@@ -133,6 +135,17 @@ const resolvers: Resolvers<Context> = {
       );
 
       return notifications;
+    },
+  },
+  Subscription: {
+    newNotification: {
+      // @ts-ignore
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(['NEW_NOTIFICATION']),
+        (payload, _, context: Context) => {
+          return payload.newNotification.recipient_id === context.req.user_id;
+        },
+      ),
     },
   },
 };

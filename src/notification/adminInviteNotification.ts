@@ -1,6 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
+import { publishNewNotification } from '../helper/pubsub';
 
 const createAdminInviteNotification = async (recipient_id: string, project_connection_id: string) => {
   const recipient = await prisma.user.findFirst({
@@ -35,6 +36,8 @@ const createAdminInviteNotification = async (recipient_id: string, project_conne
   if (!notification) {
     throw new InternalError('Notification not created');
   }
+
+  publishNewNotification(notification)
 };
 
 export default createAdminInviteNotification;

@@ -1,6 +1,7 @@
 import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
+import { publishNewNotification } from '../helper/pubsub';
 
 const createFileUploadNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
   const sender = await prisma.user.findFirst({
@@ -45,6 +46,8 @@ const createFileUploadNotification = async (sender_id: string, recipient_id: str
   if (!notification) {
     throw new InternalError('Notification not created');
   }
+
+  publishNewNotification(notification);
 };
 
 export default createFileUploadNotification;

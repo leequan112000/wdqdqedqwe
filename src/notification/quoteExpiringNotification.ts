@@ -1,6 +1,7 @@
 import { InternalError } from "../graphql/errors/InternalError";
 import { NotificationType } from "../helper/constant";
 import { prisma } from '../connectDB';
+import { publishNewNotification } from "../helper/pubsub";
 
 type CreateQuoteExpiringNotificationData = {
   quote_id: string;
@@ -28,6 +29,8 @@ const createQuoteExpiringNotification = async (data: CreateQuoteExpiringNotifica
   if (!notification) {
     throw new InternalError('Notification not created');
   }
+
+  publishNewNotification(notification);
 }
 
 export default createQuoteExpiringNotification;
