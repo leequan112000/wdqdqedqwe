@@ -115,7 +115,7 @@ export type CompanyAttachmentUploadResult = {
 };
 
 export type CreateMilestoneInput = {
-  amount: Scalars['Int'];
+  amount: Scalars['Float'];
   description?: InputMaybe<Scalars['String']>;
   timeline?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
@@ -206,7 +206,7 @@ export type Message = {
 
 export type Milestone = {
   __typename?: 'Milestone';
-  amount?: Maybe<Scalars['Int']>;
+  amount?: Maybe<Scalars['Float']>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
@@ -381,7 +381,7 @@ export type MutationCreateProjectRequestCommentArgs = {
 
 
 export type MutationCreateQuoteArgs = {
-  amount: Scalars['Int'];
+  amount: Scalars['Float'];
   milestones?: InputMaybe<Array<CreateMilestoneInput>>;
   project_connection_id: Scalars['String'];
   send_to_biotech?: InputMaybe<Scalars['Boolean']>;
@@ -641,7 +641,7 @@ export type MutationUpdateMeetingEventArgs = {
 
 
 export type MutationUpdateQuoteArgs = {
-  amount: Scalars['Int'];
+  amount: Scalars['Float'];
   id: Scalars['String'];
   milestones: Array<UpdateMilestoneInput>;
   send_to_biotech?: InputMaybe<Scalars['Boolean']>;
@@ -967,7 +967,7 @@ export type QueryVendorCompanyStripeConnectUrlArgs = {
 
 export type Quote = {
   __typename?: 'Quote';
-  amount?: Maybe<Scalars['Int']>;
+  amount?: Maybe<Scalars['Float']>;
   expired_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   milestones?: Maybe<Array<Maybe<Milestone>>>;
@@ -1044,7 +1044,7 @@ export type SubscriptionNewMessageArgs = {
 };
 
 export type UpdateMilestoneInput = {
-  amount: Scalars['Int'];
+  amount: Scalars['Float'];
   description?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
   timeline?: InputMaybe<Scalars['String']>;
@@ -1501,7 +1501,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 }>;
 
 export type MilestoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['Milestone'] = ResolversParentTypes['Milestone']> = ResolversObject<{
-  amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1709,7 +1709,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 }>;
 
 export type QuoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Quote'] = ResolversParentTypes['Quote']> = ResolversObject<{
-  amount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   expired_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;

@@ -1,7 +1,7 @@
 type Quote {
   id: String
   short_id: String
-  amount: Int
+  amount: Float
   milestones: [Milestone]
   project_connection_id: String
   project_connection: ProjectConnection
@@ -17,7 +17,7 @@ type Quote {
 input CreateMilestoneInput {
   title: String!
   description: String
-  amount: Int!
+  amount: Float!
   timeline: String
 }
 
@@ -25,7 +25,7 @@ input UpdateMilestoneInput {
   id: String
   title: String!
   description: String
-  amount: Int!
+  amount: Float!
   timeline: String
 }
 
@@ -35,14 +35,14 @@ type Query {
 
 type Mutation {
   createQuote(
-    amount: Int!
+    amount: Float!
     project_connection_id: String!
     milestones: [CreateMilestoneInput!]
     send_to_biotech: Boolean
   ): Quote
   updateQuote(
     id: String!
-    amount: Int!
+    amount: Float!
     milestones: [UpdateMilestoneInput!]!
     send_to_biotech: Boolean
   ): Quote

@@ -553,6 +553,9 @@ const resolvers: Resolvers<Context> = {
             },
           },
         },
+        orderBy: {
+          project_connection: { created_at: 'desc' }
+        }
       });
 
       const now = new Date();
@@ -561,7 +564,7 @@ const resolvers: Resolvers<Context> = {
 
       if (filter?.status) {
         // not expired project connections
-        const validProjectConnections = projectConnections.filter((pc) => (pc?.expired_at && now < pc.expired_at));
+        const validProjectConnections = projectConnections.filter((pc) => (pc?.expired_at && now < pc.expired_at) || pc.expired_at === null);
 
         if (filter.status === ProjectConnectionVendorExperimentStatus.UNOPEN) {
           const notiQueryTasks = validProjectConnections.map(async (pc) => {
@@ -586,7 +589,10 @@ const resolvers: Resolvers<Context> = {
         }
 
         if (filter.status === ProjectConnectionVendorExperimentStatus.PENDING) {
-          result = validProjectConnections.filter((pc) => pc.vendor_status === ProjectConnectionVendorStatus.PENDING);
+          result = validProjectConnections.filter((pc) =>
+            pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+            pc.project_request.status !== ProjectRequestStatus.WITHDRAWN
+          );
         }
 
         if (filter.status === ProjectConnectionVendorExperimentStatus.ONGOING) {
@@ -604,12 +610,32 @@ const resolvers: Resolvers<Context> = {
 
         if (filter.status === ProjectConnectionVendorExperimentStatus.EXPIRED) {
           result = projectConnections.filter((pc) =>
-            pc.vendor_status === ProjectConnectionVendorStatus.PENDING
-            && (pc?.expired_at && now >= pc.expired_at)
+            pc.project_request.status === ProjectRequestStatus.WITHDRAWN ||
+            (pc.vendor_status === ProjectConnectionVendorStatus.PENDING && (pc?.expired_at && now >= pc.expired_at))
           );
         }
       }
 
+      // Sort & group result
+      result = [
+        // Accepted
+        ...result.filter(pc => pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED && pc.project_request.status !== ProjectRequestStatus.WITHDRAWN),
+        // Pending decision (Non expired)
+        ...result.filter(pc =>
+          pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+          pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
+          (pc.expired_at === null || (pc.expired_at && now < pc.expired_at))
+        ),
+        // Expired
+        ...result.filter(pc =>
+          pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+          pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
+          (pc.expired_at && now >= pc.expired_at)
+        ),
+        // Withdrawn
+        ...result.filter(pc => pc.vendor_status === ProjectConnectionVendorStatus.DECLINED && pc.project_request.status !== ProjectRequestStatus.WITHDRAWN),
+        ...result.filter(pc => pc.project_request.status === ProjectRequestStatus.WITHDRAWN),
+      ]
 
       return result.map((pc) => ({
         ...pc,
