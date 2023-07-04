@@ -19,7 +19,7 @@ export enum ProjectConnectionVendorStatus {
 }
 
 export enum ProjectConnectionCollaborationStatus {
-  ONGOING = 'on-going',
+  ONGOING = 'on_going',
   COMPLETED = 'completed',
 }
 
@@ -33,7 +33,7 @@ export enum ProjectConnectionVendorExperimentStatus {
 }
 
 export enum ProjectConnectionVendorDisplayStatus {
-  PENDING_DECISION = 'pending-decision',
+  PENDING_DECISION = 'pending_decision',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
   EXPIRED = 'expired',
