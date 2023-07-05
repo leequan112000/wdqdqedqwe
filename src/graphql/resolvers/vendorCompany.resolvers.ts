@@ -222,6 +222,7 @@ const resolvers: Resolvers<Context> = {
             twitter_url: args.twitter_url,
             facebook_url: args.facebook_url,
             cro_extra_info: args.cro_extra_info,
+            project_completed_per_year: args.project_completed_per_year,
             ...(args.name !== null ? { name: args.name } : {}),
           }
         })

@@ -670,6 +670,7 @@ export type MutationUpdateVendorCompanyArgs = {
   linkedin_url?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   principal_investigator_name?: InputMaybe<Scalars['String']>;
+  project_completed_per_year?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
   team_size?: InputMaybe<Scalars['String']>;
   twitter_url?: InputMaybe<Scalars['String']>;
@@ -1106,6 +1107,7 @@ export type VendorCompany = {
   name?: Maybe<Scalars['String']>;
   primary_members?: Maybe<Array<Maybe<VendorMember>>>;
   principal_investigator_name?: Maybe<Scalars['String']>;
+  project_completed_per_year?: Maybe<Scalars['String']>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
@@ -1839,6 +1841,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   primary_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   principal_investigator_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_completed_per_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
