@@ -4,8 +4,8 @@ import { Context } from "../../types/context";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
-    CertificationTagConnection: async (parent: void, args: { certification_tag_id: string, vendor_company_id: string }, context: Context) => {
-      const { certification_tag_id, vendor_company_id } = args;
+    CertificationTagConnection: async (parent: void, args: { certification_tag_id: string, vendor_company_id: string, priority: number }, context: Context) => {
+      const { certification_tag_id, vendor_company_id, priority } = args;
 
       const existingCertificationTagConnection = await context.prisma.certificationTagConnection.findFirst({
         where: {
@@ -49,7 +49,7 @@ const resolvers: Resolvers<Context> = {
             connect: {
               id: vendor_company_id
             }
-          }
+          },
         }
       });
     },

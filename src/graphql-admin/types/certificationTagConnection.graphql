@@ -11,5 +11,5 @@ type Mutation {
     certification_tag_id: String!
     vendor_company_id: String!
   ): CertificationTagConnection
-  deleteCertificationTagConnection(id: String!): Boolean
+  deleteCertificationTagConnection(id: String!): CertificationTagConnection
 }
