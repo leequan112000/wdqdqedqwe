@@ -1,9 +1,9 @@
 import { InternalError } from '../graphql/errors/InternalError';
-import { NotificationType } from '../helper/constant';
+import { NotificationType, QuoteNotificationActionContent } from '../helper/constant';
 import { prisma } from '../connectDB';
 import { publishNewNotification } from '../helper/pubsub';
 
-const createQuoteNotification = async (sender_id: string, sender_company_name: string, quote_id: string, action: string, recipient_id: string, project_connection_id: string) => {
+const createQuoteNotification = async (sender_id: string, sender_company_name: string, quote_id: string, action: QuoteNotificationActionContent, recipient_id: string, project_connection_id: string) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,
@@ -31,9 +31,26 @@ const createQuoteNotification = async (sender_id: string, sender_company_name: s
     },
   });
 
+  let notificationType: NotificationType;
+
+  switch (action) {
+    case QuoteNotificationActionContent.ACCEPTED:
+      notificationType = NotificationType.QUOTE_ACCEPTED_NOTIFICATION;
+      break;
+    case QuoteNotificationActionContent.DECLINED:
+      notificationType = NotificationType.QUOTE_DECLINED_NOTIFICATION;
+      break;
+    case QuoteNotificationActionContent.SUBMITTED:
+      notificationType = NotificationType.QUOTE_SUBMITTED_NOTIFICATION;
+      break;
+    default:
+      notificationType = NotificationType.QUOTE_NOTIFICATION;
+      break;
+  }
+
   const notification = await prisma.notification.create({
     data: {
-      notification_type: NotificationType.QUOTE_NOTIFICATION,
+      notification_type: notificationType,
       message: `**${sender_company_name}** has ${action} quote for **${project_connection?.project_request.title}**`,
       sender_id,
       params: {
