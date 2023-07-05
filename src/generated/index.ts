@@ -165,7 +165,7 @@ export type LabSpecialization = {
 export type LabSpecializationConnection = {
   __typename?: 'LabSpecializationConnection';
   id?: Maybe<Scalars['String']>;
-  lab_specialization?: Maybe<LabSpecializationConnection>;
+  lab_specialization?: Maybe<LabSpecialization>;
   lab_specialization_id?: Maybe<Scalars['String']>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
@@ -1497,7 +1497,7 @@ export type LabSpecializationResolvers<ContextType = any, ParentType extends Res
 
 export type LabSpecializationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabSpecializationConnection'] = ResolversParentTypes['LabSpecializationConnection']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  lab_specialization?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType>;
+  lab_specialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType>;
   lab_specialization_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
