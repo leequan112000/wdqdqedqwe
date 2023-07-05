@@ -23,6 +23,7 @@ type VendorCompany {
   principal_investigator_name: String
   founded_year: String
   team_size: String
+  project_completed_per_year: String
   google_scholar_url: String
   linkedin_url: String
   twitter_url: String
@@ -64,6 +65,7 @@ type Mutation {
     google_scholar_url: String
     founded_year: String
     team_size: String
+    project_completed_per_year: String
     linkedin_url: String
     twitter_url: String
     facebook_url: String
