@@ -137,6 +137,7 @@ model VendorCompany {
   google_scholar_url          String?
   founded_year                String?
   team_size                   String?
+  project_completed_per_year  String?
   linkedin_url                String?
   twitter_url                 String?
   facebook_url                String?

@@ -19,7 +19,7 @@ export enum ProjectConnectionVendorStatus {
 }
 
 export enum ProjectConnectionCollaborationStatus {
-  ONGOING = 'on-going',
+  ONGOING = 'on_going',
   COMPLETED = 'completed',
 }
 
@@ -33,7 +33,7 @@ export enum ProjectConnectionVendorExperimentStatus {
 }
 
 export enum ProjectConnectionVendorDisplayStatus {
-  PENDING_DECISION = 'pending-decision',
+  PENDING_DECISION = 'pending_decision',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
   EXPIRED = 'expired',
@@ -76,6 +76,9 @@ export enum NotificationType {
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
   QUOTE_NOTIFICATION = 'QuoteNotification',
+  QUOTE_SUBMITTED_NOTIFICATION = 'QuoteSubmittedNotification',
+  QUOTE_ACCEPTED_NOTIFICATION = 'QuoteAcceptedNotification',
+  QUOTE_DECLINED_NOTIFICATION = 'QuoteDeclinedNotification',
   QUOTE_EXPIRED_NOTIFICATION = 'QuoteExpiredNotification',
   QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',

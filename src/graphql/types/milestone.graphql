@@ -3,7 +3,7 @@ type Milestone {
   short_id: String
   title: String
   description: String
-  amount: Int
+  amount: Float
   timeline: String
   status: String
   payment_status: String

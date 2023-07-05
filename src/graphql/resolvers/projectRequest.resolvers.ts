@@ -135,9 +135,11 @@ const resolvers: Resolvers<Context> = {
             },
           ],
         },
-        orderBy: {
-          updated_at: 'desc'
-        }
+        orderBy: [
+          // Sort by status to grouped matched experiments first
+          { status: 'asc' },
+          { updated_at: 'desc' },
+        ]
       });
 
       const processed: ProjectRequest[] = data.map((d) => ({
