@@ -1,0 +1,17 @@
+type LabSpecializationConnection {
+  id: String
+  lab_specialization_id: String
+  lab_specialization: LabSpecializationConnection
+  vendor_company_id: String
+  vendor_company: VendorCompany
+}
+
+type Mutation {
+  createLabSpecializationConnection(
+    lab_specialization_id: String!
+    vendor_company_id: String!
+  ): LabSpecializationConnection
+  deleteLabSpecializationConnection(
+    id: String!
+  ): LabSpecializationConnection
+}

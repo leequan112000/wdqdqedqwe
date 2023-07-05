@@ -63,6 +63,16 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Lab Specialization not found.');
       }
 
+      const existingLabSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
+        where: {
+          lab_specialization_id: id,
+        },
+      });
+
+      if (existingLabSpecializationConnections.length > 0) {
+        throw new PublicError('Lab Specialization is still connected to a Vendor Company, please remove the connection first.');
+      }
+
       await context.prisma.labSpecialization.delete({
         where: {
           id: id,
