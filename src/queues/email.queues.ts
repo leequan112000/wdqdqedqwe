@@ -1,19 +1,26 @@
-import { AdminTeam, EmailType, NotificationType } from "../helper/constant";
+import { AdminTeam, EmailType, MilestoneEventType, NotificationType, QuoteNotificationActionContent } from "../helper/constant";
 import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
-import { User } from "@prisma/client";
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
+import createAcceptRequestNotification from "../notification/acceptRequestNotification";
+import createAdminInviteNotification from "../notification/adminInviteNotification";
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
 import createFileUploadNotification from "../notification/fileUploadNotification";
 import createMessageNotification from "../notification/messageNotification";
-import createAcceptRequestNotification from "../notification/acceptRequestNotification";
-import createAdminInviteNotification from "../notification/adminInviteNotification";
+import createQuoteNotification from "../notification/quoteNotification";
+import { createMilestoneNotification, createMilestonePaymentFailedNotification } from "../notification/milestoneNotification";
+import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
+import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
+import { getReceiversByProjectConnection } from "./utils";
+import { CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
+import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -128,7 +135,7 @@ emailQueue.process(async (job, done) => {
 
         const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
         // less than 5 accepted projects
-        const projectRequests =  await prisma.projectRequest.findMany({
+        const projectRequests = await prisma.projectRequest.findMany({
           where: {
             project_connections: {
               some: {
@@ -152,7 +159,7 @@ emailQueue.process(async (job, done) => {
 
         const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
         const lowAcceptanceList = filteredProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
-        
+
         const data = { zeroAcceptedList, lowAcceptanceList };
 
         const admins = await prisma.admin.findMany({
@@ -176,62 +183,7 @@ emailQueue.process(async (job, done) => {
           action,
         } = data;
 
-        const projectConnection = await prisma.projectConnection.findFirstOrThrow({
-          where: {
-            id: projectConnectionId,
-          },
-          include: {
-            customer_connections: true,
-            vendor_member_connections: true,
-            project_request: true,
-          }
-        });
-
-        const vendor = await prisma.vendorMember.findFirst({
-          where: {
-            user_id: uploaderUserId,
-          },
-          include: {
-            vendor_company: true,
-          }
-        });
-
-        let senderCompanyName = "";
-        let receivers: User[] = [];
-
-        if (vendor) {
-          // if uploader is vendor, notify biotech members
-          senderCompanyName = vendor.vendor_company?.name as string;
-          receivers = await prisma.user.findMany({
-            where: {
-              customer: {
-                id: {
-                  in: projectConnection.customer_connections.map(cc => cc.customer_id),
-                }
-              }
-            }
-          });
-        } else {
-          // if uploader is customer, notify vendor members
-          const customer = await prisma.customer.findFirstOrThrow({
-            where: {
-              user_id: uploaderUserId,
-            },
-            include: {
-              biotech: true,
-            }
-          });
-          senderCompanyName = customer.biotech.name;
-          receivers = await prisma.user.findMany({
-            where: {
-              vendor_member: {
-                id: {
-                  in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
-                }
-              }
-            }
-          });
-        }
+        const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, uploaderUserId);
 
         if (isFinalContract) {
           await Promise.all(
@@ -269,62 +221,7 @@ emailQueue.process(async (job, done) => {
       case EmailType.USER_NEW_MESSAGE_NOTICE: {
         const { projectConnectionId, senderUserId } = data;
 
-        const projectConnection = await prisma.projectConnection.findFirstOrThrow({
-          where: {
-            id: projectConnectionId,
-          },
-          include: {
-            customer_connections: true,
-            vendor_member_connections: true,
-            project_request: true,
-          }
-        });
-
-        const vendor = await prisma.vendorMember.findFirst({
-          where: {
-            user_id: senderUserId,
-          },
-          include: {
-            vendor_company: true,
-          }
-        });
-
-        let senderCompanyName = "";
-        let receivers: User[] = [];
-
-        if (vendor) {
-          // if sender is vendor, notify biotech members
-          senderCompanyName = vendor.vendor_company?.name as string;
-          receivers = await prisma.user.findMany({
-            where: {
-              customer: {
-                id: {
-                  in: projectConnection.customer_connections.map(cc => cc.customer_id),
-                }
-              }
-            }
-          });
-        } else {
-          // if sender is customer, notify vendor members
-          const customer = await prisma.customer.findFirstOrThrow({
-            where: {
-              user_id: senderUserId,
-            },
-            include: {
-              biotech: true,
-            }
-          });
-          senderCompanyName = customer.biotech.name;
-          receivers = await prisma.user.findMany({
-            where: {
-              vendor_member: {
-                id: {
-                  in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
-                }
-              }
-            }
-          });
-        }
+        const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, senderUserId);
 
         await Promise.all(
           receivers.map(async (receiver) => {
@@ -420,6 +317,170 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
+      case EmailType.USER_QUOTE_NOTICE_EMAIL: {
+        const { projectConnectionId, quoteId, senderUserId, action } = data;
+        const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, senderUserId);
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendQuoteNoticeEmail(
+              {
+                sender_name: senderCompanyName,
+                project_title: projectConnection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                action,
+                quotation_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+              },
+              receiver.email,
+            );
+
+            await createQuoteNotification(senderUserId, senderCompanyName, quoteId, action, receiver.id, projectConnection.id);
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_MILESTONE_NOTICE_EMAIL: {
+        const { projectConnectionId, milestoneTitle, quoteId, senderUserId, milestoneEventType } = data;
+        const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, senderUserId);
+        let milestoneUpdateContent = '';
+        switch (milestoneEventType) {
+          case MilestoneEventType.BIOTECH_PAID:
+            milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${milestoneTitle}`;
+            break;
+          case MilestoneEventType.VENDOR_MARKED_AS_COMPLETE:
+            milestoneUpdateContent = "New milestone completed! Please review and approve for release of payment.";
+            break;
+          case MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED:
+            milestoneUpdateContent = "Milestone completion approved! Your payout is now in progress.";
+            break;
+        }
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendMilestoneNoticeEmail(
+              {
+                sender_name: senderCompanyName,
+                project_title: projectConnection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                milestone_update_content: milestoneUpdateContent,
+                milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+              },
+              receiver.email,
+            );
+
+            await createMilestoneNotification(senderUserId, quoteId, milestoneUpdateContent, receiver.id, projectConnection.id);
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL: {
+        const { milestoneId } = data;
+        const milestone = await prisma.milestone.findFirstOrThrow({
+          where: {
+            id: milestoneId,
+          },
+          include: {
+            quote: {
+              include: {
+                project_connection: {
+                  include: {
+                    customer_connections: true,
+                    project_request: true,
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const receivers = await prisma.user.findMany({
+          where: {
+            customer: {
+              id: {
+                in: milestone.quote.project_connection.customer_connections.map(cc => cc.customer_id),
+              }
+            }
+          }
+        });
+
+        const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendMilestoneNoticeEmail(
+              {
+                sender_name: "Cromatic Admin",
+                project_title: milestone.quote.project_connection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                milestone_update_content: milestoneUpdateContent,
+                milestone_url: `${app_env.APP_URL}/app/project-connection/${milestone.quote.project_connection_id}/quote/${milestone.quote.id}`,
+              },
+              receiver.email,
+            );
+
+            await createMilestonePaymentFailedNotification(milestone.quote_id, milestoneUpdateContent, receiver.id, milestone.quote.project_connection_id);
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
+        const { receiverId, receiverEmail, receiverName, projectConnectionId, expiringIn, projectRequestTitle, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const resp = await sendQuoteExpiringNoticeEmail({
+          button_url: buttonUrl,
+          expiring_in: expiringIn,
+          project_request_title: projectRequestTitle,
+          receiver_full_name: receiverName,
+          quotes: quotes,
+        }, receiverEmail);
+
+
+        const createNotificationTasks = quotes.map(async (q) => {
+          return await createQuoteExpiringNotification({
+            expiring_in: expiringIn,
+            project_connection_id: projectConnectionId,
+            project_name: projectRequestTitle,
+            quote_id: q.id,
+            recipient_id: receiverId,
+            vendor_full_name: q.vendor_full_name,
+          })
+        });
+
+        await Promise.all(createNotificationTasks);
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
+        const { receiverId, receiverEmail, receiverName, projectConnectionId, projectRequestTitle, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const resp = await sendQuoteExpiredNoticeEmail({
+          button_url: buttonUrl,
+          project_request_title: projectRequestTitle,
+          receiver_full_name: receiverName,
+          quotes: quotes,
+        }, receiverEmail);
+
+
+        const createNotificationTasks = quotes.map(async (q) => {
+          return await createQuoteExpiredNotification({
+            project_connection_id: projectConnectionId,
+            project_name: projectRequestTitle,
+            quote_id: q.id,
+            vendor_full_name: receiverName,
+            recipient_id: receiverId,
+          });
+        });
+
+        await Promise.all(createNotificationTasks);
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -448,6 +509,31 @@ export const createSendUserFileUploadNotice = (data: {
 
 export const createSendUserNewMessageNoticeJob = (data: { projectConnectionId: string, senderUserId: string }) => {
   emailQueue.add({ type: EmailType.USER_NEW_MESSAGE_NOTICE, data })
+}
+
+export const createSendUserQuoteNoticeJob = (data: {
+  projectConnectionId: string;
+  senderUserId: string;
+  quoteId: string;
+  action: QuoteNotificationActionContent;
+}) => {
+  emailQueue.add({ type: EmailType.USER_QUOTE_NOTICE_EMAIL, data })
+}
+
+export const createSendUserMilestoneNoticeJob = (data: {
+  projectConnectionId: string;
+  milestoneTitle: string;
+  quoteId: string;
+  senderUserId: string;
+  milestoneEventType: MilestoneEventType;
+}) => {
+  emailQueue.add({ type: EmailType.USER_MILESTONE_NOTICE_EMAIL, data })
+}
+
+export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
+  milestoneId: string;
+}) => {
+  emailQueue.add({ type: EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL, data })
 }
 
 export const createSendAdminProjectInvitationJob = (data: {
@@ -479,4 +565,16 @@ export const createSendAdminZeroAcceptedProjectNoticeJob = (data: { zeroAccepted
 
 export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: string }) => {
   emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data })
+}
+
+export const createSendUserExpiringQuoteNoticeEmailJob = (
+  data: CreateSendUserExpiringQuoteNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
+}
+
+export const createSendUserExpiredQuoteNoticeEmailJob = (
+  data: CreateSendUserExpiredQuoteNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
 }

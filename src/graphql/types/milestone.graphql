@@ -1,0 +1,31 @@
+type Milestone {
+  id: String
+  short_id: String
+  title: String
+  description: String
+  amount: Float
+  timeline: String
+  status: String
+  payment_status: String
+  vendor_payment_status: String
+  project_attachments: [ProjectAttachment]
+}
+
+type MarkMilestoneCompleteResponse {
+  milestone: Milestone
+  upload_results: [UploadResult]
+}
+
+type Query {
+  milestone(id: String!): Milestone
+  milestoneCheckoutUrl(
+    id: String!
+    success_url: String!
+    cancel_url: String!
+  ): String
+}
+
+type Mutation {
+  markMilestoneAsCompleted(id: String!, files: [Upload]): MarkMilestoneCompleteResponse
+  verifyMilestoneAsCompleted(id: String!, password: String!): Milestone
+}

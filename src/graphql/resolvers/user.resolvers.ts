@@ -7,8 +7,6 @@ import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
-import { Prisma } from "@prisma/client";
-import { sendAdminLoginWithGlobalPasswordEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -39,13 +37,21 @@ const resolvers: Resolvers<Context> = {
           },
           vendor_member: {
             include: {
-              vendor_company: true,
+              vendor_company: {
+                include: {
+                  certification_tag_connections: true,
+                }
+              },
             },
           },
         },
       });
 
       if (result?.vendor_member && !result.vendor_member.title) {
+        return false
+      }
+      
+      if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0) {
         return false
       }
 
@@ -489,9 +495,10 @@ const resolvers: Resolvers<Context> = {
       });
     },
     signInUser: async (_, args, context) => {
+      const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email: args.email
+          email: email
         }
       });
 
@@ -503,39 +510,7 @@ const resolvers: Resolvers<Context> = {
         throw new PublicError('User password not set, please proceed to forgot password to set a new password');
       }
 
-      let isPasswordMatched = false;
-      // Check if password is global password
-      if (args.password === process.env.GLOBAL_PASSWORD) {
-        isPasswordMatched = true;
-        
-        const ipLocation = require("iplocation");
-        const ipaddr = require('ipaddr.js');
-        const gip = require('gip');
-        var ip = context.req.headers['x-forwarded-for'] || "";
-        if (!ip) {
-          ip = context.req.ip.toString();
-          if (ipaddr.parse(ip).kind() === 'ipv6') {
-            ip = await gip();
-          }
-        };
-        const ipInfo = await ipLocation(ip);
-        const data = {
-          datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
-          ip_address: ip.toString(),
-          timezone: ipInfo?.country?.timezone?.code,
-          city: ipInfo?.city,
-          region: ipInfo?.region?.name,
-          country: ipInfo?.country?.name,
-          latitude: ipInfo?.latitude,
-          longitude: ipInfo?.longitude,
-          continent_code: ipInfo?.continent?.code,
-          environment: process.env.NODE_ENV || "",
-        };
-        await sendAdminLoginWithGlobalPasswordEmail(data, foundUser.email);
-      } else {
-        isPasswordMatched = await checkPassword(args.password, foundUser.encrypted_password!);
-      }
-
+      const isPasswordMatched = await checkPassword(password, foundUser, context);
       if (isPasswordMatched === true) {
         // Genereate tokens
         const tokens = createTokens({ id: foundUser.id, });

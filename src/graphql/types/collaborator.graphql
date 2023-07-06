@@ -2,6 +2,12 @@ type Query {
   collaborators: [User]
 }
 
+input InviteCollaboratorInput {
+  first_name: String!
+  last_name: String!
+  email: String!
+}
+
 type Mutation {
   inviteCollaborator(
     first_name: String!
@@ -9,5 +15,8 @@ type Mutation {
     email: String!
     custom_message: String
   ): User
+  inviteCollaborators(
+    collaborators: [InviteCollaboratorInput!]!
+  ): [User]
   resendInvitation(user_id: String!): User
 }
