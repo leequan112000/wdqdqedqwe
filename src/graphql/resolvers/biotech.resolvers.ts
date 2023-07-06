@@ -115,6 +115,18 @@ const resolver: Resolvers<Context> = {
           }
         }
 
+        if (args.legal_name && args.legal_name !== user?.customer?.biotech?.legal_name) {
+          const existingBiotech = await trx.biotech.findFirst({
+            where: {
+              legal_name: args.legal_name
+            }
+          });
+
+          if (existingBiotech) {
+            throw new PublicError('Biotech legal name already exists.');
+          }
+        }
+
         return await context.prisma.biotech.update({
           where: {
             id: user.customer.biotech_id
