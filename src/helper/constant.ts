@@ -143,3 +143,8 @@ export enum EmailType {
   USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
   USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
 }
+
+export enum VendorType {
+  ACADEMIC_LAB = 'academic_lab',
+  CRO = 'cro',
+}

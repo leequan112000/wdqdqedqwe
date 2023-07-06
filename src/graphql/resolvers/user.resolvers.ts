@@ -7,6 +7,7 @@ import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
+import { VendorType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -50,7 +51,7 @@ const resolvers: Resolvers<Context> = {
       if (result?.vendor_member && !result.vendor_member.title) {
         return false
       }
-      
+
       if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0) {
         return false
       }
@@ -64,6 +65,7 @@ const resolvers: Resolvers<Context> = {
         (!result?.customer?.biotech?.cda_signed_at && result?.customer?.biotech?.skip_cda) ||
         result?.vendor_member?.vendor_company?.cda_signed_at ||
         (!result?.vendor_member?.vendor_company?.cda_signed_at && result?.vendor_member?.vendor_company?.skip_cda)
+        || result?.vendor_member?.vendor_company?.vendor_type === VendorType.ACADEMIC_LAB
       ) {
         return true;
       }
