@@ -117,13 +117,11 @@ export default {
         throw new InternalError('Certification tag connection not found.');
       }
 
-      await context.prisma.certificationTagConnection.delete({
+      return await context.prisma.certificationTagConnection.delete({
         where: {
           id: existingCertificationTagConnection.id
         }
       });
-
-      return true;
     },
   },
 };
