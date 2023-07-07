@@ -18,6 +18,15 @@ export enum ProjectConnectionVendorStatus {
   DECLINED = 'declined',
 }
 
+/**
+ * Ongoing: Project connection that is still ongoing.
+ * Ongoing requirement:
+ *  - Has at least 1 accepted quote with ongoing milestones.
+ * Completed: Project connection that is completed.
+ * Completed requirement:
+ *  - Has 0 accepted quote with ongoing milestones and,
+ *  - Has at least 1 accepted quote without ongoing milestones.
+ */
 export enum ProjectConnectionCollaborationStatus {
   ONGOING = 'on_going',
   COMPLETED = 'completed',
@@ -45,7 +54,6 @@ export enum QuoteStatus {
   PENDING_DECISION = 'pending_decision',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
-  COMPLETED = 'completed',
   EXPIRED = 'expired',
 }
 
