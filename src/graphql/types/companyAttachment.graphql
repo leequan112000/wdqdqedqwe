@@ -1,0 +1,23 @@
+type CompanyAttachment {
+  id: String
+  key: String
+  filename: String
+  byte_size: Float
+  created_at: Date
+  vendor_company_id: String
+  vendor_company: VendorCompany
+  signed_url: String
+  formatted_filesize: String
+  document_type: String
+}
+
+type CompanyAttachmentUploadResult {
+  success: Boolean!
+  error_message: String
+  data: CompanyAttachment
+}
+
+type Mutation {
+  uploadCompanyAttachment(file: Upload!, vendor_company_id: String!): CompanyAttachmentUploadResult
+  removeCompanyAttachment(id: String!): CompanyAttachment
+}

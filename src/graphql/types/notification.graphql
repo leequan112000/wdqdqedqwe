@@ -21,3 +21,7 @@ type Mutation {
   markNotificationAsRead(id: String!): Notification
   markNotificationsInProjectAsRead(project_connection_id: String!): [Notification]
 }
+
+type Subscription {
+  newNotification: Notification
+}

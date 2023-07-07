@@ -8,7 +8,7 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     submitCroInterest: async (parent, args, context) => {
       const {
-        company_name, company_type, email, interest, service
+        company_name, company_type, email, interest, service, first_name, last_name,
       } = args
 
       const newInterestedCro = await context.prisma.interestedCro.create({
@@ -18,6 +18,8 @@ const resolvers: Resolvers<Context> = {
           email,
           interest,
           service,
+          first_name,
+          last_name,
         },
       });
 

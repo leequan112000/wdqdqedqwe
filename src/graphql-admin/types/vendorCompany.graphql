@@ -8,6 +8,8 @@ type VendorCompany {
   address: String
   cda_pandadoc_file_id: String
   cda_signed_at: Date
+  vendor_type: String
+  skip_cda: Boolean
 }
 
 type Mutation {
@@ -16,6 +18,8 @@ type Mutation {
     address: String
     website: String
     description: String
+    vendor_type: String
+    skip_cda: Boolean
   ): VendorCompany
   inviteVendorCompaniesToProjectByAdmin(
     project_request_id: String!

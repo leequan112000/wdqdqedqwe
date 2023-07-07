@@ -19,11 +19,52 @@ export type NewMessageNoticeData = {
   company_name: string;
 }
 
+export type QuoteNoticeData = {
+  sender_name: string;
+  project_title: string;
+  receiver_full_name: string;
+  action: string;
+  quotation_url: string;
+}
+
+export type MilestoneNoticeData = {
+  sender_name: string;
+  project_title: string;
+  receiver_full_name: string;
+  milestone_update_content: string;
+  milestone_url: string;
+}
+
 export type AcceptProjectRequestNoticeData = {
   login_url: string;
   vendor_company_name: string;
   project_title: string;
   receiver_full_name: string;
+}
+
+export type QuoteExpiringNoticeData = {
+  receiver_full_name: string;
+  project_request_title: string;
+  button_url: string;
+  expiring_in: string;
+  quotes: Array<{
+    id: string;
+    short_id: string;
+    project_request_title: string;
+    vendor_full_name: string;
+  }>;
+}
+
+export type QuoteExpiredNoticeData = {
+  receiver_full_name: string;
+  project_request_title: string;
+  button_url: string;
+  quotes: Array<{
+    id: string;
+    short_id: string;
+    project_request_title: string;
+    vendor_full_name: string;
+  }>;
 }
 
 export type ProjectRequestInvitationByAdminData = {
@@ -57,6 +98,16 @@ export type AdminLoginWithGlobalPasswordData = {
 export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
   lowAcceptanceList: string;
+}
+
+export type AdminGeneralNoticeData = {
+  subject: string;
+  preheader: string;
+  content_title: string;
+  content_body: string;
+  content_footer: string;
+  button_label: string;
+  button_url?: string;
 }
 
 export type BiotechInviteVendorMemberData = {

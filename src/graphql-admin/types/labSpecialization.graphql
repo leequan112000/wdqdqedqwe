@@ -1,0 +1,23 @@
+type LabSpecialization {
+  id: String
+  full_name: String
+  short_name: String
+  priority: Int
+}
+
+type Mutation {
+  createLabSpecialization(
+    full_name: String!
+    short_name: String
+    priority: Int
+  ): LabSpecialization
+  updateLabSpecialization(
+    id: String!
+    full_name: String!
+    short_name: String
+    priority: Int
+  ): LabSpecialization
+  deleteLabSpecialization(
+    id: String!
+  ): Boolean
+}

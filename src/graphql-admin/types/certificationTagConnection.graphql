@@ -1,0 +1,15 @@
+type CertificationTagConnection {
+  id: String
+  certification_tag_id: String
+  certification_tag: CertificationTag
+  vendor_company_id: String
+  vendor_company: VendorCompany
+}
+
+type Mutation {
+  createCertificationTagConnection(
+    certification_tag_id: String!
+    vendor_company_id: String!
+  ): CertificationTagConnection
+  deleteCertificationTagConnection(id: String!): CertificationTagConnection
+}

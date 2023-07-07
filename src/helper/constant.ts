@@ -18,6 +18,58 @@ export enum ProjectConnectionVendorStatus {
   DECLINED = 'declined',
 }
 
+/**
+ * Ongoing: Project connection that is still ongoing.
+ * Ongoing requirement:
+ *  - Has at least 1 accepted quote with ongoing milestones.
+ * Completed: Project connection that is completed.
+ * Completed requirement:
+ *  - Has 0 accepted quote with ongoing milestones and,
+ *  - Has at least 1 accepted quote without ongoing milestones.
+ */
+export enum ProjectConnectionCollaborationStatus {
+  ONGOING = 'on_going',
+  COMPLETED = 'completed',
+}
+
+export enum ProjectConnectionVendorExperimentStatus {
+  UNOPEN = 'unopen',
+  PENDING = 'pending',
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed',
+  DECLINED = 'declined',
+  EXPIRED = 'expired',
+}
+
+export enum ProjectConnectionVendorDisplayStatus {
+  PENDING_DECISION = 'pending_decision',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+  EXPIRED = 'expired',
+  WITHDRAWN = 'withdrawn',
+}
+
+export enum QuoteStatus {
+  DRAFT = 'draft',
+  PENDING_DECISION = 'pending_decision',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+  EXPIRED = 'expired',
+}
+
+export enum MilestoneStatus {
+  NOT_STARTED = 'not_started',
+  PENDING_COMPLETION_APPROVAL = 'pending_completion_approval',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
+export enum MilestonePaymentStatus {
+  UNPAID = 'unpaid',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+}
+
 export enum AdminTeam {
   ENGINEER = 'engineer',
   PRODUCT = 'product',
@@ -31,16 +83,46 @@ export enum NotificationType {
   FILE_UPLOAD_NOTIFICATION = 'FileUploadNotification',
   FINAL_CONTRACT_UPLOAD_NOTIFICATION = 'FinalContractUploadNotification',
   MESSAGE_NOTIFICATION = 'MessageNotification',
+  QUOTE_NOTIFICATION = 'QuoteNotification',
+  QUOTE_SUBMITTED_NOTIFICATION = 'QuoteSubmittedNotification',
+  QUOTE_ACCEPTED_NOTIFICATION = 'QuoteAcceptedNotification',
+  QUOTE_DECLINED_NOTIFICATION = 'QuoteDeclinedNotification',
+  QUOTE_EXPIRED_NOTIFICATION = 'QuoteExpiredNotification',
+  QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
+  MILESTONE_NOTIFICATION = 'MilestoneNotification',
+  MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
+}
+
+export enum QuoteNotificationActionContent {
+  SUBMITTED = 'submitted a new',
+  ACCEPTED = 'accepted your',
+  DECLINED = 'declined your',
+}
+
+export enum MilestoneEventType {
+  BIOTECH_PAID = 'biotech paid',
+  VENDOR_MARKED_AS_COMPLETE = 'vendor marked as complete',
+  BIOTECH_VERIFIED_AS_COMPLETED = 'biotech verified as completed',
 }
 
 export enum ProjectAttachmentDocumentType {
   FILE,
   REDLINE_FILE,
+  MILESTONE_FILE
 }
 
 export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.FILE]: 'file',
   [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
+  [ProjectAttachmentDocumentType.MILESTONE_FILE]: 'milestone_file',
+}
+
+export enum CompanyAttachmentDocumentType {
+  VENDOR_COMPANY_FILE,
+}
+
+export const COMPANY_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE]: 'vendor_company_file',
 }
 
 export enum MeetingPlatform {
@@ -64,4 +146,14 @@ export enum EmailType {
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
   USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
   BIOTECH_INVITE_VENDOR_MEMBER_EMAIL = 'biotech:invite-vendor-member-email',
+  USER_QUOTE_NOTICE_EMAIL = 'user:quote-notice-email',
+  USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
+  USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
+  USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
+  USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
+}
+
+export enum VendorType {
+  ACADEMIC_LAB = 'academic_lab',
+  CRO = 'cro',
 }

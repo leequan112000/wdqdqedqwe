@@ -11,6 +11,7 @@ type ProjectConnection {
   vendor_member_connections: [VendorMemberConnection]
   customer_connections: [CustomerConnection]
   project_attachments: [ProjectAttachment]
+  quotes: [Quote]
   chat: Chat
   messages: [Message]
   unsubscribed_has_new_message: Boolean
@@ -20,11 +21,16 @@ type ProjectConnection {
   internal_collaborators: [User]
   external_collaborators: [User]
   expired_at: Date
+  vendor_display_status: String
+}
+
+input ProjectConnectionFilter {
+  status: String
 }
 
 type Query {
   projectConnection(id: String!): ProjectConnection
-  projectConnections: [ProjectConnection]
+  projectConnections(filter: ProjectConnectionFilter): [ProjectConnection]
 }
 
 type Mutation {
