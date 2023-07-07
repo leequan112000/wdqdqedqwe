@@ -142,7 +142,7 @@ const resolvers: Resolvers<Context> = {
     inviteCollaborators: async (parent, args, context) => {
       const { collaborators } = args;
 
-      collaborators.map(async (collaborator) => {
+      const addCollaboratorTasks = collaborators.map(async (collaborator) => {
         // Check for existing user
         const existingUser = await context.prisma.user.findFirst({
           where: {
@@ -153,7 +153,11 @@ const resolvers: Resolvers<Context> = {
         if (existingUser) {
           throw new PublicError(`User ${existingUser.email} already exists!`)
         }
+
+        return existingUser;
       });
+
+      await Promise.all(addCollaboratorTasks);
 
       // Get current user data with company id
       const userId = context.req.user_id;
@@ -185,7 +189,7 @@ const resolvers: Resolvers<Context> = {
       if (collaborators && collaborators.length > 0) {
         const collabs = collaborators.map(async (collaborator) => {
           const resetToken = createResetPasswordToken();
-          
+
           return await context.prisma.$transaction(async (trx) => {
             // Create new user
             const newUser = await trx.user.create({
