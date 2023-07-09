@@ -151,6 +151,7 @@ export default {
               description: args.description,
               address: args.address,
               is_on_marketplace: false,
+              invited_by: args.biotech_id,
             }
           });
   

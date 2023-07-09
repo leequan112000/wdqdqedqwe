@@ -400,6 +400,8 @@ export type MutationCreateQuoteArgs = {
 export type MutationCreateVendorCompanyArgs = {
   address?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
+  invited_by?: InputMaybe<Scalars['String']>;
+  is_on_marketplace?: InputMaybe<Scalars['Boolean']>;
   name: Scalars['String'];
   skip_cda?: InputMaybe<Scalars['Boolean']>;
   vendor_type?: InputMaybe<Scalars['String']>;
@@ -1151,6 +1153,8 @@ export type VendorCompany = {
   founded_year?: Maybe<Scalars['String']>;
   google_scholar_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  invited_by?: Maybe<Scalars['String']>;
+  is_on_marketplace?: Maybe<Scalars['Boolean']>;
   lab_specializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   legal_name?: Maybe<Scalars['String']>;
   linkedin_url?: Maybe<Scalars['String']>;
@@ -1890,6 +1894,8 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   founded_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   google_scholar_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invited_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_on_marketplace?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   lab_specializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
   legal_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
