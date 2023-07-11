@@ -143,7 +143,7 @@ model VendorCompany {
   facebook_url                String?
   cro_extra_info              String?
   stripe_account              String?
-  commission_rate             Float     @default(0)
+  commission_rate             Float     @default(5)
 
   vendor_members                 VendorMember[]
   project_connections            ProjectConnection[]
@@ -541,15 +541,16 @@ model CompanyAttachment {
 model Invoice {
   id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   invoice_number    String
-  vendor_company_id String
+  vendor_company_id String        @db.Uuid
   payment_status    String
   due_at            DateTime
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
   paid_at           DateTime?
-  stripe_tnx_id     String?
+  stripe_txn_id     String?
   from_date         DateTime
   to_date           DateTime
+  commission_rate   Float
   invoice_items     InvoiceItem[]
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
@@ -557,14 +558,13 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  invoice_id      String     @db.Uuid
-  invoice         Invoice    @relation(fields: [invoice_id], references: [id])
-  name            String
-  amount          Decimal    @db.Decimal(14, 2)
-  commission_rate Float
-  milestone_id    String?    @db.Uuid
-  milestone       Milestone? @relation(fields: [milestone_id], references: [id])
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_id   String     @db.Uuid
+  invoice      Invoice    @relation(fields: [invoice_id], references: [id])
+  name         String
+  amount       Decimal    @db.Decimal(14, 2)
+  milestone_id String?    @db.Uuid
+  milestone    Milestone? @relation(fields: [milestone_id], references: [id])
 
   @@map("invoice_items")
 }
