@@ -4,6 +4,7 @@ import { prisma } from '../connectDB';
 import { InvoicePaymentStatus, MilestoneStatus, VendorType } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
+import currency from 'currency.js';
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 18);
 function generateInvoiceNumber() {
@@ -35,6 +36,7 @@ async function main() {
   await prisma.$transaction(async (trx) => {
     const loopingVendorCompanyTasks = vendorCompanies.map(async (vendorCompany) => {
       const vendorCompanyId = vendorCompany.id;
+      const commissionRate = vendorCompany.commission_rate;
       const quotes = await trx.quote.findMany({
         where: {
           milestones: {
@@ -62,17 +64,31 @@ async function main() {
       });
 
       const invoiceItemInputs: Prisma.InvoiceItemCreateManyInvoiceInput[] = quotes.reduce<Prisma.InvoiceItemCreateManyInvoiceInput[]>((acc, cur) => {
-        const commissionRate = cur.project_connection.vendor_company.commission_rate;
-        const d: Prisma.InvoiceItemCreateManyInvoiceInput[] = cur.milestones.map((m) => ({
-          amount: m.amount,
-          commission_rate: commissionRate,
-          name: m.title,
-          milestone_id: m.id,
-        }))
+        const d: Prisma.InvoiceItemCreateManyInvoiceInput[] = cur.milestones.map((m) => {
+          const amount = currency(m.amount.toNumber(), { fromCents: true }).multiply(commissionRate).divide(100);
+          return ({
+            amount: amount.intValue,
+            name: m.title,
+            milestone_id: m.id,
+          })
+        })
         return [...acc, ...d];
       }, []);
 
-      const newInvoice = trx.invoice.create({
+      // To make the script idempotent. We will not recreate invoice with same from and to date.
+      const existingInvoice = await trx.invoice.findFirst({
+        where: {
+          vendor_company_id: vendorCompanyId,
+          from_date: fromDate.toDate(),
+          to_date: toDate.toDate(),
+        }
+      });
+
+      if (existingInvoice) {
+        return existingInvoice;
+      }
+
+      const newInvoice = await trx.invoice.create({
         data: {
           vendor_company_id: vendorCompanyId,
           due_at: dueDate.endOf('d').toDate(),
@@ -80,6 +96,7 @@ async function main() {
           payment_status: InvoicePaymentStatus.UNPAID,
           from_date: fromDate.toDate(),
           to_date: toDate.toDate(),
+          commission_rate: commissionRate,
           invoice_items: invoiceItemInputs.length > 0
             ? {
               create: invoiceItemInputs,
