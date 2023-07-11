@@ -156,3 +156,9 @@ export enum VendorType {
   ACADEMIC_LAB = 'academic_lab',
   CRO = 'cro',
 }
+
+export enum InvoicePaymentStatus {
+  UNPAID = 'unpaid',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+}
