@@ -70,6 +70,7 @@ async function main() {
             amount: amount.intValue,
             name: m.title,
             milestone_id: m.id,
+            milestone_amount: m.amount,
           })
         })
         return [...acc, ...d];

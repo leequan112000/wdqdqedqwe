@@ -558,13 +558,14 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  invoice_id   String     @db.Uuid
-  invoice      Invoice    @relation(fields: [invoice_id], references: [id])
-  name         String
-  amount       Decimal    @db.Decimal(14, 2)
-  milestone_id String?    @db.Uuid
-  milestone    Milestone? @relation(fields: [milestone_id], references: [id])
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_id       String     @db.Uuid
+  invoice          Invoice    @relation(fields: [invoice_id], references: [id])
+  name             String
+  amount           Decimal    @db.Decimal(14, 2)
+  milestone_id     String?    @db.Uuid
+  milestone        Milestone? @relation(fields: [milestone_id], references: [id])
+  milestone_amount Decimal?    @db.Decimal(14, 2)
 
   @@map("invoice_items")
 }

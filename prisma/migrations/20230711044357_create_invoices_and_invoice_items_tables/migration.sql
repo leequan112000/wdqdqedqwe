@@ -26,6 +26,7 @@ CREATE TABLE "invoice_items" (
     "name" TEXT NOT NULL,
     "amount" DECIMAL(14,2) NOT NULL,
     "milestone_id" UUID,
+    "milestone_amount" DECIMAL(14,2),
 
     CONSTRAINT "invoice_items_pkey" PRIMARY KEY ("id")
 );
