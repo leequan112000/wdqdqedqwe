@@ -1,12 +1,13 @@
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid'
+import { customAlphabet } from 'nanoid';
 import { prisma } from '../connectDB';
 import { InvoicePaymentStatus, MilestoneStatus, VendorType } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 18);
 function generateInvoiceNumber() {
-  return `in_${uuidv4()}`
+  return `in_${nanoid()}`
 }
 
 async function main() {
