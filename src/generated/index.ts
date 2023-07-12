@@ -242,6 +242,8 @@ export type Milestone = {
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
   project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  quote?: Maybe<Quote>;
+  quote_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   timeline?: Maybe<Scalars['String']>;
@@ -1616,6 +1618,8 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType>;
+  quote_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

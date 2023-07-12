@@ -32,6 +32,18 @@ const resolvers: Resolvers<Context> = {
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
+    quote: async (parent, _, context) => {
+      if (!parent.quote_id) {
+        throw new InternalError('Missing quote id.')
+      }
+      const quote = await context.prisma.quote.findFirst({
+        where: {
+          id: parent.quote_id
+        },
+      });
+
+      return quote ? { ...quote, amount: toDollar(quote.amount.toNumber())} : {};
+    },
   },
   Query: {
     milestone: async (_, args, context) => {
@@ -239,7 +251,7 @@ const resolvers: Resolvers<Context> = {
         return {
           milestone: {
             ...updatedMilestone,
-            amount: updatedMilestone.amount.toNumber(),
+            amount: toDollar(updatedMilestone.amount.toNumber()),
           },
           upload_results,
         }
@@ -287,7 +299,11 @@ const resolvers: Resolvers<Context> = {
   
         return {
           ...updatedMilestone,
-          amount: updatedMilestone.amount.toNumber(),
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
         }
       }
 
