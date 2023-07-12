@@ -161,4 +161,13 @@ export enum InvoicePaymentStatus {
   UNPAID = 'unpaid',
   PROCESSING = 'processing',
   PAID = 'paid',
+  FAILED = 'failed',
+}
+
+export enum InvoicePaymentDisplayStatus {
+  UNPAID = 'unpaid',
+  PAYMENT_DUE = 'payment_due',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+  FAILED = 'failed',
 }
