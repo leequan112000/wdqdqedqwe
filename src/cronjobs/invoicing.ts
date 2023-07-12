@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { customAlphabet } from 'nanoid';
 import { prisma } from '../connectDB';
-import { InvoicePaymentStatus, MilestoneStatus, VendorType } from '../helper/constant';
+import { InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
@@ -17,19 +17,26 @@ async function main() {
   const toDate = fromDate.clone().endOf('month')
   const dueDate = today.clone().add(2, 'w');
 
+  /**
+   * Find vendor companies.
+   * Vendor company will start receiving invoice when first payment is made for
+   * a milestone.
+  */
   const vendorCompanies = await prisma.vendorCompany.findMany({
     where: {
-      OR: [
-        {
-          vendor_type: VendorType.ACADEMIC_LAB,
-        },
-        {
-          vendor_type: VendorType.CRO,
-          cda_signed_at: {
-            not: null
+      project_connections: {
+        some: {
+          quotes: {
+            some: {
+              milestones: {
+                some: {
+                  status: MilestoneStatus.COMPLETED,
+                },
+              },
+            },
           },
-        }
-      ]
+        },
+      },
     },
   });
 
@@ -37,30 +44,33 @@ async function main() {
     const loopingVendorCompanyTasks = vendorCompanies.map(async (vendorCompany) => {
       const vendorCompanyId = vendorCompany.id;
       const commissionRate = vendorCompany.commission_rate;
-      const quotes = await trx.quote.findMany({
+
+      const milestones = await trx.milestone.findMany({
         where: {
-          milestones: {
-            every: {
-              status: MilestoneStatus.COMPLETED,
+          quote: {
+            project_connection: {
+              vendor_company_id: vendorCompanyId,
             },
-            some: {
-              invoice_items: {
-                none: {}
-              }
-            }
           },
-          project_connection: {
-            vendor_company_id: vendorCompanyId,
+          updated_at: {
+            gte: fromDate.toDate(),
+            lte: toDate.toDate(),
           },
+          status: MilestoneStatus.COMPLETED,
+          invoice_item: null,
         },
         include: {
-          milestones: true,
-          project_connection: {
-            include: {
-              vendor_company: true
-            },
-          },
+          quote: true,
         },
+      });
+
+      const quoteHash = _.groupBy(milestones, 'quote.id');
+      const quotes = Object.entries(quoteHash).map(([quoteId, milestones]) => {
+        const quoteData = milestones[0].quote;
+        return {
+          ...quoteData,
+          milestones,
+        }
       });
 
       const invoiceItemInputs: Prisma.InvoiceItemCreateManyInvoiceInput[] = quotes.reduce<Prisma.InvoiceItemCreateManyInvoiceInput[]>((acc, cur) => {

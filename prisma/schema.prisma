@@ -501,7 +501,7 @@ model Milestone {
   timeline              String?
   ordinal               Int                 @default(0)
   ProjectAttachment     ProjectAttachment[]
-  invoice_items         InvoiceItem[]
+  invoice_item          InvoiceItem?
 
   @@map("milestones")
 }
@@ -563,9 +563,9 @@ model InvoiceItem {
   invoice          Invoice    @relation(fields: [invoice_id], references: [id])
   name             String
   amount           Decimal    @db.Decimal(14, 2)
-  milestone_id     String?    @db.Uuid
+  milestone_id     String?    @unique @db.Uuid
   milestone        Milestone? @relation(fields: [milestone_id], references: [id])
-  milestone_amount Decimal?    @db.Decimal(14, 2)
+  milestone_amount Decimal?   @db.Decimal(14, 2)
 
   @@map("invoice_items")
 }
