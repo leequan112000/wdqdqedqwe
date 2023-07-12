@@ -145,6 +145,7 @@ model VendorCompany {
   stripe_account              String?
   is_on_marketplace           Boolean?  @default(true)
   invited_by                  String?
+  commission_rate             Float     @default(5)
 
   vendor_members                 VendorMember[]
   project_connections            ProjectConnection[]
@@ -152,6 +153,7 @@ model VendorCompany {
   certification_tag_connections  CertificationTagConnection[]
   lab_specialization_connections LabSpecializationConnection[]
   CompanyAttachment              CompanyAttachment[]
+  invoices                       Invoice[]
 
   @@map("vendor_companies")
 }
@@ -501,6 +503,7 @@ model Milestone {
   timeline              String?
   ordinal               Int                 @default(0)
   ProjectAttachment     ProjectAttachment[]
+  invoice_item          InvoiceItem?
 
   @@map("milestones")
 }
@@ -535,4 +538,36 @@ model CompanyAttachment {
   uploader          User?          @relation(fields: [uploader_id], references: [id])
 
   @@map("company_attachments")
+}
+
+model Invoice {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_number    String
+  vendor_company_id String        @db.Uuid
+  payment_status    String
+  due_at            DateTime
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  paid_at           DateTime?
+  stripe_txn_id     String?
+  from_date         DateTime
+  to_date           DateTime
+  commission_rate   Float
+  invoice_items     InvoiceItem[]
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_id       String     @db.Uuid
+  invoice          Invoice    @relation(fields: [invoice_id], references: [id])
+  name             String
+  amount           Decimal    @db.Decimal(14, 2)
+  milestone_id     String?    @unique @db.Uuid
+  milestone        Milestone? @relation(fields: [milestone_id], references: [id])
+  milestone_amount Decimal?   @db.Decimal(14, 2)
+
+  @@map("invoice_items")
 }
