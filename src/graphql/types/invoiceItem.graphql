@@ -1,0 +1,10 @@
+type InvoiceItem {
+  id: String
+  invoice_id: String
+  invoice: Invoice
+  name: String
+  amount: Float
+  milestone_id: String
+  milestone: Milestone
+  milestone_amount: Float
+}
