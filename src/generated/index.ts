@@ -168,6 +168,7 @@ export type Invoice = {
   stripe_txn_id?: Maybe<Scalars['String']>;
   to_date?: Maybe<Scalars['Date']>;
   total_amount?: Maybe<Scalars['Float']>;
+  total_milestone_amount?: Maybe<Scalars['Float']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
@@ -1540,6 +1541,7 @@ export type InvoiceResolvers<ContextType = any, ParentType extends ResolversPare
   stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   to_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_milestone_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

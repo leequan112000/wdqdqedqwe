@@ -54,6 +54,18 @@ const resolvers: Resolvers<Context> = {
       const totalAmount = invoiceItems.reduce((acc, item) => acc + item.amount.toNumber(), 0);
       return toDollar(totalAmount);
     },
+    total_milestone_amount: async (parent, _, context) => {
+      if (!parent.id) {
+        throw new InternalError('Invoice ID not found.');
+      }
+      const invoiceItems = await context.prisma.invoiceItem.findMany({
+        where: {
+          invoice_id: parent.id,
+        },
+      });
+      const totalAmount = invoiceItems.reduce((acc, item) => acc + (item.milestone_amount?.toNumber() || 0), 0);
+      return toDollar(totalAmount);
+    },
   },
   Query: {
     invoices: async (_, __, context) => {

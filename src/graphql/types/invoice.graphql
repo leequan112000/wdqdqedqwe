@@ -14,6 +14,7 @@ type Invoice {
   vendor_company_id: String
   vendor_company: VendorCompany
   total_amount: Float
+  total_milestone_amount: Float
 }
 
 type Query {
