@@ -15,7 +15,7 @@ export const createBillingNotification = async (data: CreateBillingNotificationD
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.NEW_INVOICE_NOTIFICATION,
-      message: `Invoice for ${invoice_month} is ready.`,
+      message: `Invoice for **${invoice_month}** is ready.`,
       params: {
         invoice_id,
       },
