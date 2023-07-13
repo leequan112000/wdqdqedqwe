@@ -4,7 +4,7 @@ import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import Sentry from '../../sentry';
 
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, SubscriptionStatus } from '../../helper/constant';
+import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../helper/constant';
 import { getStripeInstance } from '../../helper/stripe';
 
 import { createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
@@ -103,21 +103,51 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               break;
             }
             case 'payment': {
-              if (!checkoutSession?.metadata?.milestone_id) {
-                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              if (!checkoutSession?.metadata?.payment_type) {
+                throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
               }
 
-              const { quote_id, milestone_id } = checkoutSession.metadata;
-              await prisma.milestone.update({
-                where: {
-                  id: milestone_id,
-                },
-                data: {
-                  status: MilestoneStatus.IN_PROGRESS,
-                  payment_status: MilestonePaymentStatus.PROCESSING,
+              switch(checkoutSession?.metadata?.payment_type) {
+                case StripeWebhookPaymentType.INVOICE: {
+                  if (!checkoutSession?.metadata?.invoice_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
+                  }
+    
+                  const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                  await prisma.invoice.update({
+                    where: {
+                      id: invoice_id,
+                    },
+                    data: {
+                      payment_status: InvoicePaymentStatus.PROCESSING,
+                    }
+                  });
+                  console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                  break;
                 }
-              });
-              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                case StripeWebhookPaymentType.MILESTONE: {
+                  if (!checkoutSession?.metadata?.milestone_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+                  }
+    
+                  const { quote_id, milestone_id } = checkoutSession.metadata;
+                  await prisma.milestone.update({
+                    where: {
+                      id: milestone_id,
+                    },
+                    data: {
+                      status: MilestoneStatus.IN_PROGRESS,
+                      payment_status: MilestonePaymentStatus.PROCESSING,
+                    }
+                  });
+                  console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                  break;
+                }
+                default: {
+                  res.status(400).json({ status: 400, message: 'Unhandled payment type' });
+                  break;
+                }
+              }
               res.status(200).json({ status: 200, message: 'OK' });
               break;
             }
@@ -160,36 +190,66 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               break;
             }
             case 'payment': {
-              if (!checkoutSession?.metadata?.milestone_id) {
-                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              if (!checkoutSession?.metadata?.payment_type) {
+                throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
               }
 
-              const { quote_id, milestone_id } = checkoutSession.metadata;
-              const updatedMilestone = await prisma.milestone.update({
-                where: {
-                  id: milestone_id,
-                },
-                include: {
-                  quote: {
-                    include: {
-                      project_connection: true,
-                    }
+              switch(checkoutSession?.metadata?.payment_type) {
+                case StripeWebhookPaymentType.INVOICE: {
+                  if (!checkoutSession?.metadata?.invoice_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
                   }
-                },
-                data: {
-                  payment_status: MilestonePaymentStatus.PAID,
+    
+                  const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                  await prisma.invoice.update({
+                    where: {
+                      id: invoice_id,
+                    },
+                    data: {
+                      payment_status: InvoicePaymentStatus.PAID,
+                    }
+                  });
+                  console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                  break;
                 }
-              });
-
-              createSendUserMilestoneNoticeJob({
-                projectConnectionId: updatedMilestone.quote.project_connection_id,
-                milestoneTitle: updatedMilestone.title,
-                quoteId: updatedMilestone.quote.id,
-                senderUserId: customer.user_id!,
-                milestoneEventType: MilestoneEventType.BIOTECH_PAID,
-              });
-
-              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                case StripeWebhookPaymentType.MILESTONE: {
+                  if (!checkoutSession?.metadata?.milestone_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+                  }
+    
+                  const { quote_id, milestone_id } = checkoutSession.metadata;
+                  const updatedMilestone = await prisma.milestone.update({
+                    where: {
+                      id: milestone_id,
+                    },
+                    include: {
+                      quote: {
+                        include: {
+                          project_connection: true,
+                        }
+                      }
+                    },
+                    data: {
+                      payment_status: MilestonePaymentStatus.PAID,
+                    }
+                  });
+    
+                  createSendUserMilestoneNoticeJob({
+                    projectConnectionId: updatedMilestone.quote.project_connection_id,
+                    milestoneTitle: updatedMilestone.title,
+                    quoteId: updatedMilestone.quote.id,
+                    senderUserId: customer.user_id!,
+                    milestoneEventType: MilestoneEventType.BIOTECH_PAID,
+                  });
+    
+                  console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                  break;
+                }
+                default: {
+                  res.status(400).json({ status: 400, message: 'Unhandled payment type' });
+                  break;
+                }
+              }
               res.status(200).json({ status: 200, message: 'OK' });
               break;
             }
@@ -229,22 +289,52 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               break;
             }
             case 'payment': {
-              if (!checkoutSession?.metadata?.milestone_id) {
-                throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+              if (!checkoutSession?.metadata?.payment_type) {
+                throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
               }
 
-              const { quote_id, milestone_id } = checkoutSession.metadata;
-              await prisma.milestone.update({
-                where: {
-                  id: milestone_id,
-                },
-                data: {
-                  payment_status: MilestonePaymentStatus.UNPAID,
+              switch(checkoutSession?.metadata?.payment_type) {
+                case StripeWebhookPaymentType.INVOICE: {
+                  if (!checkoutSession?.metadata?.invoice_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
+                  }
+    
+                  const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                  await prisma.invoice.update({
+                    where: {
+                      id: invoice_id,
+                    },
+                    data: {
+                      payment_status: InvoicePaymentStatus.FAILED,
+                    }
+                  });
+                  console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                  break;
                 }
-              });
-
-              createSendUserMilestonePaymentFailedNoticeJob({ milestoneId: milestone_id });
-              console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                case StripeWebhookPaymentType.MILESTONE: {
+                  if (!checkoutSession?.metadata?.milestone_id) {
+                    throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
+                  }
+    
+                  const { quote_id, milestone_id } = checkoutSession.metadata;
+                  await prisma.milestone.update({
+                    where: {
+                      id: milestone_id,
+                    },
+                    data: {
+                      payment_status: MilestonePaymentStatus.UNPAID,
+                    }
+                  });
+    
+                  createSendUserMilestonePaymentFailedNoticeJob({ milestoneId: milestone_id });
+                  console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                  break;
+                }
+                default: {
+                  res.status(400).json({ status: 400, message: 'Unhandled payment type' });
+                  break;
+                }
+              }
               res.status(200).json({ status: 200, message: 'OK' });
               break;
             }
