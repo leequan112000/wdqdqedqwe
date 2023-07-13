@@ -32,6 +32,26 @@ const resolvers: Resolvers<Context> = {
       }
       return parent.guests || [];
     },
+    organizer: async (parent, args, context) => {
+      if (!parent.id) {
+        throw new InternalError('Meeting event id not found');
+      }
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: parent.id,
+        },
+        include: {
+          organizer: true,
+        },
+      });
+      
+      return await context.prisma.user.findFirst({
+        where: {
+          id: meetingEvent?.organizer?.id,
+        },
+      });
+    },
     project_request: async (parent, args, context) => {
       const initial = {
         in_contact_with_vendor: false,
@@ -219,23 +239,6 @@ const resolvers: Resolvers<Context> = {
       });
 
       return meetingEvents;
-    },
-    meetingEventOrganizer: async (parent, args, context) => {
-      const { meeting_event_id } = args;
-      const meetingEvent = await context.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_event_id,
-        },
-        include: {
-          organizer: true,
-        },
-      });
-      
-      return await context.prisma.user.findFirst({
-        where: {
-          id: meetingEvent?.organizer?.id,
-        },
-      });
     },
   },
   Mutation: {

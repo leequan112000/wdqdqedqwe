@@ -20,7 +20,6 @@ type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
   meetingEvents(status: String): [MeetingEvent]
   upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
-  meetingEventOrganizer(meeting_event_id: String!): User
 }
 
 type Mutation {

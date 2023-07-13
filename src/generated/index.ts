@@ -884,7 +884,6 @@ export type Query = {
   customer?: Maybe<Customer>;
   lab_specialization_connection?: Maybe<LabSpecializationConnection>;
   lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
-  meetingEventOrganizer?: Maybe<User>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   milestone?: Maybe<Milestone>;
@@ -926,11 +925,6 @@ export type QueryLab_Specialization_ConnectionArgs = {
 
 export type QueryLab_Specialization_ConnectionsArgs = {
   vendor_company_id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryMeetingEventOrganizerArgs = {
-  meeting_event_id: Scalars['String'];
 };
 
 
@@ -1734,7 +1728,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
   lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
-  meetingEventOrganizer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryMeetingEventOrganizerArgs, 'meeting_event_id'>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
