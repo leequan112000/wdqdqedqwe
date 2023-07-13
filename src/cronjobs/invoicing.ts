@@ -12,8 +12,10 @@ function generateInvoiceNumber() {
   return `in_${nanoid()}`
 }
 
+const today = moment();
+const isFirstDayOfMonth = today.date() === 1;
+
 async function main() {
-  const today = moment();
   const fromDate = today.clone().subtract(1, 'month').startOf('month');
   const toDate = fromDate.clone().endOf('month')
   const dueDate = today.clone().add(2, 'w');
@@ -165,4 +167,9 @@ async function main() {
   process.exit(0);
 }
 
-main();
+if (isFirstDayOfMonth) {
+  main();
+} else {
+  console.log('Skipping invoicing. Not first day of month');
+  process.exit(0);
+}
