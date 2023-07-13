@@ -109,3 +109,11 @@ export type AdminGeneralNoticeData = {
   button_label: string;
   button_url?: string;
 }
+
+export type BillingNoticeData = {
+  invoice_month: string;
+  vendor_company_name: string;
+  invoice_period: string;
+  invoice_total_amount: string;
+  button_url: string;
+}

@@ -5,6 +5,7 @@ import { InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
+import { createBillingNoticeEmailJob } from '../queues/email.queues';
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 18);
 function generateInvoiceNumber() {
@@ -40,7 +41,7 @@ async function main() {
     },
   });
 
-  await prisma.$transaction(async (trx) => {
+  const newInvoices = await prisma.$transaction(async (trx) => {
     const loopingVendorCompanyTasks = vendorCompanies.map(async (vendorCompany) => {
       const vendorCompanyId = vendorCompany.id;
       const commissionRate = vendorCompany.commission_rate;
@@ -92,6 +93,9 @@ async function main() {
           vendor_company_id: vendorCompanyId,
           from_date: fromDate.toDate(),
           to_date: toDate.toDate(),
+        },
+        include: {
+          invoice_items: true,
         }
       });
 
@@ -114,6 +118,9 @@ async function main() {
             }
             : undefined,
         },
+        include: {
+          invoice_items: true,
+        },
       });
 
       return newInvoice;
@@ -122,6 +129,38 @@ async function main() {
 
     return await Promise.all(loopingVendorCompanyTasks);
   });
+
+  const sendNoticeTasks = newInvoices.map(async (invoice) => {
+    const totalAmount = invoice.invoice_items.reduce((acc, cur) => acc + cur.amount.toNumber(), 0);
+    const vendorCompany = await prisma.vendorCompany.findFirst({
+      where: {
+        id: invoice.vendor_company_id,
+      },
+    });
+    const primaryMembers = await prisma.vendorMember.findMany({
+      where: {
+        vendor_company_id: invoice.vendor_company_id,
+        is_primary_member: true,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    primaryMembers.map((member) => {
+      return createBillingNoticeEmailJob({
+        invoiceId: invoice.id,
+        invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
+        invoicePeriod: `${moment(invoice.from_date).format('MMM YYYY')} - ${moment(invoice.to_date).format('MMM YYYY')}`,
+        invoiceTotalAmount: currency(totalAmount, { fromCents: true }).format(),
+        receiverCompanyName: vendorCompany!.name,
+        receiverEmail: member.user.email,
+        receiverId: member.user.id,
+      });
+    });
+  });
+
+  await Promise.all(sendNoticeTasks);
 
   process.exit(0);
 }
