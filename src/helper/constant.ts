@@ -171,3 +171,8 @@ export enum InvoicePaymentDisplayStatus {
   PAID = 'paid',
   FAILED = 'failed',
 }
+
+export enum StripeWebhookPaymentType {
+  MILESTONE = 'milestone',
+  INVOICE = 'invoice',
+}

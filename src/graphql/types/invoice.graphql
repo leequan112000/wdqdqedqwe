@@ -20,4 +20,9 @@ type Invoice {
 type Query {
   invoices: [Invoice]
   invoice(id: String!): Invoice
+  invoiceCheckoutUrl(
+    id: String!
+    success_url: String!
+    cancel_url: String!
+  ): String
 }

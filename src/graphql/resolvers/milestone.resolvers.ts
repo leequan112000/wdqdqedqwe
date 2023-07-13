@@ -10,7 +10,7 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 
@@ -126,6 +126,7 @@ const resolvers: Resolvers<Context> = {
         customer: customer.biotech.subscriptions[0].stripe_customer_id,
         client_reference_id: customer.id,
         metadata: {
+          payment_type: StripeWebhookPaymentType.MILESTONE,
           quote_id: milestone.quote_id,
           milestone_id: milestone.id,
         },

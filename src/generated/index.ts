@@ -916,6 +916,7 @@ export type Query = {
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
   invoice?: Maybe<Invoice>;
+  invoiceCheckoutUrl?: Maybe<Scalars['String']>;
   invoices?: Maybe<Array<Maybe<Invoice>>>;
   lab_specialization_connection?: Maybe<LabSpecializationConnection>;
   lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
@@ -955,6 +956,13 @@ export type QueryCertification_Tag_ConnectionsArgs = {
 
 export type QueryInvoiceArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryInvoiceCheckoutUrlArgs = {
+  cancel_url: Scalars['String'];
+  id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -1804,6 +1812,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
+  invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
   lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
   lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
