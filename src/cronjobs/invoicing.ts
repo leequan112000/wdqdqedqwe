@@ -152,7 +152,7 @@ async function main() {
         invoiceId: invoice.id,
         invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
         invoicePeriod: `${moment(invoice.from_date).format('MMM YYYY')} - ${moment(invoice.to_date).format('MMM YYYY')}`,
-        invoiceTotalAmount: currency(totalAmount).format(),
+        invoiceTotalAmount: currency(totalAmount, { fromCents: true }).format(),
         receiverCompanyName: vendorCompany!.name,
         receiverEmail: member.user.email,
         receiverId: member.user.id,
