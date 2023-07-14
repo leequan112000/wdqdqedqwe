@@ -91,6 +91,13 @@ export type Chat = {
   __typename?: 'Chat';
   id?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<Message>>>;
+  messagesConnection?: Maybe<MessagesConnection>;
+};
+
+
+export type ChatMessagesConnectionArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 export type CompanyAttachment = {
@@ -203,6 +210,24 @@ export type Message = {
   id?: Maybe<Scalars['String']>;
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']>;
+};
+
+export type MessageEdge = {
+  __typename?: 'MessageEdge';
+  cursor?: Maybe<Scalars['String']>;
+  node?: Maybe<Message>;
+};
+
+export type MessagesConnection = {
+  __typename?: 'MessagesConnection';
+  edges?: Maybe<Array<Maybe<MessageEdge>>>;
+  pageInfo?: Maybe<MessagesPageInfo>;
+};
+
+export type MessagesPageInfo = {
+  __typename?: 'MessagesPageInfo';
+  endCursor: Scalars['String'];
+  hasNextPage?: Maybe<Scalars['Boolean']>;
 };
 
 export type Milestone = {
@@ -1276,6 +1301,9 @@ export type ResolversTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
+  MessageEdge: ResolverTypeWrapper<MessageEdge>;
+  MessagesConnection: ResolverTypeWrapper<MessagesConnection>;
+  MessagesPageInfo: ResolverTypeWrapper<MessagesPageInfo>;
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
   Notification: ResolverTypeWrapper<Notification>;
@@ -1328,6 +1356,9 @@ export type ResolversParentTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   Message: Message;
+  MessageEdge: MessageEdge;
+  MessagesConnection: MessagesConnection;
+  MessagesPageInfo: MessagesPageInfo;
   Milestone: Milestone;
   Mutation: {};
   Notification: Notification;
@@ -1429,6 +1460,7 @@ export type CertificationTagConnectionResolvers<ContextType = any, ParentType ex
 export type ChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chat'] = ResolversParentTypes['Chat']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
+  messagesConnection?: Resolver<Maybe<ResolversTypes['MessagesConnection']>, ParentType, ContextType, RequireFields<ChatMessagesConnectionArgs, 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1536,6 +1568,24 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MessageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessageEdge'] = ResolversParentTypes['MessageEdge']> = ResolversObject<{
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MessagesConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesConnection'] = ResolversParentTypes['MessagesConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['MessageEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['MessagesPageInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MessagesPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesPageInfo'] = ResolversParentTypes['MessagesPageInfo']> = ResolversObject<{
+  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1942,6 +1992,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MarkMilestoneCompleteResponse?: MarkMilestoneCompleteResponseResolvers<ContextType>;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
+  MessageEdge?: MessageEdgeResolvers<ContextType>;
+  MessagesConnection?: MessagesConnectionResolvers<ContextType>;
+  MessagesPageInfo?: MessagesPageInfoResolvers<ContextType>;
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;

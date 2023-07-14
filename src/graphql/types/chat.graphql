@@ -1,6 +1,22 @@
+type MessageEdge {
+  cursor: String
+  node: Message
+}
+
+type MessagesPageInfo {
+  endCursor: String!
+  hasNextPage: Boolean
+}
+
+type MessagesConnection {
+  edges: [MessageEdge]
+  pageInfo: MessagesPageInfo
+}
+
 type Chat {
   id: String
   messages: [Message]
+  messagesConnection(first: Int = 15, after: String): MessagesConnection
 }
 
 type Mutation {

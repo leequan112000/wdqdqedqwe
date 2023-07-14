@@ -14,6 +14,61 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    messagesConnection: async (parent, args, context) => {
+      if (!parent.id) {
+        throw new InternalError('Chat id not found.')
+      }
+
+      const { first, after } = args;
+
+      const messages = await context.prisma.message.findMany({
+        take: first,
+        skip: 1, // Skip the cursor
+        cursor: after
+          ? { id: after }
+          : undefined,
+        orderBy: {
+          created_at: 'desc'
+        },
+        where: {
+          chat_id: parent.id,
+        },
+      });
+
+      const edges = messages.map((m) => ({
+        cursor: m.id,
+        node: m,
+      }));
+
+      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
+
+      if (endCursor) {
+        const nextMessages = await context.prisma.message.findMany({
+          take: first,
+          skip: 1, // Skip the cursor
+          cursor: endCursor
+            ? { id: endCursor }
+            : undefined,
+          orderBy: {
+            created_at: 'desc',
+          },
+          where: {
+            chat_id: parent.id,
+          },
+        });
+
+        hasNextPage = nextMessages.length > 0;
+      }
+
+      return {
+        edges,
+        pageInfo: {
+          endCursor: endCursor || '',
+          hasNextPage,
+        },
+      };
+    },
   },
   Mutation: {
     createChat: async (_, args, context) => {
