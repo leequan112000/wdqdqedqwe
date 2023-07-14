@@ -505,65 +505,111 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL: {
-        const { invoiceId, invoiceMonth, paymentStatus, receiverEmail, receiverId } = data as CreateInvoicePaymentNoticeEmailJobParam;
+        const { invoiceId, invoiceMonth, paymentStatus, vendorCompanyId } = data as CreateInvoicePaymentNoticeEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
-        const resp = await sendInvoicePaymentNoticeEmail({
-          button_url: buttonUrl,
-          invoice_month: invoiceMonth,
-          payment_status: paymentStatus,
-        }, receiverEmail);
 
-        await createInvoicePaymentNotification({
-          invoice_id: invoiceId,
-          invoice_month: invoiceMonth,
-          recipient_id: receiverId,
-          payment_status: paymentStatus,
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+          }
         });
 
-        done(null, resp);
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentNoticeEmail({
+              button_url: buttonUrl,
+              invoice_month: invoiceMonth,
+              payment_status: paymentStatus,
+            }, receiver.user.email);
+
+            await createInvoicePaymentNotification({
+              invoice_id: invoiceId,
+              invoice_month: invoiceMonth,
+              recipient_id: receiver.user_id,
+              payment_status: paymentStatus,
+            });
+          })
+        );
+
+        done();
         break;
       }
       case EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL: {
-        const { invoiceId, invoiceDate, invoiceDueAt, duePeriod, invoiceTotalAmount, receiverEmail, receiverId, receiverCompanyName } = data as CreateInvoicePaymentReminderEmailJobParam;
+        const { invoiceId, invoiceDate, invoiceDueAt, duePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentReminderEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
-        const resp = await sendInvoicePaymentReminderEmail({
-          button_url: buttonUrl,
-          invoice_date: invoiceDate,
-          due_at: invoiceDueAt,
-          due_period: duePeriod,
-          invoice_total_amount: invoiceTotalAmount,
-          vendor_company_name: receiverCompanyName,
-        }, receiverEmail);
-
-        await createInvoicePaymentReminderNotification({
-          invoice_id: invoiceId,
-          invoice_date: invoiceDate,
-          recipient_id: receiverId,
-          due_at: invoiceDueAt,
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
         });
 
-        done(null, resp);
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentReminderEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              due_at: invoiceDueAt,
+              due_period: duePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+
+            await createInvoicePaymentReminderNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              due_at: invoiceDueAt,
+            });
+          })
+        );
+
+        done();
         break;
       }
       case EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL: {
-        const { invoiceId, invoiceDate, overduePeriod, invoiceTotalAmount, receiverEmail, receiverId, receiverCompanyName } = data as CreateInvoicePaymentOverdueNoticeEmailJobParam;
+        const { invoiceId, invoiceDate, overduePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentOverdueNoticeEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
-        const resp = await sendInvoicePaymentOverdueNoticeEmail({
-          button_url: buttonUrl,
-          invoice_date: invoiceDate,
-          overdue_period: overduePeriod,
-          invoice_total_amount: invoiceTotalAmount,
-          vendor_company_name: receiverCompanyName,
-        }, receiverEmail);
 
-        await createInvoicePaymentOverdueNotification({
-          invoice_id: invoiceId,
-          invoice_date: invoiceDate,
-          recipient_id: receiverId,
-          overdue_period: overduePeriod,
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
         });
 
-        done(null, resp);
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentOverdueNoticeEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              overdue_period: overduePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+    
+            await createInvoicePaymentOverdueNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              overdue_period: overduePeriod,
+            });    
+          })
+        );
+
+        done();
         break;
       }
       default:
