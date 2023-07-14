@@ -36,3 +36,32 @@ export type CreateBillingNoticeEmailJobParam = {
   invoicePeriod: string;
   invoiceId: string;
 }
+
+export type CreateInvoicePaymentNoticeEmailJobParam = {
+  receiverId: string;
+  receiverEmail: string;
+  invoiceMonth: string;
+  paymentStatus: string;
+  invoiceId: string;
+}
+
+export type CreateInvoicePaymentReminderEmailJobParam = {
+  receiverId: string;
+  receiverEmail: string;
+  receiverCompanyName: string;
+  invoiceDueAt: string
+  duePeriod: string
+  invoiceDate: string;
+  invoiceTotalAmount: string;
+  invoiceId: string;
+}
+
+export type CreateInvoicePaymentOverdueNoticeEmailJobParam = {
+  receiverId: string;
+  receiverEmail: string;
+  receiverCompanyName: string;
+  overduePeriod: string
+  invoiceDate: string;
+  invoiceTotalAmount: string;
+  invoiceId: string;
+}

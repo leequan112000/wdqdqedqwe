@@ -92,6 +92,9 @@ export enum NotificationType {
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
   NEW_INVOICE_NOTIFICATION = 'NewInvoiceNotification',
+  INVOICE_PAYMENT_NOTIFICATION = 'InvoicePaymentNotification',
+  INVOICE_PAYMENT_REMINDER_NOTIFICATION = 'InvoicePaymentReminderNotification',
+  INVOICE_PAYMENT_OVERDUE_NOTIFICATION = 'InvoicePaymentOverdueNotification',
 }
 
 export enum QuoteNotificationActionContent {
@@ -152,6 +155,9 @@ export enum EmailType {
   USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
   USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
   USER_BILLING_NOTICE_EMAIL = 'user:billing-notice-email',
+  USER_INVOICE_PAYMENT_NOTICE_EMAIL = 'user:invoice-payment-notice-email',
+  USER_INVOICE_PAYMENT_REMINDER_EMAIL = 'user:invoice-payment-reminder-email',
+  USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL = 'user:invoice-payment-overdue-notice-email',
 }
 
 export enum VendorType {

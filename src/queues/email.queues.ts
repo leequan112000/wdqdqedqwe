@@ -18,11 +18,11 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateBillingNoticeEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
 import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
 import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
-import { sendBillingNoticeEmail } from "../mailer/invoice";
-import { createBillingNotification } from "../notification/invoiceNotification";
+import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
+import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -504,6 +504,68 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
+      case EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL: {
+        const { invoiceId, invoiceMonth, paymentStatus, receiverEmail, receiverId } = data as CreateInvoicePaymentNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const resp = await sendInvoicePaymentNoticeEmail({
+          button_url: buttonUrl,
+          invoice_month: invoiceMonth,
+          payment_status: paymentStatus,
+        }, receiverEmail);
+
+        await createInvoicePaymentNotification({
+          invoice_id: invoiceId,
+          invoice_month: invoiceMonth,
+          recipient_id: receiverId,
+          payment_status: paymentStatus,
+        });
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL: {
+        const { invoiceId, invoiceDate, invoiceDueAt, duePeriod, invoiceTotalAmount, receiverEmail, receiverId, receiverCompanyName } = data as CreateInvoicePaymentReminderEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const resp = await sendInvoicePaymentReminderEmail({
+          button_url: buttonUrl,
+          invoice_date: invoiceDate,
+          due_at: invoiceDueAt,
+          due_period: duePeriod,
+          invoice_total_amount: invoiceTotalAmount,
+          vendor_company_name: receiverCompanyName,
+        }, receiverEmail);
+
+        await createInvoicePaymentReminderNotification({
+          invoice_id: invoiceId,
+          invoice_date: invoiceDate,
+          recipient_id: receiverId,
+          due_at: invoiceDueAt,
+        });
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL: {
+        const { invoiceId, invoiceDate, overduePeriod, invoiceTotalAmount, receiverEmail, receiverId, receiverCompanyName } = data as CreateInvoicePaymentOverdueNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const resp = await sendInvoicePaymentOverdueNoticeEmail({
+          button_url: buttonUrl,
+          invoice_date: invoiceDate,
+          overdue_period: overduePeriod,
+          invoice_total_amount: invoiceTotalAmount,
+          vendor_company_name: receiverCompanyName,
+        }, receiverEmail);
+
+        await createInvoicePaymentOverdueNotification({
+          invoice_id: invoiceId,
+          invoice_date: invoiceDate,
+          recipient_id: receiverId,
+          overdue_period: overduePeriod,
+        });
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -606,4 +668,22 @@ export const createBillingNoticeEmailJob = (
   data: CreateBillingNoticeEmailJobParam
 ) => {
   emailQueue.add({ type: EmailType.USER_BILLING_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentNoticeEmailJob = (
+  data: CreateInvoicePaymentNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentReminderEmailJob = (
+  data: CreateInvoicePaymentReminderEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL, data })
+}
+
+export const createInvoicePaymentOverdueNoticeEmailJob = (
+  data: CreateInvoicePaymentOverdueNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL, data })
 }
