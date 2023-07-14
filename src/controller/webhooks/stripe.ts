@@ -2,12 +2,14 @@ import Stripe from 'stripe';
 import { Request, Response } from 'express';
 import { prisma } from '../../connectDB';
 import { Biotech, Customer, Subscription } from '@prisma/client';
+import moment from 'moment';
 import Sentry from '../../sentry';
 
 import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../helper/constant';
 import { getStripeInstance } from '../../helper/stripe';
+import { toDollar } from '../../helper/money';
 
-import { createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
+import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
 
 /*
  *   Stripe webhook endpoint
@@ -205,7 +207,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 }
 
                 const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
-                await prisma.invoice.update({
+                const invoice = await prisma.invoice.update({
                   where: {
                     id: invoice_id,
                   },
@@ -213,6 +215,14 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                     payment_status: InvoicePaymentStatus.PAID,
                   }
                 });
+
+                createInvoicePaymentNoticeEmailJob({
+                  invoiceId: invoice.id,
+                  invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
+                  paymentStatus: 'successful',
+                  vendorCompanyId: invoice.vendor_company_id,
+                });
+
                 console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
                 break;
               }
@@ -303,7 +313,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 }
 
                 const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
-                await prisma.invoice.update({
+                const invoice = await prisma.invoice.update({
                   where: {
                     id: invoice_id,
                   },
@@ -311,6 +321,14 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                     payment_status: InvoicePaymentStatus.FAILED,
                   }
                 });
+
+                createInvoicePaymentNoticeEmailJob({
+                  invoiceId: invoice.id,
+                  invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
+                  paymentStatus: 'failed',
+                  vendorCompanyId: invoice.vendor_company_id,
+                });
+
                 console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
                 break;
               }
