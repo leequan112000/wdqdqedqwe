@@ -20,3 +20,4 @@ export const quoteNoticeTemplate = 'd-3cc946e64f124fe18783f6bb05809395';
 export const milestoneNoticeTemplate = 'd-e70b984b80e24fef80437c357a275673';
 export const quoteExpiringNoticeTemplate = 'd-956d37563a8d405dbf9de1ce8e67f0ac';
 export const quoteExpiredNoticeTemplate = 'd-e997458b39dc4d5e8a0726f7c449d21d';
+export const billingNoticeTemplate = 'd-702ff1f6d4264d82a2187a89b352c374';

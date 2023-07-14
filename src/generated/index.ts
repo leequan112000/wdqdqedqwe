@@ -216,6 +216,7 @@ export type MeetingEvent = {
   guests?: Maybe<Array<Maybe<User>>>;
   id?: Maybe<Scalars['String']>;
   meeting_link?: Maybe<Scalars['String']>;
+  organizer?: Maybe<User>;
   phone?: Maybe<Scalars['String']>;
   phone_country?: Maybe<Scalars['String']>;
   phone_link?: Maybe<Scalars['String']>;
@@ -1601,6 +1602,7 @@ export type MeetingEventResolvers<ContextType = any, ParentType extends Resolver
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

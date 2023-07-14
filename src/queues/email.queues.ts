@@ -18,9 +18,11 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
 import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
 import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
+import { sendBillingNoticeEmail } from "../mailer/invoice";
+import { createBillingNotification } from "../notification/invoiceNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -481,6 +483,27 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
+      case EmailType.USER_BILLING_NOTICE_EMAIL: {
+        const { invoiceId, invoiceMonth, invoicePeriod, invoiceTotalAmount,
+          receiverCompanyName, receiverEmail, receiverId } = data as CreateBillingNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const resp = await sendBillingNoticeEmail({
+          button_url: buttonUrl,
+          invoice_month: invoiceMonth,
+          invoice_period: invoicePeriod,
+          invoice_total_amount: invoiceTotalAmount,
+          vendor_company_name: receiverCompanyName,
+        }, receiverEmail);
+
+        await createBillingNotification({
+          invoice_id: invoiceId,
+          invoice_month: invoiceMonth,
+          recipient_id: receiverId,
+        });
+
+        done(null, resp);
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -577,4 +600,10 @@ export const createSendUserExpiredQuoteNoticeEmailJob = (
   data: CreateSendUserExpiredQuoteNoticeEmailJobParam
 ) => {
   emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
+}
+
+export const createBillingNoticeEmailJob = (
+  data: CreateBillingNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_BILLING_NOTICE_EMAIL, data })
 }

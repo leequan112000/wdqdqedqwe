@@ -91,6 +91,7 @@ export enum NotificationType {
   QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
+  NEW_INVOICE_NOTIFICATION = 'NewInvoiceNotification',
 }
 
 export enum QuoteNotificationActionContent {
@@ -150,6 +151,7 @@ export enum EmailType {
   USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
   USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
   USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
+  USER_BILLING_NOTICE_EMAIL = 'user:billing-notice-email',
 }
 
 export enum VendorType {
