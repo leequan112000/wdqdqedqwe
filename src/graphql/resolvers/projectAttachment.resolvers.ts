@@ -12,6 +12,7 @@ import UploadLimitTracker from '../../helper/uploadLimitTracker';
 import { PublicError } from '../errors/PublicError';
 import { byteToKB } from "../../helper/filesize";
 import { toDollar } from "../../helper/money";
+import { getFilenameWithVersion } from "../../helper/documentUpload";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -156,6 +157,23 @@ const resolvers: Resolvers<Context> = {
               uploadLimitTracker.addUsed(filesizeKB)
             } else {
               throw new PublicError(`Not enought space - ${uploadData.filename}`)
+            }
+          }
+
+          // Handle same name upload
+          if (uploadData.filename) {
+            const fullFilename: string = uploadData.filename;
+            const projectAttachment = await context.prisma.projectAttachment.findFirst({
+              where: {
+                filename: fullFilename,
+                project_connection_id: project_connection_id,
+                document_type: ProjectAttachmentDocumentType.FILE,
+              },
+            });
+
+            if (projectAttachment) {
+              const versionedFilename = await getFilenameWithVersion(fullFilename, 1, project_connection_id);
+              uploadData.filename = versionedFilename;
             }
           }
 
