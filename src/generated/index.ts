@@ -154,6 +154,38 @@ export type InviteCollaboratorInput = {
   last_name: Scalars['String'];
 };
 
+export type Invoice = {
+  __typename?: 'Invoice';
+  commission_rate?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  due_at?: Maybe<Scalars['Date']>;
+  from_date?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  invoice_items?: Maybe<Array<Maybe<InvoiceItem>>>;
+  invoice_number?: Maybe<Scalars['String']>;
+  paid_at?: Maybe<Scalars['Date']>;
+  payment_status?: Maybe<Scalars['String']>;
+  stripe_txn_id?: Maybe<Scalars['String']>;
+  to_date?: Maybe<Scalars['Date']>;
+  total_amount?: Maybe<Scalars['Float']>;
+  total_milestone_amount?: Maybe<Scalars['Float']>;
+  updated_at?: Maybe<Scalars['Date']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
+export type InvoiceItem = {
+  __typename?: 'InvoiceItem';
+  amount?: Maybe<Scalars['Float']>;
+  id?: Maybe<Scalars['String']>;
+  invoice?: Maybe<Invoice>;
+  invoice_id?: Maybe<Scalars['String']>;
+  milestone?: Maybe<Milestone>;
+  milestone_amount?: Maybe<Scalars['Float']>;
+  milestone_id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type LabSpecialization = {
   __typename?: 'LabSpecialization';
   full_name?: Maybe<Scalars['String']>;
@@ -212,6 +244,8 @@ export type Milestone = {
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
   project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  quote?: Maybe<Quote>;
+  quote_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   timeline?: Maybe<Scalars['String']>;
@@ -882,6 +916,9 @@ export type Query = {
   certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  invoice?: Maybe<Invoice>;
+  invoiceCheckoutUrl?: Maybe<Scalars['String']>;
+  invoices?: Maybe<Array<Maybe<Invoice>>>;
   lab_specialization_connection?: Maybe<LabSpecializationConnection>;
   lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
@@ -915,6 +952,18 @@ export type QueryCertification_Tag_ConnectionArgs = {
 
 export type QueryCertification_Tag_ConnectionsArgs = {
   vendor_company_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryInvoiceArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryInvoiceCheckoutUrlArgs = {
+  cancel_url: Scalars['String'];
+  id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -1270,6 +1319,8 @@ export type ResolversTypes = ResolversObject<{
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
+  Invoice: ResolverTypeWrapper<Invoice>;
+  InvoiceItem: ResolverTypeWrapper<InvoiceItem>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   LabSpecialization: ResolverTypeWrapper<LabSpecialization>;
   LabSpecializationConnection: ResolverTypeWrapper<LabSpecializationConnection>;
@@ -1322,6 +1373,8 @@ export type ResolversParentTypes = ResolversObject<{
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
+  Invoice: Invoice;
+  InvoiceItem: InvoiceItem;
   JSON: Scalars['JSON'];
   LabSpecialization: LabSpecialization;
   LabSpecializationConnection: LabSpecializationConnection;
@@ -1484,6 +1537,38 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
+  commission_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  from_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice_items?: Resolver<Maybe<Array<Maybe<ResolversTypes['InvoiceItem']>>>, ParentType, ContextType>;
+  invoice_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  paid_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  to_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_milestone_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type InvoiceItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvoiceItem'] = ResolversParentTypes['InvoiceItem']> = ResolversObject<{
+  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType>;
+  invoice_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
+  milestone_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  milestone_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
   name: 'JSON';
 }
@@ -1545,6 +1630,8 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType>;
+  quote_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1726,6 +1813,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
+  invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
+  invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
   lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
   lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
@@ -1936,6 +2026,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  Invoice?: InvoiceResolvers<ContextType>;
+  InvoiceItem?: InvoiceItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   LabSpecialization?: LabSpecializationResolvers<ContextType>;
   LabSpecializationConnection?: LabSpecializationConnectionResolvers<ContextType>;
