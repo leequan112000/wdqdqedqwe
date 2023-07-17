@@ -3,6 +3,7 @@ import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import { pubsub } from "../../helper/pubsub";
 import { withFilter } from "graphql-subscriptions";
+import { SubscriptionStatus } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
@@ -23,6 +24,37 @@ const resolvers: Resolvers<Context> = {
 
       const { first, after } = args;
 
+      const currectUserId = context.req.user_id;
+
+      if (!currectUserId) {
+        throw new InternalError('Current user not found')
+      }
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: currectUserId,
+        },
+        orderBy: {
+          updated_at: 'desc',
+        },
+      });
+
+      // This only applies to biotech.
+      // Because only biotech has subscriptions.
+      let maxMessageDate: Date | undefined = undefined;
+      if (customer) {
+        const subscriptions = await context.prisma.subscription.findMany({
+          where: {
+            biotech_id: customer.biotech_id,
+          },
+        });
+        const noActiveSubscription = subscriptions?.filter((s) => s.status === SubscriptionStatus.ACTIVE)?.length === 0;
+        if (noActiveSubscription && subscriptions?.[0]?.ended_at) {
+          maxMessageDate = subscriptions[0].ended_at;
+        }
+      }
+
+
       const messages = await context.prisma.message.findMany({
         take: first,
         skip: after ? 1 : undefined, // Skip the cursor
@@ -34,6 +66,9 @@ const resolvers: Resolvers<Context> = {
         },
         where: {
           chat_id: parent.id,
+          created_at: maxMessageDate
+            ? { lte: maxMessageDate }
+            : {},
         },
       });
 
@@ -57,6 +92,9 @@ const resolvers: Resolvers<Context> = {
           },
           where: {
             chat_id: parent.id,
+            created_at: maxMessageDate
+              ? { lte: maxMessageDate }
+              : {},
           },
         });
 
