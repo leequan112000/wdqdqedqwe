@@ -18,11 +18,11 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateBillingNoticeEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
 import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
 import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
-import { sendBillingNoticeEmail } from "../mailer/invoice";
-import { createBillingNotification } from "../notification/invoiceNotification";
+import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
+import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -504,6 +504,114 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
+      case EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL: {
+        const { invoiceId, invoiceMonth, paymentStatus, vendorCompanyId } = data as CreateInvoicePaymentNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentNoticeEmail({
+              button_url: buttonUrl,
+              invoice_month: invoiceMonth,
+              payment_status: paymentStatus,
+            }, receiver.user.email);
+
+            await createInvoicePaymentNotification({
+              invoice_id: invoiceId,
+              invoice_month: invoiceMonth,
+              recipient_id: receiver.user_id,
+              payment_status: paymentStatus,
+            });
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL: {
+        const { invoiceId, invoiceDate, invoiceDueAt, duePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentReminderEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentReminderEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              due_at: invoiceDueAt,
+              due_period: duePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+
+            await createInvoicePaymentReminderNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              due_at: invoiceDueAt,
+            });
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL: {
+        const { invoiceId, invoiceDate, overduePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentOverdueNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentOverdueNoticeEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              overdue_period: overduePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+    
+            await createInvoicePaymentOverdueNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              overdue_period: overduePeriod,
+            });    
+          })
+        );
+
+        done();
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -606,4 +714,22 @@ export const createBillingNoticeEmailJob = (
   data: CreateBillingNoticeEmailJobParam
 ) => {
   emailQueue.add({ type: EmailType.USER_BILLING_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentNoticeEmailJob = (
+  data: CreateInvoicePaymentNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentReminderEmailJob = (
+  data: CreateInvoicePaymentReminderEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL, data })
+}
+
+export const createInvoicePaymentOverdueNoticeEmailJob = (
+  data: CreateInvoicePaymentOverdueNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL, data })
 }

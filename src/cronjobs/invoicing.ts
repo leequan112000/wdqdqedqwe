@@ -110,7 +110,7 @@ async function main() {
           vendor_company_id: vendorCompanyId,
           due_at: dueDate.endOf('d').toDate(),
           invoice_number: generateInvoiceNumber(),
-          payment_status: InvoicePaymentStatus.UNPAID,
+          payment_status: invoiceItemInputs.length === 0 ? InvoicePaymentStatus.PAID : InvoicePaymentStatus.UNPAID,
           from_date: fromDate.toDate(),
           to_date: toDate.toDate(),
           commission_rate: commissionRate,

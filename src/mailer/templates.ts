@@ -21,3 +21,6 @@ export const milestoneNoticeTemplate = 'd-e70b984b80e24fef80437c357a275673';
 export const quoteExpiringNoticeTemplate = 'd-956d37563a8d405dbf9de1ce8e67f0ac';
 export const quoteExpiredNoticeTemplate = 'd-e997458b39dc4d5e8a0726f7c449d21d';
 export const billingNoticeTemplate = 'd-702ff1f6d4264d82a2187a89b352c374';
+export const invoicePaymentNoticeTemplate = 'd-b09814f4f6284f36ba15adc918d04620';
+export const invoicePaymentReminderTemplate = 'd-e566cd1bc6cc4d91a7d4ddffe65235af';
+export const invoicePaymentOverdueNoticeTemplate = 'd-d9574498830a49d0838d9f8b9c8aca12';
