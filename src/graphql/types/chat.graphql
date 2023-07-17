@@ -6,6 +6,7 @@ type MessageEdge {
 type MessagesPageInfo {
   endCursor: String!
   hasNextPage: Boolean
+  hasPreviousPage: Boolean
 }
 
 type MessagesConnection {
@@ -21,4 +22,8 @@ type Chat {
 
 type Mutation {
   createChat(project_connection_id: String!): Chat
+}
+
+type Subscription {
+  newMessage(chat_id: String!): MessageEdge
 }

@@ -260,6 +260,7 @@ export type MessagesPageInfo = {
   __typename?: 'MessagesPageInfo';
   endCursor: Scalars['String'];
   hasNextPage?: Maybe<Scalars['Boolean']>;
+  hasPreviousPage?: Maybe<Scalars['Boolean']>;
 };
 
 export type Milestone = {
@@ -1145,7 +1146,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   cdaSignedAt?: Maybe<Scalars['String']>;
   cdaUrl?: Maybe<Scalars['String']>;
-  newMessage?: Maybe<Message>;
+  newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
 };
 
@@ -1671,6 +1672,7 @@ export type MessagesConnectionResolvers<ContextType = any, ParentType extends Re
 export type MessagesPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesPageInfo'] = ResolversParentTypes['MessagesPageInfo']> = ResolversObject<{
   endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1960,7 +1962,7 @@ export type StripeExternalAccountDataResolvers<ContextType = any, ParentType ext
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   cdaSignedAt?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaSignedAt", ParentType, ContextType>;
   cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
-  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
+  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
 }>;
 

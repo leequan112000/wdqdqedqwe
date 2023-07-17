@@ -1,6 +1,8 @@
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
+import { pubsub } from "../../helper/pubsub";
+import { withFilter } from "graphql-subscriptions";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
@@ -23,7 +25,7 @@ const resolvers: Resolvers<Context> = {
 
       const messages = await context.prisma.message.findMany({
         take: first,
-        skip: 1, // Skip the cursor
+        skip: after ? 1 : undefined, // Skip the cursor
         cursor: after
           ? { id: after }
           : undefined,
@@ -46,7 +48,7 @@ const resolvers: Resolvers<Context> = {
       if (endCursor) {
         const nextMessages = await context.prisma.message.findMany({
           take: first,
-          skip: 1, // Skip the cursor
+          skip: endCursor ? 1 : undefined, // Skip the cursor
           cursor: endCursor
             ? { id: endCursor }
             : undefined,
@@ -93,6 +95,20 @@ const resolvers: Resolvers<Context> = {
           }
         });
       });
+    },
+  },
+  Subscription: {
+    newMessage: {
+      // @ts-ignore
+      subscribe: withFilter(
+        () => pubsub.asyncIterator<any>(['NEW_MESSAGE']),
+        (payload, variables, context) => {
+          return (
+            payload.chat_id === variables.chat_id
+            && payload.newMessage.node.user_id !== context.req.user_id
+          );
+        },
+      ),
     },
   }
 };
