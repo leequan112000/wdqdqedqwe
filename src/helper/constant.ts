@@ -184,3 +184,22 @@ export enum StripeWebhookPaymentType {
   MILESTONE = 'milestone',
   INVOICE = 'invoice',
 }
+
+export enum CasbinObj {
+  PROJECT_REQUEST = 'project_request',
+  PROJECT_CONNECTION = 'project_connection',
+  COMPANY_COLLABORATOR = 'company_collaborator',
+  PROJECT_COLLABORATOR = 'project_collaborator',
+}
+
+export enum CasbinAct {
+  READ = 'read',
+  WRITE = 'write',
+  DELETE = 'delete',
+}
+
+export enum CasbinRole {
+  ACCOUNT_OWNDER = 'role:account_owner',
+  ADMIN = 'role:admin',
+  USER = 'role:user',
+}

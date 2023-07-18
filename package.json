@@ -75,6 +75,8 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "bull": "^4.10.4",
+    "casbin": "^5.26.1",
+    "casbin-prisma-adapter": "^1.2.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
