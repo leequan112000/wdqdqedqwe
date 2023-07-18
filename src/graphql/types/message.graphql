@@ -12,7 +12,3 @@ type Mutation {
     project_connection_id: String!
   ): Message
 }
-
-type Subscription {
-  newMessage(chat_id: String!): Message
-}

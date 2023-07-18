@@ -11,6 +11,7 @@ const resolvers: Resolvers<Context> = {
     serialize(value) {
       if (isDate(value))
         return value.toISOString();
+      return value;
     },
     parseValue(value) {
       if (typeof value === 'string') {
