@@ -130,6 +130,8 @@ model VendorCompany {
   cda_pandadoc_signer         String?
   cda_signed_at               DateTime?
   skip_cda                    Boolean   @default(false)
+  skip_certification_tag      Boolean   @default(false)
+  skip_lab_specialization     Boolean   @default(false)
   legal_name                  String?   @unique
   university_name             String?
   vendor_type                 String?
