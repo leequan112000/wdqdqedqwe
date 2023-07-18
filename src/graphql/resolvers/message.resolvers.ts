@@ -1,9 +1,8 @@
-import { withFilter } from "graphql-subscriptions";
 import { pubsub } from "../../helper/pubsub";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../../generated";
+import { Resolvers, MessageEdge } from "../../generated";
 import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
 
 const resolvers: Resolvers<Context> = {
@@ -76,7 +75,12 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        pubsub.publish('NEW_MESSAGE', { newMessage });
+        const edge: MessageEdge = {
+          cursor: newMessage.id,
+          node: newMessage,
+        }
+
+        pubsub.publish('NEW_MESSAGE', { newMessage: edge, chat_id: chat.id });
 
         createSendUserNewMessageNoticeJob({
           projectConnectionId: chat.project_connection_id,
@@ -85,19 +89,6 @@ const resolvers: Resolvers<Context> = {
 
         return newMessage;
       });
-    },
-  },
-  Subscription: {
-    newMessage: {
-      // @ts-ignore
-      subscribe: withFilter(
-        () => pubsub.asyncIterator<any>(['NEW_MESSAGE']),
-        (payload, variables) => {
-          return (
-            payload.newMessage.chat_id === variables.chat_id
-          );
-        },
-      ),
     },
   },
 };
