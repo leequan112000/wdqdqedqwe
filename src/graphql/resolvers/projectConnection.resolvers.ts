@@ -695,6 +695,22 @@ const resolvers: Resolvers<Context> = {
           });
         }
 
+        const chat = await trx.chat.findFirst({
+          where: {
+            project_connection_id: projectConnection.id,
+          },
+        });
+
+        if (!chat) {
+          await trx.chat.create({
+            data: {
+              biotech_id: projectConnection.project_request.biotech_id,
+              vendor_company_id: projectConnection.vendor_company_id,
+              project_connection_id: projectConnection.id,
+            },
+          });
+        }
+
         return await trx.projectConnection.update({
           where: {
             id: args.id,
