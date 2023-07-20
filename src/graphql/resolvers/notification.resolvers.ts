@@ -149,18 +149,20 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (notification) {
-        await context.prisma.notification.update({
-          where: {
-            id
-          },
-          data: {
-            read_at: new Date(),
-          },
-        });
+      if (!notification) {
+        throw new InternalError('Notification not found');
       }
 
-      return notification;
+      const updatedNotification = await context.prisma.notification.update({
+        where: {
+          id
+        },
+        data: {
+          read_at: new Date(),
+        },
+      });
+
+      return updatedNotification;
     },
     markNotificationsInProjectAsRead: async (_, args, context) => {
       const { project_connection_id } = args;
@@ -180,9 +182,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      await Promise.all(
+      const updatedNotifications = await Promise.all(
         notifications.map(async (notification) => {
-          await context.prisma.notification.update({
+          return await context.prisma.notification.update({
             where: {
               id: notification.id,
             },
@@ -193,7 +195,7 @@ const resolvers: Resolvers<Context> = {
         })
       );
 
-      return notifications;
+      return updatedNotifications;
     },
   },
   Subscription: {
