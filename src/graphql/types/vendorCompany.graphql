@@ -18,6 +18,8 @@ type VendorCompany {
   cda_pandadoc_signer: String
   cda_signed_at: Date
   skip_cda: Boolean
+  skip_certification_tag: Boolean
+  skip_lab_specialization: Boolean
   university_name: String
   vendor_type: String
   principal_investigator_name: String
@@ -79,4 +81,6 @@ type Mutation {
     lab_specialization_ids: [String]
     new_lab_specialization_names: [String]
   ): VendorCompany
+  skipAddCertificationTag: VendorCompany
+  skipAddLabSpecialization: VendorCompany
 }

@@ -26,3 +26,37 @@ export type CreateSendUserExpiringQuoteNoticeEmailJobParam = {
     vendor_full_name: string;
   }>;
 }
+
+export type CreateBillingNoticeEmailJobParam = {
+  receiverId: string;
+  receiverEmail: string;
+  receiverCompanyName: string;
+  invoiceMonth: string;
+  invoiceTotalAmount: string;
+  invoicePeriod: string;
+  invoiceId: string;
+}
+
+export type CreateInvoicePaymentNoticeEmailJobParam = {
+  vendorCompanyId: string;
+  invoiceMonth: string;
+  paymentStatus: string;
+  invoiceId: string;
+}
+
+export type CreateInvoicePaymentReminderEmailJobParam = {
+  vendorCompanyId: string;
+  invoiceDueAt: string
+  duePeriod: string
+  invoiceDate: string;
+  invoiceTotalAmount: string;
+  invoiceId: string;
+}
+
+export type CreateInvoicePaymentOverdueNoticeEmailJobParam = {
+  vendorCompanyId: string;
+  overduePeriod: string
+  invoiceDate: string;
+  invoiceTotalAmount: string;
+  invoiceId: string;
+}

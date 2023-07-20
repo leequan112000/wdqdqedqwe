@@ -57,6 +57,15 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_EXPIRED_NOTIFICATION:
         case NotificationType.QUOTE_EXPIRING_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}`;
+        case NotificationType.NEW_INVOICE_NOTIFICATION:
+        case NotificationType.INVOICE_PAYMENT_NOTIFICATION:
+        case NotificationType.INVOICE_PAYMENT_REMINDER_NOTIFICATION:
+        case NotificationType.INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
+          return `/app/invoices/${parent.params.invoice_id}`;
+        case NotificationType.NEW_MEETING_NOTIFICATION:
+        case NotificationType.UPDATE_MEETING_NOTIFICATION:
+        case NotificationType.REMOVE_MEETING_NOTIFICATION:
+          return `/app/meeting-events`;
         default:
           return `/app`;
       }

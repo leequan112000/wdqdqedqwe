@@ -49,7 +49,7 @@ export const sendAdminNewCroInterestNoticeEmail = async (data: AdminCroInterestN
     to: receiverEmail,
     templateId: adminNewCROInterestNoticeTemplate,
     dynamicTemplateData: {
-      retool_url: process.env.RETOOL_PROJECT_URL,
+      retool_url: process.env.RETOOL_INTEREST_TO_JOIN_URL,
       company_name: data.company_name,
       admin_name: data.admin_name,
     },

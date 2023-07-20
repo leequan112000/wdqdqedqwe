@@ -109,3 +109,34 @@ export type AdminGeneralNoticeData = {
   button_label: string;
   button_url?: string;
 }
+
+export type BillingNoticeData = {
+  invoice_month: string;
+  vendor_company_name: string;
+  invoice_period: string;
+  invoice_total_amount: string;
+  button_url: string;
+}
+
+export type InvoicePaymentNoticeData = {
+  invoice_month: string;
+  payment_status: string;
+  button_url: string;
+}
+
+export type InvoicePaymentReminderData = {
+  invoice_date: string;
+  vendor_company_name: string;
+  due_at: string;
+  due_period: string
+  invoice_total_amount: string;
+  button_url: string;
+}
+
+export type InvoicePaymentOverdueNoticeData = {
+  invoice_date: string;
+  vendor_company_name: string;
+  overdue_period: string;
+  invoice_total_amount: string;
+  button_url: string;
+}
