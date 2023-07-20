@@ -95,6 +95,9 @@ export enum NotificationType {
   INVOICE_PAYMENT_NOTIFICATION = 'InvoicePaymentNotification',
   INVOICE_PAYMENT_REMINDER_NOTIFICATION = 'InvoicePaymentReminderNotification',
   INVOICE_PAYMENT_OVERDUE_NOTIFICATION = 'InvoicePaymentOverdueNotification',
+  NEW_MEETING_NOTIFICATION = 'NewMeetingNotification',
+  UPDATE_MEETING_NOTIFICATION = 'UpdateMeetingNotification',
+  REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
 }
 
 export enum QuoteNotificationActionContent {

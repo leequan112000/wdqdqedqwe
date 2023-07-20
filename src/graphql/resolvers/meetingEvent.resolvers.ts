@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { find, intersectionBy } from 'lodash';
 import moment from 'moment'
 import { createGoogleEvent, patchGoogleEvent, cancelGoogleEvent } from "../../helper/googleCalendar";
@@ -6,6 +6,8 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
 import { InternalError } from '../errors/InternalError';
 import { MeetingPlatform } from '../../helper/constant';
+import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from '../../notification/meetingNotification';
+import { createNotificationQueueJob } from '../../queues/notification.queues';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -45,7 +47,7 @@ const resolvers: Resolvers<Context> = {
           organizer: true,
         },
       });
-      
+
       return await context.prisma.user.findFirst({
         where: {
           id: meetingEvent?.organizer?.id,
@@ -255,7 +257,9 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Current user not found');
       }
 
-      return await context.prisma.$transaction(async (trx) => {
+      let attendeeUsers: User[] = [];
+
+      const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
         // Create Google event.
         const attendeeArr = [...attendees.map((a) => ({ email: a })), { email: organizerUser.email }];
         const resp = await createGoogleEvent({
@@ -279,6 +283,21 @@ const resolvers: Resolvers<Context> = {
         const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
         const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
 
+        // Find attendees. This NOT INCLUDE the organizer.
+        attendeeUsers = await trx.user.findMany({
+          where: {
+            email: {
+              in: attendees,
+            },
+          },
+        });
+
+        // Create meeting attendee connections.
+        // Note that organizerUser is inserted here.
+        const data = [...attendeeUsers, organizerUser].map((u) => ({
+          user_id: u.id,
+        }));
+
         // Create meeting event record.
         const newMeetingEvent = await trx.meetingEvent.create({
           data: {
@@ -295,30 +314,33 @@ const resolvers: Resolvers<Context> = {
             project_connection_id,
             platform_event_id: gEventId,
             organizer_id: organizerUser.id,
+            meetingAttendeeConnections: {
+              create: data,
+            },
           },
-        });
-
-        // Find attendees. This NOT INCLUDE the organizer.
-        const attendeeUsers = await trx.user.findMany({
-          where: {
-            email: {
-              in: attendees,
+          include: {
+            project_connection: {
+              include: {
+                project_request: true,
+              },
             },
           },
         });
 
-        // Create meeting attendee connections.
-        // Note that organizerUser is inserted here.
-        const data = [...attendeeUsers, organizerUser].map((u) => ({
-          user_id: u.id,
-          meeting_event_id: newMeetingEvent.id,
-        }));
-        await trx.meetingAttendeeConnection.createMany({
-          data,
-        });
-
         return newMeetingEvent;
       });
+
+      const notificationJob = {
+        data: attendeeUsers.map((u) => createNewMeetingNotificationJob({
+          meeting_event_id: newMeetingEvent.id,
+          organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+          project_title: newMeetingEvent.project_connection.project_request.title,
+          recipient_id: u.id,
+        })),
+      }
+      createNotificationQueueJob(notificationJob);
+
+      return newMeetingEvent;
     },
     updateMeetingEvent: async (parent, args, context) => {
       const { meeting_event_id, attendees, end_time, start_time, timezone, title, description } = args;
@@ -339,9 +361,11 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('Meeting event not found');
       }
 
-      return await context.prisma.$transaction(async (trx) => {
+      let attendeeUsers: User[] = [];
+
+      const updatedMeetingEvent = await context.prisma.$transaction(async (trx) => {
         // Find all attendees. This INCLUDE the organizer.
-        const attendeeUsers = await trx.user.findMany({
+        attendeeUsers = await trx.user.findMany({
           where: {
             email: {
               in: attendees,
@@ -420,6 +444,7 @@ const resolvers: Resolvers<Context> = {
                 user: true,
               },
             },
+            organizer: true,
           },
         });
 
@@ -432,10 +457,47 @@ const resolvers: Resolvers<Context> = {
           },
         };
       });
+
+      const notificationJob = {
+        data: attendeeUsers
+          .filter((u) => u.id !== updatedMeetingEvent.organizer_id)
+          .map((u) => createUpdateMeetingNotificationJob({
+            meeting_event_id: updatedMeetingEvent.id,
+            organizer_full_name: `${updatedMeetingEvent.organizer.first_name} ${updatedMeetingEvent.organizer.last_name}`,
+            project_title: updatedMeetingEvent.project_connection.project_request.title,
+            recipient_id: u.id,
+          })),
+      }
+      createNotificationQueueJob(notificationJob);
+
+      return updatedMeetingEvent;
     },
     removeMeetingEvent: async (parent, args, context) => {
       const { meeting_event_id } = args;
-      return await context.prisma.$transaction(async (trx) => {
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+        include: {
+          meetingAttendeeConnections: {
+            include: {
+              user: true,
+            },
+          },
+          organizer: true,
+          project_connection: {
+            include: {
+              project_request: true,
+            },
+          },
+        },
+      });
+
+      if (!meetingEvent) {
+        throw new InternalError('Meeting event not found');
+      }
+
+      const deletedMeetingEvent = await context.prisma.$transaction(async (trx) => {
         // Delete all meeting attendee connections.
         await trx.meetingAttendeeConnection.deleteMany({
           where: {
@@ -457,7 +519,21 @@ const resolvers: Resolvers<Context> = {
         await cancelGoogleEvent(deletedMeetingEvent.platform_event_id);
 
         return deletedMeetingEvent;
-      })
+      });
+
+      const notificationJob = {
+        data: meetingEvent.meetingAttendeeConnections
+          .filter((con) => con.user_id !== meetingEvent.organizer_id)
+          .map((con) => createRemoveMeetingNotificationJob({
+            meeting_event_id: meetingEvent.id,
+            organizer_full_name: `${meetingEvent.organizer.first_name} ${meetingEvent.organizer.last_name}`,
+            project_title: meetingEvent.project_connection.project_request.title,
+            recipient_id: con.user_id,
+          })),
+      }
+      createNotificationQueueJob(notificationJob);
+
+      return deletedMeetingEvent;
     },
   },
 }
