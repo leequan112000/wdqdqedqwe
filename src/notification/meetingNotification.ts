@@ -52,7 +52,7 @@ export const createRemoveMeetingNotificationJob = (data: RemoveMeetingNotificati
 
   return {
     notification_type: NotificationType.REMOVE_MEETING_NOTIFICATION,
-    message: `**${organizer_full_name}** cancelled a meeting for experiment **${project_title}**`,
+    message: `**${organizer_full_name}** canceled a meeting for experiment **${project_title}**`,
     params: {
       meeting_event_id,
     },
