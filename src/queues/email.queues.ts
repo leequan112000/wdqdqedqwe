@@ -19,8 +19,6 @@ import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
 import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
-import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
-import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
 import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
 import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
 
@@ -430,55 +428,26 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
-        const { receiverId, receiverEmail, receiverName, projectConnectionId, expiringIn, projectRequestTitle, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const {  receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
         const resp = await sendQuoteExpiringNoticeEmail({
           button_url: buttonUrl,
           expiring_in: expiringIn,
-          project_request_title: projectRequestTitle,
           receiver_full_name: receiverName,
           quotes: quotes,
         }, receiverEmail);
-
-
-        const createNotificationTasks = quotes.map(async (q) => {
-          return await createQuoteExpiringNotification({
-            expiring_in: expiringIn,
-            project_connection_id: projectConnectionId,
-            project_name: projectRequestTitle,
-            quote_id: q.id,
-            recipient_id: receiverId,
-            vendor_full_name: q.vendor_full_name,
-          })
-        });
-
-        await Promise.all(createNotificationTasks);
 
         done(null, resp);
         break;
       }
       case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
-        const { receiverId, receiverEmail, receiverName, projectConnectionId, projectRequestTitle, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const {  receiverEmail, receiverName, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
         const resp = await sendQuoteExpiredNoticeEmail({
           button_url: buttonUrl,
-          project_request_title: projectRequestTitle,
           receiver_full_name: receiverName,
           quotes: quotes,
         }, receiverEmail);
-
-
-        const createNotificationTasks = quotes.map(async (q) => {
-          return await createQuoteExpiredNotification({
-            project_connection_id: projectConnectionId,
-            project_name: projectRequestTitle,
-            quote_id: q.id,
-            vendor_full_name: receiverName,
-            recipient_id: receiverId,
-          });
-        });
-
-        await Promise.all(createNotificationTasks);
 
         done(null, resp);
         break;
@@ -730,13 +699,13 @@ export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: str
 export const createSendUserExpiringQuoteNoticeEmailJob = (
   data: CreateSendUserExpiringQuoteNoticeEmailJobParam
 ) => {
-  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
+  return emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
 }
 
 export const createSendUserExpiredQuoteNoticeEmailJob = (
   data: CreateSendUserExpiredQuoteNoticeEmailJobParam
 ) => {
-  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
+  return emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
 }
 
 export const createBillingNoticeEmailJob = (
