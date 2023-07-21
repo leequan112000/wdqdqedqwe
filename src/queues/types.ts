@@ -60,3 +60,22 @@ export type CreateInvoicePaymentOverdueNoticeEmailJobParam = {
   invoiceTotalAmount: string;
   invoiceId: string;
 }
+
+export type CreateVendorProjectRequestExpiringNoticeEmailJobParam = {
+  receiverEmail: string;
+  receiverName: string;
+  expiringIn: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}
+
+export type CreateVendorProjectRequestExpiredNoticeEmailJobParam = {
+  receiverEmail: string;
+  receiverName: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}

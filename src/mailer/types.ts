@@ -140,3 +140,22 @@ export type InvoicePaymentOverdueNoticeData = {
   invoice_total_amount: string;
   button_url: string;
 }
+
+export type VendorProjectRequestExpiringNoticeData = {
+  receiver_full_name: string;
+  button_url: string;
+  expiring_in: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}
+
+export type VendorProjectRequestExpiredNoticeData = {
+  receiver_full_name: string;
+  button_url: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}

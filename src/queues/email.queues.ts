@@ -5,7 +5,7 @@ import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEm
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
-import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
+import { sendAcceptProjectRequestEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
@@ -18,7 +18,7 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
 import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
 import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
 import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
@@ -599,17 +599,46 @@ emailQueue.process(async (job, done) => {
               invoice_total_amount: invoiceTotalAmount,
               vendor_company_name: receiver.vendor_company!.name,
             }, receiver.user.email);
-    
+
             await createInvoicePaymentOverdueNotification({
               invoice_id: invoiceId,
               invoice_date: invoiceDate,
               recipient_id: receiver.user_id,
               overdue_period: overduePeriod,
-            });    
+            });
           })
         );
 
         done();
+        break;
+      }
+      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL: {
+        const { receiverEmail, receiverName, requests, expiringIn } = data as CreateVendorProjectRequestExpiringNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`
+        const resp = await sendVendorProjectRequestExpiringEmail(
+          {
+            button_url: buttonUrl,
+            expiring_in: expiringIn,
+            receiver_full_name: receiverName,
+            requests,
+          },
+          receiverEmail);
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL: {
+        const { receiverEmail, receiverName, requests } = data as CreateVendorProjectRequestExpiredNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/expired`
+        const resp = await sendVendorProjectRequestExpiredEmail(
+          {
+            button_url: buttonUrl,
+            receiver_full_name: receiverName,
+            requests,
+          },
+          receiverEmail);
+
+        done(null, resp);
         break;
       }
       default:
@@ -732,4 +761,16 @@ export const createInvoicePaymentOverdueNoticeEmailJob = (
   data: CreateInvoicePaymentOverdueNoticeEmailJobParam
 ) => {
   emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL, data })
+}
+
+export const createVendorProjectRequestExpiringNoticeEmailJob = (
+  data: CreateVendorProjectRequestExpiringNoticeEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL, data });
+}
+
+export const createVendorProjectRequestExpiredNoticeEmailJob = (
+  data: CreateVendorProjectRequestExpiredNoticeEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL, data });
 }
