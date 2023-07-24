@@ -44,11 +44,9 @@ export type AcceptProjectRequestNoticeData = {
 
 export type QuoteExpiringNoticeData = {
   receiver_full_name: string;
-  project_request_title: string;
   button_url: string;
   expiring_in: string;
   quotes: Array<{
-    id: string;
     short_id: string;
     project_request_title: string;
     vendor_full_name: string;
@@ -57,10 +55,8 @@ export type QuoteExpiringNoticeData = {
 
 export type QuoteExpiredNoticeData = {
   receiver_full_name: string;
-  project_request_title: string;
   button_url: string;
   quotes: Array<{
-    id: string;
     short_id: string;
     project_request_title: string;
     vendor_full_name: string;
@@ -139,4 +135,23 @@ export type InvoicePaymentOverdueNoticeData = {
   overdue_period: string;
   invoice_total_amount: string;
   button_url: string;
+}
+
+export type VendorProjectRequestExpiringNoticeData = {
+  receiver_full_name: string;
+  button_url: string;
+  expiring_in: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}
+
+export type VendorProjectRequestExpiredNoticeData = {
+  receiver_full_name: string;
+  button_url: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
 }

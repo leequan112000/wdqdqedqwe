@@ -1,5 +1,5 @@
-import { acceptProjectRequestNoticeTemplate, projectRequestSubmissionTemplate } from "./templates";
-import { AcceptProjectRequestNoticeData } from "./types";
+import { acceptProjectRequestNoticeTemplate, projectRequestSubmissionTemplate, vendorRequestExpiredNoticeTemplate, vendorRequestExpiringNoticeTemplate } from "./templates";
+import { AcceptProjectRequestNoticeData, VendorProjectRequestExpiredNoticeData, VendorProjectRequestExpiringNoticeData } from "./types";
 import { app_env } from "../environment";
 import { createMailData, sendMail } from "./config";
 import { User } from "@prisma/client";
@@ -30,3 +30,23 @@ export const sendAcceptProjectRequestEmail = async (emailData: AcceptProjectRequ
 
   await sendMail(mailData);
 };
+
+export const sendVendorProjectRequestExpiringEmail = async (emailData: VendorProjectRequestExpiringNoticeData, receiverEmail: string) => {
+  const mailData = createMailData({
+    to: receiverEmail,
+    templateId: vendorRequestExpiringNoticeTemplate,
+    dynamicTemplateData: emailData,
+  })
+
+  return await sendMail(mailData);
+}
+
+export const sendVendorProjectRequestExpiredEmail = async (emailData: VendorProjectRequestExpiredNoticeData, receiverEmail: string) => {
+  const mailData = createMailData({
+    to: receiverEmail,
+    templateId: vendorRequestExpiredNoticeTemplate,
+    dynamicTemplateData: emailData,
+  })
+
+  return await sendMail(mailData);
+}
