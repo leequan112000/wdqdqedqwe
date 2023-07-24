@@ -83,6 +83,56 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    notificationsConnection: async (parent, args, context) => {
+      const { first, after } = args;
+      const notifications = await context.prisma.notification.findMany({
+        take: first,
+        skip: after ? 1 : undefined,
+        cursor: after
+          ? { id: after }
+          : undefined,
+        orderBy: {
+          created_at: 'desc',
+        },
+        where: {
+          recipient_id: context.req.user_id,
+        },
+      });
+      const edges = notifications.map((n) => ({
+        cursor: n.id,
+        node: n,
+      }));
+
+      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
+
+      if (endCursor) {
+        const nextMessages = await context.prisma.notification.findMany({
+          take: first,
+          skip: endCursor ? 1 : undefined, // Skip the cursor
+          cursor: endCursor
+            ? { id: endCursor }
+            : undefined,
+          orderBy: {
+            created_at: 'desc',
+          },
+          where: {
+            recipient_id: context.req.user_id,
+          },
+        });
+
+        hasNextPage = nextMessages.length > 0;
+      }
+
+      return {
+        edges,
+        pageInfo: {
+          endCursor: endCursor || '',
+          hasNextPage,
+          hasPreviousPage: false,
+        },
+      };
+    },
   },
   Mutation: {
     markNotificationAsRead: async (_, args, context) => {
@@ -99,18 +149,20 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (notification) {
-        await context.prisma.notification.update({
-          where: {
-            id
-          },
-          data: {
-            read_at: new Date(),
-          },
-        });
+      if (!notification) {
+        throw new InternalError('Notification not found');
       }
 
-      return notification;
+      const updatedNotification = await context.prisma.notification.update({
+        where: {
+          id
+        },
+        data: {
+          read_at: new Date(),
+        },
+      });
+
+      return updatedNotification;
     },
     markNotificationsInProjectAsRead: async (_, args, context) => {
       const { project_connection_id } = args;
@@ -130,9 +182,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      await Promise.all(
+      const updatedNotifications = await Promise.all(
         notifications.map(async (notification) => {
-          await context.prisma.notification.update({
+          return await context.prisma.notification.update({
             where: {
               id: notification.id,
             },
@@ -143,7 +195,7 @@ const resolvers: Resolvers<Context> = {
         })
       );
 
-      return notifications;
+      return updatedNotifications;
     },
   },
   Subscription: {
