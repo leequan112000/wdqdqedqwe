@@ -24,7 +24,6 @@ export const sendQuoteExpiringNoticeEmail = async (emailData: QuoteExpiringNotic
     templateId: quoteExpiringNoticeTemplate,
     dynamicTemplateData: {
       receiver_full_name: emailData.receiver_full_name,
-      project_request_title: emailData.project_request_title,
       button_url: emailData.button_url,
       expiring_in: emailData.expiring_in,
       quotes: emailData.quotes,
@@ -40,7 +39,6 @@ export const sendQuoteExpiredNoticeEmail = async (emailData: QuoteExpiredNoticeD
     templateId: quoteExpiredNoticeTemplate,
     dynamicTemplateData: {
       receiver_full_name: emailData.receiver_full_name,
-      project_request_title: emailData.project_request_title,
       button_url: emailData.button_url,
       quotes: emailData.quotes,
     },

@@ -24,3 +24,5 @@ export const billingNoticeTemplate = 'd-702ff1f6d4264d82a2187a89b352c374';
 export const invoicePaymentNoticeTemplate = 'd-b09814f4f6284f36ba15adc918d04620';
 export const invoicePaymentReminderTemplate = 'd-e566cd1bc6cc4d91a7d4ddffe65235af';
 export const invoicePaymentOverdueNoticeTemplate = 'd-d9574498830a49d0838d9f8b9c8aca12';
+export const vendorRequestExpiringNoticeTemplate = 'd-ce9c888eb5ed4f13b666d2b0ef17f35b';
+export const vendorRequestExpiredNoticeTemplate = 'd-ba06aa3785d34ddea30c36b179bd6c29';

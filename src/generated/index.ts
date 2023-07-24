@@ -842,6 +842,25 @@ export type Notification = {
   url?: Maybe<Scalars['String']>;
 };
 
+export type NotificationConnection = {
+  __typename?: 'NotificationConnection';
+  edges?: Maybe<Array<Maybe<NotificationEdge>>>;
+  pageInfo?: Maybe<NotificationPageInfo>;
+};
+
+export type NotificationEdge = {
+  __typename?: 'NotificationEdge';
+  cursor?: Maybe<Scalars['String']>;
+  node?: Maybe<Notification>;
+};
+
+export type NotificationPageInfo = {
+  __typename?: 'NotificationPageInfo';
+  endCursor: Scalars['String'];
+  hasNextPage?: Maybe<Scalars['Boolean']>;
+  hasPreviousPage?: Maybe<Scalars['Boolean']>;
+};
+
 export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
@@ -955,6 +974,7 @@ export type Query = {
   milestone?: Maybe<Milestone>;
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  notificationsConnection?: Maybe<NotificationConnection>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   projectRequest?: Maybe<ProjectRequest>;
@@ -1030,6 +1050,12 @@ export type QueryMilestoneCheckoutUrlArgs = {
 
 export type QueryNotificationsArgs = {
   unread_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryNotificationsConnectionArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -1364,6 +1390,9 @@ export type ResolversTypes = ResolversObject<{
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
   Notification: ResolverTypeWrapper<Notification>;
+  NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
+  NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
+  NotificationPageInfo: ResolverTypeWrapper<NotificationPageInfo>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1421,6 +1450,9 @@ export type ResolversParentTypes = ResolversObject<{
   Milestone: Milestone;
   Mutation: {};
   Notification: Notification;
+  NotificationConnection: NotificationConnection;
+  NotificationEdge: NotificationEdge;
+  NotificationPageInfo: NotificationPageInfo;
   ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1785,6 +1817,25 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type NotificationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationConnection'] = ResolversParentTypes['NotificationConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NotificationEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['NotificationPageInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEdge'] = ResolversParentTypes['NotificationEdge']> = ResolversObject<{
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationPageInfo'] = ResolversParentTypes['NotificationPageInfo']> = ResolversObject<{
+  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -1883,6 +1934,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
+  notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
@@ -2102,6 +2154,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;
+  NotificationConnection?: NotificationConnectionResolvers<ContextType>;
+  NotificationEdge?: NotificationEdgeResolvers<ContextType>;
+  NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;

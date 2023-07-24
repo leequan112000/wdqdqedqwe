@@ -5,7 +5,17 @@ import { InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
 import { createBillingNoticeEmailJob } from '../queues/email.queues';
+
+const argv = yargs(hideBin(process.argv))
+  .option('debug', {
+    describe: '(Optional) Debug mode. Allow running the script anytime.',
+    type: 'boolean',
+    default: false, // Default value if the argument is not provided
+  })
+  .parseSync();
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 18);
 function generateInvoiceNumber() {
@@ -167,7 +177,7 @@ async function main() {
   process.exit(0);
 }
 
-if (isFirstDayOfMonth) {
+if (argv.debug || isFirstDayOfMonth) {
   main();
 } else {
   console.log('Skipping invoicing. Not first day of month');
