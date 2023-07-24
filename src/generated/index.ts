@@ -955,11 +955,11 @@ export type ProjectRequestCollaborator = {
 export type ProjectRequestComment = {
   __typename?: 'ProjectRequestComment';
   content?: Maybe<Scalars['String']>;
-  created_at?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
-  updated_at?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
 };
 
 export type ProjectRequestProjectConnectionFilter = {
@@ -1933,11 +1933,11 @@ export type ProjectRequestCollaboratorResolvers<ContextType = any, ParentType ex
 
 export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestComment'] = ResolversParentTypes['ProjectRequestComment']> = ResolversObject<{
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
