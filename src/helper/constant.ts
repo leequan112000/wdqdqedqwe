@@ -203,6 +203,7 @@ export enum CasbinAct {
   READ = 'read',
   WRITE = 'write',
   DELETE = 'delete',
+  ALL = '*',
 }
 
 export enum CasbinRole {
