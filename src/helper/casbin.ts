@@ -1,4 +1,4 @@
-import { newEnforcer, newModelFromString, casbinJsGetPermissionForUser } from 'casbin';
+import { newEnforcer, newModelFromString } from 'casbin';
 import { PrismaAdapter } from 'casbin-prisma-adapter';
 import { prisma } from '../connectDB';
 import { CasbinAct, CasbinObj, CasbinRole } from './constant';
@@ -17,7 +17,7 @@ g = _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act
+m = g(r.sub, p.sub) && r.obj == p.obj && keyMatch(r.act, p.act)
 `;
 
 const createEnforcer = async () => {
