@@ -45,7 +45,7 @@ export const hasPermission = async (userId: string, obj: CasbinObj, act: CasbinA
 
 export const frontendPermissionObject = async (userId: string) => {
   const e = await createEnforcer();
-  const namedGroupingPolicy = await e.getFilteredNamedGroupingPolicy('g', 0, userId!);
+  const namedGroupingPolicy = await e.getFilteredNamedGroupingPolicy('g', 0, `user:${userId!}`);
   const userRoles = namedGroupingPolicy.map((p) => {
     return p[1]
   });
