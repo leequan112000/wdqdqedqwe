@@ -17,13 +17,18 @@ g = _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.sub, p.sub) && r.obj == p.obj && keyMatch(r.act, p.act)
+m = g(r.sub, p.sub) && r.obj == p.obj && keyMatch(r.act, p.act) || checkSuperAdmin(r.sub)
 `;
 
 const createEnforcer = async () => {
   const a = await PrismaAdapter.newAdapter(prisma);
   const model = newModelFromString(rbac_models);
   const e = await newEnforcer(model, a);
+  e.addFunction('checkSuperAdmin', async (args) => {
+    const username = args;
+    const result = await e.hasRoleForUser(username, CasbinRole.OWNER);
+    return result;
+  })
   return e;
 }
 

@@ -206,7 +206,7 @@ export enum CasbinAct {
 }
 
 export enum CasbinRole {
-  ACCOUNT_OWNDER = 'role:account_owner',
+  OWNER = 'role:owner',
   ADMIN = 'role:admin',
   USER = 'role:user',
 }
