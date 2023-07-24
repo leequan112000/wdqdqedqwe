@@ -925,6 +925,7 @@ export type ProjectRequest = {
   project_challenge_description?: Maybe<Scalars['String']>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   project_deadline_requirement?: Maybe<Scalars['String']>;
+  project_request_collaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   project_request_comments?: Maybe<Array<Maybe<ProjectRequestComment>>>;
   project_start_time_requirement?: Maybe<Scalars['String']>;
   status: Scalars['String'];
@@ -938,6 +939,17 @@ export type ProjectRequest = {
 
 export type ProjectRequestProject_ConnectionsArgs = {
   filter?: InputMaybe<ProjectRequestProjectConnectionFilter>;
+};
+
+export type ProjectRequestCollaborator = {
+  __typename?: 'ProjectRequestCollaborator';
+  created_at?: Maybe<Scalars['Date']>;
+  customer?: Maybe<Customer>;
+  customer_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  project_request?: Maybe<ProjectRequest>;
+  project_request_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
 };
 
 export type ProjectRequestComment = {
@@ -1396,6 +1408,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
+  ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: ResolverTypeWrapper<{}>;
@@ -1456,6 +1469,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ProjectRequest;
+  ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: {};
@@ -1894,6 +1908,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   project_challenge_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<ProjectRequestProject_ConnectionsArgs>>;
   project_deadline_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType>;
   project_request_comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestComment']>>>, ParentType, ContextType>;
   project_start_time_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1902,6 +1917,17 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   vendor_location_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   vendor_search_timeframe?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectRequestCollaboratorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestCollaborator'] = ResolversParentTypes['ProjectRequestCollaborator']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
+  project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2158,6 +2184,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
+  ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;
