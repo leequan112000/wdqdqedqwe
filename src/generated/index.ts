@@ -971,15 +971,11 @@ export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
   biotech?: Maybe<Biotech>;
-  certification_tag_connection?: Maybe<CertificationTagConnection>;
-  certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
   invoice?: Maybe<Invoice>;
   invoiceCheckoutUrl?: Maybe<Scalars['String']>;
   invoices?: Maybe<Array<Maybe<Invoice>>>;
-  lab_specialization_connection?: Maybe<LabSpecializationConnection>;
-  lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   milestone?: Maybe<Milestone>;
@@ -1005,16 +1001,6 @@ export type Query = {
 };
 
 
-export type QueryCertification_Tag_ConnectionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryCertification_Tag_ConnectionsArgs = {
-  vendor_company_id?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryInvoiceArgs = {
   id: Scalars['String'];
 };
@@ -1024,16 +1010,6 @@ export type QueryInvoiceCheckoutUrlArgs = {
   cancel_url: Scalars['String'];
   id: Scalars['String'];
   success_url: Scalars['String'];
-};
-
-
-export type QueryLab_Specialization_ConnectionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryLab_Specialization_ConnectionsArgs = {
-  vendor_company_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1944,15 +1920,11 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
-  certification_tag_connection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionArgs>>;
-  certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
   invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
-  lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
-  lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
