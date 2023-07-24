@@ -6,7 +6,7 @@ const resolvers: Resolvers<Context> = {
   ProjectRequestCollaborator: {
     project_request: async (parent, _, context) => {
       if (!parent?.project_request_id) {
-        throw new InternalError('Project request id not found');
+        throw new InternalError('Missing project request id');
       }
       const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
@@ -23,7 +23,7 @@ const resolvers: Resolvers<Context> = {
     },
     customer: async (parent, _, context) => {
       if (!parent.customer_id) {
-        throw new InternalError('Missing project request id.');
+        throw new InternalError('Missing customer id.');
       }
       return await context.prisma.customer.findFirst({
         where: {
