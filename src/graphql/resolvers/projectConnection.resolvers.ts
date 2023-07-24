@@ -14,9 +14,10 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
+import { addRoleForUser } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -998,6 +999,8 @@ const resolvers: Resolvers<Context> = {
           });
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
         }
+
+        await addRoleForUser(newUser.id, CasbinRole.USER);
 
         const projectConnection = await trx.projectConnection.findFirst({
           where: {

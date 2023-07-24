@@ -34,12 +34,12 @@ const createEnforcer = async () => {
 
 export const addRoleForUser = async (userId: string, role: CasbinRole) => {
   const e = await createEnforcer();
-  return await e.addRoleForUser(userId, role);
+  return await e.addRoleForUser(`user:${userId}`, role);
 }
 
 export const hasPermission = async (userId: string, obj: CasbinObj, act: CasbinAct) => {
   const e = await createEnforcer();
-  const effect = await e.enforce(userId, obj, act);
+  const effect = await e.enforce(`user:${userId}`, obj, act);
   return effect;
 }
 

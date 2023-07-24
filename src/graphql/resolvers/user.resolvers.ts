@@ -7,7 +7,8 @@ import { Request } from "express";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
-import { VendorType } from "../../helper/constant";
+import { CasbinRole, VendorType } from "../../helper/constant";
+import { addRoleForUser } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -56,7 +57,7 @@ const resolvers: Resolvers<Context> = {
       if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0 && !result.vendor_member.vendor_company.skip_certification_tag) {
         return false
       }
-      
+
       if (result?.vendor_member && result.vendor_member.vendor_company?.lab_specialization_connections?.length === 0 && !result.vendor_member.vendor_company.skip_lab_specialization) {
         return false
       }
@@ -491,6 +492,8 @@ const resolvers: Resolvers<Context> = {
             biotech_id: newBiotech.id,
           }
         });
+
+        await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
 
         // Genereate tokens
         const tokens = createTokens({ id: newCreatedUser.id });

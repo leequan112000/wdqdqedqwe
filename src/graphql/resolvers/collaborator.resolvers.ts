@@ -5,6 +5,8 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
+import { addRoleForUser } from "../../helper/casbin";
+import { CasbinRole } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -136,6 +138,8 @@ const resolvers: Resolvers<Context> = {
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
         }
 
+        await addRoleForUser(newUser.id, CasbinRole.USER);
+
         return newUser;
       })
     },
@@ -223,6 +227,8 @@ const resolvers: Resolvers<Context> = {
               });
               sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, "");
             }
+
+            await addRoleForUser(newUser.id, CasbinRole.USER);
 
             return newUser;
           });

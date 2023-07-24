@@ -3,6 +3,8 @@ import { Resolvers } from '../../generated';
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import { sendVendorMemberInvitationByAdminEmail } from '../../mailer/vendorMember';
+import { addRoleForUser } from '../../helper/casbin';
+import { CasbinRole } from '../../helper/constant';
 
 const resolver: Resolvers<Context> = {
   Query: {
@@ -51,6 +53,8 @@ const resolver: Resolvers<Context> = {
             is_primary_member: true,
           }
         });
+
+        await addRoleForUser(newUser.id, CasbinRole.OWNER);
 
         sendVendorMemberInvitationByAdminEmail(newUser);
         return newVendorMember;
