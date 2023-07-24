@@ -31,7 +31,7 @@ const resolvers: Resolvers<Context> = {
 
       const existingLabSpecializationConnection = await context.prisma.labSpecializationConnection.findFirst({
         where: {
-          id: id,
+          id,
         }
       });
 

@@ -58,7 +58,7 @@ const resolvers: Resolvers<Context> = {
 
       const existingCertificationTagConnection = await context.prisma.certificationTagConnection.findFirst({
         where: {
-          id: id || '',
+          id,
         }
       });
 
