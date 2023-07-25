@@ -464,7 +464,6 @@ export type MutationCreateVendorCompanyArgs = {
   address?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   invited_by?: InputMaybe<Scalars['String']>;
-  is_on_marketplace?: InputMaybe<Scalars['Boolean']>;
   name: Scalars['String'];
   skip_cda?: InputMaybe<Scalars['Boolean']>;
   vendor_type?: InputMaybe<Scalars['String']>;

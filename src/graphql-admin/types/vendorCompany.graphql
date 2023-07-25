@@ -22,7 +22,6 @@ type Mutation {
     description: String
     vendor_type: String
     skip_cda: Boolean
-    is_on_marketplace: Boolean
     invited_by: String
   ): VendorCompany
   inviteVendorCompaniesToProjectByAdmin(

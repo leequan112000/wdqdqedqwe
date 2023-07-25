@@ -10,6 +10,20 @@ const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 const resolvers: Resolvers<Context> = {
   Mutation: {
     createVendorCompany: async (_, args, context) => {
+      if (!args.invited_by){
+        return await context.prisma.vendorCompany.create({
+          data: {
+            name: args.name,
+            website: args.website,
+            description: args.description,
+            address: args.address,
+            vendor_type: args.vendor_type,
+            skip_cda: args.skip_cda || false,
+            is_on_marketplace: true,
+            invited_by: 'admin',
+          }
+        });  
+      }
       return await context.prisma.vendorCompany.create({
         data: {
           name: args.name,
@@ -18,7 +32,8 @@ const resolvers: Resolvers<Context> = {
           address: args.address,
           vendor_type: args.vendor_type,
           skip_cda: args.skip_cda || false,
-          invited_by: 'admin',
+          is_on_marketplace: false,
+          invited_by: args.invited_by,
         }
       });
     },
