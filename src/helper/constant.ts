@@ -91,6 +91,15 @@ export enum NotificationType {
   QUOTE_EXPIRING_NOTIFICATION = 'QuoteExpiringNotification',
   MILESTONE_NOTIFICATION = 'MilestoneNotification',
   MILESTONE_PAYMENT_FAILED_NOTIFICATION = 'MilestonePaymentFailedNotification',
+  NEW_INVOICE_NOTIFICATION = 'NewInvoiceNotification',
+  INVOICE_PAYMENT_NOTIFICATION = 'InvoicePaymentNotification',
+  INVOICE_PAYMENT_REMINDER_NOTIFICATION = 'InvoicePaymentReminderNotification',
+  INVOICE_PAYMENT_OVERDUE_NOTIFICATION = 'InvoicePaymentOverdueNotification',
+  NEW_MEETING_NOTIFICATION = 'NewMeetingNotification',
+  UPDATE_MEETING_NOTIFICATION = 'UpdateMeetingNotification',
+  REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
+  VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION = 'VendorProjectRequestExpiringNotification',
+  VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
 }
 
 export enum QuoteNotificationActionContent {
@@ -151,6 +160,12 @@ export enum EmailType {
   USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
   USER_QUOTE_EXPIRING_NOTICE_EMAIL = 'user:quote-expiring-notice-email',
   USER_QUOTE_EXPIRED_NOTICE_EMAIL = 'user:quote-expired-notice-email',
+  USER_BILLING_NOTICE_EMAIL = 'user:billing-notice-email',
+  USER_INVOICE_PAYMENT_NOTICE_EMAIL = 'user:invoice-payment-notice-email',
+  USER_INVOICE_PAYMENT_REMINDER_EMAIL = 'user:invoice-payment-reminder-email',
+  USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL = 'user:invoice-payment-overdue-notice-email',
+  USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL = 'user:vendor-project-request-expiring-notice-email',
+  USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL = 'user:vendor-project-request-expired-notice-email',
 }
 
 export enum VendorType {
@@ -162,4 +177,18 @@ export enum InvoicePaymentStatus {
   UNPAID = 'unpaid',
   PROCESSING = 'processing',
   PAID = 'paid',
+  FAILED = 'failed',
+}
+
+export enum InvoicePaymentDisplayStatus {
+  UNPAID = 'unpaid',
+  PAYMENT_DUE = 'payment_due',
+  PROCESSING = 'processing',
+  PAID = 'paid',
+  FAILED = 'failed',
+}
+
+export enum StripeWebhookPaymentType {
+  MILESTONE = 'milestone',
+  INVOICE = 'invoice',
 }

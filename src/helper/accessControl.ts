@@ -76,6 +76,36 @@ export const checkMilestonePermission = async (context: Context, milestoneId: st
   }
 }
 
+export const checkInvoicePermission = async (context: Context, invoiceId: string) => {
+  try {
+    const currentVendor = await context.prisma.vendorMember.findFirst({
+      where: {
+        user_id: context.req.user_id
+      },
+    });
+  
+    if (!currentVendor) {
+      throw new PermissionDeniedError();
+    }
+
+    const invoice = await context.prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+      },
+    });
+
+    if (!invoice) {
+      throw new PermissionDeniedError();
+    }
+    
+    if (invoice.vendor_company_id !== currentVendor.vendor_company_id) {
+      throw new PermissionDeniedError();
+    }
+  } catch (error) {
+    throw new PermissionDeniedError();
+  }
+}
+
 export const checkAllowVendorOnlyPermission = async (context: Context) => {
   try {
     const vendor = await context.prisma.vendorMember.findFirst({

@@ -10,7 +10,7 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 
@@ -31,6 +31,18 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
+    },
+    quote: async (parent, _, context) => {
+      if (!parent.quote_id) {
+        throw new InternalError('Missing quote id.')
+      }
+      const quote = await context.prisma.quote.findFirst({
+        where: {
+          id: parent.quote_id
+        },
+      });
+
+      return quote ? { ...quote, amount: toDollar(quote.amount.toNumber())} : {};
     },
   },
   Query: {
@@ -114,6 +126,7 @@ const resolvers: Resolvers<Context> = {
         customer: customer.biotech.subscriptions[0].stripe_customer_id,
         client_reference_id: customer.id,
         metadata: {
+          payment_type: StripeWebhookPaymentType.MILESTONE,
           quote_id: milestone.quote_id,
           milestone_id: milestone.id,
         },
@@ -239,7 +252,7 @@ const resolvers: Resolvers<Context> = {
         return {
           milestone: {
             ...updatedMilestone,
-            amount: updatedMilestone.amount.toNumber(),
+            amount: toDollar(updatedMilestone.amount.toNumber()),
           },
           upload_results,
         }
@@ -287,7 +300,11 @@ const resolvers: Resolvers<Context> = {
   
         return {
           ...updatedMilestone,
-          amount: updatedMilestone.amount.toNumber(),
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
         }
       }
 

@@ -11,6 +11,7 @@ type MeetingEvent {
   phone: String
   phone_pin: String
   guests: [User]
+  organizer: User
   project_request: ProjectRequest
   project_connection_id: String
 }

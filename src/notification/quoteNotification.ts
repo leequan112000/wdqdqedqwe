@@ -69,3 +69,48 @@ const createQuoteNotification = async (sender_id: string, sender_company_name: s
 };
 
 export default createQuoteNotification;
+
+type CreateExpiredQuoteNotificationJobData = {
+  project_name: string;
+  vendor_full_name: string;
+  project_connection_id: string;
+  quote_id: string;
+  recipient_id: string;
+}
+
+export const createExpiredQuoteNotificationJob = (data: CreateExpiredQuoteNotificationJobData) => {
+  const { project_connection_id, project_name, quote_id, recipient_id, vendor_full_name } = data;
+
+  return {
+    notification_type: NotificationType.QUOTE_EXPIRED_NOTIFICATION,
+    message: `Quote for **${project_name}** from **${vendor_full_name}** has expired.`,
+    params: {
+      project_connection_id,
+      quote_id,
+    },
+    recipient_id,
+  }
+}
+
+type CreateExpiringQuoteNotificationJobData = {
+  project_name: string;
+  vendor_full_name: string;
+  project_connection_id: string;
+  quote_id: string;
+  recipient_id: string;
+  expiring_in: string;
+}
+
+export const createExpiringQuoteNotificationJob = (data: CreateExpiringQuoteNotificationJobData) => {
+  const { project_connection_id, project_name, quote_id, recipient_id, vendor_full_name, expiring_in } = data;
+
+  return {
+    notification_type: NotificationType.QUOTE_EXPIRING_NOTIFICATION,
+    message: `Quote for **${project_name}** from **${vendor_full_name}** is expiring in **${expiring_in}**.`,
+    params: {
+      project_connection_id,
+      quote_id,
+    },
+    recipient_id,
+  }
+}

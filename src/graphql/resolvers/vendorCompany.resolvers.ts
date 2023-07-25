@@ -3,7 +3,6 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers, StripeAccountData } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { getStripeInstance } from "../../helper/stripe";
-import { VendorCompany } from "@prisma/client";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -428,6 +427,46 @@ const resolvers: Resolvers<Context> = {
             id: vendor_member.vendor_company_id,
           }
         })
+      });
+    },
+    skipAddCertificationTag: async (_, args, context) => {
+      const vendor_member = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      if (!vendor_member) {
+        throw new PublicError('Vendor member not found.');
+      }
+
+      return await context.prisma.vendorCompany.update({
+        where: {
+          id: vendor_member.vendor_company_id
+        },
+        data: {
+          skip_certification_tag: true,
+        }
+      });
+    },
+    skipAddLabSpecialization: async (_, args, context) => {
+      const vendor_member = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      if (!vendor_member) {
+        throw new PublicError('Vendor member not found.');
+      }
+
+      return await context.prisma.vendorCompany.update({
+        where: {
+          id: vendor_member.vendor_company_id
+        },
+        data: {
+          skip_lab_specialization: true,
+        }
       });
     },
   }

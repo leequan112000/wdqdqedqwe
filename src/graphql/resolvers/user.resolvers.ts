@@ -41,6 +41,7 @@ const resolvers: Resolvers<Context> = {
               vendor_company: {
                 include: {
                   certification_tag_connections: true,
+                  lab_specialization_connections: true,
                 }
               },
             },
@@ -52,7 +53,11 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
-      if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0) {
+      if (result?.vendor_member && result.vendor_member.vendor_company?.certification_tag_connections?.length === 0 && !result.vendor_member.vendor_company.skip_certification_tag) {
+        return false
+      }
+      
+      if (result?.vendor_member && result.vendor_member.vendor_company?.lab_specialization_connections?.length === 0 && !result.vendor_member.vendor_company.skip_lab_specialization) {
         return false
       }
 

@@ -5,7 +5,7 @@ import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEm
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
-import { sendAcceptProjectRequestEmail } from "../mailer/projectRequest";
+import { sendAcceptProjectRequestEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
 import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
@@ -18,9 +18,9 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam } from "./types";
-import createQuoteExpiredNotification from "../notification/quoteExpiredNotification";
-import createQuoteExpiringNotification from "../notification/quoteExpiringNotification";
+import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
+import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
+import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
 
 type EmailJob = {
   type: EmailType;
@@ -428,55 +428,184 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
-        const { receiverId, receiverEmail, receiverName, projectConnectionId, expiringIn, projectRequestTitle, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const {  receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
         const resp = await sendQuoteExpiringNoticeEmail({
           button_url: buttonUrl,
           expiring_in: expiringIn,
-          project_request_title: projectRequestTitle,
           receiver_full_name: receiverName,
           quotes: quotes,
         }, receiverEmail);
-
-
-        const createNotificationTasks = quotes.map(async (q) => {
-          return await createQuoteExpiringNotification({
-            expiring_in: expiringIn,
-            project_connection_id: projectConnectionId,
-            project_name: projectRequestTitle,
-            quote_id: q.id,
-            recipient_id: receiverId,
-            vendor_full_name: q.vendor_full_name,
-          })
-        });
-
-        await Promise.all(createNotificationTasks);
 
         done(null, resp);
         break;
       }
       case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
-        const { receiverId, receiverEmail, receiverName, projectConnectionId, projectRequestTitle, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`;
+        const {  receiverEmail, receiverName, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
         const resp = await sendQuoteExpiredNoticeEmail({
           button_url: buttonUrl,
-          project_request_title: projectRequestTitle,
           receiver_full_name: receiverName,
           quotes: quotes,
         }, receiverEmail);
 
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_BILLING_NOTICE_EMAIL: {
+        const { invoiceId, invoiceMonth, invoicePeriod, invoiceTotalAmount,
+          receiverCompanyName, receiverEmail, receiverId } = data as CreateBillingNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const resp = await sendBillingNoticeEmail({
+          button_url: buttonUrl,
+          invoice_month: invoiceMonth,
+          invoice_period: invoicePeriod,
+          invoice_total_amount: invoiceTotalAmount,
+          vendor_company_name: receiverCompanyName,
+        }, receiverEmail);
 
-        const createNotificationTasks = quotes.map(async (q) => {
-          return await createQuoteExpiredNotification({
-            project_connection_id: projectConnectionId,
-            project_name: projectRequestTitle,
-            quote_id: q.id,
-            vendor_full_name: receiverName,
-            recipient_id: receiverId,
-          });
+        await createBillingNotification({
+          invoice_id: invoiceId,
+          invoice_month: invoiceMonth,
+          recipient_id: receiverId,
         });
 
-        await Promise.all(createNotificationTasks);
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL: {
+        const { invoiceId, invoiceMonth, paymentStatus, vendorCompanyId } = data as CreateInvoicePaymentNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentNoticeEmail({
+              button_url: buttonUrl,
+              invoice_month: invoiceMonth,
+              payment_status: paymentStatus,
+            }, receiver.user.email);
+
+            await createInvoicePaymentNotification({
+              invoice_id: invoiceId,
+              invoice_month: invoiceMonth,
+              recipient_id: receiver.user_id,
+              payment_status: paymentStatus,
+            });
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL: {
+        const { invoiceId, invoiceDate, invoiceDueAt, duePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentReminderEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentReminderEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              due_at: invoiceDueAt,
+              due_period: duePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+
+            await createInvoicePaymentReminderNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              due_at: invoiceDueAt,
+            });
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL: {
+        const { invoiceId, invoiceDate, overduePeriod, invoiceTotalAmount, vendorCompanyId } = data as CreateInvoicePaymentOverdueNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+
+        const receivers = await prisma.vendorMember.findMany({
+          where: {
+            vendor_company_id: vendorCompanyId,
+            is_primary_member: true,
+          },
+          include: {
+            user: true,
+            vendor_company: true,
+          }
+        });
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentOverdueNoticeEmail({
+              button_url: buttonUrl,
+              invoice_date: invoiceDate,
+              overdue_period: overduePeriod,
+              invoice_total_amount: invoiceTotalAmount,
+              vendor_company_name: receiver.vendor_company!.name,
+            }, receiver.user.email);
+
+            await createInvoicePaymentOverdueNotification({
+              invoice_id: invoiceId,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              overdue_period: overduePeriod,
+            });
+          })
+        );
+
+        done();
+        break;
+      }
+      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL: {
+        const { receiverEmail, receiverName, requests, expiringIn } = data as CreateVendorProjectRequestExpiringNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`
+        const resp = await sendVendorProjectRequestExpiringEmail(
+          {
+            button_url: buttonUrl,
+            expiring_in: expiringIn,
+            receiver_full_name: receiverName,
+            requests,
+          },
+          receiverEmail);
+
+        done(null, resp);
+        break;
+      }
+      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL: {
+        const { receiverEmail, receiverName, requests } = data as CreateVendorProjectRequestExpiredNoticeEmailJobParam;
+        const buttonUrl = `${app_env.APP_URL}/app/experiments/expired`
+        const resp = await sendVendorProjectRequestExpiredEmail(
+          {
+            button_url: buttonUrl,
+            receiver_full_name: receiverName,
+            requests,
+          },
+          receiverEmail);
 
         done(null, resp);
         break;
@@ -570,11 +699,47 @@ export const createSendNewBlogSubscriptionEmailJob = (data: { receiverEmail: str
 export const createSendUserExpiringQuoteNoticeEmailJob = (
   data: CreateSendUserExpiringQuoteNoticeEmailJobParam
 ) => {
-  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
+  return emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL, data });
 }
 
 export const createSendUserExpiredQuoteNoticeEmailJob = (
   data: CreateSendUserExpiredQuoteNoticeEmailJobParam
 ) => {
-  emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
+  return emailQueue.add({ type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL, data });
+}
+
+export const createBillingNoticeEmailJob = (
+  data: CreateBillingNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_BILLING_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentNoticeEmailJob = (
+  data: CreateInvoicePaymentNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_NOTICE_EMAIL, data })
+}
+
+export const createInvoicePaymentReminderEmailJob = (
+  data: CreateInvoicePaymentReminderEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_REMINDER_EMAIL, data })
+}
+
+export const createInvoicePaymentOverdueNoticeEmailJob = (
+  data: CreateInvoicePaymentOverdueNoticeEmailJobParam
+) => {
+  emailQueue.add({ type: EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL, data })
+}
+
+export const createVendorProjectRequestExpiringNoticeEmailJob = (
+  data: CreateVendorProjectRequestExpiringNoticeEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL, data });
+}
+
+export const createVendorProjectRequestExpiredNoticeEmailJob = (
+  data: CreateVendorProjectRequestExpiredNoticeEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL, data });
 }

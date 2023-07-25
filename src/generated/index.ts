@@ -91,6 +91,13 @@ export type Chat = {
   __typename?: 'Chat';
   id?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<Maybe<Message>>>;
+  messagesConnection?: Maybe<MessagesConnection>;
+};
+
+
+export type ChatMessagesConnectionArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 export type CompanyAttachment = {
@@ -154,6 +161,38 @@ export type InviteCollaboratorInput = {
   last_name: Scalars['String'];
 };
 
+export type Invoice = {
+  __typename?: 'Invoice';
+  commission_rate?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  due_at?: Maybe<Scalars['Date']>;
+  from_date?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  invoice_items?: Maybe<Array<Maybe<InvoiceItem>>>;
+  invoice_number?: Maybe<Scalars['String']>;
+  paid_at?: Maybe<Scalars['Date']>;
+  payment_status?: Maybe<Scalars['String']>;
+  stripe_txn_id?: Maybe<Scalars['String']>;
+  to_date?: Maybe<Scalars['Date']>;
+  total_amount?: Maybe<Scalars['Float']>;
+  total_milestone_amount?: Maybe<Scalars['Float']>;
+  updated_at?: Maybe<Scalars['Date']>;
+  vendor_company?: Maybe<VendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
+};
+
+export type InvoiceItem = {
+  __typename?: 'InvoiceItem';
+  amount?: Maybe<Scalars['Float']>;
+  id?: Maybe<Scalars['String']>;
+  invoice?: Maybe<Invoice>;
+  invoice_id?: Maybe<Scalars['String']>;
+  milestone?: Maybe<Milestone>;
+  milestone_amount?: Maybe<Scalars['Float']>;
+  milestone_id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type LabSpecialization = {
   __typename?: 'LabSpecialization';
   full_name?: Maybe<Scalars['String']>;
@@ -184,6 +223,7 @@ export type MeetingEvent = {
   guests?: Maybe<Array<Maybe<User>>>;
   id?: Maybe<Scalars['String']>;
   meeting_link?: Maybe<Scalars['String']>;
+  organizer?: Maybe<User>;
   phone?: Maybe<Scalars['String']>;
   phone_country?: Maybe<Scalars['String']>;
   phone_link?: Maybe<Scalars['String']>;
@@ -204,6 +244,25 @@ export type Message = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type MessageEdge = {
+  __typename?: 'MessageEdge';
+  cursor?: Maybe<Scalars['String']>;
+  node?: Maybe<Message>;
+};
+
+export type MessagesConnection = {
+  __typename?: 'MessagesConnection';
+  edges?: Maybe<Array<Maybe<MessageEdge>>>;
+  pageInfo?: Maybe<MessagesPageInfo>;
+};
+
+export type MessagesPageInfo = {
+  __typename?: 'MessagesPageInfo';
+  endCursor: Scalars['String'];
+  hasNextPage?: Maybe<Scalars['Boolean']>;
+  hasPreviousPage?: Maybe<Scalars['Boolean']>;
+};
+
 export type Milestone = {
   __typename?: 'Milestone';
   amount?: Maybe<Scalars['Float']>;
@@ -211,6 +270,8 @@ export type Milestone = {
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
   project_attachments?: Maybe<Array<Maybe<ProjectAttachment>>>;
+  quote?: Maybe<Quote>;
+  quote_id?: Maybe<Scalars['String']>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   timeline?: Maybe<Scalars['String']>;
@@ -271,6 +332,8 @@ export type Mutation = {
   sendMessage?: Maybe<Message>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
+  skipAddCertificationTag?: Maybe<VendorCompany>;
+  skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
@@ -797,6 +860,25 @@ export type Notification = {
   url?: Maybe<Scalars['String']>;
 };
 
+export type NotificationConnection = {
+  __typename?: 'NotificationConnection';
+  edges?: Maybe<Array<Maybe<NotificationEdge>>>;
+  pageInfo?: Maybe<NotificationPageInfo>;
+};
+
+export type NotificationEdge = {
+  __typename?: 'NotificationEdge';
+  cursor?: Maybe<Scalars['String']>;
+  node?: Maybe<Notification>;
+};
+
+export type NotificationPageInfo = {
+  __typename?: 'NotificationPageInfo';
+  endCursor: Scalars['String'];
+  hasNextPage?: Maybe<Scalars['Boolean']>;
+  hasPreviousPage?: Maybe<Scalars['Boolean']>;
+};
+
 export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
@@ -899,6 +981,9 @@ export type Query = {
   certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  invoice?: Maybe<Invoice>;
+  invoiceCheckoutUrl?: Maybe<Scalars['String']>;
+  invoices?: Maybe<Array<Maybe<Invoice>>>;
   lab_specialization_connection?: Maybe<LabSpecializationConnection>;
   lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
@@ -906,6 +991,7 @@ export type Query = {
   milestone?: Maybe<Milestone>;
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  notificationsConnection?: Maybe<NotificationConnection>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   projectRequest?: Maybe<ProjectRequest>;
@@ -932,6 +1018,18 @@ export type QueryCertification_Tag_ConnectionArgs = {
 
 export type QueryCertification_Tag_ConnectionsArgs = {
   vendor_company_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryInvoiceArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryInvoiceCheckoutUrlArgs = {
+  cancel_url: Scalars['String'];
+  id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -969,6 +1067,12 @@ export type QueryMilestoneCheckoutUrlArgs = {
 
 export type QueryNotificationsArgs = {
   unread_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryNotificationsConnectionArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -1088,7 +1192,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   cdaSignedAt?: Maybe<Scalars['String']>;
   cdaUrl?: Maybe<Scalars['String']>;
-  newMessage?: Maybe<Message>;
+  newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
 };
 
@@ -1164,6 +1268,8 @@ export type VendorCompany = {
   project_completed_per_year?: Maybe<Scalars['String']>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   skip_cda?: Maybe<Scalars['Boolean']>;
+  skip_certification_tag?: Maybe<Scalars['Boolean']>;
+  skip_lab_specialization?: Maybe<Scalars['Boolean']>;
   state?: Maybe<Scalars['String']>;
   stripe_account?: Maybe<Scalars['String']>;
   team_size?: Maybe<Scalars['String']>;
@@ -1289,15 +1395,23 @@ export type ResolversTypes = ResolversObject<{
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
+  Invoice: ResolverTypeWrapper<Invoice>;
+  InvoiceItem: ResolverTypeWrapper<InvoiceItem>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   LabSpecialization: ResolverTypeWrapper<LabSpecialization>;
   LabSpecializationConnection: ResolverTypeWrapper<LabSpecializationConnection>;
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   Message: ResolverTypeWrapper<Message>;
+  MessageEdge: ResolverTypeWrapper<MessageEdge>;
+  MessagesConnection: ResolverTypeWrapper<MessagesConnection>;
+  MessagesPageInfo: ResolverTypeWrapper<MessagesPageInfo>;
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
   Notification: ResolverTypeWrapper<Notification>;
+  NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
+  NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
+  NotificationPageInfo: ResolverTypeWrapper<NotificationPageInfo>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1341,15 +1455,23 @@ export type ResolversParentTypes = ResolversObject<{
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
+  Invoice: Invoice;
+  InvoiceItem: InvoiceItem;
   JSON: Scalars['JSON'];
   LabSpecialization: LabSpecialization;
   LabSpecializationConnection: LabSpecializationConnection;
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   Message: Message;
+  MessageEdge: MessageEdge;
+  MessagesConnection: MessagesConnection;
+  MessagesPageInfo: MessagesPageInfo;
   Milestone: Milestone;
   Mutation: {};
   Notification: Notification;
+  NotificationConnection: NotificationConnection;
+  NotificationEdge: NotificationEdge;
+  NotificationPageInfo: NotificationPageInfo;
   ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1448,6 +1570,7 @@ export type CertificationTagConnectionResolvers<ContextType = any, ParentType ex
 export type ChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['Chat'] = ResolversParentTypes['Chat']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;
+  messagesConnection?: Resolver<Maybe<ResolversTypes['MessagesConnection']>, ParentType, ContextType, RequireFields<ChatMessagesConnectionArgs, 'first'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1503,6 +1626,38 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
+  commission_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  from_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice_items?: Resolver<Maybe<Array<Maybe<ResolversTypes['InvoiceItem']>>>, ParentType, ContextType>;
+  invoice_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  paid_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  to_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  total_milestone_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type InvoiceItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvoiceItem'] = ResolversParentTypes['InvoiceItem']> = ResolversObject<{
+  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType>;
+  invoice_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType>;
+  milestone_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  milestone_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
   name: 'JSON';
 }
@@ -1536,6 +1691,7 @@ export type MeetingEventResolvers<ContextType = any, ParentType extends Resolver
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1557,12 +1713,33 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MessageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessageEdge'] = ResolversParentTypes['MessageEdge']> = ResolversObject<{
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MessagesConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesConnection'] = ResolversParentTypes['MessagesConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['MessageEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['MessagesPageInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MessagesPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesPageInfo'] = ResolversParentTypes['MessagesPageInfo']> = ResolversObject<{
+  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MilestoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['Milestone'] = ResolversParentTypes['Milestone']> = ResolversObject<{
   amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectAttachment']>>>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType>;
+  quote_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1621,6 +1798,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
+  skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
@@ -1655,6 +1834,25 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   sender_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationConnection'] = ResolversParentTypes['NotificationConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NotificationEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<Maybe<ResolversTypes['NotificationPageInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEdge'] = ResolversParentTypes['NotificationEdge']> = ResolversObject<{
+  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationPageInfo'] = ResolversParentTypes['NotificationPageInfo']> = ResolversObject<{
+  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1745,6 +1943,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
+  invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
+  invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
   lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
   lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
@@ -1752,6 +1953,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
+  notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
@@ -1839,7 +2041,7 @@ export type StripeExternalAccountDataResolvers<ContextType = any, ParentType ext
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
   cdaSignedAt?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaSignedAt", ParentType, ContextType>;
   cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
-  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['Message']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
+  newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
 }>;
 
@@ -1905,6 +2107,8 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   project_completed_per_year?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  skip_certification_tag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  skip_lab_specialization?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_account?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   team_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1957,15 +2161,23 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  Invoice?: InvoiceResolvers<ContextType>;
+  InvoiceItem?: InvoiceItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   LabSpecialization?: LabSpecializationResolvers<ContextType>;
   LabSpecializationConnection?: LabSpecializationConnectionResolvers<ContextType>;
   MarkMilestoneCompleteResponse?: MarkMilestoneCompleteResponseResolvers<ContextType>;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
+  MessageEdge?: MessageEdgeResolvers<ContextType>;
+  MessagesConnection?: MessagesConnectionResolvers<ContextType>;
+  MessagesPageInfo?: MessagesPageInfoResolvers<ContextType>;
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;
+  NotificationConnection?: NotificationConnectionResolvers<ContextType>;
+  NotificationEdge?: NotificationEdgeResolvers<ContextType>;
+  NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
