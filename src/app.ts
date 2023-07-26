@@ -59,7 +59,7 @@ const serverCleanup = useServer({
 
 function formatApolloServerError(formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError {
   const message = formattedError.extensions?.code
-    && ['PUBLIC_ERROR_CODE'].includes(formattedError.extensions.code as string)
+    && ['PUBLIC_ERROR_CODE', 'PERMISSION_DENIED'].includes(formattedError.extensions.code as string)
     ? formattedError.message
     : 'Something went wrong';
 
