@@ -18,6 +18,7 @@ type ProjectRequest {
   project_start_time_requirement: String
   project_deadline_requirement: String
   status: String!
+  is_private: Boolean!
   created_at: Date
   updated_at: Date
   biotech_id: String
@@ -47,6 +48,7 @@ type Mutation {
     vendor_location_requirement: String
     project_start_time_requirement: String
     project_deadline_requirement: String
+    is_private: Boolean!
   ): ProjectRequest
   withdrawProjectRequest(project_request_id: String!): ProjectRequest
 }
