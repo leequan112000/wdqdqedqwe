@@ -3,7 +3,7 @@ import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
 import { publishNewNotification } from "../helper/pubsub";
 
-type NotificationJob = {
+export type NotificationJob = {
   data: Array<{
     notification_type: NotificationType;
     message: string;
@@ -35,5 +35,5 @@ notificationQueue.process(async (job, done) => {
 });
 
 export const createNotificationQueueJob = (job: NotificationJob) => {
-  notificationQueue.add(job);
+  return notificationQueue.add(job);
 }

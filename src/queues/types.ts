@@ -1,11 +1,7 @@
 export type CreateSendUserExpiredQuoteNoticeEmailJobParam = {
-  receiverId: string;
   receiverEmail: string;
   receiverName: string;
-  projectConnectionId: string;
-  projectRequestTitle: string;
   quotes: Array<{
-    id: string;
     short_id: string;
     project_request_title: string;
     vendor_full_name: string;
@@ -13,14 +9,10 @@ export type CreateSendUserExpiredQuoteNoticeEmailJobParam = {
 }
 
 export type CreateSendUserExpiringQuoteNoticeEmailJobParam = {
-  receiverId: string;
   receiverEmail: string;
   receiverName: string;
-  projectConnectionId: string;
-  projectRequestTitle: string;
   expiringIn: string;
   quotes: Array<{
-    id: string;
     short_id: string;
     project_request_title: string;
     vendor_full_name: string;
@@ -59,4 +51,23 @@ export type CreateInvoicePaymentOverdueNoticeEmailJobParam = {
   invoiceDate: string;
   invoiceTotalAmount: string;
   invoiceId: string;
+}
+
+export type CreateVendorProjectRequestExpiringNoticeEmailJobParam = {
+  receiverEmail: string;
+  receiverName: string;
+  expiringIn: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}
+
+export type CreateVendorProjectRequestExpiredNoticeEmailJobParam = {
+  receiverEmail: string;
+  receiverName: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
 }

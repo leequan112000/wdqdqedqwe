@@ -13,8 +13,25 @@ type Notification {
   url: String
 }
 
+type NotificationEdge {
+  cursor: String
+  node: Notification
+}
+
+type NotificationPageInfo {
+  endCursor: String!
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+}
+
+type NotificationConnection {
+  edges: [NotificationEdge]
+  pageInfo: NotificationPageInfo
+}
+
 type Query {
   notifications(unread_only: Boolean): [Notification]
+  notificationsConnection(first: Int = 15, after: String): NotificationConnection
 }
 
 type Mutation {
