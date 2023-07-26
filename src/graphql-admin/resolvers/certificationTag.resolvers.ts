@@ -2,6 +2,7 @@ import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { PublicError } from "../../graphql/errors/PublicError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -16,9 +17,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingCertificationTag) {
-        throw new InternalError('Certification Tag already exist.');
-      }
+      invariant(!existingCertificationTag, 'Certification tag already exist.')
 
       return await context.prisma.certificationTag.create({
         data: {
@@ -36,9 +35,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!existingCertificationTag) {
-        throw new InternalError('Certification Tag not found.');
-      }
+      invariant(existingCertificationTag, 'Certification tag not found.')
 
       return await context.prisma.certificationTag.update({
         where: {
@@ -59,9 +56,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!existingCertificationTag) {
-        throw new InternalError('Certification Tag not found.');
-      }
+      invariant(existingCertificationTag, 'Certification tag not found.');
 
       const existingCertificationTagConnections = await context.prisma.certificationTagConnection.findMany({
         where: {
@@ -69,9 +64,10 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingCertificationTagConnections.length > 0) {
-        throw new PublicError('Certification Tag is still connected to a Vendor Company, please remove the connection first.');
-      }
+      invariant(
+        existingCertificationTagConnections.length === 0,
+        new PublicError('Certification Tag is still connected to a Vendor Company, please remove the connection first.'),
+      );
 
       await context.prisma.certificationTag.delete({
         where: {

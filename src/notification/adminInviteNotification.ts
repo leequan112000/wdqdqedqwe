@@ -1,7 +1,7 @@
-import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import { publishNewNotification } from '../helper/pubsub';
+import invariant from '../helper/invariant';
 
 const createAdminInviteNotification = async (recipient_id: string, project_connection_id: string) => {
   const recipient = await prisma.user.findFirst({
@@ -9,9 +9,7 @@ const createAdminInviteNotification = async (recipient_id: string, project_conne
       id: recipient_id,
     },
   });
-  if (!recipient) {
-    throw new InternalError('Recipient not found');
-  }
+  invariant(recipient, 'Recipient not found.');
 
   const project_connection = await prisma.projectConnection.findFirst({
     where: {
@@ -33,9 +31,7 @@ const createAdminInviteNotification = async (recipient_id: string, project_conne
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   publishNewNotification(notification)
 };

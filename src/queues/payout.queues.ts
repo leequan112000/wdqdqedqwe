@@ -3,6 +3,7 @@ import { createQueue } from "../helper/queue";
 import { prisma } from "../connectDB";
 import { getStripeInstance } from "../helper/stripe";
 import { sendAdminGeneralNoticeEmail } from "../mailer/admin";
+import invariant from "../helper/invariant";
 
 type PayoutJob = {
   data: any;
@@ -31,23 +32,16 @@ payoutQueue.process(async (job, done) => {
     }
   });
 
-  if (!milestone) {
-    throw new Error('Milestone not found!');
-  }
-
-  if (milestone.payment_status !== MilestonePaymentStatus.PAID) {
-    throw new Error('Milestone has not been paid by the biotech yet');
-  }
-
-  if (milestone.vendor_payment_status === MilestonePaymentStatus.PROCESSING || milestone.vendor_payment_status === MilestonePaymentStatus.PAID) {
-    throw new Error('Milestone has paid to the vendor');
-  }
+  invariant(milestone, 'Milestone not found.');
+  invariant(milestone.payment_status === MilestonePaymentStatus.PAID, 'Milestone has not been paid by the biotech yet.');
+  invariant(
+    milestone.vendor_payment_status !== MilestonePaymentStatus.PROCESSING
+    && milestone.vendor_payment_status !== MilestonePaymentStatus.PAID,
+    'Milestone has paid to the vendor.',
+  );
 
   const vendorCompany = milestone.quote.project_connection.vendor_company;
-
-  if (!vendorCompany.stripe_account) {
-    throw new Error('Vendor company has no Stripe account');
-  }
+  invariant(vendorCompany.stripe_account, 'Vendor company has no Stripe account.');
 
   try {
     const stripe = await getStripeInstance();
@@ -59,9 +53,7 @@ payoutQueue.process(async (job, done) => {
     });
 
     // Check if stripe transfer success
-    if (!transfer?.id) {
-      throw new Error('Stripe Transfer: Missing transfer Id');
-    }
+    invariant(transfer?.id, 'Stripe Transfer: Missing transfer Id.');
 
     await prisma.milestone.update({
       where: {

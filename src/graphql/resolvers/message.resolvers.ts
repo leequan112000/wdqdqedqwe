@@ -4,13 +4,12 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers, MessageEdge } from "../../generated";
 import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Message: {
     user: async (parent, _, context) => {
-      if (!parent.user_id) {
-        throw new InternalError('User id not found')
-      }
+      invariant(parent.user_id, 'User id not found.')
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
@@ -21,18 +20,14 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     sendMessage: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
-        if (!context.req.user_id) {
-          throw new PublicError('User not logged in.');
-        }
+        invariant(context.req.user_id, new PublicError('User not logged in.'));
 
         const projectConnection = await context.prisma.projectConnection.findFirst({
           where: {
             id: args.project_connection_id,
           }
         });
-        if (!projectConnection) {
-          throw new InternalError('Project connection not found');
-        }
+        invariant(projectConnection, 'Project connection not found.');
 
         let chat = await trx.chat.findFirst({
           where: {
@@ -55,9 +50,7 @@ const resolvers: Resolvers<Context> = {
               },
             },
           });
-          if (!projectConnection) {
-            throw new InternalError('Project connection not found.')
-          }
+          invariant(projectConnection, 'Project connection not found.');
           chat = await trx.chat.create({
             data: {
               biotech_id: projectConnection.project_request.biotech_id,

@@ -1,7 +1,7 @@
 import { NotificationType } from "../helper/constant";
 import { prisma } from "../connectDB";
-import { InternalError } from "../graphql/errors/InternalError";
 import { publishNewNotification } from "../helper/pubsub";
+import invariant from '../helper/invariant';
 
 type CreateBillingNotificationData = {
   invoice_month: string;
@@ -44,9 +44,7 @@ export const createBillingNotification = async (data: CreateBillingNotificationD
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   await publishNewNotification(notification);
 }
@@ -65,9 +63,7 @@ export const createInvoicePaymentNotification = async (data: CreateInvoicePaymen
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   await publishNewNotification(notification);
 }
@@ -86,9 +82,7 @@ export const createInvoicePaymentReminderNotification = async (data: CreateInvoi
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   await publishNewNotification(notification);
 }
@@ -107,9 +101,7 @@ export const createInvoicePaymentOverdueNotification = async (data: CreateInvoic
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   await publishNewNotification(notification);
 }
