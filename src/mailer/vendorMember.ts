@@ -1,4 +1,4 @@
-import { Biotech, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { createMailData, mailSender, sendMail } from "./config";
 import {
   vendorMemberInvitationByAdminTemplate,
