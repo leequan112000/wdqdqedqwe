@@ -1,7 +1,7 @@
-import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { PublicError } from "../../graphql/errors/PublicError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -16,9 +16,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingLabSpecialization) {
-        throw new InternalError('Lab Specialization already exist.');
-      }
+      invariant(!existingLabSpecialization, new PublicError('Lab Specialization already exist.'))
 
       return await context.prisma.labSpecialization.create({
         data: {
@@ -36,9 +34,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!existingLabSpecialization) {
-        throw new InternalError('Lab Specialization not found.');
-      }
+      invariant(existingLabSpecialization, new PublicError('Lab Specialization not found.'));
 
       return await context.prisma.labSpecialization.update({
         where: {
@@ -59,9 +55,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!existingLabSpecialization) {
-        throw new InternalError('Lab Specialization not found.');
-      }
+      invariant(existingLabSpecialization, new PublicError('Lab Specialization not found.'));
 
       const existingLabSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
         where: {
@@ -69,9 +63,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingLabSpecializationConnections.length > 0) {
-        throw new PublicError('Lab Specialization is still connected to a Vendor Company, please remove the connection first.');
-      }
+      invariant(existingLabSpecializationConnections.length === 0, new PublicError('Lab Specialization is still connected to a Vendor Company, please remove the connection first.'));
 
       await context.prisma.labSpecialization.delete({
         where: {

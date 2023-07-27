@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent, QuoteStatus } from "../../helper/constant";
 import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
 import { PublicError } from '../errors/PublicError';
+import invariant from '../../helper/invariant';
 
 const EXPIRY_DAYS = 7;
 
@@ -25,9 +26,7 @@ const resolvers: Resolvers<Context> = {
         return parent.milestones;
       }
 
-      if (!parent.id) {
-        throw new InternalError('Missing quote ID');
-      }
+      invariant(parent.id, 'Quote id not found.');
 
       const milestones = await context.prisma.milestone.findMany({
         where: {
@@ -45,9 +44,7 @@ const resolvers: Resolvers<Context> = {
         }));
     },
     project_connection: async (parent, _, context) => {
-      if (!parent.project_connection_id) {
-        throw new InternalError("Project connection id not found.");
-      }
+      invariant(parent.project_connection_id, 'Project connection id not found.');
       return await context.prisma.projectConnection.findFirst({
         where: {
           id: parent.project_connection_id,
@@ -55,9 +52,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     total_amount: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Quote id not found');
-      }
+      invariant(parent.id, 'Quote id not found.');
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
@@ -71,9 +66,7 @@ const resolvers: Resolvers<Context> = {
       return toDollar(totalAmount)
     },
     total_in_escrow: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Quote id not found');
-      }
+      invariant(parent.id, 'Quote id not found.');
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
@@ -92,9 +85,7 @@ const resolvers: Resolvers<Context> = {
       return toDollar(amountInEscrow)
     },
     total_payment: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Quote id not found');
-      }
+      invariant(parent.id, 'Quote id not found.');
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
@@ -111,9 +102,7 @@ const resolvers: Resolvers<Context> = {
       return toDollar(amountPaid)
     },
     total_milestones_paid: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Quote id not found');
-      }
+      invariant(parent.id, 'Quote id not found.');
       const milestones = await context.prisma.milestone.findMany({
         where: {
           quote_id: parent.id,
@@ -341,9 +330,7 @@ const resolvers: Resolvers<Context> = {
           id,
         }
       });
-      if (!quote) {
-        throw new InternalError('Quote not found')
-      }
+      invariant(quote, 'Quote not found.');
 
       if (quote.expired_at && now >= quote.expired_at) {
         throw new PublicError('The quote is expired.')
@@ -379,9 +366,7 @@ const resolvers: Resolvers<Context> = {
           id,
         }
       });
-      if (!quote) {
-        throw new InternalError('Quote not found')
-      }
+      invariant(quote, 'Quote not found.');
 
       if (quote.expired_at && now >= quote.expired_at) {
         throw new PublicError('The quote is expired.')

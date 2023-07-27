@@ -2,15 +2,13 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { SubscriptionStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
-import { InternalError } from "../errors/InternalError";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
+import invariant from "../../helper/invariant";
 
 const resolver: Resolvers<Context> = {
   Biotech: {
     has_active_subscription: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Id not found');
-      }
+      invariant(parent.id, 'Missing biotech id.');
 
       const subscriptions = await context.prisma.subscription.findMany({
         where: {
@@ -22,9 +20,7 @@ const resolver: Resolvers<Context> = {
       return subscriptions.length > 0 ? true : false;
     },
     stripe_customer_id: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Id not found');
-      }
+      invariant(parent.id, 'Missing biotech id.');
       const subscription = await context.prisma.subscription.findFirst({
         where: {
           biotech_id: parent.id,
@@ -35,9 +31,7 @@ const resolver: Resolvers<Context> = {
       return subscription?.stripe_customer_id ?? '';
     },
     customers: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Id not found');
-      }
+      invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.customer.findMany({
         where: {
           biotech_id: parent.id
@@ -45,9 +39,7 @@ const resolver: Resolvers<Context> = {
       });
     },
     chats: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Id not found');
-      }
+      invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.chat.findMany({
         where: {
           biotech_id: parent.id
@@ -55,9 +47,7 @@ const resolver: Resolvers<Context> = {
       });
     },
     upload_used: async (parent) => {
-      if (!parent.id) {
-        throw new InternalError('Id not found');
-      }
+      invariant(parent.id, 'Missing biotech id.');
       const { id } = parent;
       const uploadLimitTracker = new UploadLimitTracker();
 
@@ -99,9 +89,7 @@ const resolver: Resolvers<Context> = {
           }
         });
 
-        if (!user.customer) {
-          throw new PublicError('Customer not found.');
-        }
+        invariant(user.customer, new PublicError('Customer not found.'));
 
         if (args.name && args.name !== user?.customer?.biotech?.name) {
           const existingBiotech = await trx.biotech.findFirst({
@@ -110,9 +98,7 @@ const resolver: Resolvers<Context> = {
             }
           });
 
-          if (existingBiotech) {
-            throw new PublicError('Biotech name already exists.');
-          }
+          invariant(!existingBiotech, new PublicError('Biotech name already exists.'));
         }
 
         if (args.legal_name && args.legal_name !== user?.customer?.biotech?.legal_name) {
@@ -122,9 +108,7 @@ const resolver: Resolvers<Context> = {
             }
           });
 
-          if (existingBiotech) {
-            throw new PublicError('Biotech legal name already exists.');
-          }
+          invariant(!existingBiotech, new PublicError('Biotech legal name already exists.'));
         }
 
         return await context.prisma.biotech.update({
@@ -162,9 +146,7 @@ const resolver: Resolvers<Context> = {
           },
         });
 
-        if (!customer) {
-          throw new PublicError('Customer not found.');
-        }
+        invariant(customer, new PublicError('Customer not found.'));
 
         return await context.prisma.biotech.update({
           where: {

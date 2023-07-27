@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -11,9 +12,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (existingAdmin) {
-        throw new PublicError('Admin already exists');
-      }
+      invariant(!existingAdmin, new PublicError('Admin already exists'));
 
       return await context.prisma.admin.create({
         data: {
@@ -31,9 +30,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!existingAdmin) {
-        throw new PublicError('Admin not found');
-      }
+      invariant(existingAdmin, new PublicError('Admin not found.'));
 
       await context.prisma.admin.delete({
         where: {

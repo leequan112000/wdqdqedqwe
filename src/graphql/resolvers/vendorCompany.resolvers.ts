@@ -1,15 +1,13 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers, StripeAccountData } from "../../generated";
-import { InternalError } from "../errors/InternalError";
 import { getStripeInstance } from "../../helper/stripe";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
     vendor_members: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.vendorMember.findMany({
         where: {
           vendor_company_id: parent.id
@@ -17,9 +15,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     project_connections: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.projectConnection.findMany({
         where: {
           vendor_company_id: parent.id
@@ -27,9 +23,7 @@ const resolvers: Resolvers<Context> = {
       })
     },
     chats: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.chat.findMany({
         where: {
           vendor_company_id: parent.id
@@ -37,9 +31,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     primary_members: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
 
       const primaryMembers = await context.prisma.vendorMember.findMany({
         where: {
@@ -51,9 +43,7 @@ const resolvers: Resolvers<Context> = {
       return primaryMembers;
     },
     certification_tags: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
 
       const certificationTagConnections = await context.prisma.certificationTagConnection.findMany({
         where: {
@@ -71,9 +61,7 @@ const resolvers: Resolvers<Context> = {
       return [...priorityTags, ...nonPriorityTags];
     },
     lab_specializations: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Vendor company id not found.')
-      }
+      invariant(parent.id, 'Vendor company id not found.');
 
       const labSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
         where: {
@@ -192,9 +180,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        if (!vendor_member) {
-          throw new PublicError('Vendor member not found.');
-        }
+        invariant(vendor_member, new PublicError('Vendor member not found.'));
 
         return await trx.vendorCompany.update({
           where: {
@@ -238,9 +224,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!vendor_member) {
-          throw new PublicError('Vendor member not found.');
-        }
+        invariant(vendor_member, new PublicError('Vendor member not found.'));
 
         const { certification_tag_ids, new_certification_tag_names } = args;
 
@@ -339,9 +323,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!vendor_member) {
-          throw new PublicError('Vendor member not found.');
-        }
+        invariant(vendor_member, new PublicError('Vendor member not found.'));
 
         const { lab_specialization_ids, new_lab_specialization_names } = args;
 
@@ -436,9 +418,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!vendor_member) {
-        throw new PublicError('Vendor member not found.');
-      }
+      invariant(vendor_member, new PublicError('Vendor member not found.'));
 
       return await context.prisma.vendorCompany.update({
         where: {
@@ -456,9 +436,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!vendor_member) {
-        throw new PublicError('Vendor member not found.');
-      }
+      invariant(vendor_member, new PublicError('Vendor member not found.'));
 
       return await context.prisma.vendorCompany.update({
         where: {

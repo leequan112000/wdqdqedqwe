@@ -1,13 +1,11 @@
 import { Request } from "express";
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
+import invariant from "../../helper/invariant";
 
 export default {
   LabSpecializationConnection: {
     lab_specialization: async (parent: any, _: void, context: Context): Promise<any> => {
-      if (!parent.lab_specialization_id) {
-        throw new InternalError('Lab specialization id not found');
-      }
+      invariant(parent.lab_specialization_id, 'Lab specialization id not found');
 
       return await context.prisma.labSpecialization.findFirst({
         where: {
@@ -16,9 +14,7 @@ export default {
       });
     },
     vendor_company: async (parent: any, _: void, context: Context): Promise<any> => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Vendor company id not found');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found.');
 
       return await context.prisma.vendorCompany.findFirst({
         where: {
@@ -65,9 +61,7 @@ export default {
         }
       });
 
-      if (existingLabSpecializationConnection) {
-        throw new InternalError('Lab specialization connection already exists.');
-      }
+      invariant(!existingLabSpecializationConnection, 'Lab specialization connection already exists.');
 
       const labSpecialization = await context.prisma.labSpecialization.findFirst({
         where: {
@@ -75,9 +69,7 @@ export default {
         }
       });
 
-      if (!labSpecialization) {
-        throw new InternalError('Lab specialization not found.');
-      }
+      invariant(labSpecialization, 'Lab specialization not found.');
 
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
@@ -85,9 +77,7 @@ export default {
         }
       });
 
-      if (!vendorCompany) {
-        throw new InternalError('Vendor company not found.');
-      }
+      invariant(vendorCompany, 'Vendor company not found.');
 
       return await context.prisma.labSpecializationConnection.create({
         data: {
@@ -113,9 +103,7 @@ export default {
         }
       });
 
-      if (!existingLabSpecializationConnection) {
-        throw new InternalError('Lab specialization connection not found.');
-      }
+      invariant(existingLabSpecializationConnection, 'Lab specialization connection not found.');
 
       await context.prisma.labSpecializationConnection.delete({
         where: {
