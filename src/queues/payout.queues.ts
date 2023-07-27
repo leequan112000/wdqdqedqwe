@@ -33,17 +33,15 @@ payoutQueue.process(async (job, done) => {
   });
 
   invariant(milestone, 'Milestone not found.');
-  invariant(milestone.payment_status === MilestonePaymentStatus.PAID, 'Milestone has not been paid by the biotech yet.');
-  invariant(
-    milestone.vendor_payment_status !== MilestonePaymentStatus.PROCESSING
-    && milestone.vendor_payment_status !== MilestonePaymentStatus.PAID,
-    'Milestone has paid to the vendor.',
-  );
-
   const vendorCompany = milestone.quote.project_connection.vendor_company;
-  invariant(vendorCompany.stripe_account, 'Vendor company has no Stripe account.');
-
   try {
+    invariant(milestone.payment_status === MilestonePaymentStatus.PAID, 'Milestone has not been paid by the biotech yet.');
+    invariant(
+      milestone.vendor_payment_status !== MilestonePaymentStatus.PROCESSING
+      && milestone.vendor_payment_status !== MilestonePaymentStatus.PAID,
+      'Milestone has paid to the vendor.',
+    );
+    invariant(vendorCompany.stripe_account, 'Vendor company has no Stripe account.');
     const stripe = await getStripeInstance();
     const transfer = await stripe.transfers.create({
       amount: milestone.amount.toNumber(),
