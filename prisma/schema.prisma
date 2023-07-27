@@ -54,6 +54,8 @@ model Customer {
   project_requests     ProjectRequest[]
   customer_connections CustomerConnection[]
 
+  role String @default("user")
+
   @@index([biotech_id])
   @@map("customers")
 }
@@ -174,6 +176,8 @@ model VendorMember {
   vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
 
   vendor_member_connections VendorMemberConnection[]
+
+  role String @default("user")
 
   @@map("vendor_members")
 }

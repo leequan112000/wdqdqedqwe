@@ -67,3 +67,10 @@ export const frontendPermissionObject = async (userId: string) => {
     return acc;
   }, {})
 }
+
+export const updateRoleForUser = async (userId: string, newRole: CasbinRole) => {
+  const user = `user:${userId}`;
+  const e = await createEnforcer();
+  await e.deleteRolesForUser(user);
+  await e.addRoleForUser(user, newRole);
+}

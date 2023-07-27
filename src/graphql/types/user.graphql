@@ -16,6 +16,7 @@ type User {
   cda_url: String
   cda_signed_at: Date
   skip_cda: Boolean
+  company_collaborator_role: String
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean

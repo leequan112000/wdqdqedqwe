@@ -341,7 +341,32 @@ const resolvers: Resolvers<Context> = {
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
-    }
+    },
+    company_collaborator_role: async (parent, args, context) => {
+      if (parent.company_collaborator_role) {
+        return parent.company_collaborator_role;
+      }
+      invariant(parent.id, 'User id not found.');
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: parent.id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        }
+      });
+      invariant(user, 'User not found.');
+
+      if (user.customer) {
+        return user.customer.role;
+      }
+      if (user.vendor_member) {
+        return user.vendor_member.role;
+      }
+
+      throw new InternalError('User company collaborator role not found.');
+    },
   },
   Subscription: {
     cdaUrl: {

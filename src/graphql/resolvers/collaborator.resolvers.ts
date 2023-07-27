@@ -5,9 +5,10 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
-import { addRoleForUser } from "../../helper/casbin";
+import { addRoleForUser, hasPermission, updateRoleForUser } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
-import { CasbinRole } from "../../helper/constant";
+import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -297,6 +298,98 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError('User not found.');
+    },
+    updateCollaboratorRole: async (parent, args, context) => {
+      const { role_type, user_id } = args;
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        }
+      });
+      invariant(currentUser, 'Current user not found.');
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+      invariant(user, 'User not found.');
+
+      invariant(
+        currentUser.customer?.biotech_id === user.customer?.biotech_id
+        || currentUser.vendor_member?.vendor_company_id === user.vendor_member?.vendor_company_id,
+        'The user is not belong to the same company.',
+      );
+
+      let casbinRole: CasbinRole;
+
+      // check for casbin role & permission
+      switch (role_type) {
+        case CompanyCollaboratorRoleType.ADMIN: {
+          invariant(
+            hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE),
+            new PermissionDeniedError(),
+          );
+          casbinRole = CasbinRole.ADMIN;
+          break;
+        }
+        case CompanyCollaboratorRoleType.USER: {
+          invariant(
+            hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE),
+            new PermissionDeniedError(),
+          );
+          casbinRole = CasbinRole.USER;
+          break;
+        }
+        default:
+          throw new PublicError('Invalid company collaborator role.');
+      }
+
+      if (user.customer) {
+        const updatedCustomer = await context.prisma.customer.update({
+          where: {
+            user_id: user.id,
+          },
+          data: {
+            role: role_type,
+          },
+        });
+
+        await updateRoleForUser(user.id, casbinRole);
+
+        return {
+          ...user,
+          company_collaborator_role: updatedCustomer.role,
+        };
+      }
+
+      if (user.vendor_member) {
+        const updatedVendorMember = await context.prisma.vendorMember.update({
+          where: {
+            user_id: user.id,
+          },
+          data: {
+            role: role_type,
+          },
+        });
+
+        await updateRoleForUser(user.id, casbinRole);
+
+        return {
+          ...user,
+          company_collaborator_role: updatedVendorMember.role,
+        };
+      }
+
+      throw new InternalError('User is nor customer or vendor member.');
     },
   },
 };

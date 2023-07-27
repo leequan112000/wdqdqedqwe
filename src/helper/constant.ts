@@ -195,7 +195,9 @@ export enum StripeWebhookPaymentType {
 export enum CasbinObj {
   PROJECT_REQUEST = 'project_request',
   PROJECT_CONNECTION = 'project_connection',
-  COMPANY_COLLABORATOR = 'company_collaborator',
+  COMPANY_COLLABORATOR_USER = 'company_collaborator/user',
+  COMPANY_COLLABORATOR_ADMIN = 'company_collaborator/admin',
+  COMPANY_COLLABORATOR_OWNER = 'company_collaborator/owner',
   PROJECT_COLLABORATOR = 'project_collaborator',
 }
 
@@ -210,4 +212,10 @@ export enum CasbinRole {
   OWNER = 'role:owner',
   ADMIN = 'role:admin',
   USER = 'role:user',
+}
+
+export enum CompanyCollaboratorRoleType {
+  OWNER = 'owner',
+  ADMIN = 'admin',
+  USER = 'user',
 }

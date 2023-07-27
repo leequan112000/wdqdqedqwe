@@ -19,4 +19,5 @@ type Mutation {
     collaborators: [InviteCollaboratorInput!]!
   ): [User]
   resendInvitation(user_id: String!): User
+  updateCollaboratorRole(user_id: String!, role_type: String!): User
 }

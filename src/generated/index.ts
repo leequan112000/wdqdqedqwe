@@ -338,6 +338,7 @@ export type Mutation = {
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
   updateCertificationTag?: Maybe<CertificationTag>;
+  updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateMeetingEvent?: Maybe<MeetingEvent>;
@@ -708,6 +709,12 @@ export type MutationUpdateCertificationTagArgs = {
   id: Scalars['String'];
   priority?: InputMaybe<Scalars['Int']>;
   short_name?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateCollaboratorRoleArgs = {
+  role_type: Scalars['String'];
+  user_id: Scalars['String'];
 };
 
 
@@ -1204,6 +1211,7 @@ export type User = {
   can_be_removed?: Maybe<Scalars['Boolean']>;
   cda_signed_at?: Maybe<Scalars['Date']>;
   cda_url?: Maybe<Scalars['String']>;
+  company_collaborator_role?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customer?: Maybe<Customer>;
@@ -1785,6 +1793,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
+  updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
@@ -2041,6 +2050,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   can_be_removed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_collaborator_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
