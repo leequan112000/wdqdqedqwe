@@ -1,13 +1,11 @@
 import { Request } from "express";
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
+import invariant from "../../helper/invariant";
 
 export default {
   CertificationTagConnection: {
     certification_tag: async (parent: any, _: void, context: Context): Promise<any> => {
-      if (!parent.certification_tag_id) {
-        throw new InternalError('Certification tag id not found');
-      }
+      invariant(parent.certification_tag_id, 'Certification tag id not found.');
 
       return await context.prisma.certificationTag.findFirst({
         where: {
@@ -16,14 +14,12 @@ export default {
       });
     },
     vendor_company: async (parent: any, _: void, context: Context): Promise<any> => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Vendor company id not found');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found.');
 
       return await context.prisma.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id
-        }
+        },
       });
     },
   },
@@ -65,9 +61,7 @@ export default {
         }
       });
 
-      if (existingCertificationTagConnection) {
-        throw new InternalError('Certification tag connection already exists.');
-      }
+      invariant(!existingCertificationTagConnection, 'Certification tag connection already exists.');
 
       const certificationTag = await context.prisma.certificationTag.findFirst({
         where: {
@@ -75,9 +69,7 @@ export default {
         }
       });
 
-      if (!certificationTag) {
-        throw new InternalError('Certification tag not found.');
-      }
+      invariant(certificationTag, 'Certification tag not found.');
 
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
@@ -85,9 +77,7 @@ export default {
         }
       });
 
-      if (!vendorCompany) {
-        throw new InternalError('Vendor company not found.');
-      }
+      invariant(vendorCompany, 'Vendor company not found.');
 
       return await context.prisma.certificationTagConnection.create({
         data: {
@@ -113,9 +103,7 @@ export default {
         }
       });
 
-      if (!existingCertificationTagConnection) {
-        throw new InternalError('Certification tag connection not found.');
-      }
+      invariant(existingCertificationTagConnection, 'Certification tag connection not found.');
 
       return await context.prisma.certificationTagConnection.delete({
         where: {

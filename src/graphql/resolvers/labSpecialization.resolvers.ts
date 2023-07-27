@@ -1,5 +1,6 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -37,9 +38,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (existingLabSpecialization) {
-        throw new Error("Lab specialization already exists");
-      }
+      invariant(!existingLabSpecialization, "Lab specialization already exists");
 
       return await context.prisma.labSpecialization.create({
         data: {

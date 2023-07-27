@@ -57,29 +57,23 @@ const serverCleanup = useServer({
   },
 }, wsServer);
 
+function formatApolloServerError(formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError {
+  const message = formattedError.extensions?.code
+    && ['PUBLIC_ERROR_CODE', 'PERMISSION_DENIED'].includes(formattedError.extensions.code as string)
+    ? formattedError.message
+    : 'Something went wrong';
+
+  return {
+    ...formattedError,
+    message,
+  };
+}
+
 export const apolloServer = new ApolloServer<Context>({
   schema,
   validationRules: [depthLimit(7)],
   introspection: process.env.NODE_ENV === 'development',
-  formatError: (formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError => {
-    const errorMap = {
-      'PublicError:': 'PUBLIC_ERROR_CODE',
-      'InternalError:': 'INTERNAL_ERROR_CODE',
-      'Unauthenticated:': 'UNAUTHENTICATED'
-    };
-
-    for (const [prefix, code] of Object.entries(errorMap)) {
-      if (formattedError.message.startsWith(prefix)) {
-        return {
-          ...formattedError,
-          message: formattedError.message.replace(new RegExp(`^${prefix} `), ''),
-          extensions: { ...formattedError?.extensions, code },
-        };
-      }
-    }
-
-    return formattedError;
-  },
+  formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
     {
@@ -99,25 +93,7 @@ export const adminApolloServer = new ApolloServer<Context>({
   schema: adminSchema,
   validationRules: [depthLimit(7)],
   introspection: process.env.NODE_ENV === 'development',
-  formatError: (formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError => {
-    const errorMap = {
-      'PublicError:': 'PUBLIC_ERROR_CODE',
-      'InternalError:': 'INTERNAL_ERROR_CODE',
-      'Unauthenticated:': 'UNAUTHENTICATED'
-    };
-
-    for (const [prefix, code] of Object.entries(errorMap)) {
-      if (formattedError.message.startsWith(prefix)) {
-        return {
-          ...formattedError,
-          message: formattedError.message.replace(new RegExp(`^${prefix} `), ''),
-          extensions: { ...formattedError?.extensions, code },
-        };
-      }
-    }
-
-    return formattedError;
-  },
+  formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginSentryMonitor(),
   ],

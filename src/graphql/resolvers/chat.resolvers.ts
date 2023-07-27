@@ -1,16 +1,14 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import { pubsub } from "../../helper/pubsub";
 import { withFilter } from "graphql-subscriptions";
 import { SubscriptionStatus } from "../../helper/constant";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
     messages: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Chat id not found.')
-      }
+      invariant(parent.id, 'Chat id not found.');
       return await context.prisma.message.findMany({
         where: {
           chat_id: parent.id,
@@ -18,17 +16,13 @@ const resolvers: Resolvers<Context> = {
       });
     },
     messagesConnection: async (parent, args, context) => {
-      if (!parent.id) {
-        throw new InternalError('Chat id not found.')
-      }
+      invariant(parent.id, 'Chat id not found.');
 
       const { first, after } = args;
 
       const currectUserId = context.req.user_id;
 
-      if (!currectUserId) {
-        throw new InternalError('Current user not found')
-      }
+      invariant(currectUserId, 'Current user not found.');
 
       const customer = await context.prisma.customer.findFirst({
         where: {

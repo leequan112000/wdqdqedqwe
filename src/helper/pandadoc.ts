@@ -1,6 +1,7 @@
 import { Biotech, Customer, User, VendorCompany, VendorMember } from "@prisma/client";
 import moment from 'moment';
 import * as PandaDocApi from "pandadoc-node-client";
+import invariant from "./invariant";
 
 const configuration = PandaDocApi.createConfiguration(
     { authMethods: {apiKey: `API-Key ${process.env.PANDADOC_API_KEY}`} }
@@ -16,9 +17,7 @@ const VENDOR_COMPANY_CDA_FOLDER_ID = 'gHkVo2E8xgL3d7rNzkZRfR';
 export const createBiotechCda = async (user: User & {customer: (Customer & { biotech: Biotech }) | null}): Promise<PandaDocApi.DocumentCreateResponse> => {
   try {
     const customer = user.customer;
-    if (!customer) {
-      throw new Error("Customer not found")
-    }
+    invariant(customer, 'Customer not found.');
 
     const biotech = customer.biotech;
     const result = await pandaDocClient.createDocument({
@@ -66,9 +65,7 @@ export const createBiotechCda = async (user: User & {customer: (Customer & { bio
 export const createVendorCompanyCda = async (user: User  & {vendor_member: (VendorMember & { vendor_company: VendorCompany | null}) | null}): Promise<PandaDocApi.DocumentCreateResponse> => {
   try {
     const vendor_member = user.vendor_member;
-    if (!vendor_member || !vendor_member.vendor_company) {
-      throw new Error("Vendor not found")
-    }
+    invariant(vendor_member && vendor_member.vendor_company, 'Vendor not found.');
     const vendor_company = vendor_member.vendor_company;
     const result = await pandaDocClient.createDocument({
       documentCreateRequest: {

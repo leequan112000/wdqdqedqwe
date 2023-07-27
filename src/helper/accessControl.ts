@@ -1,5 +1,6 @@
 import { PermissionDeniedError } from '../graphql/errors/PermissionDeniedError';
 import { Context } from '../types/context';
+import invariant from './invariant';
 
 export const checkProjectConnectionPermission = async (context: Context, projectConnectionId: string) => {
   const currentUser = await context.prisma.user.findFirst({
@@ -8,9 +9,7 @@ export const checkProjectConnectionPermission = async (context: Context, project
     },
   });
 
-  if (!currentUser) {
-    throw new PermissionDeniedError();
-  }
+  invariant(currentUser, new PermissionDeniedError());
 
   try {
     const projectConnection = await context.prisma.projectConnection.findFirst({
@@ -40,9 +39,7 @@ export const checkProjectConnectionPermission = async (context: Context, project
       },
     });
 
-    if (!projectConnection) {
-      throw new PermissionDeniedError();
-    }
+    invariant(projectConnection, new PermissionDeniedError());
 
     const projectRequestUserId = projectConnection.project_request.customer.user_id;
     const accessableCustomerUserIds = projectConnection.customer_connections.map((cc) => cc.customer.user_id);
@@ -66,9 +63,7 @@ export const checkMilestonePermission = async (context: Context, milestoneId: st
       }
     });
 
-    if (!milestone) {
-      throw new PermissionDeniedError();
-    }
+    invariant(milestone, new PermissionDeniedError());
 
     await checkProjectConnectionPermission(context, milestone.quote.project_connection_id);
   } catch (error) {
@@ -83,10 +78,8 @@ export const checkInvoicePermission = async (context: Context, invoiceId: string
         user_id: context.req.user_id
       },
     });
-  
-    if (!currentVendor) {
-      throw new PermissionDeniedError();
-    }
+
+    invariant(currentVendor, new PermissionDeniedError());
 
     const invoice = await context.prisma.invoice.findFirst({
       where: {
@@ -94,13 +87,8 @@ export const checkInvoicePermission = async (context: Context, invoiceId: string
       },
     });
 
-    if (!invoice) {
-      throw new PermissionDeniedError();
-    }
-    
-    if (invoice.vendor_company_id !== currentVendor.vendor_company_id) {
-      throw new PermissionDeniedError();
-    }
+    invariant(invoice, new PermissionDeniedError());
+    invariant(invoice.vendor_company_id === currentVendor.vendor_company_id, new PermissionDeniedError());
   } catch (error) {
     throw new PermissionDeniedError();
   }
@@ -113,10 +101,8 @@ export const checkAllowVendorOnlyPermission = async (context: Context) => {
         user_id: context.req.user_id
       }
     });
-    
-    if (!vendor) {
-      throw new PermissionDeniedError();
-    }
+
+    invariant(vendor, new PermissionDeniedError());
   } catch (error) {
     throw new PermissionDeniedError();
   }
@@ -130,9 +116,7 @@ export const checkAllowCustomerOnlyPermission = async (context: Context) => {
       }
     });
 
-    if (!customer) {
-      throw new PermissionDeniedError();
-    }
+    invariant(customer, new PermissionDeniedError());
   } catch (error) {
     throw new PermissionDeniedError();
   }

@@ -7,7 +7,7 @@ import Sentry from '../../sentry';
 
 import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../helper/constant';
 import { getStripeInstance } from '../../helper/stripe';
-import { toDollar } from '../../helper/money';
+import invariant from '../../helper/invariant';
 
 import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
 
@@ -110,15 +110,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             break;
           }
           case 'payment': {
-            if (!checkoutSession?.metadata?.payment_type) {
-              throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
-            }
+            invariant(checkoutSession.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                if (!checkoutSession?.metadata?.invoice_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
-                }
+                invariant(checkoutSession.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
 
                 const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
                 await prisma.invoice.update({
@@ -133,9 +129,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                if (!checkoutSession?.metadata?.milestone_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
-                }
+                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
 
                 const customer = await prisma.customer.findFirst({
                   where: {
@@ -196,15 +190,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             break;
           }
           case 'payment': {
-            if (!checkoutSession?.metadata?.payment_type) {
-              throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
-            }
+            invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                if (!checkoutSession?.metadata?.invoice_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
-                }
+                invariant(checkoutSession?.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
 
                 const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
                 const invoice = await prisma.invoice.update({
@@ -227,9 +217,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                if (!checkoutSession?.metadata?.milestone_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
-                }
+                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
 
                 const customer = await prisma.customer.findFirst({
                   where: {
@@ -302,15 +290,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             break;
           }
           case 'payment': {
-            if (!checkoutSession?.metadata?.payment_type) {
-              throw new Error('[Stripe Webhook] Missing metadata: payment_type.');
-            }
+            invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                if (!checkoutSession?.metadata?.invoice_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: invoice_id.');
-                }
+                invariant(checkoutSession?.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
 
                 const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
                 const invoice = await prisma.invoice.update({
@@ -333,9 +317,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                if (!checkoutSession?.metadata?.milestone_id) {
-                  throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
-                }
+                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
 
                 const customer = await prisma.customer.findFirst({
                   where: {
@@ -388,9 +370,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
-        if (!subItem) {
-          throw new Error('[Stripe Webhook] Missing subscription item.');
-        }
+        invariant(subItem, '[Stripe Webhook] Missing subscription item.');
         const { plan } = subItem;
         const product = await stripe.products.retrieve(plan.product as string);
         const { account_type } = product.metadata;
@@ -400,13 +380,9 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
         });
 
-        if (!subcription) {
-          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
-        }
+        invariant(subcription, '[Stripe Webhook] Missing biotech subscription data.');
 
-        if (!account_type) {
-          throw new Error('[Stripe Webhook] Missing metadata: account_type.');
-        }
+        invariant(account_type, '[Stripe Webhook] Missing metadata: account_type.');
 
         await prisma.biotech.update({
           where: {
@@ -435,9 +411,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
         });
 
-        if (!subscription) {
-          throw new Error('[Stripe Webhook] Missing biotech subscription data.');
-        }
+        invariant(subscription, '[Stripe Webhook] Missing biotech subscription data.');
 
         await prisma.subscription.update({
           where: {
@@ -460,9 +434,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
     case 'payout.failed': {
       try {
         const payout = event.data.object as Stripe.Payout;
-        if (!payout?.metadata?.milestone_id) {
-          throw new Error('[Stripe Webhook] Missing metadata: milestone_id.');
-        }
+        invariant(payout?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
 
         const { milestone_id } = payout.metadata;
         const milestone = await prisma.milestone.findFirst({
@@ -471,9 +443,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
         });
 
-        if (!milestone) {
-          throw new Error('[Stripe Webhook] Milestone not found.');
-        }
+        invariant(milestone, '[Stripe Webhook] Milestone not found.');
 
         await prisma.milestone.update({
           where: {

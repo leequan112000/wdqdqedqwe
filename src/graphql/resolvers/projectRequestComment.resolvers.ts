@@ -5,6 +5,7 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { MutationCreateProjectRequestCommentArgs } from "../../generated";
 import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
+import invariant from "../../helper/invariant";
 
 export default {
   ProjectRequestComment: {
@@ -35,10 +36,7 @@ export default {
             include: { biotech: true },
           });
 
-
-          if (!projectRequest) {
-            throw new PublicError('Project request not found.');
-          }
+          invariant(projectRequest, new PublicError('Project request not found.'));
 
           const fifteenMinBefore = moment().subtract(15, 'minute');
           const commentsWithinThePast15Min = await trx.projectRequestComment.findFirst({

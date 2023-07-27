@@ -8,6 +8,7 @@ import {
   MutationInviteVendorMemberArgs,
   MutationUpdateVendorMemberArgs,
 } from "../../generated";
+import invariant from "../../helper/invariant";
 
 export default {
   VendorMember: {
@@ -62,9 +63,7 @@ export default {
             }
           });
 
-          if (user) {
-            throw new PublicError('User already exist!');
-          }
+          invariant(!user, new PublicError('User already exist!'));
 
           const currentUser = await trx.user.findFirstOrThrow({
             where: {

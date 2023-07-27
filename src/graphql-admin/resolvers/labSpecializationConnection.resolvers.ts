@@ -1,7 +1,7 @@
-import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
 import { PublicError } from "../../graphql/errors/PublicError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -15,9 +15,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (existingCertificationTagConnection) {
-        throw new PublicError('Lab specialization connection already exists');
-      }
+      invariant(!existingCertificationTagConnection, new PublicError('Lab specialization connection already exists.'));
 
       return await context.prisma.labSpecializationConnection.create({
         data: {
@@ -35,9 +33,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!existingLabSpecializationConnection) {
-        throw new InternalError('Lab specialization connection not found');
-      }
+      invariant(existingLabSpecializationConnection, new PublicError('Lab specialization connection not found.'));
 
       return await context.prisma.labSpecializationConnection.delete({
         where: {

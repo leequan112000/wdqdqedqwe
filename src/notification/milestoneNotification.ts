@@ -1,7 +1,7 @@
-import { InternalError } from '../graphql/errors/InternalError';
 import { NotificationType } from '../helper/constant';
 import { prisma } from '../connectDB';
 import { publishNewNotification } from '../helper/pubsub';
+import invariant from '../helper/invariant';
 
 export const createMilestoneNotification = async (sender_id: string, quote_id: string, milestone_update_content: string, recipient_id: string, project_connection_id: string) => {
   const sender = await prisma.user.findFirst({
@@ -9,18 +9,14 @@ export const createMilestoneNotification = async (sender_id: string, quote_id: s
       id: sender_id,
     },
   });
-  if (!sender) {
-    throw new InternalError('Sender not found');
-  }
+  invariant(sender, 'Sender not found.');
 
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,
     },
   });
-  if (!recipient) {
-    throw new InternalError('Recipient not found');
-  }
+  invariant(recipient, 'Recipient not found.');
 
   const notification = await prisma.notification.create({
     data: {
@@ -35,9 +31,7 @@ export const createMilestoneNotification = async (sender_id: string, quote_id: s
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   publishNewNotification(notification);
 };
@@ -48,9 +42,7 @@ export const createMilestonePaymentFailedNotification = async (quote_id: string,
       id: recipient_id,
     },
   });
-  if (!recipient) {
-    throw new InternalError('Recipient not found');
-  }
+  invariant(recipient, 'Recipient not found.');
 
   const notification = await prisma.notification.create({
     data: {
@@ -64,9 +56,7 @@ export const createMilestonePaymentFailedNotification = async (quote_id: string,
     },
   });
 
-  if (!notification) {
-    throw new InternalError('Notification not created');
-  }
+  invariant(notification, 'Notification not created.');
 
   publishNewNotification(notification);
 };
