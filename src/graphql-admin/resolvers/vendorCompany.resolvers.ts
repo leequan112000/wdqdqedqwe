@@ -4,6 +4,7 @@ import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helpe
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
+import invariant from "../../helper/invariant";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -28,13 +29,8 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!projectRequest) {
-        throw new PublicError('Invalid project request ID.');
-      }
-
-      if (projectRequest.status === ProjectRequestStatus.WITHDRAWN) {
-        throw new PublicError('Project request has already been withdrawn.');
-      }
+      invariant(projectRequest, new PublicError('Invalid project request ID.'));
+      invariant(projectRequest.status !== ProjectRequestStatus.WITHDRAWN, new PublicError('Project request has already been withdrawn.'));
 
       const newExpiryDate = moment().add(PROJECT_REQUEST_RESPONSE_PERIOD, 'd').endOf('d');
 
@@ -51,9 +47,7 @@ const resolvers: Resolvers<Context> = {
                 }
               });
 
-              if (existingProjectConnection) {
-                throw new PublicError('Project connection exists');
-              }
+              invariant(!existingProjectConnection, new PublicError('Project connection exists'));
               const primaryVendorMembers = await trx.vendorMember.findMany({
                 where: {
                   vendor_company_id: vendor_company_id as string,
@@ -64,9 +58,7 @@ const resolvers: Resolvers<Context> = {
                 }
               });
 
-              if (!primaryVendorMembers) {
-                throw new PublicError('No primary vendor member found.');
-              }
+              invariant(primaryVendorMembers, new PublicError('No primary vendor member found.'));
 
               const projectConnection = await trx.projectConnection.create({
                 data: {

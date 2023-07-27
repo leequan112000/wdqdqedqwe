@@ -4,13 +4,12 @@ import { Resolvers } from "../../generated";
 import { NotificationType } from "../../helper/constant";
 import { withFilter } from "graphql-subscriptions";
 import { pubsub } from "../../helper/pubsub";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Notification: {
     recipient: async (parent, _, context) => {
-      if (!parent.recipient_id) {
-        return {};
-      }
+      invariant(parent.recipient_id, 'Recipient id not found.');
       return await context.prisma.user.findFirst({
         where: {
           id: parent.recipient_id
@@ -18,9 +17,7 @@ const resolvers: Resolvers<Context> = {
       })
     },
     sender: async (parent, _, context) => {
-      if (!parent.sender_id) {
-        return {};
-      }
+      invariant(parent.sender_id, 'Sender id not found.');
       return await context.prisma.user.findFirst({
         where: {
           id: parent.sender_id
@@ -138,9 +135,7 @@ const resolvers: Resolvers<Context> = {
     markNotificationAsRead: async (_, args, context) => {
       const { id } = args;
 
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
+      invariant(context.req.user_id, 'Current user id not found.');
       const notification = await context.prisma.notification.findFirst({
         where: {
           id,
@@ -149,9 +144,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!notification) {
-        throw new InternalError('Notification not found');
-      }
+      invariant(notification, 'Notification not found.');
 
       const updatedNotification = await context.prisma.notification.update({
         where: {
@@ -167,10 +160,7 @@ const resolvers: Resolvers<Context> = {
     markNotificationsInProjectAsRead: async (_, args, context) => {
       const { project_connection_id } = args;
 
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-
+      invariant(context.req.user_id, 'Current user id not found.');
       const notifications = await context.prisma.notification.findMany({
         where: {
           recipient_id: context.req.user_id,

@@ -13,13 +13,12 @@ import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, check
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
     project_attachments: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Missing milestone id.')
-      }
+      invariant(parent.id, 'Missing milestone id.');
       const projectAttachments = await context.prisma.projectAttachment.findMany({
         where: {
           milestone_id: parent.id
@@ -33,16 +32,14 @@ const resolvers: Resolvers<Context> = {
       }));
     },
     quote: async (parent, _, context) => {
-      if (!parent.quote_id) {
-        throw new InternalError('Missing quote id.')
-      }
+      invariant(parent.quote_id, 'Missing quote id.');
       const quote = await context.prisma.quote.findFirst({
         where: {
           id: parent.quote_id
         },
       });
 
-      return quote ? { ...quote, amount: toDollar(quote.amount.toNumber())} : {};
+      return quote ? { ...quote, amount: toDollar(quote.amount.toNumber()) } : {};
     },
   },
   Query: {
@@ -91,21 +88,10 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!milestone) {
-        throw new PublicError('Milestone not found.');
-      }
-
-      if (!customer) {
-        throw new PublicError('Customer not found.');
-      }
-
-      if (milestone.quote.status !== QuoteStatus.ACCEPTED) {
-        throw new PublicError('The quote must be accepted before proceeding with the payment.');
-      }
-
-      if (milestone.payment_status === MilestonePaymentStatus.PAID) {
-        throw new PublicError('The milestone has already been paid.');
-      }
+      invariant(milestone, new PublicError('Milestone not found.'));
+      invariant(customer, new PublicError('Customer not found.'));
+      invariant(milestone.quote.status === QuoteStatus.ACCEPTED, new PublicError('The quote must be accepted before proceeding with the payment.'));
+      invariant(milestone.payment_status !== MilestonePaymentStatus.PAID, new PublicError('The milestone has already been paid.'));
 
       const stripe = await getStripeInstance();
       const session = await stripe.checkout.sessions.create({
@@ -160,9 +146,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!milestone) {
-        throw new PublicError('Milestone not found.');
-      }
+      invariant(milestone, new PublicError('Milestone not found.'));
 
       let upload_results: UploadResult[] = [];
       let uploadedFiles: Array<{
@@ -181,16 +165,14 @@ const resolvers: Resolvers<Context> = {
               uploadData,
               PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
             );
-  
+
             uploadedFiles.push(uploadedFile);
           } catch (error) {
             throw error;
           }
         }));
-  
-        if (!result.every(r => r.status === 'fulfilled')) {
-          throw new PublicError('Some files failed to upload please try again.');
-        }
+
+        invariant(result.every((r) => r.status === 'fulfilled'), new PublicError('Some files failed to upload please try again.'));
       }
 
       return await context.prisma.$transaction(async (trx) => {
@@ -271,44 +253,42 @@ const resolvers: Resolvers<Context> = {
 
       const isPasswordMatched = await checkPassword(password, user, context);
 
-      if (isPasswordMatched === true) {
-        const updatedMilestone = await context.prisma.milestone.update({
-          where: {
-            id,
-          },
-          include: {
-            quote: {
-              include: {
-                project_connection: true,
-              }
-            }
-          },
-          data: {
-            status: MilestoneStatus.COMPLETED,
-          },
-        });
-  
-        payVendorJob({ milestoneId: id });
-  
-        createSendUserMilestoneNoticeJob({
-          projectConnectionId: updatedMilestone.quote.project_connection_id,
-          milestoneTitle: updatedMilestone.title,
-          quoteId: updatedMilestone.quote.id,
-          senderUserId: context.req.user_id!,
-          milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
-        });
-  
-        return {
-          ...updatedMilestone,
-          amount: toDollar(updatedMilestone.amount.toNumber()),
+      invariant(isPasswordMatched === true, new PublicError('Invalid password.'));
+
+      const updatedMilestone = await context.prisma.milestone.update({
+        where: {
+          id,
+        },
+        include: {
           quote: {
-            ...updatedMilestone.quote,
-            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+            include: {
+              project_connection: true,
+            }
           }
+        },
+        data: {
+          status: MilestoneStatus.COMPLETED,
+        },
+      });
+
+      payVendorJob({ milestoneId: id });
+
+      createSendUserMilestoneNoticeJob({
+        projectConnectionId: updatedMilestone.quote.project_connection_id,
+        milestoneTitle: updatedMilestone.title,
+        quoteId: updatedMilestone.quote.id,
+        senderUserId: context.req.user_id!,
+        milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
+      });
+
+      return {
+        ...updatedMilestone,
+        amount: toDollar(updatedMilestone.amount.toNumber()),
+        quote: {
+          ...updatedMilestone.quote,
+          amount: toDollar(updatedMilestone.quote.amount.toNumber())
         }
       }
-
-      throw new PublicError('Invalid password.');      
     },
   }
 }

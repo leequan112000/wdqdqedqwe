@@ -17,45 +17,36 @@ import { checkProjectConnectionPermission } from "../../helper/accessControl";
 import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
+import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
     vendor_company: async (parent, _, context) => {
-      if (!parent?.vendor_company_id) {
-        throw new InternalError('Vendor company id not found');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found.');
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id,
         },
       });
-      if (!vendorCompany) {
-        throw new InternalError('Vendor company not found');
-      }
+      invariant(vendorCompany, 'Vendor company not found.');
       return vendorCompany;
     },
     project_request: async (parent, _, context) => {
-      if (!parent?.project_request_id) {
-        throw new InternalError('Project request id not found');
-      }
+      invariant(parent.project_request_id, 'Project request id not found.');
       const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
           id: parent.project_request_id,
         },
       });
-      if (!projectRequest) {
-        throw new InternalError('Project request not found');
-      }
+      invariant(projectRequest, 'Project request not found.');
       return {
         ...projectRequest,
         max_budget: projectRequest.max_budget?.toNumber() || 0,
       };
     },
     vendor_member_connections: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const vendorMemberConnections = await context.prisma.vendorMemberConnection.findMany({
         where: {
           project_connection_id: parent.id,
@@ -65,9 +56,7 @@ const resolvers: Resolvers<Context> = {
       return vendorMemberConnections;
     },
     customer_connections: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       return await context.prisma.customerConnection.findMany({
         where: {
           project_connection_id: parent.id
@@ -75,9 +64,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     project_attachments: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const projectAttachments = await context.prisma.projectAttachment.findMany({
         where: {
           project_connection_id: parent.id
@@ -91,10 +78,7 @@ const resolvers: Resolvers<Context> = {
       }));
     },
     quotes: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
-
+      invariant(parent.id, 'Project connection id not found.');
       const currentUserId = context.req.user_id;
 
       const currentUser = await context.prisma.user.findFirst({
@@ -107,9 +91,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!currentUser) {
-        throw new InternalError('User not found');
-      }
+      invariant(currentUser, 'Current user not found.')
 
       const filter: Prisma.QuoteWhereInput = {
         project_connection_id: parent.id,
@@ -136,9 +118,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     chat: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       return await context.prisma.chat.findFirst({
         where: {
           project_connection_id: parent.id
@@ -147,12 +127,7 @@ const resolvers: Resolvers<Context> = {
     },
     messages: async (parent, args, context) => {
       const currectUserId = context.req.user_id;
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
-      if (!currectUserId) {
-        throw new InternalError('Current user not found')
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const user = await context.prisma.user.findFirst({
         where: {
           id: currectUserId,
@@ -172,6 +147,7 @@ const resolvers: Resolvers<Context> = {
           updated_at: 'desc',
         },
       });
+      invariant(user, 'Current user not found.');
 
       // This only applies to biotech.
       // Because only biotech has subscriptions.
@@ -200,12 +176,7 @@ const resolvers: Resolvers<Context> = {
     },
     unsubscribed_has_new_message: async (parent, _, context) => {
       const currectUserId = context.req.user_id;
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
-      if (!currectUserId) {
-        throw new InternalError('Current user not found')
-      }
+      invariant(parent.id, 'Project connection id not found.');
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -226,6 +197,7 @@ const resolvers: Resolvers<Context> = {
           updated_at: 'desc',
         },
       });
+      invariant(user, 'Current user not found.');
 
       // This only applies to biotech.
       // Because only biotech has subscriptions.
@@ -252,9 +224,7 @@ const resolvers: Resolvers<Context> = {
       return false;
     },
     documents: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const projectAttachments = await context.prisma.projectAttachment.findMany({
         where: {
           project_connection_id: parent.id,
@@ -268,9 +238,7 @@ const resolvers: Resolvers<Context> = {
       }));
     },
     final_contract: async (parent, _, context) => {
-      if (!parent?.id) {
-        throw new InternalError('Project connection id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const projectAttachment = await context.prisma.projectAttachment.findFirst({
         where: {
           project_connection_id: parent.id,
@@ -286,15 +254,8 @@ const resolvers: Resolvers<Context> = {
         : null;
     },
     collaborators_not_invited: async (parent, args, context) => {
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-      if (!parent.id) {
-        throw new InternalError('Project connection id not found');
-      }
-      if (!parent.project_request_id) {
-        throw new InternalError('Project request id not found');
-      }
+      invariant(parent.id, 'Project connection id not found.');
+      invariant(parent.project_request_id, 'Project request id not found.');
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -306,9 +267,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!currentUser) {
-        throw new InternalError('Current user not found');
-      }
+      invariant(currentUser, 'Current user not found.');
 
       if (currentUser.customer) {
         const customers = await context.prisma.customer.findMany({
@@ -348,12 +307,7 @@ const resolvers: Resolvers<Context> = {
       throw new InternalError('User is not customer nor vendor member');
     },
     internal_collaborators: async (parent, args, context) => {
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-      if (!parent.id) {
-        throw new InternalError('Project connection id not found')
-      }
+      invariant(parent.id, 'Project connection id not found.');
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -364,6 +318,8 @@ const resolvers: Resolvers<Context> = {
           vendor_member: true,
         },
       });
+
+      invariant(currentUser, 'Current user not found.');
 
       let users;
 
@@ -399,9 +355,7 @@ const resolvers: Resolvers<Context> = {
         users = vendorConnections.map((vs) => vs.vendor_member.user);
       }
 
-      if (!users) {
-        throw new InternalError('Current user is not customer nor vendor member');
-      }
+      invariant(users, 'Current user is not customer nor vendor member');
 
       return users.map((u) => ({
         ...u,
@@ -409,12 +363,7 @@ const resolvers: Resolvers<Context> = {
       }))
     },
     external_collaborators: async (parent, args, context) => {
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-      if (!parent.id) {
-        throw new InternalError('Project connection id not found')
-      }
+      invariant(parent.id, 'Project connection id not found.');
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -424,6 +373,8 @@ const resolvers: Resolvers<Context> = {
           vendor_member: true,
         },
       });
+
+      invariant(currentUser, 'Current user not found.');
 
       if (currentUser?.customer) {
         const vendorConnections = await context.prisma.vendorMemberConnection.findMany({
@@ -474,14 +425,13 @@ const resolvers: Resolvers<Context> = {
       const { vendor_status, project_request: parentProjectRequest, project_request_id } = parent;
       const now = new Date();
 
-      if (!parent.id) throw new InternalError('Missing project connection id');
+      invariant(parent.id, 'Project connection id not found.');
 
       if (parent.vendor_display_status) {
         return parent.vendor_display_status;
       }
 
-      if (!project_request_id) throw new InternalError("Mssing project request id")
-
+      invariant(project_request_id, 'Project request id not found.');
       const projectRequest = parentProjectRequest
         || await context.prisma.projectRequest.findFirst({
           where: {
@@ -489,7 +439,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-      if (!projectRequest) throw new InternalError('Project request not found')
+      invariant(projectRequest, 'Project request not found.');
 
       if (projectRequest.status === ProjectRequestStatus.WITHDRAWN) {
         return ProjectConnectionVendorDisplayStatus.WITHDRAWN;
@@ -534,9 +484,7 @@ const resolvers: Resolvers<Context> = {
           user_id: context.req.user_id,
         },
       });
-      if (vendorMember === null) {
-        throw new InternalError('Vendor member not found!')
-      }
+      invariant(vendorMember, 'Vendor member not found.');
       // find vendor member connections
       const vendorMemberConnections = await context.prisma.vendorMemberConnection.findMany({
         where: {
@@ -659,9 +607,7 @@ const resolvers: Resolvers<Context> = {
     acceptProjectConnection: async (_, args, context) => {
       const currentDate = new Date();
 
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
+      invariant(context.req.user_id, 'Current user id not found.');
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -672,9 +618,7 @@ const resolvers: Resolvers<Context> = {
           project_request: true,
         },
       });
-      if (!projectConnection) {
-        throw new InternalError('Project connection not found');
-      }
+      invariant(projectConnection, 'Project connection not found.');
 
       if (projectConnection.expired_at && currentDate >= projectConnection.expired_at) {
         throw new PublicError('You can no longer accept this request');
@@ -736,9 +680,7 @@ const resolvers: Resolvers<Context> = {
           id: args.id,
         },
       });
-      if (!projectConnection) {
-        throw new InternalError('Project connection not found');
-      }
+      invariant(projectConnection, 'Project connection not found.');
       // Check for expiry if project connection has never responsed.
       if (projectConnection.vendor_status === ProjectConnectionVendorStatus.PENDING
         && projectConnection.expired_at && currentDate >= projectConnection.expired_at) {
@@ -757,19 +699,13 @@ const resolvers: Resolvers<Context> = {
     addProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
         },
       });
 
-      if (!currentUser) {
-        throw new InternalError('Current user not found');
-      }
+      invariant(currentUser, 'Current user not found.');
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -782,9 +718,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!user) {
-        throw new InternalError('User not found');
-      }
+      invariant(user, 'User not found.');
 
       if (user.customer || user.vendor_member) {
         if (user?.customer) {
@@ -872,9 +806,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!user) {
-        throw new InternalError('User not found');
-      }
+      invariant(user, 'User not found.');
 
       if (user.customer) {
         await context.prisma.customerConnection.delete({
@@ -905,10 +837,6 @@ const resolvers: Resolvers<Context> = {
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
       const { project_connection_id, email, first_name, last_name, custom_message } = args;
 
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
-
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -919,9 +847,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!currentUser) {
-        throw new InternalError('Current user not found');
-      }
+      invariant(currentUser, 'Current user not found.');
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
