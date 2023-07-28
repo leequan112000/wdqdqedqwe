@@ -50,6 +50,18 @@ export const frontendPermissionObject = async (userId: string) => {
     return p[1]
   });
 
+  /**
+   * Explicitly grant all permissions to OWNER role.
+   * This is because casbin.js doesn't support superadmin matcher on FE.
+   */
+  if (userRoles.includes(CasbinRole.OWNER)) {
+    const allObjs = Object.values(CasbinObj);
+    return [CasbinAct.WRITE, CasbinAct.READ, CasbinAct.DELETE].reduce<{ [act: string]: string[] }>((acc, action) => {
+      acc[action] = allObjs;
+      return acc;
+    }, {});
+  }
+
   const allPolicies = await e.getPolicy();
   const filteredPolicies = allPolicies.reduce<string[][]>((rules, rule) => {
     if (userRoles.includes(rule[0])) {
