@@ -330,6 +330,7 @@ export type Mutation = {
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
+  setProjectRequestPublic?: Maybe<ProjectRequest>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
@@ -659,6 +660,11 @@ export type MutationResetPasswordArgs = {
 export type MutationSendMessageArgs = {
   content: Scalars['String'];
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationSetProjectRequestPublicArgs = {
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1790,6 +1796,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
+  setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;

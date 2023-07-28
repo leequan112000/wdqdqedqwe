@@ -283,6 +283,43 @@ const resolvers: Resolvers<Context> = {
         max_budget: updatedRequest.max_budget?.toNumber() || 0,
       };
     },
+    setProjectRequestPublic: async (_, args, context) => {
+      const user = await context.prisma.user.findFirstOrThrow({
+        where: {
+          id: context.req.user_id
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true
+            }
+          }
+        }
+      });
+
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: args.project_request_id
+        },
+      });
+      invariant(projectRequest, new PublicError('Project request not found.'));
+
+      invariant(projectRequest.biotech_id === user.customer?.biotech_id, new PermissionDeniedError());
+
+      const updatedRequest = await context.prisma.projectRequest.update({
+        data: {
+          is_private: false,
+        },
+        where: {
+          id: args.project_request_id,
+        },
+      });
+
+      return {
+        ...updatedRequest,
+        max_budget: updatedRequest.max_budget?.toNumber() || 0,
+      };
+    },
   },
 };
 

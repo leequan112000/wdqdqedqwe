@@ -50,5 +50,6 @@ type Mutation {
     project_deadline_requirement: String
     is_private: Boolean!
   ): ProjectRequest
+  setProjectRequestPublic(project_request_id: String!): ProjectRequest
   withdrawProjectRequest(project_request_id: String!): ProjectRequest
 }
