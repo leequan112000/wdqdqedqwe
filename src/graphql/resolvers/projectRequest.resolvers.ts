@@ -238,7 +238,9 @@ const resolvers: Resolvers<Context> = {
         });
 
         sendProjectRequestSubmissionEmail(user);
-        createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        if (!projectRequest.is_private){
+          createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        }
 
         return {
           ...projectRequest,
@@ -314,6 +316,8 @@ const resolvers: Resolvers<Context> = {
           id: args.project_request_id,
         },
       });
+
+      createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
 
       return {
         ...updatedRequest,
