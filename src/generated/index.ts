@@ -70,6 +70,20 @@ export type Biotech = {
   zipcode?: Maybe<Scalars['String']>;
 };
 
+export type BiotechInviteVendor = {
+  __typename?: 'BiotechInviteVendor';
+  biotech?: Maybe<Biotech>;
+  biotech_id?: Maybe<Scalars['String']>;
+  company_name?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  first_name?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  inviter?: Maybe<User>;
+  inviter_id?: Maybe<Scalars['String']>;
+  last_name?: Maybe<Scalars['String']>;
+  website?: Maybe<Scalars['String']>;
+};
+
 export type CertificationTag = {
   __typename?: 'CertificationTag';
   full_name?: Maybe<Scalars['String']>;
@@ -285,6 +299,7 @@ export type Mutation = {
   acceptQuote?: Maybe<Quote>;
   addProjectCollaborator?: Maybe<User>;
   createAdmin?: Maybe<Admin>;
+  createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   createCda?: Maybe<Scalars['Boolean']>;
   createCertificationTag?: Maybe<CertificationTag>;
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
@@ -378,6 +393,15 @@ export type MutationCreateAdminArgs = {
   encrypted_password?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
   username: Scalars['String'];
+};
+
+
+export type MutationCreateBiotechInviteVendorArgs = {
+  company_name: Scalars['String'];
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+  website: Scalars['String'];
 };
 
 
@@ -1382,6 +1406,7 @@ export type ResolversTypes = ResolversObject<{
   Admin: ResolverTypeWrapper<Admin>;
   AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Biotech: ResolverTypeWrapper<Biotech>;
+  BiotechInviteVendor: ResolverTypeWrapper<BiotechInviteVendor>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
@@ -1442,6 +1467,7 @@ export type ResolversParentTypes = ResolversObject<{
   Admin: Admin;
   AuthResponse: AuthResponse;
   Biotech: Biotech;
+  BiotechInviteVendor: BiotechInviteVendor;
   Boolean: Scalars['Boolean'];
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
@@ -1547,6 +1573,20 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   upload_used?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   zipcode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BiotechInviteVendorResolvers<ContextType = any, ParentType extends ResolversParentTypes['BiotechInviteVendor'] = ResolversParentTypes['BiotechInviteVendor']> = ResolversObject<{
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  first_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  inviter?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  inviter_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1753,6 +1793,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
+  createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'website'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
@@ -2155,6 +2196,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Admin?: AdminResolvers<ContextType>;
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
+  BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;
