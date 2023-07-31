@@ -83,6 +83,16 @@ const resolver: Resolvers<Context> = {
             throw new PublicError('Biotech not found');
           }
 
+          const inviter = await trx.user.findFirst({
+            where: {
+              id: args.user_id,
+            },
+          });
+
+          if (!inviter) {
+            throw new PublicError('Inviter not found');
+          }
+
           const user = await trx.user.findFirst({
             where: {
               email: args.email,
@@ -113,7 +123,7 @@ const resolver: Resolvers<Context> = {
           });
 
           // TODO: send email to new vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(newUser, biotech.name);        
+          sendVendorMemberInvitationByBiotechEmail(newUser, biotech.name, inviter);        
           return newVendorMember;
         });
       }
