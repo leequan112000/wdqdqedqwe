@@ -1223,6 +1223,7 @@ export type User = {
   id?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  reset_password_token?: Maybe<Scalars['String']>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   user_type?: Maybe<Scalars['String']>;
@@ -2062,6 +2063,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
+  reset_password_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
