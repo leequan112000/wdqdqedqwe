@@ -225,6 +225,7 @@ model ProjectRequest {
 
   project_request_comments ProjectRequestComment[]
   project_connections      ProjectConnection[]
+  BiotechInviteVendor      BiotechInviteVendor[]
 
   @@index([customer_id])
   @@map("project_requests")
@@ -578,18 +579,20 @@ model InvoiceItem {
 }
 
 model BiotechInviteVendor {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_name String
-  website      String
-  first_name   String
-  last_name    String
-  email        String
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-  biotech_id   String?  @db.Uuid
-  biotech      Biotech? @relation(fields: [biotech_id], references: [id])
-  inviter_id   String?  @db.Uuid
-  inviter      User?    @relation(fields: [inviter_id], references: [id])
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name       String
+  website            String
+  first_name         String
+  last_name          String
+  email              String
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  biotech_id         String?         @db.Uuid
+  biotech            Biotech?        @relation(fields: [biotech_id], references: [id])
+  inviter_id         String?         @db.Uuid
+  inviter            User?           @relation(fields: [inviter_id], references: [id])
+  project_request_id String?         @db.Uuid
+  project_request    ProjectRequest? @relation(fields: [project_request_id], references: [id])
 
   @@map("biotech_invite_vendors")
 }
