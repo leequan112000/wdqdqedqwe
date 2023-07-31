@@ -6,7 +6,7 @@ type ResetPasswordArgs = {
   email: string;
 }
 
-export const resetPassword = async (args: ResetPasswordArgs) => {
+export const forgotPassword = async (args: ResetPasswordArgs) => {
   const { email } = args;
 
   const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
@@ -28,7 +28,7 @@ export const resetPassword = async (args: ResetPasswordArgs) => {
 }
 
 const authService = {
-  resetPassword,
+  forgotPassword,
 };
 
 export default authService;

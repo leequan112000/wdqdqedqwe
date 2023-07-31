@@ -547,7 +547,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(user, new PublicError('User not found.'));
 
-      const updatedUser = authService.resetPassword({ email: args.email });
+      const updatedUser = authService.forgotPassword({ email: args.email });
 
       if (!updatedUser) {
         return false;

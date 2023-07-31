@@ -12,7 +12,7 @@ vi.mock('@sendgrid/mail');
 
 vi.mock('../../prisma');
 
-test('resetPassword should return prisma user object', async () => {
+test('forgotPassword should return prisma user object', async () => {
   vi.mocked(sendResetPasswordEmail).mockImplementation(() => true);
 
   const user: User = {
@@ -31,7 +31,7 @@ test('resetPassword should return prisma user object', async () => {
 
   prisma.user.update.mockResolvedValue(user);
 
-  const updatedUser = await authService.resetPassword({ email: user.email })
+  const updatedUser = await authService.forgotPassword({ email: user.email })
 
   expect(updatedUser).equal(user);
   expect(sendResetPasswordEmail).toHaveBeenCalled();
