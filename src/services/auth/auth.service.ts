@@ -1,6 +1,6 @@
-import { createResetPasswordToken } from "../helper/auth";
-import { sendResetPasswordEmail } from "../mailer/user";
-import prisma from "../prisma";
+import { createResetPasswordToken } from "../../helper/auth";
+import { sendResetPasswordEmail } from "../../mailer/user";
+import prisma from "../../prisma";
 
 type ResetPasswordArgs = {
   email: string;

@@ -8,7 +8,7 @@ import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
-import authService from "../../services/authService";
+import authService from "../../services/auth/auth.service";
 
 const resolvers: Resolvers<Context> = {
   User: {

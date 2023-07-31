@@ -1,20 +1,19 @@
-import { expect, test, vi } from 'vitest'
+import { expect, test, vi, MockedFunction } from 'vitest'
 import { User } from '@prisma/client';
-import authService from '../services/authService';
-import { sendResetPasswordEmail } from "../mailer/user";
-import prisma from '../__mocks__/prisma'
+import authService from './auth.service';
+import { sendResetPasswordEmail } from "../../mailer/user";
+import prisma from '../../__mocks__/prisma'
 
-vi.mock('../mailer/user', () => ({
+vi.mock('../../mailer/user', () => ({
   sendResetPasswordEmail: vi.fn(),
 }));
 
 vi.mock('@sendgrid/mail');
 
-vi.mock('../prisma');
-
+vi.mock('../../prisma');
 
 test('resetPassword should return prisma user object', async () => {
-  (sendResetPasswordEmail as jest.Mock).mockImplementation(() => true);
+  vi.mocked(sendResetPasswordEmail).mockImplementation(() => true);
 
   const user: User = {
     id: 'uuid-1',
