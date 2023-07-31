@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import currency from 'currency.js';
 import { InvoicePaymentStatus } from '../helper/constant';
 import { createInvoicePaymentOverdueNoticeEmailJob, createInvoicePaymentReminderEmailJob } from '../queues/email.queues';

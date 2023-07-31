@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { verify } from 'jsonwebtoken';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import { createTokens } from '../helper/auth';
 import { ACCESS_TOKEN_MAX_AGE } from '../helper/constant';
 

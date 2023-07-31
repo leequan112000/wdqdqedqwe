@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { Request, Response } from 'express';
-import { prisma } from '../../connectDB';
+import prisma from '../../prisma';
 import { Biotech, Customer, Subscription } from '@prisma/client';
 import moment from 'moment';
 import Sentry from '../../sentry';
