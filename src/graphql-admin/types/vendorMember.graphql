@@ -7,6 +7,7 @@ type VendorMember {
   created_at: Date
   updated_at: Date
   user_id: String
+  user: User
   vendor_company_id: String
 }
 
