@@ -5,7 +5,10 @@ import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import { ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
-import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
+import {
+  sendPrivateProjectRequestSubmissionEmail,
+  sendProjectRequestSubmissionEmail,
+} from "../../mailer/projectRequest";
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
@@ -237,9 +240,11 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        sendProjectRequestSubmissionEmail(user);
         if (!projectRequest.is_private){
+          sendProjectRequestSubmissionEmail(user);
           createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        } else {
+          sendPrivateProjectRequestSubmissionEmail(user);
         }
 
         return {
