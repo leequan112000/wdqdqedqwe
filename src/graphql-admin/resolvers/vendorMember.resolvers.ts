@@ -2,9 +2,20 @@ import { PublicError } from '../../graphql/errors/PublicError';
 import { Resolvers } from '../../generated';
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
+import invariant from '../../helper/invariant';
 import { sendVendorMemberInvitationByAdminEmail, sendVendorMemberInvitationByBiotechEmail } from '../../mailer/vendorMember';
 
 const resolver: Resolvers<Context> = {
+  VendorMember: {
+    user: async (parent, _, context) => {
+      invariant(parent.user_id, 'User id not found.')
+      return await context.prisma.user.findFirst({
+        where: {
+          id: parent.user_id
+        }
+      })
+    },
+  },
   Query: {
     _dummy: () => 'admin graphql',
   },

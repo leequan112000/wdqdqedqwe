@@ -178,9 +178,22 @@ const resolvers: Resolvers<Context> = {
           where: {
             user_id: context.req.user_id,
           },
+          include: {
+            vendor_company: true
+          }
         });
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
+
+        if (args.legal_name && args.legal_name !== vendor_member?.vendor_company?.legal_name) {
+          const existingVendorCompany = await trx.vendorCompany.findFirst({
+            where: {
+              legal_name: args.legal_name
+            }
+          });
+
+          invariant(!existingVendorCompany, new PublicError('Vendor company legal name already exists.'));
+        }
 
         return await trx.vendorCompany.update({
           where: {
