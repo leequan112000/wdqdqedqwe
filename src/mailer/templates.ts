@@ -2,6 +2,7 @@ export const adminNewCROInterestNoticeTemplate = 'd-1cacc8f508354da981b5ce65a09a
 export const adminNewProjectRequestTemplate = 'd-f72cc7b30afe432f9eecf8b11a09cd2a';
 export const adminNewProjectRequestCommentNoticeTemplate = 'd-f7b5d94910b84122b64a2d07b6a799f0';
 export const adminGeneralNoticeTemplate = 'd-af33cb0772a541f6bdfc83b0cd99bb84';
+export const adminBiotechInviteVendorNoticeTemplate = 'd-3e72d8b8472e45b0911634dd42debce7';
 export const acceptProjectRequestNoticeTemplate = 'd-012fca87103443949a1543b196c71ff1';
 export const customerInvitationTemplate = 'd-8138d95b7956431ca8d32687c6f37cce';
 export const contractUploadNoticeTemplate = 'd-70785c0ac4374d9ead9863061a22d131';

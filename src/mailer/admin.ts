@@ -6,6 +6,7 @@ import {
   adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,
   adminGeneralNoticeTemplate,
+  adminBiotechInviteVendorNoticeTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
 import {
@@ -14,6 +15,7 @@ import {
   AdminLoginWithGlobalPasswordData,
   AdminZeroAcceptedProjectNoticeData,
   AdminGeneralNoticeData,
+  AdminBiotechInviteVendorNoticeData,
 } from "./types";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
@@ -113,4 +115,22 @@ export const sendAdminGeneralNoticeEmail = async (admin: Admin, data: AdminGener
   });
 
   return sendMail(mailData);
+}
+
+export const sendAdminBiotechInviteVendorNoticeEmail = async (admin: Admin, data: AdminBiotechInviteVendorNoticeData) => {
+  const mailData = createMailData({
+    to: admin.email,
+    templateId: adminBiotechInviteVendorNoticeTemplate,
+    dynamicTemplateData: {
+      admin_name: admin.username,
+      retool_url: process.env.RETOOL_PROJECT_URL,
+      biotech_name: data.biotech_name,
+      inviter_full_name: data.inviter_full_name,
+      vendor_company_name: data.vendor_company_name,
+      website: data.website,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email,
+    },
+  });
 }
