@@ -391,6 +391,56 @@ const resolvers: Resolvers<Context> = {
 
       throw new InternalError('User is nor customer or vendor member.');
     },
+    deactivateCollaborator: async (_, args, context) => {
+      const { user_id } = args;
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+      });
+
+      invariant(user, new PublicError('User not found.'))
+
+      if (user.is_active === true) {
+        const deactivatedUser = await context.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            is_active: false,
+          },
+        });
+
+        return deactivatedUser;
+      }
+
+      return user;
+    },
+    reactivateCollaborator: async (_, args, context) => {
+      const { user_id } = args;
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+      });
+
+      invariant(user, new PublicError('User not found.'));
+
+      if (user.is_active === false) {
+        const activatedUser = await context.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            is_active: true,
+          },
+        });
+
+        return activatedUser;
+      }
+
+      return user;
+    },
   },
 };
 

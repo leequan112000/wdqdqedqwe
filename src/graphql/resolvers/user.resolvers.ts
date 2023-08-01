@@ -510,8 +510,8 @@ const resolvers: Resolvers<Context> = {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email: email
-        }
+          email,
+        },
       });
 
       invariant(foundUser, new PublicError('User not found.'));
@@ -520,6 +520,8 @@ const resolvers: Resolvers<Context> = {
         foundUser && foundUser.encrypted_password !== null,
         new PublicError('User password not set, please proceed to forgot password to set a new password.')
       );
+
+      invariant(foundUser.is_active === true, new PublicError('Your account has been suspended.'))
 
       const isPasswordMatched = await checkPassword(password, foundUser, context);
       invariant(isPasswordMatched === true, new PublicError('Invalid email or password.'));
