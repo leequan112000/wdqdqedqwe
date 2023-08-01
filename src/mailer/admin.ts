@@ -131,6 +131,7 @@ export const sendAdminBiotechInviteVendorNoticeEmail = async (admin: Admin, data
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
+      project_request_name: data.project_request_name,
     },
   });
 }
