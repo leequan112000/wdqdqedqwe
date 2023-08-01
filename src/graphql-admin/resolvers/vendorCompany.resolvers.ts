@@ -25,18 +25,22 @@ const resolvers: Resolvers<Context> = {
           }
         });  
       }
-      return await context.prisma.vendorCompany.create({
-        data: {
-          name: args.name,
-          website: args.website,
-          description: args.description,
-          address: args.address,
-          vendor_type: args.vendor_type,
-          skip_cda: args.skip_cda || false,
-          is_on_marketplace: false,
-          invited_by: args.invited_by,
-        }
-      });
+      if (process.env.BIOTECH_INVITE_CRO) {
+        return await context.prisma.vendorCompany.create({
+          data: {
+            name: args.name,
+            website: args.website,
+            description: args.description,
+            address: args.address,
+            vendor_type: args.vendor_type,
+            skip_cda: args.skip_cda || false,
+            is_on_marketplace: false,
+            invited_by: args.invited_by,
+          }
+        });
+      }
+      
+      return null;
     },
     inviteVendorCompaniesToProjectByAdmin: async (_, args, context) => {
       const projectRequest = await context.prisma.projectRequest.findFirst({
