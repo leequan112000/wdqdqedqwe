@@ -1,8 +1,9 @@
-import { expect, test, vi, MockedFunction } from 'vitest'
+import { expect, test, vi, beforeEach } from 'vitest'
 import { User } from '@prisma/client';
 import authService from './auth.service';
 import { sendResetPasswordEmail } from "../../mailer/user";
-import prisma from '../../__mocks__/prisma'
+import { MockContext, createMockContext } from '../../testContext';
+import { ServiceContext } from '../../types/context';
 
 vi.mock('../../mailer/user', () => ({
   sendResetPasswordEmail: vi.fn(),
@@ -10,7 +11,13 @@ vi.mock('../../mailer/user', () => ({
 
 vi.mock('@sendgrid/mail');
 
-vi.mock('../../prisma');
+let mockCtx: MockContext
+let ctx: ServiceContext
+
+beforeEach(() => {
+  mockCtx = createMockContext();
+  ctx = mockCtx as unknown as ServiceContext;
+});
 
 test('forgotPassword should return prisma user object', async () => {
   vi.mocked(sendResetPasswordEmail).mockImplementation(() => true);
@@ -29,9 +36,9 @@ test('forgotPassword should return prisma user object', async () => {
     reset_password_token: null,
   }
 
-  prisma.user.update.mockResolvedValue(user);
+  mockCtx.prisma.user.update.mockResolvedValue(user);
 
-  const updatedUser = await authService.forgotPassword({ email: user.email })
+  const updatedUser = await authService.forgotPassword({ email: user.email }, ctx);
 
   expect(updatedUser).equal(user);
   expect(sendResetPasswordEmail).toHaveBeenCalled();
