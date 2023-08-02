@@ -1,13 +1,11 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
-import { InternalError } from "../errors/InternalError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   VendorMemberConnection: {
     project_connection: async (parent, _, context) => {
-      if (!parent.project_connection_id) {
-        throw new InternalError('Missing project connection id.');
-      }
+      invariant(parent.project_connection_id, 'Missing project connection id.');
       return await context.prisma.projectConnection.findFirst({
         where: {
           id: parent.project_connection_id
@@ -15,9 +13,7 @@ const resolvers: Resolvers<Context> = {
       })
     },
     vendor_member: async (parent, _, context) => {
-      if (!parent.vendor_member_id) {
-        throw new InternalError('Missing vendor member id.');
-      }
+      invariant(parent.vendor_member_id, 'Missing vendor member id.');
       return await context.prisma.vendorMember.findFirst({
         where: {
           id: parent.vendor_member_id

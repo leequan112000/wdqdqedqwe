@@ -98,9 +98,7 @@ const resolvers: Resolvers<Context> = {
       return processed;
     },
     project_request_collaborators: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new Error('Missing id.');
-      }
+      invariant(parent.id, 'Missing id.');
       return await context.prisma.projectRequestCollaborator.findMany({
         where: {
           project_request_id: parent.id
