@@ -925,6 +925,7 @@ export type ProjectRequest = {
   project_challenge_description?: Maybe<Scalars['String']>;
   project_connections?: Maybe<Array<Maybe<ProjectConnection>>>;
   project_deadline_requirement?: Maybe<Scalars['String']>;
+  project_request_collaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   project_request_comments?: Maybe<Array<Maybe<ProjectRequestComment>>>;
   project_start_time_requirement?: Maybe<Scalars['String']>;
   status: Scalars['String'];
@@ -940,14 +941,25 @@ export type ProjectRequestProject_ConnectionsArgs = {
   filter?: InputMaybe<ProjectRequestProjectConnectionFilter>;
 };
 
-export type ProjectRequestComment = {
-  __typename?: 'ProjectRequestComment';
-  content?: Maybe<Scalars['String']>;
-  created_at?: Maybe<Scalars['String']>;
+export type ProjectRequestCollaborator = {
+  __typename?: 'ProjectRequestCollaborator';
+  created_at?: Maybe<Scalars['Date']>;
+  customer?: Maybe<Customer>;
+  customer_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
-  updated_at?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type ProjectRequestComment = {
+  __typename?: 'ProjectRequestComment';
+  content?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  project_request?: Maybe<ProjectRequest>;
+  project_request_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
 };
 
 export type ProjectRequestProjectConnectionFilter = {
@@ -959,15 +971,11 @@ export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
   biotech?: Maybe<Biotech>;
-  certification_tag_connection?: Maybe<CertificationTagConnection>;
-  certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
   invoice?: Maybe<Invoice>;
   invoiceCheckoutUrl?: Maybe<Scalars['String']>;
   invoices?: Maybe<Array<Maybe<Invoice>>>;
-  lab_specialization_connection?: Maybe<LabSpecializationConnection>;
-  lab_specialization_connections?: Maybe<Array<Maybe<LabSpecializationConnection>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   milestone?: Maybe<Milestone>;
@@ -993,16 +1001,6 @@ export type Query = {
 };
 
 
-export type QueryCertification_Tag_ConnectionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryCertification_Tag_ConnectionsArgs = {
-  vendor_company_id?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryInvoiceArgs = {
   id: Scalars['String'];
 };
@@ -1012,16 +1010,6 @@ export type QueryInvoiceCheckoutUrlArgs = {
   cancel_url: Scalars['String'];
   id: Scalars['String'];
   success_url: Scalars['String'];
-};
-
-
-export type QueryLab_Specialization_ConnectionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryLab_Specialization_ConnectionsArgs = {
-  vendor_company_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1397,6 +1385,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
+  ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: ResolverTypeWrapper<{}>;
@@ -1457,6 +1446,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectRequest: ProjectRequest;
+  ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: {};
@@ -1895,6 +1885,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   project_challenge_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<ProjectRequestProject_ConnectionsArgs>>;
   project_deadline_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType>;
   project_request_comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestComment']>>>, ParentType, ContextType>;
   project_start_time_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1906,28 +1897,35 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestComment'] = ResolversParentTypes['ProjectRequestComment']> = ResolversObject<{
-  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type ProjectRequestCollaboratorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestCollaborator'] = ResolversParentTypes['ProjectRequestCollaborator']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  customer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequestComment'] = ResolversParentTypes['ProjectRequestComment']> = ResolversObject<{
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
+  project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
-  certification_tag_connection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionArgs>>;
-  certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
   invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
-  lab_specialization_connection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionArgs>>;
-  lab_specialization_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecializationConnection']>>>, ParentType, ContextType, Partial<QueryLab_Specialization_ConnectionsArgs>>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
@@ -2160,6 +2158,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
+  ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;

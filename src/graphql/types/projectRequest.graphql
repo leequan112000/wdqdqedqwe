@@ -26,6 +26,7 @@ type ProjectRequest {
   customer: Customer
   project_connections(filter: ProjectRequestProjectConnectionFilter): [ProjectConnection]
   project_request_comments: [ProjectRequestComment]
+  project_request_collaborators: [ProjectRequestCollaborator]
 }
 
 type Query {

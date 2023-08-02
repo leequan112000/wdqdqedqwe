@@ -51,8 +51,9 @@ model Customer {
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
-  project_requests     ProjectRequest[]
-  customer_connections CustomerConnection[]
+  project_requests              ProjectRequest[]
+  customer_connections          CustomerConnection[]
+  project_request_collaborators ProjectRequestCollaborator[]
 
   @@index([biotech_id])
   @@map("customers")
@@ -218,8 +219,9 @@ model ProjectRequest {
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
-  project_request_comments ProjectRequestComment[]
-  project_connections      ProjectConnection[]
+  project_request_comments      ProjectRequestComment[]
+  project_connections           ProjectConnection[]
+  project_request_collaborators ProjectRequestCollaborator[]
 
   @@index([customer_id])
   @@map("project_requests")
@@ -295,6 +297,22 @@ model CustomerConnection {
   @@unique([project_connection_id, customer_id])
   @@index([project_connection_id])
   @@map("customer_connections")
+}
+
+model ProjectRequestCollaborator {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project_request_id String         @db.Uuid
+  project_connection ProjectRequest @relation(fields: [project_request_id], references: [id])
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@unique([project_request_id, customer_id])
+  @@index([project_request_id])
+  @@map("project_request_collaborators")
 }
 
 model Invitation {

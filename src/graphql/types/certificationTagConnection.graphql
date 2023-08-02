@@ -5,16 +5,3 @@ type CertificationTagConnection {
   vendor_company_id: String
   vendor_company: VendorCompany
 }
-
-type Query {
-  certification_tag_connection(id: String): CertificationTagConnection
-  certification_tag_connections(vendor_company_id: String): [CertificationTagConnection]
-}
-
-type Mutation {
-  createCertificationTagConnection(
-    certification_tag_id: String
-    vendor_company_id: String
-  ): CertificationTagConnection
-  deleteCertificationTagConnection(id: String): CertificationTagConnection
-}
