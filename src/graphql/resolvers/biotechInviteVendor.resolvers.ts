@@ -6,6 +6,32 @@ import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 import { AdminTeam } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
+  BiotechInviteVendor: {
+    biotech: async (parent, _, context) => {
+      invariant(parent.biotech_id, 'Biotech id not found.');
+
+      const biotech = await context.prisma.biotech.findFirst({
+        where: {
+          id: parent.biotech_id,
+        }
+      });
+
+      invariant(biotech, 'Biotech not found.');
+      return biotech;
+    },
+    inviter: async (parent, _, context) => {
+      invariant(parent.inviter_id, 'Inviter id not found.');
+
+      const inviter = await context.prisma.user.findFirst({
+        where: {
+          id: parent.inviter_id,
+        }
+      });
+
+      invariant(inviter, 'Inviter not found.');
+      return inviter;
+    },
+  },
   Query: {
     biotechInviteVendors: async (_, args, context) => {
       const { project_request_id } = args;
