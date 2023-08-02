@@ -6,6 +6,43 @@ import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 import { AdminTeam } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
+  Query: {
+    biotechInviteVendors: async (_, args, context) => {
+      const { project_request_id } = args;
+
+      const user = await context.prisma.user.findFirstOrThrow({
+        where: {
+          id: context.req.user_id
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true
+            }
+          }
+        }
+      });
+
+      invariant(project_request_id, new PublicError('Project request ID is required.'));
+
+      const projectRequest = await context.prisma.projectRequest.findFirstOrThrow({
+        where: {
+          id: project_request_id
+        }
+      });
+
+      invariant(projectRequest, new PublicError('Project request not found.'));
+
+      const biotechInviteVendors = await context.prisma.biotechInviteVendor.findMany({
+        where: {
+          biotech_id: user.customer?.biotech_id!,
+          project_request_id: project_request_id,
+        }
+      });
+
+      return biotechInviteVendors;
+    },
+  },
   Mutation: {
     createBiotechInviteVendor: async (_, args, context) => {
       const { company_name, website, email, first_name, last_name, project_request_id } = args;

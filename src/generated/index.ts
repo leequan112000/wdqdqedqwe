@@ -1005,6 +1005,7 @@ export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
   biotech?: Maybe<Biotech>;
+  biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
   certification_tag_connection?: Maybe<CertificationTagConnection>;
   certification_tag_connections?: Maybe<Array<Maybe<CertificationTagConnection>>>;
   collaborators?: Maybe<Array<Maybe<User>>>;
@@ -1036,6 +1037,11 @@ export type Query = {
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryBiotechInviteVendorsArgs = {
+  project_request_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1989,6 +1995,7 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
   certification_tag_connection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionArgs>>;
   certification_tag_connections?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTagConnection']>>>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionsArgs>>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;

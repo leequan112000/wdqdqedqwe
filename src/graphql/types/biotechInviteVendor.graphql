@@ -13,6 +13,10 @@ type BiotechInviteVendor {
   project_request: ProjectRequest
 }
 
+type Query {
+  biotechInviteVendors(project_request_id: String): [BiotechInviteVendor]
+}
+
 type Mutation {
   createBiotechInviteVendor(
     company_name: String!
