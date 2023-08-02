@@ -225,7 +225,7 @@ model ProjectRequest {
 
   project_request_comments ProjectRequestComment[]
   project_connections      ProjectConnection[]
-  BiotechInviteVendor      BiotechInviteVendor[]
+  biotech_invite_vendors      BiotechInviteVendor[]
 
   @@index([customer_id])
   @@map("project_requests")
