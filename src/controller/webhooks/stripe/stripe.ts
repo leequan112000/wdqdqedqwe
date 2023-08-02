@@ -1,74 +1,16 @@
-import Stripe from 'stripe';
-import { Request, Response } from 'express';
-import prisma from '../../prisma';
-import { Biotech, Customer, Subscription } from '@prisma/client';
+import type { Stripe } from 'stripe';
 import moment from 'moment';
-import Sentry from '../../sentry';
+import prisma from '../../../prisma';
+import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import invariant from '../../../helper/invariant';
+import Sentry from '../../../sentry';
+import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
+import { getStripeInstance } from '../../../helper/stripe';
 
-import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../helper/constant';
-import { getStripeInstance } from '../../helper/stripe';
-import invariant from '../../helper/invariant';
-
-import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../queues/email.queues';
-
-/*
- *   Stripe webhook endpoint
- *   Docs: https://stripe.com/docs/webhooks, https://stripe.com/docs/webhooks/signatures
- *   Description :
- *   Listen for events on from Stripe account to automatically trigger reactions.
- */
-
-const isUnitTest = process.env.NODE_ENV === 'test';
-
-const createActiveSubscriptionIfNoneExists = async (
-  customer: Customer & { biotech: Biotech & { subscriptions: Subscription[] } },
-  stripe_subscription_id: string,
-  stripe_customer_id: string
-) => {
-  await prisma.subscription.create({
-    data: {
-      stripe_subscription_id,
-      stripe_customer_id,
-      status: SubscriptionStatus.ACTIVE,
-      biotech_id: customer.biotech_id
-    }
-  });
-}
-
-export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
-  const stripe = await getStripeInstance();
-  // Only verify the event if endpoint secret defined.
-  let sig = "";
-  let endpointSecret = "";
-  if (isUnitTest) {
-    endpointSecret = 'whsec_test_secret';
-
-    sig = stripe.webhooks.generateTestHeaderString({
-      payload: String(req),
-      secret: endpointSecret,
-    });
-  } else {
-    sig = req.headers['stripe-signature'] as string;
-    endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
-  }
-
-  let event: Stripe.Event;
-
+export const processStripeEvent = async (event: Stripe.Event): Promise<{ status: number; message: string }> => {
   try {
-    event = stripe.webhooks.constructEvent(isUnitTest ? req : req.body, sig, endpointSecret);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ status: 400, message: `Webhook Error: ${error.message}` });
-    } else {
-      res.status(400).json({ status: 400, message: 'Webhook Error' });
-    }
-    return;
-  }
-
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
         // https://stripe.com/docs/api/checkout/sessions/object
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
 
@@ -89,10 +31,17 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
             if (!customer) {
               // This can happen in because stripe sends webhooks for both staging and production traffic.
               console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-              break;
+              return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
             }
             if (checkoutSession.subscription) {
-              await createActiveSubscriptionIfNoneExists(customer, checkoutSession.subscription as string, checkoutSession.customer as string);
+              await prisma.subscription.create({
+                data: {
+                  stripe_subscription_id: checkoutSession.subscription as string,
+                  stripe_customer_id: checkoutSession.customer as string,
+                  status: SubscriptionStatus.ACTIVE,
+                  biotech_id: customer.biotech_id
+                }
+              });
             } else {
               // Increment number_of_reqs_allowed_without_subscription by 1
               const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
@@ -106,8 +55,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
               })
             }
             console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           case 'payment': {
             invariant(checkoutSession.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
@@ -140,7 +88,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
                   console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  break;
+                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` };
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
@@ -157,37 +105,27 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               default: {
-                res.status(400).json({ status: 400, message: 'Unhandled payment type' });
-                break;
+                return { status: 400, message: 'Unhandled payment type' };
               }
             }
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           case 'setup': {
-            res.status(200).json({ status: 200, message: 'Payment method setup complete' });
-            break;
+            return { status: 200, message: 'Payment method setup complete' };
           }
           default: {
-            res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
-            break;
+            return { status: 400, message: 'Unhandled checkout mode.' };
           }
         }
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
-      break;
-    }
-    case 'checkout.session.async_payment_succeeded': {
-      try {
+
+      case 'checkout.session.async_payment_succeeded': {
         // https://stripe.com/docs/api/checkout/sessions/object
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
         switch (checkoutSession.mode) {
           case 'setup':
           case 'subscription': {
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           case 'payment': {
             invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
@@ -228,7 +166,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
                   console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  break;
+                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
@@ -260,34 +198,25 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               default: {
-                res.status(400).json({ status: 400, message: 'Unhandled payment type' });
-                break;
+                return { status: 400, message: 'Unhandled payment type' };
               }
             }
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           default: {
-            res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
-            break;
+            return { status: 400, message: 'Unhandled checkout mode' };
           }
         }
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
-      break;
-    }
-    case 'checkout.session.async_payment_failed': {
-      try {
+
+      case 'checkout.session.async_payment_failed': {
         // https://stripe.com/docs/api/checkout/sessions/object
         const checkoutSession = event.data.object as Stripe.Checkout.Session;
         switch (checkoutSession.mode) {
           case 'setup':
           case 'subscription': {
             // Subscription will auto canceled by Stripe
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           case 'payment': {
             invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
@@ -328,7 +257,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
                   console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  break;
+                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
@@ -346,33 +275,27 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
                 break;
               }
               default: {
-                res.status(400).json({ status: 400, message: 'Unhandled payment type' });
-                break;
+                return { status: 400, message: 'Unhandled payment type' };
               }
             }
-            res.status(200).json({ status: 200, message: 'OK' });
-            break;
+            return { status: 200, message: 'OK' };
           }
           default: {
-            res.status(400).json({ status: 400, message: 'Unhandled checkout mode' });
-            break;
+            return { status: 400, message: 'Unhandled checkout mode' };
           }
         }
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
       }
-      break;
-    }
-    case 'customer.subscription.updated': {
-      try {
+
+      case 'customer.subscription.updated': {
         const { items, customer } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
         invariant(subItem, '[Stripe Webhook] Missing subscription item.');
         const { plan } = subItem;
+        const stripe = await getStripeInstance();
         const product = await stripe.products.retrieve(plan.product as string);
+
         const { account_type } = product.metadata;
         const subcription = await prisma.subscription.findFirst({
           where: {
@@ -393,15 +316,10 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
         });
 
-        res.status(200).json({ status: 200, message: 'OK' });
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+        return { status: 200, message: 'OK' };
       }
-      break;
-    }
-    case 'customer.subscription.deleted': {
-      try {
+
+      case 'customer.subscription.deleted': {
         const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
@@ -423,16 +341,11 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
           },
         });
 
-        res.status(200).json({ status: 200, message: 'OK' });
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+        return { status: 200, message: 'OK' };
       }
-      break;
-    }
-    case 'payout.paid':
-    case 'payout.failed': {
-      try {
+
+      case 'payout.paid':
+      case 'payout.failed': {
         const payout = event.data.object as Stripe.Payout;
         invariant(payout?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
 
@@ -456,16 +369,16 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
 
         // TODO notify admin payout if failed
 
-        res.status(200).json({ status: 200, message: 'OK' });
-      } catch (error) {
-        Sentry.captureException(error);
-        res.status(400).json({ status: 400, message: `Webhook Signed Error: ${error}` });
+        return { status: 200, message: 'OK' };
       }
-      break;
+
+      default: {
+        console.warn(`Unhandled webhook: event type=${event.type}`);
+        return { status: 400, message: 'Unhandled Event Type' };
+      }
     }
-    default: {
-      console.warn(`Unhandled webhook: event type=${event.type}`);
-      res.status(400).json({ status: 400, message: 'Unhandled Event Type' });
-    }
+  } catch (error) {
+    Sentry.captureException(error);
+    return { status: 400, message: `Webhook Signed Error: ${error}` };
   }
-};
+}
