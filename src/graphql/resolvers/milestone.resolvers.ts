@@ -3,7 +3,6 @@ import { Resolvers, UploadResult } from "../../generated";
 import { Context } from "../../types/context";
 
 import { PublicError } from "../errors/PublicError";
-import { InternalError } from "../errors/InternalError";
 
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";

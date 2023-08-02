@@ -1,5 +1,4 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import { NotificationType } from "../../helper/constant";
 import { withFilter } from "graphql-subscriptions";

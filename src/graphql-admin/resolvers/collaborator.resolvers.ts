@@ -1,4 +1,3 @@
-import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
