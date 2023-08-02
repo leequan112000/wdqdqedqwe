@@ -1,13 +1,11 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   LabSpecializationConnection: {
     lab_specialization: async (parent, _, context) => {
-      if (!parent.lab_specialization_id) {
-        throw new InternalError('Lab specialization id not found');
-      }
+      invariant(parent.lab_specialization_id, 'Lab specialization id not found');
 
       return await context.prisma.labSpecialization.findFirst({
         where: {
@@ -16,9 +14,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     vendor_company: async (parent, _, context) => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Vendor company id not found');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found.');
 
       return await context.prisma.vendorCompany.findFirst({
         where: {

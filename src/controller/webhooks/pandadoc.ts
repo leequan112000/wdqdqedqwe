@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { pubsub } from "../../helper/pubsub";
 import { prisma } from '../../connectDB';
 import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
+import invariant from "../../helper/invariant";
 
 /*
  *   Pandadoc webhook endpoint
@@ -53,9 +54,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
 
       if (data.status === 'document.draft') {
         // send document
-        if (!biotech.cda_pandadoc_file_id) {
-          throw new Error('Biotech has no cda file id');
-        }
+        invariant(biotech.cda_pandadoc_file_id, 'Biotech has no cda file id.');
         await sendCda(biotech.cda_pandadoc_file_id);
       } else if (data.status === 'document.sent') {
         // generate session
@@ -95,10 +94,7 @@ export const pandadocWebhook = async (req: Request, res: Response): Promise<void
 
       if (data.status === 'document.draft') {
         // send document
-        if (!vendor_company.cda_pandadoc_file_id) {
-          throw new Error('Vendor company has no cda file id');
-        }
-
+        invariant(vendor_company.cda_pandadoc_file_id, 'Vendor company has no cda file id.');
         await sendCda(vendor_company.cda_pandadoc_file_id);
       } else if (data.status === 'document.sent') {
         // generate session

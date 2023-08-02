@@ -1,15 +1,12 @@
-import { Request } from "express";
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   CertificationTagConnection: {
     certification_tag: async (parent, _, context) => {
-      if (!parent.certification_tag_id) {
-        throw new InternalError('Certification tag id not found');
-      }
-
+      invariant(parent.certification_tag_id, 'Certification tag id not found.');
+      
       return await context.prisma.certificationTag.findFirst({
         where: {
           id: parent.certification_tag_id
@@ -17,14 +14,12 @@ const resolvers: Resolvers<Context> = {
       });
     },
     vendor_company: async (parent, _, context) => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Vendor company id not found');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found');
 
       return await context.prisma.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id
-        }
+        },
       });
     },
   },

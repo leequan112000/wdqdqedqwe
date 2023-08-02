@@ -8,6 +8,7 @@ import { InternalError } from '../errors/InternalError';
 import { MeetingPlatform } from '../../helper/constant';
 import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from '../../notification/meetingNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -35,9 +36,7 @@ const resolvers: Resolvers<Context> = {
       return parent.guests || [];
     },
     organizer: async (parent, args, context) => {
-      if (!parent.id) {
-        throw new InternalError('Meeting event id not found');
-      }
+      invariant(parent.id, 'Meeting event id not found.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -89,9 +88,7 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     meetingFormAttendees: async (parent, args, context) => {
-      if (!context.req.user_id) {
-        throw new InternalError('Current user id not found');
-      }
+      invariant(context.req.user_id, 'Current user id not found');
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -209,9 +206,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!currentUser) {
-        throw new InternalError('Currect user not found');
-      }
+      invariant(currentUser, 'Current user not found.');
 
       const UPCOMING_DAYS = 1;
       const checkStartTime = moment();
@@ -253,9 +248,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!organizerUser) {
-        throw new InternalError('Current user not found');
-      }
+      invariant(organizerUser, 'Current user not found.');
 
       let attendeeUsers: User[] = [];
 
@@ -276,9 +269,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
         const { conferenceData, hangoutLink, id: gEventId } = resp.data;
-        if (!conferenceData || !hangoutLink) {
-          throw new InternalError('Missing conferenceData and hangout link');
-        }
+        invariant(conferenceData && hangoutLink, 'Missing conferenceData and hangout link.');
         const entryPoints = conferenceData.entryPoints
         const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
         const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
@@ -357,9 +348,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!oldMeetingEvent?.platform_event_id) {
-        throw new InternalError('Meeting event not found');
-      }
+      invariant(oldMeetingEvent, 'Meeting event not found.');
 
       let attendeeUsers: User[] = [];
 
@@ -410,9 +399,7 @@ const resolvers: Resolvers<Context> = {
           },
         }, true)
         const { conferenceData, hangoutLink } = resp.data;
-        if (!conferenceData || !hangoutLink) {
-          throw new InternalError('Missing conferenceData and hangout link');
-        }
+        invariant(conferenceData && hangoutLink, 'Missing conferenceData and hangout link.');
         const entryPoints = conferenceData.entryPoints
         const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
         const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
@@ -493,9 +480,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!meetingEvent) {
-        throw new InternalError('Meeting event not found');
-      }
+      invariant(meetingEvent, 'Meeting event not found.');
 
       const deletedMeetingEvent = await context.prisma.$transaction(async (trx) => {
         // Delete all meeting attendee connections.
@@ -511,9 +496,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        if (!deletedMeetingEvent?.platform_event_id) {
-          throw new InternalError('Meeting event not found');
-        }
+        invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
 
         // Cancel Google event and inform the guests.
         await cancelGoogleEvent(deletedMeetingEvent.platform_event_id);

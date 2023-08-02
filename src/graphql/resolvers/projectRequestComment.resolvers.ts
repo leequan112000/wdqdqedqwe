@@ -2,23 +2,22 @@ import moment from "moment";
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
 import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
-import { InternalError } from "../errors/InternalError";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequestComment: {
     project_request: async (parent, _, context) => {
-      if (!parent?.project_request_id) {
-        throw new InternalError('Missing project request id');
-      }
+      invariant(parent?.project_request_id, 'Missing project request id');
+
       const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
           id: parent.project_request_id,
         },
       });
-      if (!projectRequest) {
-        throw new InternalError('Project request not found');
-      }
+
+      invariant(projectRequest, 'Project request not found');
+
       return {
         ...projectRequest,
         max_budget: projectRequest.max_budget?.toNumber() || 0,
@@ -44,10 +43,7 @@ const resolvers: Resolvers<Context> = {
             include: { biotech: true },
           });
 
-
-          if (!projectRequest) {
-            throw new PermissionDeniedError();
-          }
+          invariant(projectRequest, new PublicError('Project request not found.'));
 
           const fifteenMinBefore = moment().subtract(15, 'minute');
           const commentsWithinThePast15Min = await trx.projectRequestComment.findFirst({

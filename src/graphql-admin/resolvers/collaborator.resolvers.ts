@@ -3,6 +3,8 @@ import { Resolvers } from "../../generated";
 import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
 import { sendVendorMemberInvitationByAdminEmail } from "../../mailer/vendorMember";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../../graphql/errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -20,13 +22,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (newUser?.vendor_member?.title) {
-        throw new InternalError('User already onboarded.')
-      }
+      invariant(newUser, new PublicError('User not found.'));
 
-      if (!newUser) {
-        throw new InternalError('User not found.')
-      }
+      invariant(!newUser?.vendor_member?.title, new PublicError('User already onboarded.'))
 
       const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
@@ -39,7 +37,7 @@ const resolvers: Resolvers<Context> = {
           reset_password_expiration: new Date(resetTokenExpiration),
         },
       });
-      
+
       sendVendorMemberInvitationByAdminEmail(updatedNewUser);
 
       return true;

@@ -5,6 +5,7 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -28,9 +29,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!user) {
-        throw new InternalError('User not found');
-      }
+      invariant(user, 'User not found.');
 
       if (user.customer?.biotech_id) {
         return await context.prisma.user.findMany({
@@ -70,9 +69,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingUser) {
-        throw new PublicError('User already exists!')
-      }
+      invariant(!existingUser, new PublicError('User already exists!'));
 
       // Get current user data with company id
       const userId = context.req.user_id;
@@ -97,6 +94,7 @@ const resolvers: Resolvers<Context> = {
       if (!currentUser) {
         throw new InternalError('Current user not found');
       }
+      invariant(currentUser, 'Current user not found.');
 
       const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
@@ -150,9 +148,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        if (existingUser) {
-          throw new PublicError(`User ${existingUser.email} already exists!`)
-        }
+        invariant(!existingUser, new PublicError(`User ${existingUser?.email} already exists!`));
 
         return existingUser;
       });
@@ -179,9 +175,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (!currentUser) {
-        throw new InternalError('Current user not found');
-      }
+      invariant(currentUser, 'Current user not found.');
 
       const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
@@ -273,9 +267,7 @@ const resolvers: Resolvers<Context> = {
         throw new InternalError('User already onboarded.')
       }
 
-      if (!newUser) {
-        throw new InternalError('User not found.')
-      }
+      invariant(newUser, 'User not found.');
 
       const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();

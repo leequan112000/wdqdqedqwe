@@ -3,14 +3,13 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
-import { InternalError } from "../errors/InternalError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   VendorMember: {
     user: async (parent, _, context) => {
-      if (!parent.user_id) {
-        throw new InternalError('Missing user id.');
-      }
+      invariant(parent.user_id, 'Missing user id.');
+
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
@@ -18,9 +17,8 @@ const resolvers: Resolvers<Context> = {
       });
     },
     vendor_company: async (parent, _, context) => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Missing vendor company id.');
-      }
+      invariant(parent.vendor_company_id, 'Missing vendor company id.');
+
       return await context.prisma.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id
@@ -64,9 +62,7 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          if (user) {
-            throw new PublicError('User already exist!');
-          }
+          invariant(!user, new PublicError('User already exist!'));
 
           const currentUser = await trx.user.findFirstOrThrow({
             where: {

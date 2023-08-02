@@ -8,6 +8,7 @@ import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generate
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -32,9 +33,7 @@ const resolvers: Resolvers<Context> = {
       })
     },
     project_connections: async (parent, args, context) => {
-      if (!parent.id) {
-        throw new Error('Missing id.');
-      }
+      invariant(parent.id, 'Missing project request id.');
 
       const { filter } = args;
 
@@ -78,9 +77,7 @@ const resolvers: Resolvers<Context> = {
       return projectConnections.map(({ quotes, ...pc }) => pc);
     },
     project_request_comments: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new Error('Missing id.');
-      }
+      invariant(parent.id, 'Missing project request id.');
 
       const data = await context.prisma.projectRequestComment.findMany({
         where: {
@@ -173,9 +170,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!projectRequest) {
-          throw new PermissionDeniedError();
-        }
+        invariant(projectRequest, new PermissionDeniedError());
 
         if (vendor) {
           // Check if vendor is in the project connection
@@ -189,9 +184,7 @@ const resolvers: Resolvers<Context> = {
               }
             }
           });
-          if (!projectConnection) {
-            throw new PermissionDeniedError();
-          }
+          invariant(projectConnection, new PermissionDeniedError());
         } else {
           // Check if customer is the project request owner / collaborator
           const customer = await context.prisma.customer.findFirst({
@@ -199,9 +192,7 @@ const resolvers: Resolvers<Context> = {
               user_id: context.req.user_id
             }
           });
-          if (!customer) {
-            throw new PermissionDeniedError();
-          }
+          invariant(customer, new PermissionDeniedError());
 
           if (projectRequest.customer_id !== customer.id) {
             const projectConnection = await context.prisma.projectConnection.findFirst({
@@ -214,9 +205,7 @@ const resolvers: Resolvers<Context> = {
                 }
               }
             });
-            if (!projectConnection) {
-              throw new PermissionDeniedError();
-            }
+            invariant(projectConnection, new PermissionDeniedError());
           }
         }
 
@@ -248,9 +237,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!user.customer) {
-          throw new PublicError('User is not a customer.');
-        }
+        invariant(user.customer, 'User is not a customer.');
         const projectRequest = await trx.projectRequest.create({
           data: {
             status: ProjectRequestStatus.PROCESSING,
@@ -288,26 +275,23 @@ const resolvers: Resolvers<Context> = {
           id: args.project_request_id
         },
       });
-      if (projectRequest) {
-        if (projectRequest.biotech_id !== user.customer?.biotech_id) {
-          throw new PermissionDeniedError();
-        }
+      invariant(projectRequest, new PublicError('Project request not found.'));
 
-        const updatedRequest = await context.prisma.projectRequest.update({
-          data: {
-            status: ProjectRequestStatus.WITHDRAWN,
-          },
-          where: {
-            id: args.project_request_id,
-          },
-        });
+      invariant(projectRequest.biotech_id === user.customer?.biotech_id, new PermissionDeniedError());
 
-        return {
-          ...updatedRequest,
-          max_budget: updatedRequest.max_budget?.toNumber() || 0,
-        };
-      }
-      throw new PublicError('Project request not found.')
+      const updatedRequest = await context.prisma.projectRequest.update({
+        data: {
+          status: ProjectRequestStatus.WITHDRAWN,
+        },
+        where: {
+          id: args.project_request_id,
+        },
+      });
+
+      return {
+        ...updatedRequest,
+        max_budget: updatedRequest.max_budget?.toNumber() || 0,
+      };
     },
   },
 };
