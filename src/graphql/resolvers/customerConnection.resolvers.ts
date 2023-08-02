@@ -1,16 +1,23 @@
-import { ProjectConnection, CustomerConnection, Customer } from "@prisma/client";
 import { Context } from "../../types/context";
+import { Resolvers } from "../../generated";
+import { InternalError } from "../errors/InternalError";
 
-export default {
+const resolvers: Resolvers<Context> = {
   CustomerConnection: {
-    project_connection: async (parent: CustomerConnection, _: void, context: Context): Promise<ProjectConnection | null> => {
+    project_connection: async (parent, _, context) => {
+      if (!parent.project_connection_id) {
+        throw new InternalError('Missing project connection id.');
+      }
       return await context.prisma.projectConnection.findFirst({
         where: {
           id: parent.project_connection_id
         }
       })
     },
-    customer: async (parent: CustomerConnection, _: void, context: Context): Promise<Customer | null> => {
+    customer: async (parent, _, context) => {
+      if (!parent.customer_id) {
+        throw new InternalError('Missing customer id.');
+      }
       return await context.prisma.customer.findFirst({
         where: {
           id: parent.customer_id
@@ -19,3 +26,5 @@ export default {
     },
   },
 };
+
+export default resolvers;
