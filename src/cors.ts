@@ -20,6 +20,7 @@ if (process.env.NODE_ENV === 'production') {
     'https://localhost:9000',
     'https://studio.apollographql.com',
     'https://octavian-test-85ec4e8ad99d.herokuapp.com',
+    'https://github.com',
   ];
 }
 
