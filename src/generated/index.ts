@@ -442,6 +442,7 @@ export type MutationCreateProjectRequestArgs = {
   preparation_description?: InputMaybe<Scalars['String']>;
   project_challenge_description?: InputMaybe<Scalars['String']>;
   project_deadline_requirement?: InputMaybe<Scalars['String']>;
+  project_request_collaborators?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   project_start_time_requirement?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
   vendor_location_requirement?: InputMaybe<Scalars['String']>;

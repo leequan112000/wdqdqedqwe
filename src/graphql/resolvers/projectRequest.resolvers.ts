@@ -221,6 +221,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createProjectRequest: async (_, args, context) => {
+      const { project_request_collaborators, ...project_request_args } = args;
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {
@@ -241,9 +242,20 @@ const resolvers: Resolvers<Context> = {
             status: ProjectRequestStatus.PROCESSING,
             customer_id: user.customer.id,
             biotech_id: user.customer.biotech_id,
-            ...args,
+            ...project_request_args,
           }
         });
+
+        if (project_request_collaborators && project_request_collaborators.length > 0) {
+          await trx.projectRequestCollaborator.createMany({
+            data: project_request_collaborators.map((customerId) => {
+              return {
+                customer_id: customerId as string,
+                project_request_id: projectRequest.id
+              }
+            })
+          });
+        }
 
         sendProjectRequestSubmissionEmail(user);
         createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });

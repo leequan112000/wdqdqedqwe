@@ -48,6 +48,7 @@ type Mutation {
     vendor_location_requirement: String
     project_start_time_requirement: String
     project_deadline_requirement: String
+    project_request_collaborators: [String]
   ): ProjectRequest
   withdrawProjectRequest(project_request_id: String!): ProjectRequest
 }
