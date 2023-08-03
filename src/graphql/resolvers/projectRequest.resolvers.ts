@@ -236,7 +236,19 @@ const resolvers: Resolvers<Context> = {
             status: ProjectRequestStatus.PROCESSING,
             customer_id: user.customer.id,
             biotech_id: user.customer.biotech_id,
-            ...args,
+            title: args.title,
+            vendor_requirement: args.vendor_requirement,
+            objective_description: args.objective_description,
+            preparation_description: args.preparation_description,
+            in_contact_with_vendor: args.in_contact_with_vendor,
+            existing_vendor_contact_description: args.existing_vendor_contact_description,
+            project_challenge_description: args.project_challenge_description,
+            vendor_search_timeframe: args.vendor_search_timeframe,
+            max_budget: args.max_budget,
+            vendor_location_requirement: args.vendor_location_requirement,
+            project_start_time_requirement: args.project_start_time_requirement,
+            project_deadline_requirement: args.project_deadline_requirement,
+            is_private: args.is_private,
           }
         });
 
@@ -244,6 +256,11 @@ const resolvers: Resolvers<Context> = {
           sendProjectRequestSubmissionEmail(user);
           createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
         } else {
+          invariant(args.company_name, 'Company name is required.');
+          invariant(args.website, 'Website is required.');
+          invariant(args.email, 'Email is required.');
+          invariant(args.first_name, 'First name is required.');
+          invariant(args.last_name, 'Last name is required.');
           const biotechInviteVendor = await trx.biotechInviteVendor.create({
             data: {
               biotech_id: user.customer.biotech_id,
