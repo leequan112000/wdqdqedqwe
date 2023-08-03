@@ -1,5 +1,5 @@
 type Query {
-  collaborators: [User]
+  collaborators(active_only: Boolean): [User]
 }
 
 input InviteCollaboratorInput {
