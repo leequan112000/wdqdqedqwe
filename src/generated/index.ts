@@ -286,6 +286,7 @@ export type Mutation = {
   acceptProjectConnection?: Maybe<ProjectConnection>;
   acceptQuote?: Maybe<Quote>;
   addProjectCollaborator?: Maybe<User>;
+  addProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   createAdmin?: Maybe<Admin>;
   createCda?: Maybe<Scalars['Boolean']>;
   createCertificationTag?: Maybe<CertificationTag>;
@@ -374,6 +375,12 @@ export type MutationAcceptQuoteArgs = {
 export type MutationAddProjectCollaboratorArgs = {
   project_connection_id: Scalars['String'];
   user_id: Scalars['String'];
+};
+
+
+export type MutationAddProjectRequestCollaboratorArgs = {
+  customer_id: Scalars['String'];
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1762,6 +1769,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  addProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationAddProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;

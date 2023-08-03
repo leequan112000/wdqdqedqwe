@@ -9,6 +9,10 @@ type ProjectRequestCollaborator {
 }
 
 type Mutation {
+  addProjectRequestCollaborator(
+    project_request_id: String!
+    customer_id: String!
+  ): ProjectRequestCollaborator
   removeProjectRequestCollaborator(
     project_request_id: String!
     customer_id: String!

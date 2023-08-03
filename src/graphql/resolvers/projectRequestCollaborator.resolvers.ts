@@ -28,6 +28,37 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
+    addProjectRequestCollaborator: async (_, args, context) => {
+      const { project_request_id, customer_id } = args;
+      return await context.prisma.$transaction(async (trx) => {
+        const projectConnections = await trx.projectConnection.findMany({
+          where: {
+            project_request_id,
+          }
+        });
+
+        if (projectConnections && projectConnections.length > 0) {
+          // Add collaborator to all existing connections
+          await Promise.all(
+            projectConnections.map(async (pc) => {
+              return await trx.customerConnection.create({
+                data: {
+                  project_connection_id: pc.id,
+                  customer_id,
+                },
+              });
+            })
+          );
+        }
+
+        return await trx.projectRequestCollaborator.create({
+          data: {
+            project_request_id,
+            customer_id,
+          }
+        });
+      });
+    },
     removeProjectRequestCollaborator: async (_, args, context) => {
       const { project_request_id, customer_id } = args;
       const existingProjectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
@@ -38,15 +69,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(existingProjectRequestCollaborator, new PublicError('Collaborator not found.'));
-
-      const projectConnections = await context.prisma.projectConnection.findMany({
-        where: {
-          project_request_id,
-        }
-      });
-
+      
       return await context.prisma.$transaction(async (trx) => {
+        const projectConnections = await trx.projectConnection.findMany({
+          where: {
+            project_request_id,
+          }
+        });
+
         if (projectConnections && projectConnections.length > 0) {
+          // Remove collaborator from all connections
           await Promise.all(
             projectConnections.map(async (pc) => {
               return await trx.customerConnection.deleteMany({
