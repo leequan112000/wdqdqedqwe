@@ -31,6 +31,23 @@ const resolvers: Resolvers<Context> = {
       invariant(inviter, 'Inviter not found.');
       return inviter;
     },
+    project_request: async (parent, _, context) => {
+      invariant(parent.project_request_id, 'Project request id not found.');
+
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: parent.project_request_id,
+        }
+      });
+
+      invariant(projectRequest, 'Project request not found.');
+      const processedResult = {
+        ...projectRequest,
+        max_budget: projectRequest.max_budget?.toNumber() || 0,
+      };
+
+      return processedResult;
+    },
   },
   Query: {
     biotechInviteVendors: async (_, args, context) => {

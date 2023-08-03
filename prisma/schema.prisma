@@ -225,7 +225,7 @@ model ProjectRequest {
 
   project_request_comments ProjectRequestComment[]
   project_connections      ProjectConnection[]
-  biotech_invite_vendors      BiotechInviteVendor[]
+  biotech_invite_vendors   BiotechInviteVendor[]
 
   @@index([customer_id])
   @@map("project_requests")
@@ -258,6 +258,9 @@ model ProjectConnection {
 
   vendor_company_id String        @db.Uuid
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  biotech_invite_vendor_id String?              @unique @db.Uuid
+  biotech_invite_vendor    BiotechInviteVendor? @relation(fields: [biotech_invite_vendor_id], references: [id])
 
   vendor_member_connections VendorMemberConnection[]
   customer_connections      CustomerConnection[]
@@ -579,20 +582,21 @@ model InvoiceItem {
 }
 
 model BiotechInviteVendor {
-  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_name       String
-  website            String
-  first_name         String
-  last_name          String
-  email              String
-  created_at         DateTime        @default(now())
-  updated_at         DateTime        @updatedAt
-  biotech_id         String?         @db.Uuid
-  biotech            Biotech?        @relation(fields: [biotech_id], references: [id])
-  inviter_id         String?         @db.Uuid
-  inviter            User?           @relation(fields: [inviter_id], references: [id])
-  project_request_id String?         @db.Uuid
-  project_request    ProjectRequest? @relation(fields: [project_request_id], references: [id])
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name        String
+  website             String
+  first_name          String
+  last_name           String
+  email               String
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+  biotech_id          String?           @db.Uuid
+  biotech             Biotech?          @relation(fields: [biotech_id], references: [id])
+  inviter_id          String?           @db.Uuid
+  inviter             User?             @relation(fields: [inviter_id], references: [id])
+  project_request_id  String?           @db.Uuid
+  project_request     ProjectRequest?   @relation(fields: [project_request_id], references: [id])
+  project_connection  ProjectConnection?
 
   @@map("biotech_invite_vendors")
 }
