@@ -1,7 +1,8 @@
+import moment from "moment";
 import { User, VendorCompany, VendorMember } from "@prisma/client";
 import { Request } from "express";
 import { createResetPasswordToken } from "../../helper/auth";
-import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { sendVendorMemberInvitationByBiotechEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import {
@@ -9,6 +10,8 @@ import {
   MutationUpdateVendorMemberArgs,
 } from "../../generated";
 import invariant from "../../helper/invariant";
+
+const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
 export default {
   VendorMember: {
@@ -96,6 +99,77 @@ export default {
         });
       } catch (error) {
         return error;
+      }
+    },
+    resendVendorMemberInviteByBiotech: async (_: void, args: { biotech_invite_vendor_id: string }, context: Context) => {
+      if (process.env.BIOTECH_INVITE_CRO) {
+        invariant(args.biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
+
+        const biotechInviteVendor = await context.prisma.biotechInviteVendor.findFirst({
+          where: {
+            id: args.biotech_invite_vendor_id,
+          },
+          include: {
+            biotech: true,
+            inviter: true,
+          },
+        });
+
+        invariant(biotechInviteVendor, 'Biotech invite vendor record not found.');
+        invariant(biotechInviteVendor.project_request_id, 'Project request ID is not found.');
+        const vendorCompany = await context.prisma.vendorCompany.findFirst({
+          where: {
+            name: biotechInviteVendor.company_name,
+          },
+        });
+
+        const projectConnection = await context.prisma.projectConnection.findFirst({
+          where: {
+            project_request_id: biotechInviteVendor.project_request_id,
+            vendor_company_id: vendorCompany?.id,
+          },
+        });
+
+        const newExpiryDate = moment().add(PROJECT_REQUEST_RESPONSE_PERIOD, 'd').endOf('d');
+
+        const resetProjectExpiryDate = await context.prisma.projectConnection.update({
+          where: {
+            id: projectConnection?.id,
+          },
+          data: {
+            expired_at: newExpiryDate.toDate(),
+          },
+        });
+
+        const invitedUser = await context.prisma.user.findFirst({
+          where: {
+            email: biotechInviteVendor.email,
+          },
+          include: {
+            vendor_member: true,
+          },
+        });
+        invariant(invitedUser, 'Invited user not found.');
+        invariant(biotechInviteVendor.biotech?.name, 'Biotech name not found.');
+        invariant(biotechInviteVendor.inviter, 'Inviter not found.');
+
+        const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+
+        if (!invitedUser?.vendor_member?.title) {
+          const resetInvitedUserPasswordExpiryDate = await context.prisma.user.update({
+            where: {
+              id: invitedUser?.id,
+            },
+            data: {
+              reset_password_expiration: new Date(resetTokenExpiration),
+            },
+          });
+          sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
+          return { resetProjectExpiryDate, resetInvitedUserPasswordExpiryDate };
+        }
+
+        sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
+        return { resetProjectExpiryDate };
       }
     },
   }

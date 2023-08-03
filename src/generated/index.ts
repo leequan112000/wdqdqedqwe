@@ -345,6 +345,7 @@ export type Mutation = {
   resendExpiredQuote?: Maybe<Quote>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
+  resendVendorMemberInviteByBiotech?: Maybe<VendorMember>;
   resetPassword?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
@@ -676,6 +677,11 @@ export type MutationResendInvitationArgs = {
 
 export type MutationResendVendorMemberInvitationByAdminArgs = {
   user_id: Scalars['String'];
+};
+
+
+export type MutationResendVendorMemberInviteByBiotechArgs = {
+  biotech_invite_vendor_id: Scalars['String'];
 };
 
 
@@ -1848,6 +1854,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resendExpiredQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationResendExpiredQuoteArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
+  resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
