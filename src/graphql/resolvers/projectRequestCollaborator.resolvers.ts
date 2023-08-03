@@ -36,13 +36,34 @@ const resolvers: Resolvers<Context> = {
           customer_id,
         }
       });
-  
+
       invariant(existingProjectRequestCollaborator, new PublicError('Collaborator not found.'));
 
-      return await context.prisma.projectRequestCollaborator.delete({
+      const projectConnections = await context.prisma.projectConnection.findMany({
         where: {
-          id: existingProjectRequestCollaborator.id
+          project_request_id,
         }
+      });
+
+      return await context.prisma.$transaction(async (trx) => {
+        if (projectConnections && projectConnections.length > 0) {
+          await Promise.all(
+            projectConnections.map(async (pc) => {
+              return await trx.customerConnection.deleteMany({
+                where: {
+                  project_connection_id: pc.id,
+                  customer_id,
+                },
+              });
+            })
+          );
+        }
+
+        return await trx.projectRequestCollaborator.delete({
+          where: {
+            id: existingProjectRequestCollaborator.id
+          }
+        });
       });
     },
   }
