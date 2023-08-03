@@ -28,7 +28,7 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    deleteProjectRequestCollaborator: async (_, args, context) => {
+    removeProjectRequestCollaborator: async (_, args, context) => {
       const { project_request_id, customer_id } = args;
       const existingProjectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
         where: {

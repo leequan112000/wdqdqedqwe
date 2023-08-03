@@ -307,7 +307,6 @@ export type Mutation = {
   deleteCertificationTagConnection?: Maybe<CertificationTagConnection>;
   deleteLabSpecialization?: Maybe<Scalars['Boolean']>;
   deleteLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
-  deleteProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -329,6 +328,7 @@ export type Mutation = {
   removeCompanyAttachment?: Maybe<CompanyAttachment>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
+  removeProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   resendExpiredQuote?: Maybe<Quote>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
@@ -516,12 +516,6 @@ export type MutationDeleteLabSpecializationConnectionArgs = {
 };
 
 
-export type MutationDeleteProjectRequestCollaboratorArgs = {
-  customer_id: Scalars['String'];
-  project_request_id: Scalars['String'];
-};
-
-
 export type MutationForgotPasswordArgs = {
   email?: InputMaybe<Scalars['String']>;
 };
@@ -644,6 +638,12 @@ export type MutationRemoveMeetingEventArgs = {
 export type MutationRemoveProjectCollaboratorArgs = {
   project_connection_id: Scalars['String'];
   user_id: Scalars['String'];
+};
+
+
+export type MutationRemoveProjectRequestCollaboratorArgs = {
+  customer_id: Scalars['String'];
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1783,7 +1783,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagConnectionArgs, 'id'>>;
   deleteLabSpecialization?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationArgs, 'id'>>;
   deleteLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationConnectionArgs, 'id'>>;
-  deleteProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationDeleteProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -1803,6 +1802,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveCompanyAttachmentArgs, 'id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  removeProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationRemoveProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   resendExpiredQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationResendExpiredQuoteArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
