@@ -307,6 +307,7 @@ export type Mutation = {
   deleteCertificationTagConnection?: Maybe<CertificationTagConnection>;
   deleteLabSpecialization?: Maybe<Scalars['Boolean']>;
   deleteLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
+  deleteProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -512,6 +513,12 @@ export type MutationDeleteLabSpecializationArgs = {
 
 export type MutationDeleteLabSpecializationConnectionArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationDeleteProjectRequestCollaboratorArgs = {
+  customer_id: Scalars['String'];
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1776,6 +1783,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagConnectionArgs, 'id'>>;
   deleteLabSpecialization?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationArgs, 'id'>>;
   deleteLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationConnectionArgs, 'id'>>;
+  deleteProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationDeleteProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;

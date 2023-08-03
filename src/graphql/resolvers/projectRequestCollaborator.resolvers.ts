@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../../generated";
 import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequestCollaborator: {
@@ -26,6 +27,25 @@ const resolvers: Resolvers<Context> = {
       })
     },
   },
+  Mutation: {
+    deleteProjectRequestCollaborator: async (_, args, context) => {
+      const { project_request_id, customer_id } = args;
+      const existingProjectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
+        where: {
+          project_request_id,
+          customer_id,
+        }
+      });
+  
+      invariant(existingProjectRequestCollaborator, new PublicError('Collaborator not found.'));
+
+      return await context.prisma.projectRequestCollaborator.delete({
+        where: {
+          id: existingProjectRequestCollaborator.id
+        }
+      });
+    },
+  }
 };
 
 export default resolvers;

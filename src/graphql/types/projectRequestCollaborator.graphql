@@ -7,3 +7,10 @@ type ProjectRequestCollaborator {
   customer_id: String
   customer: Customer
 }
+
+type Mutation {
+  deleteProjectRequestCollaborator(
+    project_request_id: String!
+    customer_id: String!
+  ): ProjectRequestCollaborator
+}
