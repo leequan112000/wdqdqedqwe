@@ -460,9 +460,13 @@ export type MutationCreateMeetingEventArgs = {
 
 
 export type MutationCreateProjectRequestArgs = {
+  company_name: Scalars['String'];
+  email: Scalars['String'];
   existing_vendor_contact_description?: InputMaybe<Scalars['String']>;
+  first_name: Scalars['String'];
   in_contact_with_vendor: Scalars['Boolean'];
   is_private: Scalars['Boolean'];
+  last_name: Scalars['String'];
   max_budget?: InputMaybe<Scalars['Int']>;
   objective_description: Scalars['String'];
   preparation_description?: InputMaybe<Scalars['String']>;
@@ -473,6 +477,7 @@ export type MutationCreateProjectRequestArgs = {
   vendor_location_requirement?: InputMaybe<Scalars['String']>;
   vendor_requirement: Scalars['String'];
   vendor_search_timeframe: Scalars['String'];
+  website: Scalars['String'];
 };
 
 
@@ -1821,7 +1826,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
   createLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationConnectionArgs, 'lab_specialization_id' | 'vendor_company_id'>>;
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
-  createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
+  createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'company_name' | 'email' | 'first_name' | 'in_contact_with_vendor' | 'is_private' | 'last_name' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe' | 'website'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;

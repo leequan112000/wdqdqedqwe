@@ -244,6 +244,18 @@ const resolvers: Resolvers<Context> = {
           sendProjectRequestSubmissionEmail(user);
           createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
         } else {
+          const biotechInviteVendor = await trx.biotechInviteVendor.create({
+            data: {
+              biotech_id: user.customer.biotech_id,
+              project_request_id: projectRequest.id,
+              company_name: args.company_name,
+              website: args.website,
+              email: args.email,
+              first_name: args.first_name,
+              last_name: args.last_name,
+              inviter_id: user.id,
+            },
+          });
           sendPrivateProjectRequestSubmissionEmail(user);
         }
 
