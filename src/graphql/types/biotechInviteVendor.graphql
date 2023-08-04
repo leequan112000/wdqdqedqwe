@@ -11,6 +11,7 @@ type BiotechInviteVendor {
   inviter: User
   project_request_id: String
   project_request: ProjectRequest
+  project_connection: ProjectConnection
 }
 
 type Query {

@@ -22,11 +22,4 @@ type Mutation {
     email: String!
     vendor_company_id: String!
   ): VendorMember
-  inviteVendorMemberByBiotech(
-    first_name: String!
-    last_name: String!
-    email: String!
-    vendor_company_id: String!
-    user_id: String!
-  ): VendorMember
 }
