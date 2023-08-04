@@ -24,6 +24,7 @@ import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
 import Sentry from './sentry';
+import { GQL_ERROR_CODE } from './helper/constant';
 
 const app = express();
 
@@ -146,7 +147,7 @@ export async function startServer() {
 
         throw new GraphQLError('Admin is not authenticated', {
           extensions: {
-            code: 'UNAUTHENTICATED',
+            code: GQL_ERROR_CODE.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });
@@ -176,7 +177,7 @@ export async function startServer() {
 
         throw new GraphQLError('User is not authenticated', {
           extensions: {
-            code: 'UNAUTHENTICATED',
+            code: GQL_ERROR_CODE.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });
