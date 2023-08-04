@@ -24,7 +24,7 @@ import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
 import Sentry from './sentry';
-import { GQL_ERROR_CODE } from './helper/constant';
+import { GqlErrorCode } from './helper/constant';
 
 const app = express();
 
