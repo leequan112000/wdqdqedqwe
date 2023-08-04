@@ -22,6 +22,8 @@ type ProjectConnection {
   external_collaborators: [User]
   expired_at: Date
   vendor_display_status: String
+  biotech_invite_vendor_id: String
+  biotech_invite_vendor: BiotechInviteVendor
 }
 
 input ProjectConnectionFilter {
@@ -31,6 +33,7 @@ input ProjectConnectionFilter {
 type Query {
   projectConnection(id: String!): ProjectConnection
   projectConnections(filter: ProjectConnectionFilter): [ProjectConnection]
+  bioInvitedProjectConnections(project_request_id: String!): [ProjectConnection]
 }
 
 type Mutation {
