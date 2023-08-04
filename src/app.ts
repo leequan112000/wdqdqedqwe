@@ -164,6 +164,25 @@ export async function startServer() {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
         const isWhitelisted = operationWhitelist.includes(operationName);
+
+        // Check if user is active.
+        if (req.user_id) {
+          const currentUser = await prisma.user.findFirst({
+            where: {
+              id: req.user_id,
+            }
+          });
+
+          if (currentUser?.is_active === false) {
+            throw new GraphQLError('Session expired.', {
+              extensions: {
+                code: GQL_ERROR_CODE.SESSION_EXPIRED,
+                http: { status: 401 },
+              },
+            });
+          }
+        }
+
         if (
           // bypass authentication for codegen
           (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
