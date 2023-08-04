@@ -44,10 +44,12 @@ async function main() {
   expiredProjectConnections.forEach((pc) => {
     pc.vendor_member_connections.forEach((vmc) => {
       const userId = vmc.vendor_member.user_id;
-      if (!expiredProjectConnectionsGroupByUserId[userId]) {
-        expiredProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
+      if (vmc.vendor_member.user.is_active === true) {
+        if (!expiredProjectConnectionsGroupByUserId[userId]) {
+          expiredProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
+        }
+        expiredProjectConnectionsGroupByUserId[userId].projectConnections.unshift(pc);
       }
-      expiredProjectConnectionsGroupByUserId[userId].projectConnections.unshift(pc);
     });
   });
 
