@@ -24,6 +24,7 @@ import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
 import Sentry from './sentry';
+import { GQL_ERROR_CODE } from './helper/constant';
 
 const app = express();
 
@@ -146,7 +147,7 @@ export async function startServer() {
 
         throw new GraphQLError('Admin is not authenticated', {
           extensions: {
-            code: 'UNAUTHENTICATED',
+            code: GqlErrorCode.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });
@@ -163,6 +164,25 @@ export async function startServer() {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
         const isWhitelisted = operationWhitelist.includes(operationName);
+
+        // Check if user is active.
+        if (req.user_id) {
+          const currentUser = await prisma.user.findFirst({
+            where: {
+              id: req.user_id,
+            }
+          });
+
+          if (currentUser?.is_active === false) {
+            throw new GraphQLError('Session expired.', {
+              extensions: {
+                code: GqlErrorCode.SESSION_EXPIRED,
+                http: { status: 401 },
+              },
+            });
+          }
+        }
+
         if (
           // bypass authentication for codegen
           (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
@@ -176,7 +196,7 @@ export async function startServer() {
 
         throw new GraphQLError('User is not authenticated', {
           extensions: {
-            code: 'UNAUTHENTICATED',
+            code: GqlErrorCode.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });

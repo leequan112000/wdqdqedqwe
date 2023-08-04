@@ -9,6 +9,7 @@ import { addRoleForUser, hasPermission, updateRoleForUser } from "../../helper/c
 import invariant from "../../helper/invariant";
 import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
+import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -399,12 +400,20 @@ const resolvers: Resolvers<Context> = {
         where: {
           id: user_id,
         },
+        include: {
+          vendor_member: true,
+          customer: true,
+        },
       });
 
-      invariant(user, new PublicError('User not found.'))
+      invariant(user, new PublicError('User not found.'));
 
-      if (user.is_active === true) {
-        const deactivatedUser = await context.prisma.user.update({
+      if (user.is_active !== true) {
+        return user;
+      }
+
+      const deactivatedUser = await context.prisma.$transaction(async (trx) => {
+        const deactivatedUser = await trx.user.update({
           where: {
             id: user.id,
           },
@@ -413,10 +422,91 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        return deactivatedUser;
-      }
+        await trx.projectRequestCollaborator.deleteMany({
+          where: {
+            customer: {
+              user_id,
+            },
+          },
+        });
 
-      return user;
+        await trx.customerConnection.deleteMany({
+          where: {
+            customer: {
+              user_id,
+            },
+          },
+        });
+
+        await trx.vendorMemberConnection.deleteMany({
+          where: {
+            vendor_member: {
+              user_id,
+            },
+          },
+        });
+
+        // Remove any meeting that organized by the deactivated user.
+        const organizedMeetingEvents = await trx.meetingEvent.findMany({
+          where: {
+            organizer_id: user_id,
+          },
+        });
+        const removeMeetingTasks = organizedMeetingEvents.map(async (event) => {
+          return await meetingEventService.removeMeetingEvent({ meeting_event_id: event.id }, { prisma: trx });
+        });
+
+        const removedMeetingEvents = await Promise.all(removeMeetingTasks);
+        const removedMeetingIds = removedMeetingEvents.map((e) => e.id);
+
+        // Remove deactivated user from meeting events' guest list
+        const targetedMeetingEvents = await trx.meetingEvent.findMany({
+          where: {
+            meetingAttendeeConnections: {
+              some: {
+                user_id,
+              }
+            },
+            id: {
+              notIn: removedMeetingIds,
+            },
+          },
+          include: {
+            meetingAttendeeConnections: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+
+        const updateMeetingEventTasks = targetedMeetingEvents.map(async (e) => {
+          const emailsWithoutDeactivatedUser = e.meetingAttendeeConnections.reduce<string[]>((acc, cur) => {
+            if (cur.user_id !== user_id) {
+              acc.unshift(cur.user.email);
+            }
+            return acc;
+          }, [])
+
+          return await meetingEventService.updateMeetingEvent({
+            attendee_emails: emailsWithoutDeactivatedUser,
+            end_time: e.end_time.toISOString(),
+            meeting_event_id: e.id,
+            start_time: e.start_time.toISOString(),
+            timezone: e.timezone,
+            title: e.title,
+            description: e.description,
+          }, {
+            prisma: trx
+          });
+        });
+
+        await Promise.all(updateMeetingEventTasks);
+
+        return deactivatedUser;
+      });
+
+      return deactivatedUser;
     },
     reactivateCollaborator: async (_, args, context) => {
       const { user_id } = args;

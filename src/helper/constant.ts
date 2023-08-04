@@ -219,3 +219,11 @@ export enum CompanyCollaboratorRoleType {
   ADMIN = 'admin',
   USER = 'user',
 }
+
+export enum GqlErrorCode {
+  UNAUTHENTICATED = 'UNAUTHENTICATED',
+  INTERNAL_ERROR = 'INTERNAL_ERROR_CODE',
+  PUBLIC_ERROR = 'PUBLIC_ERROR_CODE',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  SESSION_EXPIRED = 'SESSION_EXPIRED',
+}
