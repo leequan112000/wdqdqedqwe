@@ -13,36 +13,18 @@ const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 const resolvers: Resolvers<Context> = {
   Mutation: {
     createVendorCompany: async (_, args, context) => {
-      if (!args.invited_by){
-        return await context.prisma.vendorCompany.create({
-          data: {
-            name: args.name,
-            website: args.website,
-            description: args.description,
-            address: args.address,
-            vendor_type: args.vendor_type,
-            skip_cda: args.skip_cda || false,
-            is_on_marketplace: true,
-            invited_by: 'admin',
-          }
-        });  
-      }
-      if (process.env.BIOTECH_INVITE_CRO) {
-        return await context.prisma.vendorCompany.create({
-          data: {
-            name: args.name,
-            website: args.website,
-            description: args.description,
-            address: args.address,
-            vendor_type: args.vendor_type,
-            skip_cda: args.skip_cda || false,
-            is_on_marketplace: false,
-            invited_by: args.invited_by,
-          }
-        });
-      }
-      
-      return null;
+      return await context.prisma.vendorCompany.create({
+        data: {
+          name: args.name,
+          website: args.website,
+          description: args.description,
+          address: args.address,
+          vendor_type: args.vendor_type,
+          skip_cda: args.skip_cda || false,
+          is_on_marketplace: true,
+          invited_by: 'admin',
+        }
+      });  
     },
     inviteVendorCompaniesToProjectByAdmin: async (_, args, context) => {
       const projectRequest = await context.prisma.projectRequest.findFirst({
