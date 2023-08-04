@@ -70,7 +70,7 @@ const resolvers: Resolvers<Context> = {
               });
 
               // Include owner, admin and request collaborators to customer connections
-              const biotechOwnerAndAdmins = await context.prisma.customer.findMany({
+              const biotechOwnerAndAdmins = await trx.customer.findMany({
                 where: {
                   biotech_id: projectRequest.biotech_id,
                   role: {
@@ -82,16 +82,12 @@ const resolvers: Resolvers<Context> = {
                 },
               });
 
-              const projectRequestCollaborators = await context.prisma.projectRequestCollaborator.findMany({
+              const projectRequestCollaborators = await trx.projectRequestCollaborator.findMany({
                 where: { project_request_id: projectRequest.id },
               });
 
               await trx.customerConnection.createMany({
                 data: [
-                  {
-                    project_connection_id: projectConnection.id,
-                    customer_id: projectRequest.customer_id,
-                  },
                   ...biotechOwnerAndAdmins.map((c) => ({
                     project_connection_id: projectConnection.id,
                     customer_id: c.id,
