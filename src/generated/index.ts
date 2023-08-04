@@ -286,7 +286,6 @@ export type Mutation = {
   acceptProjectConnection?: Maybe<ProjectConnection>;
   acceptQuote?: Maybe<Quote>;
   addProjectCollaborator?: Maybe<User>;
-  addProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   createAdmin?: Maybe<Admin>;
   createCda?: Maybe<Scalars['Boolean']>;
   createCertificationTag?: Maybe<CertificationTag>;
@@ -348,6 +347,7 @@ export type Mutation = {
   updateCustomer: Customer;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateMeetingEvent?: Maybe<MeetingEvent>;
+  updateProjectRequestCollaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
   updateVendorCompany?: Maybe<VendorCompany>;
@@ -375,12 +375,6 @@ export type MutationAcceptQuoteArgs = {
 export type MutationAddProjectCollaboratorArgs = {
   project_connection_id: Scalars['String'];
   user_id: Scalars['String'];
-};
-
-
-export type MutationAddProjectRequestCollaboratorArgs = {
-  customer_id: Scalars['String'];
-  project_request_id: Scalars['String'];
 };
 
 
@@ -770,6 +764,12 @@ export type MutationUpdateMeetingEventArgs = {
   start_time: Scalars['String'];
   timezone: Scalars['String'];
   title: Scalars['String'];
+};
+
+
+export type MutationUpdateProjectRequestCollaboratorsArgs = {
+  customer_ids: Array<InputMaybe<Scalars['String']>>;
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1769,7 +1769,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
-  addProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationAddProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
@@ -1829,6 +1828,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
+  updateProjectRequestCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType, RequireFields<MutationUpdateProjectRequestCollaboratorsArgs, 'customer_ids' | 'project_request_id'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
