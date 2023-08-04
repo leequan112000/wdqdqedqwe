@@ -147,7 +147,7 @@ export async function startServer() {
 
         throw new GraphQLError('Admin is not authenticated', {
           extensions: {
-            code: GQL_ERROR_CODE.UNAUTHENTICATED,
+            code: GqlErrorCode.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });
@@ -176,7 +176,7 @@ export async function startServer() {
           if (currentUser?.is_active === false) {
             throw new GraphQLError('Session expired.', {
               extensions: {
-                code: GQL_ERROR_CODE.SESSION_EXPIRED,
+                code: GqlErrorCode.SESSION_EXPIRED,
                 http: { status: 401 },
               },
             });
@@ -196,7 +196,7 @@ export async function startServer() {
 
         throw new GraphQLError('User is not authenticated', {
           extensions: {
-            code: GQL_ERROR_CODE.UNAUTHENTICATED,
+            code: GqlErrorCode.UNAUTHENTICATED,
             http: { status: 401 },
           },
         });
