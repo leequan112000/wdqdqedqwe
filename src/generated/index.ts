@@ -81,6 +81,7 @@ export type BiotechInviteVendor = {
   inviter?: Maybe<User>;
   inviter_id?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  project_connection?: Maybe<ProjectConnection>;
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
   website?: Maybe<Scalars['String']>;
@@ -328,6 +329,7 @@ export type Mutation = {
   inviteCustomer?: Maybe<Customer>;
   inviteProjectCollaboratorViaEmail?: Maybe<User>;
   inviteVendorCompaniesToProjectByAdmin?: Maybe<Scalars['Boolean']>;
+  inviteVendorCompanyToProjectByBiotech?: Maybe<Scalars['Boolean']>;
   /** @deprecated Use `inviteCollaborator`. */
   inviteVendorMember?: Maybe<VendorMember>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
@@ -579,6 +581,12 @@ export type MutationInviteProjectCollaboratorViaEmailArgs = {
 export type MutationInviteVendorCompaniesToProjectByAdminArgs = {
   project_request_id: Scalars['String'];
   vendor_company_ids: Array<InputMaybe<Scalars['String']>>;
+};
+
+
+export type MutationInviteVendorCompanyToProjectByBiotechArgs = {
+  biotech_invite_vendor_id: Scalars['String'];
+  vendor_type: Scalars['String'];
 };
 
 
@@ -936,6 +944,8 @@ export type ProjectAttachment = {
 
 export type ProjectConnection = {
   __typename?: 'ProjectConnection';
+  biotech_invite_vendor?: Maybe<BiotechInviteVendor>;
+  biotech_invite_vendor_id?: Maybe<Scalars['String']>;
   chat?: Maybe<Chat>;
   collaborators_not_invited?: Maybe<Array<Maybe<User>>>;
   created_at?: Maybe<Scalars['Date']>;
@@ -1015,6 +1025,7 @@ export type ProjectRequestProjectConnectionFilter = {
 export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
+  bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
   certification_tag_connection?: Maybe<CertificationTagConnection>;
@@ -1048,6 +1059,11 @@ export type Query = {
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryBioInvitedProjectConnectionsArgs = {
+  project_request_id: Scalars['String'];
 };
 
 
@@ -1608,6 +1624,7 @@ export type BiotechInviteVendorResolvers<ContextType = any, ParentType extends R
   inviter?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   inviter_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1843,6 +1860,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   inviteCustomer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationInviteCustomerArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteProjectCollaboratorViaEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteProjectCollaboratorViaEmailArgs, 'email' | 'first_name' | 'last_name' | 'project_connection_id'>>;
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
+  inviteVendorCompanyToProjectByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompanyToProjectByBiotechArgs, 'biotech_invite_vendor_id' | 'vendor_type'>>;
   inviteVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'vendor_company_id'>>;
   inviteVendorMemberByBiotech?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByBiotechArgs, 'email' | 'first_name' | 'last_name' | 'user_id' | 'vendor_company_id'>>;
@@ -1941,6 +1959,8 @@ export type ProjectAttachmentResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type ProjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectConnection'] = ResolversParentTypes['ProjectConnection']> = ResolversObject<{
+  biotech_invite_vendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType>;
+  biotech_invite_vendor_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   chat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType>;
   collaborators_not_invited?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2006,6 +2026,7 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
   certification_tag_connection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, Partial<QueryCertification_Tag_ConnectionArgs>>;
