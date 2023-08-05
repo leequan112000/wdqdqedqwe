@@ -1,0 +1,9 @@
+type ProjectRequestCollaborator {
+  id: String
+  created_at: Date
+  updated_at: Date
+  project_request_id: String
+  project_request: ProjectRequest
+  customer_id: String
+  customer: Customer
+}

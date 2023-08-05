@@ -5,16 +5,3 @@ type LabSpecializationConnection {
   vendor_company_id: String
   vendor_company: VendorCompany
 }
-
-type Query {
-  lab_specialization_connection(id: String): LabSpecializationConnection
-  lab_specialization_connections(vendor_company_id: String): [LabSpecializationConnection]
-}
-
-type Mutation {
-  createLabSpecializationConnection(
-    lab_specialization_id: String
-    vendor_company_id: String
-  ): LabSpecializationConnection
-  deleteLabSpecializationConnection(id: String): LabSpecializationConnection
-}

@@ -1,28 +1,27 @@
 import moment from "moment";
-import { User, VendorCompany, VendorMember } from "@prisma/client";
-import { Request } from "express";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import {
-  MutationInviteVendorMemberArgs,
-  MutationUpdateVendorMemberArgs,
-} from "../../generated";
+import { Resolvers } from "../../generated";
 import invariant from "../../helper/invariant";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
-export default {
+const resolvers: Resolvers<Context> = {
   VendorMember: {
-    user: async (parent: VendorMember, _: void, context: Context): Promise<User | null> => {
+    user: async (parent, _, context) => {
+      invariant(parent.user_id, 'Missing user id.');
+
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
         }
       });
     },
-    vendor_company: async (parent: VendorMember, _: void, context: Context): Promise<VendorCompany | null> => {
+    vendor_company: async (parent, _, context) => {
+      invariant(parent.vendor_company_id, 'Missing vendor company id.');
+
       return await context.prisma.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id
@@ -31,7 +30,7 @@ export default {
     },
   },
   Query: {
-    vendorMember: async (_: void, args: void, context: Context & { req: Request }) => {
+    vendorMember: async (_, __, context) => {
       return await context.prisma.vendorMember.findFirst({
         where: {
           user_id: context.req.user_id,
@@ -40,7 +39,7 @@ export default {
     },
   },
   Mutation: {
-    updateVendorMember: async (_: void, args: MutationUpdateVendorMemberArgs, context: Context & { req: Request }) => {
+    updateVendorMember: async (_, args, context) => {
       try {
         return await context.prisma.vendorMember.update({
           where: {
@@ -54,10 +53,10 @@ export default {
           }
         });
       } catch (error) {
-        return error;
+        throw error;
       }
     },
-    inviteVendorMember: async (_: void, args: MutationInviteVendorMemberArgs, context: Context & { req: Request }) => {
+    inviteVendorMember: async (_, args, context) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({
@@ -174,3 +173,5 @@ export default {
     },
   }
 };
+
+export default resolvers;
