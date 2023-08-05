@@ -97,10 +97,10 @@ const resolvers: Resolvers<Context> = {
           return newVendorMember;
         });
       } catch (error) {
-        return error;
+        throw error;
       }
     },
-    resendVendorMemberInviteByBiotech: async (_: void, args: { biotech_invite_vendor_id: string }, context: Context) => {
+    resendVendorMemberInviteByBiotech: async (_, args, context) => {
       if (process.env.BIOTECH_INVITE_CRO) {
         invariant(args.biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
 
@@ -164,12 +164,13 @@ const resolvers: Resolvers<Context> = {
             },
           });
           sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
-          return { resetProjectExpiryDate, resetInvitedUserPasswordExpiryDate };
+          return true;
         }
 
         sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
-        return { resetProjectExpiryDate };
+        return true;
       }
+      return null;
     },
   }
 };
