@@ -6,13 +6,13 @@ interface ServiceContext {
   prisma: PrismaClient | Prisma.TransactionClient
 }
 
-type PromoteCustomerToAdminArgs = {
+type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;
   customer_id: string;
   user_id: string;
 }
 
-const promoteCustomerToAdmin = async (args: PromoteCustomerToAdminArgs, ctx: ServiceContext) => {
+const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: ServiceContext) => {
   const { biotech_id, customer_id, user_id } = args;
 
   const projectConnections = await ctx.prisma.projectConnection.findMany({
@@ -71,13 +71,29 @@ const promoteCustomerToAdmin = async (args: PromoteCustomerToAdminArgs, ctx: Ser
   return updatedCustomer;
 }
 
-type PromoteVendorMemberToAdminArgs = {
+type SetCustomerRoleAsUser = {
+  customer_id: string;
+}
+
+const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContext) => {
+  const { customer_id } = args;
+  return await ctx.prisma.customer.update({
+    where: {
+      id: customer_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.USER,
+    },
+  });
+}
+
+type SetVendorMemberRoleAsAdminArgs = {
   vendor_company_id: string;
   vendor_member_id: string;
   user_id: string;
 }
 
-const promoteVendorMemberToAdmin = async (args: PromoteVendorMemberToAdminArgs, ctx: ServiceContext) => {
+const setVendorMemberAsAdmin = async (args: SetVendorMemberRoleAsAdminArgs, ctx: ServiceContext) => {
   const { vendor_company_id, vendor_member_id, user_id } = args;
 
   const projectConnections = await ctx.prisma.projectConnection.findMany({
@@ -128,9 +144,28 @@ const promoteVendorMemberToAdmin = async (args: PromoteVendorMemberToAdminArgs, 
   return updatedVendorMember;
 }
 
+type SetVendorMemberAsUser = {
+  vendor_member_id: string;
+}
+
+const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceContext) => {
+  const { vendor_member_id } = args;
+
+  return await ctx.prisma.vendorMember.update({
+    where: {
+      id: vendor_member_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.USER,
+    },
+  });
+}
+
 const collaboratorService = {
-  promoteCustomerToAdmin,
-  promoteVendorMemberToAdmin,
+  setCustomerAsAdmin,
+  setCustomerAsUser,
+  setVendorMemberAsAdmin,
+  setVendorMemberAsUser,
 }
 
 export default collaboratorService;
