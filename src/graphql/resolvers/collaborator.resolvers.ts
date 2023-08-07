@@ -13,7 +13,8 @@ import meetingEventService from "../../services/meetingEvent/meetingEvent.servic
 
 const resolvers: Resolvers<Context> = {
   Query: {
-    collaborators: async (_, __, context) => {
+    collaborators: async (_, args, context) => {
+      const { active_only } = args;
       const userId = context.req.user_id;
       const user = await context.prisma.user.findFirst({
         where: {
@@ -41,6 +42,7 @@ const resolvers: Resolvers<Context> = {
             customer: {
               biotech_id: user.customer.biotech_id,
             },
+            ...(active_only ? { is_active: true } : {})
           },
           orderBy: {
             created_at: 'asc'

@@ -22,6 +22,8 @@ type Biotech {
   skip_cda: Boolean
   number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
+  owner: User
+  admins: [User]
   chats: [Chat]
   upload_limit: Float
   upload_used: Float

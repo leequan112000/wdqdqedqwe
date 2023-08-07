@@ -1,6 +1,6 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { SubscriptionStatus } from "../../helper/constant";
+import { CompanyCollaboratorRoleType, SubscriptionStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
 import invariant from "../../helper/invariant";
@@ -37,6 +37,39 @@ const resolver: Resolvers<Context> = {
           biotech_id: parent.id
         }
       });
+    },
+    owner: async (parent, _, context) => {
+      invariant(parent.id, 'Missing biotech id.');
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          biotech_id: parent.id,
+          role: CompanyCollaboratorRoleType.OWNER,
+          user: {
+            is_active: true,
+          }
+        },
+        include: {
+          user: true,
+        },
+      });
+      invariant(customer, 'Owner not found.');
+      return customer.user;
+    },
+    admins: async (parent, _, context) => {
+      invariant(parent.id, 'Missing biotech id.');
+      const customers = await context.prisma.customer.findMany({
+        where: {
+          biotech_id: parent.id,
+          role: CompanyCollaboratorRoleType.ADMIN,
+          user: {
+            is_active: true,
+          }
+        },
+        include: {
+          user: true,
+        },
+      });
+      return customers.map((c) => c.user);
     },
     chats: async (parent, _, context) => {
       invariant(parent.id, 'Missing biotech id.');

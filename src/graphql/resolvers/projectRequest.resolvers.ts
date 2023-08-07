@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import { CompanyCollaboratorRoleType, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
@@ -114,38 +114,63 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      const data = await context.prisma.projectRequest.findMany({
-        where: {
-          ...(args.status && args.status.length > 0 ? {
-            status: {
-              in: args.status.filter(nonNullable),
-            }
-          } : {}),
-          OR: [
-            // by project request collaborator
-            {
-              project_connections: {
-                some: {
-                  customer_connections: {
-                    some: {
-                      customer_id: customer.id,
+      let data = [];
+      if (customer.role === CompanyCollaboratorRoleType.OWNER || customer.role === CompanyCollaboratorRoleType.ADMIN) {
+        data = await context.prisma.projectRequest.findMany({
+          where: {
+            ...(args.status && args.status.length > 0 ? {
+              status: {
+                in: args.status.filter(nonNullable),
+              }
+            } : {}),
+            OR: {
+              biotech_id: customer.biotech_id
+            },
+          },
+          orderBy: [
+            // Sort by status to grouped matched experiments first
+            { status: 'asc' },
+            { updated_at: 'desc' },
+          ]
+        });
+      } else {
+        data = await context.prisma.projectRequest.findMany({
+          where: {
+            ...(args.status && args.status.length > 0 ? {
+              status: {
+                in: args.status.filter(nonNullable),
+              }
+            } : {}),
+            OR: [
+              // by project connection collaborator
+              {
+                project_connections: {
+                  some: {
+                    customer_connections: {
+                      some: {
+                        customer_id: customer.id,
+                      },
                     },
                   },
                 },
               },
-            },
-            // by project request creator
-            {
-              customer_id: customer.id,
-            },
-          ],
-        },
-        orderBy: [
-          // Sort by status to grouped matched experiments first
-          { status: 'asc' },
-          { updated_at: 'desc' },
-        ]
-      });
+              // by project request collaborator
+              {
+                project_request_collaborators: {
+                  some: {
+                    customer_id: customer.id,
+                  }
+                }
+              },
+            ],
+          },
+          orderBy: [
+            // Sort by status to grouped matched experiments first
+            { status: 'asc' },
+            { updated_at: 'desc' },
+          ]
+        });
+      }
 
       const processed: ProjectRequest[] = data.map((d) => ({
         ...d,
@@ -184,7 +209,7 @@ const resolvers: Resolvers<Context> = {
           });
           invariant(projectConnection, new PermissionDeniedError());
         } else {
-          // Check if customer is the project request owner / collaborator
+          // Check if customer is the project request owner / admin / collaborator
           const customer = await context.prisma.customer.findFirst({
             where: {
               user_id: context.req.user_id
@@ -192,7 +217,7 @@ const resolvers: Resolvers<Context> = {
           });
           invariant(customer, new PermissionDeniedError());
 
-          if (projectRequest.customer_id !== customer.id) {
+          if (customer.role === CompanyCollaboratorRoleType.USER) {
             const projectConnection = await context.prisma.projectConnection.findFirst({
               where: {
                 project_request_id: projectRequest.id,
@@ -203,7 +228,14 @@ const resolvers: Resolvers<Context> = {
                 }
               }
             });
-            invariant(projectConnection, new PermissionDeniedError());
+
+            const projectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
+              where: {
+                project_request_id: projectRequest.id,
+                customer_id: customer.id
+              }
+            });
+            invariant(projectConnection || projectRequestCollaborator, new PermissionDeniedError());
           }
         }
 
@@ -221,6 +253,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createProjectRequest: async (_, args, context) => {
+      const { project_request_collaborators, ...project_request_args } = args;
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {
@@ -241,9 +274,20 @@ const resolvers: Resolvers<Context> = {
             status: ProjectRequestStatus.PROCESSING,
             customer_id: user.customer.id,
             biotech_id: user.customer.biotech_id,
-            ...args,
+            ...project_request_args,
           }
         });
+
+        if (project_request_collaborators && project_request_collaborators.length > 0) {
+          await trx.projectRequestCollaborator.createMany({
+            data: project_request_collaborators.map((customerId) => {
+              return {
+                customer_id: customerId as string,
+                project_request_id: projectRequest.id
+              }
+            })
+          });
+        }
 
         sendProjectRequestSubmissionEmail(user);
         createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });

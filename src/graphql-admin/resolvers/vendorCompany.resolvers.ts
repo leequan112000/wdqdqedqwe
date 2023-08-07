@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
+import { CompanyCollaboratorRoleType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
@@ -68,12 +68,37 @@ const resolvers: Resolvers<Context> = {
                   expired_at: newExpiryDate.toDate(),
                 }
               });
-              await trx.customerConnection.create({
-                data: {
-                  project_connection_id: projectConnection.id,
-                  customer_id: projectRequest.customer_id,
-                }
+
+              // Include owner, admin and request collaborators to customer connections
+              const biotechOwnerAndAdmins = await trx.customer.findMany({
+                where: {
+                  biotech_id: projectRequest.biotech_id,
+                  role: {
+                    in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+                  },
+                  user: {
+                    is_active: true,
+                  }
+                },
               });
+
+              const projectRequestCollaborators = await trx.projectRequestCollaborator.findMany({
+                where: { project_request_id: projectRequest.id },
+              });
+
+              await trx.customerConnection.createMany({
+                data: [
+                  ...biotechOwnerAndAdmins.map((c) => ({
+                    project_connection_id: projectConnection.id,
+                    customer_id: c.id,
+                  })),
+                  ...projectRequestCollaborators.map((c) => ({
+                    project_connection_id: projectConnection.id,
+                    customer_id: c.customer_id,
+                  })),
+                ]
+              });
+
               if (!projectRequest.initial_assigned_at) {
                 await trx.projectRequest.update({
                   where: {
