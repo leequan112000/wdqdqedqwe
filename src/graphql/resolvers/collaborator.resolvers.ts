@@ -10,6 +10,7 @@ import invariant from "../../helper/invariant";
 import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
+import collaboratorService from "../../services/collaborator/collaborator.service";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -357,16 +358,15 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (user.customer) {
-        const updatedCustomer = await context.prisma.customer.update({
-          where: {
+        const updatedCustomer = await context.prisma.$transaction(async (trx) => {
+          return await collaboratorService.promoteCustomerToAdmin({
+            biotech_id: user.customer!.biotech_id,
+            customer_id: user.customer!.id,
             user_id: user.id,
-          },
-          data: {
-            role: role_type,
-          },
+          }, {
+            prisma: trx,
+          });
         });
-
-        await updateRoleForUser(user.id, casbinRole);
 
         return {
           ...user,
@@ -375,16 +375,15 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (user.vendor_member) {
-        const updatedVendorMember = await context.prisma.vendorMember.update({
-          where: {
+        const updatedVendorMember = await context.prisma.$transaction(async (trx) => {
+          return await collaboratorService.promoteVendorMemberToAdmin({
+            vendor_company_id: user.vendor_member!.vendor_company_id,
+            vendor_member_id: user.vendor_member!.id,
             user_id: user.id,
-          },
-          data: {
-            role: role_type,
-          },
+          }, {
+            prisma: trx,
+          });
         });
-
-        await updateRoleForUser(user.id, casbinRole);
 
         return {
           ...user,
