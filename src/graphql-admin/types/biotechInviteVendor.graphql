@@ -1,0 +1,26 @@
+type BiotechInviteVendor {
+  id: String
+  company_name: String
+  website: String
+  first_name: String
+  last_name: String
+  email: String
+  biotech_id: String
+  biotech: Biotech
+  inviter_id: String
+  inviter: User
+  project_request_id: String
+  project_request: ProjectRequest
+  project_connection: ProjectConnection
+}
+
+type Mutation {
+  updateBiotechInviteVendor(
+    id: String!
+    company_name: String!
+    website: String!
+    first_name: String!
+    last_name: String!
+    email: String!
+  ): BiotechInviteVendor
+}
