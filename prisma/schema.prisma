@@ -148,7 +148,7 @@ model VendorCompany {
   facebook_url                String?
   cro_extra_info              String?
   stripe_account              String?
-  is_on_marketplace           Boolean?  @default(true)
+  is_on_marketplace           Boolean  @default(true)
   invited_by                  String?
   commission_rate             Float     @default(5)
 
