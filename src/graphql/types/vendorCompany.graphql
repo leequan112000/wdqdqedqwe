@@ -31,6 +31,8 @@ type VendorCompany {
   twitter_url: String
   facebook_url: String
   cro_extra_info: String
+  invited_by: String
+  is_on_marketplace: Boolean
   vendor_members: [VendorMember]
   project_connections: [ProjectConnection]
   chats: [Chat]

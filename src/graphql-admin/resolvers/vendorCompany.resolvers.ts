@@ -162,17 +162,23 @@ const resolvers: Resolvers<Context> = {
           where: {
             email: biotechInviteVendor.email,
           },
-          include: {
-            vendor_member: true,
+        });
+
+        const existingVendorMember = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: existingUser?.id,
+            vendor_company_id: existingVendorCompany?.id,
           },
         });
 
         // Check if the vendor company with the same user already exists
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
-          && existingUser.vendor_member?.vendor_company_id === existingVendorCompany.id
+          && existingVendorMember?.vendor_company_id === existingVendorCompany.id
           && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== 'admin'
         ) {
+          invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
+
           const projectConnection = await context.prisma.projectConnection.create({
             data: {
               project_request_id: biotechInviteVendor.project_request_id as string,
@@ -191,12 +197,13 @@ const resolvers: Resolvers<Context> = {
           await context.prisma.vendorMemberConnection.create({
             data: {
               project_connection_id: projectConnection.id,
-              vendor_member_id: existingUser.vendor_member.id,
+              vendor_member_id: existingVendorMember.id,
             }
           });
 
           // Send email to existing vendor member by biotech
           sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
+          invariant(!existingUser, new PublicError('User already exists.'));
 
           return true;
         } else {     
@@ -213,7 +220,6 @@ const resolvers: Resolvers<Context> = {
             },
           });
 
-          invariant(!existingUser, new PublicError('User already exists.'));
           const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
           const newUser = await context.prisma.user.create({
