@@ -4,10 +4,11 @@ import { addRoleForUser } from '../helper/casbin';
 
 const prisma = new PrismaClient();
 
-const promoteFirstUserToOwner = async () => {
+const main = async () => {
   try {
     await prisma.$transaction(async (trx) => {
-      const biotechs = await trx.biotech.findMany({
+      //#region Find and make first user as owner role
+      const biotechsWithFirstUser = await trx.biotech.findMany({
         select: {
           customers: {
             select: {
@@ -22,38 +23,13 @@ const promoteFirstUserToOwner = async () => {
           },
         },
       });
-
-      const biotechUsers = biotechs.reduce<User[]>((acc, b) => {
+      const biotechFirstUsers = biotechsWithFirstUser.reduce<User[]>((acc, b) => {
         if (b.customers.length > 0) {
           acc.unshift(b.customers[0].user);
         }
         return acc;
       }, []);
-
-      const vendorCompanies = await trx.vendorCompany.findMany({
-        select: {
-          vendor_members: {
-            select: {
-              user: true,
-            },
-            orderBy: {
-              user: {
-                created_at: 'asc',
-              },
-            },
-            take: 1,
-          },
-        },
-      });
-
-      const vendorUsers = vendorCompanies.reduce<User[]>((acc, b) => {
-        if (b.vendor_members.length > 0) {
-          acc.unshift(b.vendor_members[0].user);
-        }
-        return acc;
-      }, []);
-
-      const updateBiotechUserTasks = biotechUsers.map(async (u) => {
+      const updateBiotechUserTasks = biotechFirstUsers.map(async (u) => {
         // Promote to owner
         const customer = await trx.customer.update({
           where: {
@@ -97,10 +73,32 @@ const promoteFirstUserToOwner = async () => {
         });
         await Promise.all(upsertTasks);
 
+        // Add casbin owner role
         await addRoleForUser(u.id, CasbinRole.OWNER);
       });
 
-      const updateVendorUserTasks = vendorUsers.map(async (u) => {
+      const vendorCompaniesWithFirstUser = await trx.vendorCompany.findMany({
+        select: {
+          vendor_members: {
+            select: {
+              user: true,
+            },
+            orderBy: {
+              user: {
+                created_at: 'asc',
+              },
+            },
+            take: 1,
+          },
+        },
+      });
+      const vendorFirstUsers = vendorCompaniesWithFirstUser.reduce<User[]>((acc, b) => {
+        if (b.vendor_members.length > 0) {
+          acc.unshift(b.vendor_members[0].user);
+        }
+        return acc;
+      }, []);
+      const updateVendorUserTasks = vendorFirstUsers.map(async (u) => {
         // Promote to owner
         const vendorMember = await trx.vendorMember.update({
           where: {
@@ -142,10 +140,67 @@ const promoteFirstUserToOwner = async () => {
         });
         await Promise.all(upsertTasks);
 
+        // Add casbin owner role
         await addRoleForUser(u.id, CasbinRole.OWNER);
       });
-
       await Promise.all([...updateBiotechUserTasks, ...updateVendorUserTasks]);
+      //#endregion
+
+      //#region Find and make regular user as user role
+      const biotechFirstUserIDs = biotechFirstUsers.map((u) => u.id);
+      const biotechWithRegularUsers = await trx.biotech.findMany({
+        select: {
+          customers: {
+            select: {
+              user: true,
+            },
+            where: {
+              user_id: {
+                notIn: biotechFirstUserIDs,
+              },
+            },
+          },
+        },
+      });
+      const biotechRegularUsers = biotechWithRegularUsers.reduce<User[]>((acc, b) => {
+        if (b.customers.length > 0) {
+          const users = b.customers.map((c) => c.user);
+          acc.unshift(...users);
+        }
+        return acc;
+      }, []);
+      const updateBiotechRegularUserTasks = biotechRegularUsers.map(async (u) => {
+        await addRoleForUser(u.id, CasbinRole.USER);
+      });
+      await Promise.all(updateBiotechRegularUserTasks);
+
+      const vendorCompanyFirstUserIDs = vendorFirstUsers.map((u) => u.id);
+      const vendorCompanyWithRegularUsers = await trx.vendorCompany.findMany({
+        select: {
+          vendor_members: {
+            select: {
+              user: true,
+            },
+            where: {
+              user_id: {
+                notIn: vendorCompanyFirstUserIDs,
+              },
+            },
+          },
+        },
+      });
+      const vendorCompanyRegularUsers = vendorCompanyWithRegularUsers.reduce<User[]>((acc, v) => {
+        if (v.vendor_members.length > 0) {
+          const users = v.vendor_members.map((vm) => vm.user);
+          acc.unshift(...users);
+        }
+        return acc;
+      }, []);
+      const updateVendorCompanyRegularUserTasks = vendorCompanyRegularUsers.map(async (u) => {
+        await addRoleForUser(u.id, CasbinRole.USER);
+      });
+      await Promise.all(updateVendorCompanyRegularUserTasks);
+      //#endregion
 
       console.log('Operation succeeded.')
     });
@@ -158,4 +213,4 @@ const promoteFirstUserToOwner = async () => {
   process.exit(0);
 }
 
-promoteFirstUserToOwner();
+main();
