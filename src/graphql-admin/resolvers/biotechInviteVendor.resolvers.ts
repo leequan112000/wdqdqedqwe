@@ -11,7 +11,7 @@ const resolvers: Resolvers<Context> = {
           id: args.id,
         },
       });
-      invariant(biotechInviteVendor, 'Biotech invite vendor not found.');
+      invariant(biotechInviteVendor, new PublicError('Biotech invite vendor not found.'));
 
       const updatedBiotechInviteVendor = await context.prisma.biotechInviteVendor.update({
         where: {
