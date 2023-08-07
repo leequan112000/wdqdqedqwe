@@ -208,6 +208,7 @@ const resolvers: Resolvers<Context> = {
               website: biotechInviteVendor.website,
               vendor_type: vendor_type,
               skip_cda: true,
+              is_on_marketplace: false,
               invited_by: biotechInviteVendor.biotech_id,
             },
           });
