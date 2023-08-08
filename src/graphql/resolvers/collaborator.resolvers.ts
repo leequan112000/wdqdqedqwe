@@ -333,8 +333,6 @@ const resolvers: Resolvers<Context> = {
         'The user is not belong to the same company.',
       );
 
-      let casbinRole: CasbinRole;
-
       // check for casbin role & permission
       switch (role_type) {
         case CompanyCollaboratorRoleType.ADMIN: {
@@ -342,7 +340,40 @@ const resolvers: Resolvers<Context> = {
             hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE),
             new PermissionDeniedError(),
           );
-          casbinRole = CasbinRole.ADMIN;
+
+          if (user.customer) {
+            const updatedCustomer = await context.prisma.$transaction(async (trx) => {
+              return await collaboratorService.setCustomerAsAdmin({
+                biotech_id: user.customer!.biotech_id,
+                customer_id: user.customer!.id,
+                user_id: user.id,
+              }, {
+                prisma: trx,
+              });
+            });
+
+            return {
+              ...user,
+              company_collaborator_role: updatedCustomer.role,
+            };
+          }
+
+          if (user.vendor_member) {
+            const updatedVendorMember = await context.prisma.$transaction(async (trx) => {
+              return await collaboratorService.setVendorMemberAsAdmin({
+                vendor_company_id: user.vendor_member!.vendor_company_id,
+                vendor_member_id: user.vendor_member!.id,
+                user_id: user.id,
+              }, {
+                prisma: trx,
+              });
+            });
+
+            return {
+              ...user,
+              company_collaborator_role: updatedVendorMember.role,
+            };
+          }
           break;
         }
         case CompanyCollaboratorRoleType.USER: {
@@ -350,45 +381,40 @@ const resolvers: Resolvers<Context> = {
             hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE),
             new PermissionDeniedError(),
           );
-          casbinRole = CasbinRole.USER;
+
+          if (user.customer) {
+            const updatedCustomer = await context.prisma.$transaction(async (trx) => {
+              return await collaboratorService.setCustomerAsUser({
+                customer_id: user.customer!.id,
+              }, {
+                prisma: trx,
+              });
+            });
+
+            return {
+              ...user,
+              company_collaborator_role: updatedCustomer.role,
+            };
+          }
+
+          if (user.vendor_member) {
+            const updatedVendorMember = await context.prisma.$transaction(async (trx) => {
+              return await collaboratorService.setVendorMemberAsUser({
+                vendor_member_id: user.vendor_member!.id,
+              }, {
+                prisma: trx,
+              });
+            });
+
+            return {
+              ...user,
+              company_collaborator_role: updatedVendorMember.role,
+            };
+          }
           break;
         }
         default:
           throw new PublicError('Invalid company collaborator role.');
-      }
-
-      if (user.customer) {
-        const updatedCustomer = await context.prisma.$transaction(async (trx) => {
-          return await collaboratorService.promoteCustomerToAdmin({
-            biotech_id: user.customer!.biotech_id,
-            customer_id: user.customer!.id,
-            user_id: user.id,
-          }, {
-            prisma: trx,
-          });
-        });
-
-        return {
-          ...user,
-          company_collaborator_role: updatedCustomer.role,
-        };
-      }
-
-      if (user.vendor_member) {
-        const updatedVendorMember = await context.prisma.$transaction(async (trx) => {
-          return await collaboratorService.promoteVendorMemberToAdmin({
-            vendor_company_id: user.vendor_member!.vendor_company_id,
-            vendor_member_id: user.vendor_member!.id,
-            user_id: user.id,
-          }, {
-            prisma: trx,
-          });
-        });
-
-        return {
-          ...user,
-          company_collaborator_role: updatedVendorMember.role,
-        };
       }
 
       throw new InternalError('User is nor customer or vendor member.');
