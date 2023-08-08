@@ -19,6 +19,7 @@ import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
 import { addRoleForUser, hasPermission } from "../../helper/casbin";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -608,8 +609,8 @@ const resolvers: Resolvers<Context> = {
       const currentDate = new Date();
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
-      invariant(allowAcceptProjectConnection, 'Permission denied.');
+      const allowAcceptProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -678,8 +679,8 @@ const resolvers: Resolvers<Context> = {
     declinedProjectConnection: async (_, args, context) => {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
-      invariant(allowAcceptProjectConnection, 'Permission denied.');
+      const allowAcceptProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({

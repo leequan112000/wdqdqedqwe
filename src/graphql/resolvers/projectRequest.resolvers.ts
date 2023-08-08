@@ -257,8 +257,8 @@ const resolvers: Resolvers<Context> = {
       const { project_request_collaborators, ...project_request_args } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Missing current user id.');
-      const allowCreateProjectRequest = hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
-      invariant(allowCreateProjectRequest, 'Permission denied.')
+      const allowCreateProjectRequest = await hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowCreateProjectRequest, new PermissionDeniedError());
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {
@@ -306,8 +306,8 @@ const resolvers: Resolvers<Context> = {
     withdrawProjectRequest: async (_, args, context) => {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Missing current user id.');
-      const allowWithdrawProjectRequest = hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
-      invariant(allowWithdrawProjectRequest, 'Permission denied.')
+      const allowWithdrawProjectRequest = await hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowWithdrawProjectRequest, new PermissionDeniedError())
       const user = await context.prisma.user.findFirstOrThrow({
         where: {
           id: context.req.user_id

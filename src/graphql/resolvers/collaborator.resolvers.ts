@@ -76,7 +76,7 @@ const resolvers: Resolvers<Context> = {
         [CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinObj.COMPANY_COLLABORATOR_USER],
         CasbinAct.WRITE
       );
-      invariant(allowAcceptProjectConnection, new PublicError('Permission denied.'));
+      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       // Check for existing user
       const existingUser = await context.prisma.user.findFirst({
@@ -163,7 +163,7 @@ const resolvers: Resolvers<Context> = {
         [CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinObj.COMPANY_COLLABORATOR_USER],
         CasbinAct.WRITE
       );
-      invariant(allowAcceptProjectConnection, new PublicError('Permission denied.'));
+      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const addCollaboratorTasks = collaborators.map(async (collaborator) => {
         // Check for existing user
@@ -352,10 +352,8 @@ const resolvers: Resolvers<Context> = {
       // check for casbin role & permission
       switch (role_type) {
         case CompanyCollaboratorRoleType.ADMIN: {
-          invariant(
-            hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE),
-            new PermissionDeniedError(),
-          );
+          const canSetAdminRole = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE);
+          invariant(canSetAdminRole, new PermissionDeniedError());
 
           if (user.customer) {
             const updatedCustomer = await context.prisma.$transaction(async (trx) => {
@@ -393,10 +391,8 @@ const resolvers: Resolvers<Context> = {
           break;
         }
         case CompanyCollaboratorRoleType.USER: {
-          invariant(
-            hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE),
-            new PermissionDeniedError(),
-          );
+          const canSetUserRole = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE);
+          invariant(canSetUserRole, new PermissionDeniedError());
 
           if (user.customer) {
             const updatedCustomer = await context.prisma.$transaction(async (trx) => {
