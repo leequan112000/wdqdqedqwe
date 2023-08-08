@@ -433,6 +433,19 @@ const resolvers: Resolvers<Context> = {
     },
     deactivateCollaborator: async (_, args, context) => {
       const { user_id } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: currentUserId,
+        },
+        include: {
+          vendor_member: true,
+          customer: true,
+        }
+      });
+      invariant(currentUser, 'Current user not found.');
+
       const user = await context.prisma.user.findFirst({
         where: {
           id: user_id,
@@ -444,6 +457,32 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(user, new PublicError('User not found.'));
+
+      invariant(
+        user.customer?.biotech_id === currentUser.customer?.biotech_id
+        || user.vendor_member?.vendor_company_id === currentUser.vendor_member?.vendor_company_id,
+        new PermissionDeniedError(),
+      );
+
+      const userRole = user.customer?.role || user.vendor_member?.role;
+
+      invariant(userRole !== CompanyCollaboratorRoleType.OWNER, new PermissionDeniedError());
+
+      switch (userRole) {
+        case CompanyCollaboratorRoleType.USER: {
+          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
+          invariant(allowDeactivateUser, new PermissionDeniedError());
+          break;
+        }
+        case CompanyCollaboratorRoleType.ADMIN: {
+          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
+          invariant(allowDeactivateUser, new PermissionDeniedError());
+          break;
+        }
+        default: {
+          throw new InternalError('User has invalid role.');
+        }
+      }
 
       if (user.is_active !== true) {
         return user;
@@ -547,13 +586,56 @@ const resolvers: Resolvers<Context> = {
     },
     reactivateCollaborator: async (_, args, context) => {
       const { user_id } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: currentUserId,
+        },
+        include: {
+          vendor_member: true,
+          customer: true,
+        }
+      });
+      invariant(currentUser, 'Current user not found.');
+
       const user = await context.prisma.user.findFirst({
         where: {
           id: user_id,
         },
+        include: {
+          vendor_member: true,
+          customer: true,
+        }
       });
 
       invariant(user, new PublicError('User not found.'));
+
+      invariant(
+        user.customer?.biotech_id === currentUser.customer?.biotech_id
+        || user.vendor_member?.vendor_company_id === currentUser.vendor_member?.vendor_company_id,
+        new PermissionDeniedError(),
+      );
+
+      const userRole = user.customer?.role || user.vendor_member?.role;
+
+      invariant(userRole !== CompanyCollaboratorRoleType.OWNER, new PermissionDeniedError());
+
+      switch (userRole) {
+        case CompanyCollaboratorRoleType.USER: {
+          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
+          invariant(allowDeactivateUser, new PermissionDeniedError());
+          break;
+        }
+        case CompanyCollaboratorRoleType.ADMIN: {
+          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
+          invariant(allowDeactivateUser, new PermissionDeniedError());
+          break;
+        }
+        default: {
+          throw new InternalError('User has invalid role.');
+        }
+      }
 
       if (user.is_active === false) {
         const activatedUser = await context.prisma.user.update({
