@@ -2,13 +2,14 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { CompanyCollaboratorRoleType, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import { CasbinAct, CasbinObj, CompanyCollaboratorRoleType, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
+import { hasPermission } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -254,10 +255,14 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     createProjectRequest: async (_, args, context) => {
       const { project_request_collaborators, ...project_request_args } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      const allowCreateProjectRequest = hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowCreateProjectRequest, 'Permission denied.')
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {
-            id: context.req.user_id
+            id: currentUserId
           },
           include: {
             customer: {
@@ -299,6 +304,10 @@ const resolvers: Resolvers<Context> = {
       });
     },
     withdrawProjectRequest: async (_, args, context) => {
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      const allowWithdrawProjectRequest = hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowWithdrawProjectRequest, 'Permission denied.')
       const user = await context.prisma.user.findFirstOrThrow({
         where: {
           id: context.req.user_id
