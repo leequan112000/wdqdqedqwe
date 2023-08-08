@@ -71,12 +71,12 @@ const resolvers: Resolvers<Context> = {
     inviteCollaborator: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = await hasPermission(
+      const allowInviteCompanyCollaborator = await hasPermission(
         currentUserId,
-        [CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinObj.COMPANY_COLLABORATOR_USER],
+        CasbinObj.COMPANY_COLLABORATOR_USER,
         CasbinAct.WRITE
       );
-      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
+      invariant(allowInviteCompanyCollaborator, new PermissionDeniedError());
 
       // Check for existing user
       const existingUser = await context.prisma.user.findFirst({
@@ -158,12 +158,12 @@ const resolvers: Resolvers<Context> = {
       const { collaborators } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = await hasPermission(
+      const allowInviteCompanyCollaborator = await hasPermission(
         currentUserId,
-        [CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinObj.COMPANY_COLLABORATOR_USER],
+        CasbinObj.COMPANY_COLLABORATOR_USER,
         CasbinAct.WRITE
       );
-      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
+      invariant(allowInviteCompanyCollaborator, new PermissionDeniedError());
 
       const addCollaboratorTasks = collaborators.map(async (collaborator) => {
         // Check for existing user
