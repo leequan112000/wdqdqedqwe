@@ -37,10 +37,19 @@ export const addRoleForUser = async (userId: string, role: CasbinRole) => {
   return await e.addRoleForUser(`user:${userId}`, role);
 }
 
-export const hasPermission = async (userId: string, obj: CasbinObj, act: CasbinAct) => {
+export const hasPermission = async (userId: string, obj: CasbinObj | CasbinObj[], act: CasbinAct) => {
   const e = await createEnforcer();
-  const effect = await e.enforce(`user:${userId}`, obj, act);
-  return effect;
+
+  let resources: CasbinObj[];
+  if (Array.isArray(obj)) {
+    resources = obj;
+  } else {
+    resources = [obj];
+  }
+  const tasks = resources.map((o) => e.enforce(`user:${userId}`, o, act))
+  const allEffects = await Promise.all(tasks);
+
+  return allEffects.filter((e) => e === false).length === 0;
 }
 
 export const frontendPermissionObject = async (userId: string) => {
