@@ -14,11 +14,11 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
-import { addRoleForUser } from "../../helper/casbin";
+import { addRoleForUser, hasPermission } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -606,8 +606,10 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {
       const currentDate = new Date();
-
-      invariant(context.req.user_id, 'Current user id not found.');
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowAcceptProjectConnection = hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowAcceptProjectConnection, 'Permission denied.');
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -668,12 +670,17 @@ const resolvers: Resolvers<Context> = {
 
       createSendUserAcceptProjectRequestNoticeJob({
         projectConnectionId: projectConnection.id,
-        senderUserId: context.req.user_id,
+        senderUserId: currentUserId,
       });
 
       return updatedProjectConnection;
     },
     declinedProjectConnection: async (_, args, context) => {
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowAcceptProjectConnection = hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowAcceptProjectConnection, 'Permission denied.');
+
       const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
