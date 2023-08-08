@@ -1,4 +1,10 @@
-import { acceptProjectRequestNoticeTemplate, projectRequestSubmissionTemplate, vendorRequestExpiredNoticeTemplate, vendorRequestExpiringNoticeTemplate } from "./templates";
+import {
+  acceptProjectRequestNoticeTemplate,
+  privateProjectRequestSubmissionTemplate,
+  projectRequestSubmissionTemplate,
+  vendorRequestExpiredNoticeTemplate,
+  vendorRequestExpiringNoticeTemplate,
+} from "./templates";
 import { AcceptProjectRequestNoticeData, VendorProjectRequestExpiredNoticeData, VendorProjectRequestExpiringNoticeData } from "./types";
 import { app_env } from "../environment";
 import { createMailData, sendMail } from "./config";
@@ -8,6 +14,18 @@ export const sendProjectRequestSubmissionEmail = (receiver: User) => {
   const mailData = createMailData({
     to: receiver.email,
     templateId: projectRequestSubmissionTemplate,
+    dynamicTemplateData: {
+      manage_request_url: `${app_env.APP_URL}/app`,
+    },
+  });
+
+  sendMail(mailData);
+};
+
+export const sendPrivateProjectRequestSubmissionEmail = (receiver: User) => {
+  const mailData = createMailData({
+    to: receiver.email,
+    templateId: privateProjectRequestSubmissionTemplate,
     dynamicTemplateData: {
       manage_request_url: `${app_env.APP_URL}/app`,
     },

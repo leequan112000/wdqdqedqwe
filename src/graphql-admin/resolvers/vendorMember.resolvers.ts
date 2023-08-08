@@ -3,7 +3,7 @@ import { Resolvers } from '../../generated';
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';
-import { sendVendorMemberInvitationByAdminEmail } from '../../mailer/vendorMember';
+import { sendVendorMemberInvitationByAdminEmail, sendVendorMemberInvitationByBiotechEmail } from '../../mailer/vendorMember';
 
 const resolver: Resolvers<Context> = {
   VendorMember: {
