@@ -98,6 +98,7 @@ const resolver: Resolvers<Context> = {
               },
             });
             await addRoleForUser(newUser.id, CasbinRole.OWNER);
+            break;
           }
           default:
             throw new PublicError('Invalid role.');

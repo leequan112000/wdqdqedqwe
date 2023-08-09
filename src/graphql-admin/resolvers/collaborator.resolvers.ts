@@ -7,6 +7,13 @@ import { PublicError } from "../../graphql/errors/PublicError";
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { CompanyCollaboratorRoleType } from "../../helper/constant";
 
+function ignoreEmptyString(data: string | undefined | null) {
+  if (data === "") {
+    return undefined;
+  }
+  return data;
+}
+
 const resolvers: Resolvers<Context> = {
   Mutation: {
     resendVendorMemberInvitationByAdmin: async (parent, args, context) => {
@@ -51,8 +58,8 @@ const resolvers: Resolvers<Context> = {
             id: user_id,
           },
           data: {
-            first_name: first_name ?? undefined,
-            last_name: last_name ?? undefined,
+            first_name: ignoreEmptyString(first_name) ?? undefined,
+            last_name: ignoreEmptyString(last_name) ?? undefined,
           },
         });
         const updatedVendorMember = await trx.vendorMember.update({
@@ -60,8 +67,8 @@ const resolvers: Resolvers<Context> = {
             user_id,
           },
           data: {
-            title: title ?? undefined,
-            department: department ?? undefined,
+            title: ignoreEmptyString(title) ?? undefined,
+            department: ignoreEmptyString(department) ?? undefined,
           },
         });
 
