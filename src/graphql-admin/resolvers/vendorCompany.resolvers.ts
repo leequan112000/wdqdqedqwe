@@ -175,7 +175,42 @@ const resolvers: Resolvers<Context> = {
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
           && existingVendorMember?.vendor_company_id === existingVendorCompany.id
-          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === 'admin'
+          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== 'admin'
+        ) {
+          invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
+
+          const projectConnection = await context.prisma.projectConnection.create({
+            data: {
+              project_request_id: biotechInviteVendor.project_request_id as string,
+              vendor_company_id: existingVendorCompany.id,
+              vendor_status: ProjectConnectionVendorStatus.PENDING,
+              expired_at: newExpiryDate.toDate(),
+              biotech_invite_vendor_id: biotechInviteVendor.id,
+            }
+          });
+          await context.prisma.customerConnection.create({
+            data: {
+              project_connection_id: projectConnection.id,
+              customer_id: biotechCustomer.id,
+            }
+          });
+          await context.prisma.vendorMemberConnection.create({
+            data: {
+              project_connection_id: projectConnection.id,
+              vendor_member_id: existingVendorMember.id,
+            }
+          });
+
+          // Send email to existing vendor member by biotech
+          sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
+          invariant(!existingUser, new PublicError('User already exists.'));
+
+          return true;
+          // Check if the vendor company with the same user already exists
+          // If vendor copmany is in marketplace, assign request to this vendor company
+        } else if (existingVendorCompany && existingUser
+          && existingVendorMember?.vendor_company_id === existingVendorCompany.id
+          && existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === 'admin'
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
