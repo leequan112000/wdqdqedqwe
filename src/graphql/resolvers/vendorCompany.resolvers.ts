@@ -3,6 +3,9 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers, StripeAccountData } from "../../generated";
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
+import { hasPermission } from "../../helper/casbin";
+import { CasbinAct, CasbinObj } from "../../helper/constant";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -95,6 +98,11 @@ const resolvers: Resolvers<Context> = {
     },
     vendorCompanyStripeConnectUrl: async (_, args, context) => {
       const { refresh_url, return_url } = args;
+
+      invariant(context.req.user_id, 'Current user id not found.');
+      const allowSetupBankAccount = await hasPermission(context.req.user_id, CasbinObj.PAYOUT_ACCOUNT, CasbinAct.WRITE);
+      invariant(allowSetupBankAccount, new PermissionDeniedError());
+
       return await context.prisma.$transaction(async (trx) => {
         const vendorMember = await trx.vendorMember.findFirstOrThrow({
           where: {
