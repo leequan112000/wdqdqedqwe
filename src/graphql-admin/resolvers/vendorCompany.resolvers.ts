@@ -175,7 +175,7 @@ const resolvers: Resolvers<Context> = {
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
           && existingVendorMember?.vendor_company_id === existingVendorCompany.id
-          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== 'admin'
+          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === 'admin'
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
