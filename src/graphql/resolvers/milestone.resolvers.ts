@@ -247,6 +247,11 @@ const resolvers: Resolvers<Context> = {
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
       const { id, password } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
