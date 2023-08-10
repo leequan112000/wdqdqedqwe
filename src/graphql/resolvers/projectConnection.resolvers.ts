@@ -609,8 +609,6 @@ const resolvers: Resolvers<Context> = {
       const currentDate = new Date();
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
-      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -679,8 +677,6 @@ const resolvers: Resolvers<Context> = {
     declinedProjectConnection: async (_, args, context) => {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowAcceptProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
-      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
