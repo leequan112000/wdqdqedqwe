@@ -214,6 +214,17 @@ const resolvers: Resolvers<Context> = {
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
+          const primaryVendorMembers = await context.prisma.vendorMember.findMany({
+            where: {
+              vendor_company_id: existingVendorCompany.id,
+              is_primary_member: true,
+            },
+            include: {
+              user: true,
+            }
+          });
+          invariant(primaryVendorMembers, new PublicError('No primary vendor member found.'));
+
           const projectConnection = await context.prisma.projectConnection.create({
             data: {
               project_request_id: biotechInviteVendor.project_request_id as string,
@@ -229,12 +240,16 @@ const resolvers: Resolvers<Context> = {
               customer_id: biotechCustomer.id,
             }
           });
-          await context.prisma.vendorMemberConnection.create({
-            data: {
-              project_connection_id: projectConnection.id,
-              vendor_member_id: existingVendorMember.id,
-            }
-          });
+          await Promise.all(
+            primaryVendorMembers.map(async (pvm) => {
+              await context.prisma.vendorMemberConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  vendor_member_id: pvm.id,
+                }
+              });
+            })
+          );
 
           // Send email to existing vendor member by biotech
           sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
