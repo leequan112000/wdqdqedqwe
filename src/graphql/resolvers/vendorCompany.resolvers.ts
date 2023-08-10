@@ -6,6 +6,7 @@ import invariant from "../../helper/invariant";
 import { hasPermission } from "../../helper/casbin";
 import { CasbinAct, CasbinObj } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
+import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -181,6 +182,8 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     updateVendorCompany: async (_, args, context) => {
+      await checkAllowEditCompanyInfoPermission(context);
+
       return await context.prisma.$transaction(async (trx) => {
         const vendor_member = await trx.vendorMember.findFirst({
           where: {
@@ -235,6 +238,8 @@ const resolvers: Resolvers<Context> = {
       });
     },
     updateVendorCompanyCertificationTags: async (_, args, context) => {
+      await checkAllowEditCompanyInfoPermission(context);
+
       return await context.prisma.$transaction(async (trx) => {
         const vendor_member = await trx.vendorMember.findFirst({
           where: {
@@ -334,6 +339,8 @@ const resolvers: Resolvers<Context> = {
       });
     },
     updateVendorCompanyLabSpecializations: async (_, args, context) => {
+      await checkAllowEditCompanyInfoPermission(context);
+
       return await context.prisma.$transaction(async (trx) => {
         const vendor_member = await trx.vendorMember.findFirst({
           where: {

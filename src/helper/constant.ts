@@ -200,6 +200,7 @@ export enum CasbinObj {
   PROJECT_COLLABORATOR = 'project_collaborator',
   PAYOUT_ACCOUNT = 'payout_account',
   MILESTONE_PAYMENT = 'milestone/payment',
+  COMPANY_INFO = 'company_info',
 }
 
 export enum CasbinAct {

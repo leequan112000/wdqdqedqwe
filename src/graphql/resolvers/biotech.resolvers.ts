@@ -4,6 +4,7 @@ import { CompanyCollaboratorRoleType, SubscriptionStatus } from "../../helper/co
 import { Resolvers } from "../../generated";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
 import invariant from "../../helper/invariant";
+import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
 
 const resolver: Resolvers<Context> = {
   Biotech: {
@@ -108,6 +109,7 @@ const resolver: Resolvers<Context> = {
   },
   Mutation: {
     onboardBiotech: async (_, args, context) => {
+      await checkAllowEditCompanyInfoPermission(context);
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {

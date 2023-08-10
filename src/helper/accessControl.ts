@@ -1,5 +1,7 @@
 import { PermissionDeniedError } from '../graphql/errors/PermissionDeniedError';
 import { Context } from '../types/context';
+import { hasPermission } from './casbin';
+import { CasbinAct, CasbinObj } from './constant';
 import invariant from './invariant';
 
 export const checkProjectConnectionPermission = async (context: Context, projectConnectionId: string) => {
@@ -120,4 +122,11 @@ export const checkAllowCustomerOnlyPermission = async (context: Context) => {
   } catch (error) {
     throw new PermissionDeniedError();
   }
+}
+
+export const checkAllowEditCompanyInfoPermission = async (context: Context) => {
+  const currentUserId = context.req.user_id;
+  invariant(currentUserId, 'Current user id not found.');
+  const allowEditCompanyInfo = await hasPermission(currentUserId, CasbinObj.COMPANY_INFO, CasbinAct.WRITE);
+  invariant(allowEditCompanyInfo, new PermissionDeniedError());
 }
