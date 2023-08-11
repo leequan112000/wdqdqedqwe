@@ -5,9 +5,7 @@ const prisma = new PrismaClient();
 const main = async () => {
   try {
     await prisma.$transaction(async (trx) => {
-      // Find project request owner
       const allProjectRequests = await trx.projectRequest.findMany();
-
       const upsertProjectRequestCollaborators = allProjectRequests.map(async (request) => {
         return await trx.projectRequestCollaborator.upsert({
           create: {
