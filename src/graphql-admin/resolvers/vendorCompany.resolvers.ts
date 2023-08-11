@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
+import { InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
@@ -22,7 +22,7 @@ const resolvers: Resolvers<Context> = {
           vendor_type: args.vendor_type,
           skip_cda: args.skip_cda || false,
           is_on_marketplace: true,
-          invited_by: 'admin',
+          invited_by: InvitedByType.ADMIN,
         }
       });  
     },
@@ -175,7 +175,7 @@ const resolvers: Resolvers<Context> = {
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
           && existingVendorMember?.vendor_company_id === existingVendorCompany.id
-          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== 'admin'
+          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== InvitedByType.ADMIN
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
@@ -200,6 +200,56 @@ const resolvers: Resolvers<Context> = {
               vendor_member_id: existingVendorMember.id,
             }
           });
+
+          // Send email to existing vendor member by biotech
+          sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
+          invariant(!existingUser, new PublicError('User already exists.'));
+
+          return true;
+          // Check if the vendor company with the same user already exists
+          // If vendor copmany is in marketplace, assign request to this vendor company
+        } else if (existingVendorCompany && existingUser
+          && existingVendorMember?.vendor_company_id === existingVendorCompany.id
+          && existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === InvitedByType.ADMIN
+        ) {
+          invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
+
+          const primaryVendorMembers = await context.prisma.vendorMember.findMany({
+            where: {
+              vendor_company_id: existingVendorCompany.id,
+              is_primary_member: true,
+            },
+            include: {
+              user: true,
+            }
+          });
+          invariant(primaryVendorMembers, new PublicError('No primary vendor member found.'));
+
+          const projectConnection = await context.prisma.projectConnection.create({
+            data: {
+              project_request_id: biotechInviteVendor.project_request_id as string,
+              vendor_company_id: existingVendorCompany.id,
+              vendor_status: ProjectConnectionVendorStatus.PENDING,
+              expired_at: newExpiryDate.toDate(),
+              biotech_invite_vendor_id: biotechInviteVendor.id,
+            }
+          });
+          await context.prisma.customerConnection.create({
+            data: {
+              project_connection_id: projectConnection.id,
+              customer_id: biotechCustomer.id,
+            }
+          });
+          await Promise.all(
+            primaryVendorMembers.map(async (pvm) => {
+              await context.prisma.vendorMemberConnection.create({
+                data: {
+                  project_connection_id: projectConnection.id,
+                  vendor_member_id: pvm.id,
+                }
+              });
+            })
+          );
 
           // Send email to existing vendor member by biotech
           sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
