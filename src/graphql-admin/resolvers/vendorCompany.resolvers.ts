@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
+import { InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
@@ -22,7 +22,7 @@ const resolvers: Resolvers<Context> = {
           vendor_type: args.vendor_type,
           skip_cda: args.skip_cda || false,
           is_on_marketplace: true,
-          invited_by: 'admin',
+          invited_by: InvitedByType.ADMIN,
         }
       });  
     },
@@ -175,7 +175,7 @@ const resolvers: Resolvers<Context> = {
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
           && existingVendorMember?.vendor_company_id === existingVendorCompany.id
-          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== 'admin'
+          && !existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by !== InvitedByType.ADMIN
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
@@ -210,7 +210,7 @@ const resolvers: Resolvers<Context> = {
           // If vendor copmany is in marketplace, assign request to this vendor company
         } else if (existingVendorCompany && existingUser
           && existingVendorMember?.vendor_company_id === existingVendorCompany.id
-          && existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === 'admin'
+          && existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === InvitedByType.ADMIN
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 

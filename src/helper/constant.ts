@@ -192,3 +192,7 @@ export enum StripeWebhookPaymentType {
   MILESTONE = 'milestone',
   INVOICE = 'invoice',
 }
+
+export enum InvitedByType {
+  ADMIN = 'admin',
+}
