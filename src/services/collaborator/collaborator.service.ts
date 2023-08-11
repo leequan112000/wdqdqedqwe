@@ -77,7 +77,7 @@ type SetCustomerRoleAsUser = {
 
 const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContext) => {
   const { customer_id } = args;
-  return await ctx.prisma.customer.update({
+  const updatedCustomer = await ctx.prisma.customer.update({
     where: {
       id: customer_id,
     },
@@ -85,6 +85,10 @@ const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContex
       role: CompanyCollaboratorRoleType.USER,
     },
   });
+
+  await updateRoleForUser(updatedCustomer.user_id, CasbinRole.USER);
+
+  return updatedCustomer;
 }
 
 type SetVendorMemberRoleAsAdminArgs = {
@@ -151,7 +155,7 @@ type SetVendorMemberAsUser = {
 const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceContext) => {
   const { vendor_member_id } = args;
 
-  return await ctx.prisma.vendorMember.update({
+  const updatedVendorMember = await ctx.prisma.vendorMember.update({
     where: {
       id: vendor_member_id,
     },
@@ -159,6 +163,10 @@ const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceCo
       role: CompanyCollaboratorRoleType.USER,
     },
   });
+
+  await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.USER);
+
+  return updatedVendorMember;
 }
 
 const collaboratorService = {

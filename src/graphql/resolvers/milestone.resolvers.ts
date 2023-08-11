@@ -9,10 +9,12 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
+import { hasPermission } from "../../helper/casbin";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
@@ -59,7 +61,11 @@ const resolvers: Resolvers<Context> = {
         : null;
     },
     milestoneCheckoutUrl: async (_, args, context) => {
-      const { id, success_url, cancel_url } = args
+      const { id, success_url, cancel_url } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
       const milestone = await context.prisma.milestone.findFirst({
@@ -241,6 +247,11 @@ const resolvers: Resolvers<Context> = {
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
       const { id, password } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
