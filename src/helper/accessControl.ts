@@ -130,3 +130,17 @@ export const checkAllowEditCompanyInfoPermission = async (context: Context) => {
   const allowEditCompanyInfo = await hasPermission(currentUserId, CasbinObj.COMPANY_INFO, CasbinAct.WRITE);
   invariant(allowEditCompanyInfo, new PermissionDeniedError());
 }
+
+export const checkAllowAddProjectCollaborator = async (context: Context) => {
+  const currentUserId = context.req.user_id;
+  invariant(currentUserId, 'Current user id not found.');
+  const allowAddProjectCollaborator = await hasPermission(currentUserId, CasbinObj.PROJECT_COLLABORATOR, CasbinAct.WRITE);
+  invariant(allowAddProjectCollaborator, new PermissionDeniedError());
+}
+
+export const checkAllowRemoveProjectCollaborator = async (context: Context) => {
+  const currentUserId = context.req.user_id;
+  invariant(currentUserId, 'Current user id not found.');
+  const allowRemoveProjectCollaborator = await hasPermission(currentUserId, CasbinObj.PROJECT_COLLABORATOR, CasbinAct.DELETE);
+  invariant(allowRemoveProjectCollaborator, new PermissionDeniedError());
+}

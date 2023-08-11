@@ -13,13 +13,12 @@ import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 
 import { createResetPasswordToken } from "../../helper/auth";
-import { checkProjectConnectionPermission } from "../../helper/accessControl";
+import { checkAllowAddProjectCollaborator, checkAllowRemoveProjectCollaborator, checkProjectConnectionPermission } from "../../helper/accessControl";
 import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
-import { addRoleForUser, hasPermission } from "../../helper/casbin";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
+import { addRoleForUser } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -703,6 +702,8 @@ const resolvers: Resolvers<Context> = {
     addProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
+      await checkAllowAddProjectCollaborator(context);
+
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -800,6 +801,8 @@ const resolvers: Resolvers<Context> = {
     removeProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
+      await checkAllowRemoveProjectCollaborator(context);
+
       const user = await context.prisma.user.findFirst({
         where: {
           id: user_id,
@@ -840,6 +843,8 @@ const resolvers: Resolvers<Context> = {
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
       const { project_connection_id, email, first_name, last_name, custom_message } = args;
+
+      await checkAllowAddProjectCollaborator(context);
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
