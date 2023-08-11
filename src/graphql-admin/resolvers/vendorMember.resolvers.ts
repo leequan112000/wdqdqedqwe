@@ -4,8 +4,9 @@ import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';
 import { sendVendorMemberInvitationByAdminEmail } from '../../mailer/vendorMember';
+import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
+import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
-import { CasbinRole } from '../../helper/constant';
 
 const resolver: Resolvers<Context> = {
   VendorMember: {
@@ -30,21 +31,22 @@ const resolver: Resolvers<Context> = {
           },
         });
 
-        if (user) {
-          throw new PublicError('User already exist');
-        }
+        invariant(user === null, new PublicError('User already exist.'));
 
-        // Only allow admin invite two pocs for one vendor company account
-        const primaryVendorMembers = await trx.vendorMember.findMany({
+        const owner = await trx.vendorMember.findFirst({
           where: {
-            is_primary_member: true,
+            role: CompanyCollaboratorRoleType.OWNER,
             vendor_company_id: args.vendor_company_id,
-          }
+          },
         });
+        const noOwner = owner === null;
 
-        if (primaryVendorMembers.length >= 2) {
-          throw new PublicError('Primary member exists and full');
-        }
+        // Check if company has owner.
+        invariant(
+          args.role === CompanyCollaboratorRoleType.OWNER && noOwner
+          || args.role !== CompanyCollaboratorRoleType.OWNER,
+          new PublicError('Owner already exists!'),
+        );
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
         const newUser = await trx.user.create({
@@ -54,18 +56,53 @@ const resolver: Resolvers<Context> = {
             last_name: args.last_name,
             reset_password_token: createResetPasswordToken(),
             reset_password_expiration: new Date(resetTokenExpiration),
-          }
+          },
         });
 
         const newVendorMember = await trx.vendorMember.create({
           data: {
             user_id: newUser.id,
             vendor_company_id: args.vendor_company_id,
-            is_primary_member: true,
-          }
+            is_primary_member: noOwner,
+          },
         });
 
-        await addRoleForUser(newUser.id, CasbinRole.OWNER);
+        switch (args.role) {
+          case CompanyCollaboratorRoleType.ADMIN: {
+            await collaboratorService.setVendorMemberAsAdmin(
+              {
+                user_id: newUser.id,
+                vendor_company_id: args.vendor_company_id,
+                vendor_member_id: newVendorMember.id,
+              },
+              { prisma: trx }
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.USER: {
+            await collaboratorService.setVendorMemberAsUser(
+              {
+                vendor_member_id: newVendorMember.id,
+              },
+              { prisma: trx }
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.OWNER: {
+            await trx.vendorMember.update({
+              where: {
+                id: newVendorMember.id,
+              },
+              data: {
+                role: CompanyCollaboratorRoleType.OWNER,
+              },
+            });
+            await addRoleForUser(newUser.id, CasbinRole.OWNER);
+            break;
+          }
+          default:
+            throw new PublicError('Invalid role.');
+        }
 
         sendVendorMemberInvitationByAdminEmail(newUser);
         return newVendorMember;
