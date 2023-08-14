@@ -601,7 +601,41 @@ const resolvers: Resolvers<Context> = {
           }))
         })),
       }));
-    }
+    },
+    bioInvitedProjectConnections: async (parent, args, context) => {
+      if (process.env.BIOTECH_INVITE_CRO) {
+        const { project_request_id } = args;
+        invariant(project_request_id, 'Project request id is required.');
+        
+        const projectConnections = await context.prisma.projectConnection.findMany({
+          where: {
+            project_request_id,
+            AND: {
+              biotech_invite_vendor_id: {
+                not: null,
+              }
+            }
+          },
+          include: {
+            vendor_company: true,
+            biotech_invite_vendor: true,
+          },
+        });
+
+        invariant(projectConnections, 'Project connections not found.');
+
+        return projectConnections.map((pc) => ({
+          ...pc,
+          vendor_company: {
+            ...pc.vendor_company,
+          },
+          biotech_invite_vendor: {
+            ...pc.biotech_invite_vendor,
+          },
+        }));
+      }
+      return [];
+    },
   },
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {

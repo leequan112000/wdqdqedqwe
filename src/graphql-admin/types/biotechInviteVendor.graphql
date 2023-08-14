@@ -1,0 +1,19 @@
+type BiotechInviteVendor {
+  id: String
+  company_name: String
+  website: String
+  first_name: String
+  last_name: String
+  email: String
+}
+
+type Mutation {
+  updateBiotechInviteVendor(
+    id: String!
+    company_name: String!
+    website: String!
+    first_name: String!
+    last_name: String!
+    email: String!
+  ): BiotechInviteVendor
+}

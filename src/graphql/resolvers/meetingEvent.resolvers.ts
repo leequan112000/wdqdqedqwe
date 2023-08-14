@@ -62,6 +62,7 @@ const resolvers: Resolvers<Context> = {
         title: '',
         vendor_requirement: '',
         vendor_search_timeframe: '',
+        is_private: false,
       }
       if (!parent.project_request && parent.id) {
         const meetingEvent = await context.prisma.meetingEvent.findFirst({

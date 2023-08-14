@@ -138,23 +138,29 @@ const resolvers: Resolvers<Context> = {
       const notification = await context.prisma.notification.findFirst({
         where: {
           id,
-          read_at: null,
           recipient_id: context.req.user_id,
         }
       });
 
       invariant(notification, 'Notification not found.');
 
-      const updatedNotification = await context.prisma.notification.update({
-        where: {
-          id
-        },
-        data: {
-          read_at: new Date(),
-        },
-      });
+      /**
+       * Update when read_at is null to keep the first recorded date.
+       */
+      if (notification.read_at === null) {
+        const updatedNotification = await context.prisma.notification.update({
+          where: {
+            id
+          },
+          data: {
+            read_at: new Date(),
+          },
+        });
 
-      return updatedNotification;
+        return updatedNotification;
+      }
+
+      return notification;
     },
     markNotificationsInProjectAsRead: async (_, args, context) => {
       const { project_connection_id } = args;

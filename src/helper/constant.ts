@@ -154,6 +154,7 @@ export enum EmailType {
   USER_NEW_MESSAGE_NOTICE = 'user:new-message-notice',
   USER_ACCEPT_PROJECT_REQUEST_NOTICE = 'user:accept-project-request-notice',
   USER_NEW_BLOG_SUBSCRIBPTION_EMAIL = 'user:new-blog-subscription-email',
+  BIOTECH_INVITE_VENDOR_MEMBER_EMAIL = 'biotech:invite-vendor-member-email',
   USER_QUOTE_NOTICE_EMAIL = 'user:quote-notice-email',
   USER_MILESTONE_NOTICE_EMAIL = 'user:milestone-notice-email',
   USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL = 'user:milestone-payment-failed-notice-email',
@@ -228,4 +229,8 @@ export enum GqlErrorCode {
   PUBLIC_ERROR = 'PUBLIC_ERROR_CODE',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
   SESSION_EXPIRED = 'SESSION_EXPIRED',
+}
+
+export enum InvitedByType {
+  ADMIN = 'admin',
 }

@@ -106,6 +106,23 @@ export type AdminGeneralNoticeData = {
   button_url?: string;
 }
 
+export type AdminBiotechInviteVendorNoticeData = {
+  biotech_name: string;
+  inviter_full_name: string;
+  vendor_company_name: string;
+  website: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  project_request_name: string;
+}
+
+export type BiotechInviteVendorMemberData = {
+  inviter_first_name: string;
+  inviter_last_name: string;
+  biotech_name: string;
+}
+
 export type BillingNoticeData = {
   invoice_month: string;
   vendor_company_name: string;

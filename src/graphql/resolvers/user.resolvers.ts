@@ -69,6 +69,7 @@ const resolvers: Resolvers<Context> = {
         result?.vendor_member?.vendor_company?.cda_signed_at ||
         (!result?.vendor_member?.vendor_company?.cda_signed_at && result?.vendor_member?.vendor_company?.skip_cda)
         || result?.vendor_member?.vendor_company?.vendor_type === VendorType.ACADEMIC_LAB
+        || (!result?.vendor_member?.vendor_company?.is_on_marketplace && result?.vendor_member?.vendor_company?.skip_cda && result?.vendor_member?.vendor_company?.skip_certification_tag && result?.vendor_member?.vendor_company?.invited_by !== 'admin')
       ) {
         return true;
       }

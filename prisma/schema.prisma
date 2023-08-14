@@ -34,6 +34,7 @@ model User {
   meetingEvents              MeetingEvent[]
   project_attachments        ProjectAttachment[]
   CompanyAttachment          CompanyAttachment[]
+  biotech_invite_vendors     BiotechInviteVendor[]
 
   @@map("users")
 }
@@ -108,10 +109,11 @@ model Biotech {
   facebook_url                                String?
   biotech_extra_info                          String?
 
-  customers        Customer[]
-  subscriptions    Subscription[]
-  chats            Chat[]
-  project_requests ProjectRequest[]
+  customers              Customer[]
+  subscriptions          Subscription[]
+  chats                  Chat[]
+  project_requests       ProjectRequest[]
+  biotech_invite_vendors BiotechInviteVendor[]
 
   @@map("biotechs")
 }
@@ -149,6 +151,8 @@ model VendorCompany {
   facebook_url                String?
   cro_extra_info              String?
   stripe_account              String?
+  is_on_marketplace           Boolean   @default(true)
+  invited_by                  String?
   commission_rate             Float     @default(5)
 
   vendor_members                 VendorMember[]
@@ -217,6 +221,7 @@ model ProjectRequest {
   created_at                          DateTime  @default(now())
   updated_at                          DateTime  @updatedAt
   initial_assigned_at                 DateTime?
+  is_private                          Boolean   @default(false)
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
@@ -227,6 +232,7 @@ model ProjectRequest {
   project_request_comments      ProjectRequestComment[]
   project_connections           ProjectConnection[]
   project_request_collaborators ProjectRequestCollaborator[]
+  biotech_invite_vendors        BiotechInviteVendor[]
 
   @@index([customer_id])
   @@map("project_requests")
@@ -259,6 +265,9 @@ model ProjectConnection {
 
   vendor_company_id String        @db.Uuid
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  biotech_invite_vendor_id String?              @unique @db.Uuid
+  biotech_invite_vendor    BiotechInviteVendor? @relation(fields: [biotech_invite_vendor_id], references: [id])
 
   vendor_member_connections VendorMemberConnection[]
   customer_connections      CustomerConnection[]
@@ -593,6 +602,26 @@ model InvoiceItem {
   milestone_amount Decimal?   @db.Decimal(14, 2)
 
   @@map("invoice_items")
+}
+
+model BiotechInviteVendor {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name       String
+  website            String
+  first_name         String
+  last_name          String
+  email              String
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  biotech_id         String?            @db.Uuid
+  biotech            Biotech?           @relation(fields: [biotech_id], references: [id])
+  inviter_id         String?            @db.Uuid
+  inviter            User?              @relation(fields: [inviter_id], references: [id])
+  project_request_id String?            @db.Uuid
+  project_request    ProjectRequest?    @relation(fields: [project_request_id], references: [id])
+  project_connection ProjectConnection?
+
+  @@map("biotech_invite_vendors")
 }
 
 model CasbinRule {
