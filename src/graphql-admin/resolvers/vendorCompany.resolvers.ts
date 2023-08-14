@@ -179,6 +179,14 @@ const resolvers: Resolvers<Context> = {
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
 
+          const existingProjectConnection = await context.prisma.projectConnection.findFirst({
+            where: {
+              project_request_id: biotechInviteVendor.project_request_id as string,
+              vendor_company_id: existingVendorCompany.id,
+            },
+          });
+          invariant(!existingProjectConnection, new PublicError('Project connection exists.'));
+
           const projectConnection = await context.prisma.projectConnection.create({
             data: {
               project_request_id: biotechInviteVendor.project_request_id as string,
@@ -213,6 +221,14 @@ const resolvers: Resolvers<Context> = {
           && existingVendorCompany.is_on_marketplace && existingVendorCompany.invited_by === InvitedByType.ADMIN
         ) {
           invariant(existingVendorMember, new PublicError('Vendor member not exists.'));
+
+          const existingProjectConnection = await context.prisma.projectConnection.findFirst({
+            where: {
+              project_request_id: biotechInviteVendor.project_request_id as string,
+              vendor_company_id: existingVendorCompany.id,
+            },
+          });
+          invariant(!existingProjectConnection, new PublicError('Project connection exists.'));
 
           const primaryVendorMembers = await context.prisma.vendorMember.findMany({
             where: {
