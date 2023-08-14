@@ -429,7 +429,7 @@ emailQueue.process(async (job, done) => {
       }
       case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
         const {  receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
+        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
         const resp = await sendQuoteExpiringNoticeEmail({
           button_url: buttonUrl,
           expiring_in: expiringIn,
@@ -442,7 +442,7 @@ emailQueue.process(async (job, done) => {
       }
       case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
         const {  receiverEmail, receiverName, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`;
+        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
         const resp = await sendQuoteExpiredNoticeEmail({
           button_url: buttonUrl,
           receiver_full_name: receiverName,
@@ -583,7 +583,7 @@ emailQueue.process(async (job, done) => {
       }
       case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL: {
         const { receiverEmail, receiverName, requests, expiringIn } = data as CreateVendorProjectRequestExpiringNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/experiments/on-going`
+        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`
         const resp = await sendVendorProjectRequestExpiringEmail(
           {
             button_url: buttonUrl,
@@ -598,7 +598,7 @@ emailQueue.process(async (job, done) => {
       }
       case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL: {
         const { receiverEmail, receiverName, requests } = data as CreateVendorProjectRequestExpiredNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/experiments/expired`
+        const buttonUrl = `${app_env.APP_URL}/app/projects/expired`
         const resp = await sendVendorProjectRequestExpiredEmail(
           {
             button_url: buttonUrl,
