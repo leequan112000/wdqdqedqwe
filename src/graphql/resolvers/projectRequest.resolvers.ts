@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import { AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import {
@@ -12,6 +12,7 @@ import {
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
+import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -269,6 +270,12 @@ const resolvers: Resolvers<Context> = {
           invariant(args.email, 'Email is required.');
           invariant(args.first_name, 'First name is required.');
           invariant(args.last_name, 'Last name is required.');
+          const admins = await context.prisma.admin.findMany({
+            where: {
+              team: AdminTeam.SCIENCE
+            }
+          });
+          
           const biotechInviteVendor = await trx.biotechInviteVendor.create({
             data: {
               biotech_id: user.customer.biotech_id,
@@ -282,6 +289,21 @@ const resolvers: Resolvers<Context> = {
             },
           });
           sendPrivateProjectRequestSubmissionEmail(user);
+
+          // Send email to admin
+          const data = {
+            biotech_name: user.customer?.biotech?.name!,
+            inviter_full_name: `${user.first_name} ${user.last_name}`,
+            vendor_company_name: args.company_name,
+            website: args.website,
+            first_name: args.first_name,
+            last_name: args.last_name,
+            email: args.email,
+            project_request_name: projectRequest.title,
+          };
+          await Promise.all(admins.map(async (admin) => {
+            sendAdminBiotechInviteVendorNoticeEmail(admin, data);
+          }));
         }
 
         return {
