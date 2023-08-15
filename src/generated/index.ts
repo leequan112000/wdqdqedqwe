@@ -1265,6 +1265,7 @@ export type UploadResult = {
 export type User = {
   __typename?: 'User';
   can_be_removed?: Maybe<Scalars['Boolean']>;
+  /** @deprecated Remove after all cda expired. */
   cda_signed_at?: Maybe<Scalars['Date']>;
   cda_url?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;

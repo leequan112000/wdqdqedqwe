@@ -14,7 +14,7 @@ type User {
   has_setup_profile: Boolean
   company_name: String
   cda_url: String
-  cda_signed_at: Date
+  cda_signed_at: Date @deprecated(reason: "Remove after all cda expired.")
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean
