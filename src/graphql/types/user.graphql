@@ -15,6 +15,7 @@ type User {
   company_name: String
   cda_url: String
   cda_signed_at: Date @deprecated(reason: "Remove after all cda expired.")
+  skip_cda: Boolean
 
   # use this field to restrict remove user (experiment)
   can_be_removed: Boolean
@@ -23,6 +24,11 @@ type User {
 type AuthResponse {
   access_token: String!
   refresh_token: String!
+}
+
+type Subscription {
+  cdaUrl: String
+  cdaSignedAt: String
 }
 
 type Query {
@@ -46,4 +52,6 @@ type Mutation {
     last_name: String!
     email: String!
   ): User
+  createCda: Boolean
+  skipCda: Boolean
 }

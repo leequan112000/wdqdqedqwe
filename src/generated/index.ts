@@ -303,6 +303,7 @@ export type Mutation = {
   addProjectCollaborator?: Maybe<User>;
   createAdmin?: Maybe<Admin>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
+  createCda?: Maybe<Scalars['Boolean']>;
   createCertificationTag?: Maybe<CertificationTag>;
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
   createChat?: Maybe<Chat>;
@@ -353,6 +354,7 @@ export type Mutation = {
   signUpUser: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
+  skipCda?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
@@ -1238,6 +1240,8 @@ export type StripeExternalAccountData = {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  cdaSignedAt?: Maybe<Scalars['String']>;
+  cdaUrl?: Maybe<Scalars['String']>;
   newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
 };
@@ -1280,6 +1284,7 @@ export type User = {
   last_name?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   reset_password_token?: Maybe<Scalars['String']>;
+  skip_cda?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   user_type?: Maybe<Scalars['String']>;
   vendor_member?: Maybe<VendorMember>;
@@ -1822,6 +1827,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
+  createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
@@ -1870,6 +1876,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
+  skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
@@ -2122,6 +2129,8 @@ export type StripeExternalAccountDataResolvers<ContextType = any, ParentType ext
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  cdaSignedAt?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaSignedAt", ParentType, ContextType>;
+  cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
 }>;
@@ -2153,6 +2162,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
   reset_password_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;

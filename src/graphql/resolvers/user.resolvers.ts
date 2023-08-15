@@ -62,8 +62,21 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
-      if (result?.customer?.job_title || result?.vendor_member?.title) {
-        return true;
+      if (process.env.REMOVE_CDA === 'true') {
+        if (
+          result?.customer?.biotech?.cda_signed_at ||
+          (!result?.customer?.biotech?.cda_signed_at && result?.customer?.biotech?.skip_cda) ||
+          result?.vendor_member?.vendor_company?.cda_signed_at ||
+          (!result?.vendor_member?.vendor_company?.cda_signed_at && result?.vendor_member?.vendor_company?.skip_cda)
+          || result?.vendor_member?.vendor_company?.vendor_type === VendorType.ACADEMIC_LAB
+          || (!result?.vendor_member?.vendor_company?.is_on_marketplace && result?.vendor_member?.vendor_company?.skip_cda && result?.vendor_member?.vendor_company?.skip_certification_tag && result?.vendor_member?.vendor_company?.invited_by !== 'admin')
+        ) {
+          return true;
+        }
+      } else {
+        if (result?.customer?.job_title || result?.vendor_member?.title) {
+          return true;
+        }
       }
 
       return false;
@@ -286,9 +299,140 @@ const resolvers: Resolvers<Context> = {
         return customer?.biotech?.cda_signed_at;
       }
     },
+    skip_cda: async (parent, _, context) => {
+      // gating this subscription to remove skip cda feature
+      if (process.env.REMOVE_CDA === 'true') {
+        if (parent.customer?.biotech?.skip_cda) {
+          return parent.customer.biotech.skip_cda;
+        }
+        if (parent.vendor_member?.vendor_company?.skip_cda) {
+          return parent.vendor_member.vendor_company.skip_cda;
+        }
+
+        invariant(parent.id, 'Missing user id.');
+
+        const vendor = await context.prisma.vendorMember.findFirst({
+          where: {
+            user_id: parent.id
+          }
+        });
+
+        if (vendor) {
+          const vendorMember = await context.prisma.vendorMember.findFirst({
+            where: {
+              user_id: parent.id,
+            },
+            include: {
+              vendor_company: {
+                select: {
+                  skip_cda: true,
+                },
+              },
+            },
+          });
+          return vendorMember?.vendor_company?.skip_cda as boolean;
+        } else {
+          const customer = await context.prisma.customer.findFirst({
+            where: {
+              user_id: parent.id,
+            },
+            include: {
+              biotech: {
+                select: {
+                  skip_cda: true,
+                },
+              },
+            },
+          });
+          return customer?.biotech?.skip_cda as boolean;
+        }
+      }
+
+      return null;
+    },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
     }
+  },
+  Subscription: {
+    cdaUrl: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        // gating this subscription to remove subscribe cda feature
+        if (process.env.REMOVE_CDA === 'true') {
+          const vendor = await context.prisma.vendorMember.findFirst({
+            where: {
+              user_id: context.req.user_id
+            },
+            include: {
+              vendor_company: true
+            }
+          });
+
+          let channelId;
+          if (vendor) {
+            channelId = vendor.vendor_company?.id;
+          } else {
+            const customer = await context.prisma.customer.findFirstOrThrow({
+              where: {
+                user_id: context.req.user_id,
+              },
+              include: {
+                biotech: true
+              }
+            });
+
+            channelId = customer.biotech.id;
+          }
+
+          const channel = `cdaUrl:${channelId}`;
+          return context.pubsub.asyncIterator(channel);
+        }
+        return null;
+      },
+    },
+    cdaSignedAt: {
+      // @ts-ignore
+      subscribe: async (_, __, context) => {
+        // gating this subscription to remove subscribe cda feature
+        if (process.env.REMOVE_CDA === 'true') {
+          const vendor = await context.prisma.vendorMember.findFirst({
+            where: {
+              user_id: context.req.user_id
+            }
+          });
+
+          let channelId;
+          if (vendor) {
+            const vendor = await context.prisma.vendorMember.findFirstOrThrow({
+              where: {
+                user_id: context.req.user_id,
+              },
+              include: {
+                vendor_company: true
+              }
+            });
+
+            channelId = vendor.vendor_company?.id;
+          } else {
+            const customer = await context.prisma.customer.findFirstOrThrow({
+              where: {
+                user_id: context.req.user_id,
+              },
+              include: {
+                biotech: true
+              }
+            });
+
+            channelId = customer.biotech.id;
+          }
+
+          const channel = `cdaSignedAt:${channelId}`;
+          return context.pubsub.asyncIterator(channel);
+        }
+        return null;
+      },
+    },
   },
   Query: {
     user: async (_, __, context) => {
@@ -482,6 +626,162 @@ const resolvers: Resolvers<Context> = {
       });
 
       return user;
+    },
+    createCda: async (_, __, context) => {
+      // gating this mutation to remove create cda feature
+      if (process.env.REMOVE_CDA === 'true') {
+        try {
+          const vendor = await context.prisma.vendorMember.findFirst({
+            where: {
+              user_id: context.req.user_id
+            }
+          });
+
+          if (vendor) {
+            await context.prisma.$transaction(async (trx) => {
+              const user = await trx.user.findFirstOrThrow({
+                where: {
+                  id: context.req.user_id,
+                },
+                include: {
+                  vendor_member: {
+                    include: {
+                      vendor_company: true
+                    }
+                  }
+                }
+              });
+
+              invariant(user.vendor_member, new PublicError('Vendor member not found.'));
+
+              let cda_pandadoc_file_id = user?.vendor_member?.vendor_company?.cda_pandadoc_file_id;
+
+              if (cda_pandadoc_file_id === null) {
+                const docResponse = await createVendorCompanyCda(user);
+                cda_pandadoc_file_id = docResponse.id as string;
+              }
+
+              return await trx.vendorCompany.update({
+                where: {
+                  id: user.vendor_member.vendor_company_id
+                },
+                data: {
+                  cda_pandadoc_file_id,
+                  cda_pandadoc_signer: user.email,
+                }
+              })
+            });
+          } else {
+            await context.prisma.$transaction(async (trx) => {
+              const user = await trx.user.findFirstOrThrow({
+                where: {
+                  id: context.req.user_id,
+                },
+                include: {
+                  customer: {
+                    include: {
+                      biotech: true
+                    }
+                  }
+                }
+              });
+
+              invariant(user.customer, new PublicError('Customer not found.'));
+
+              let cda_pandadoc_file_id = user?.customer?.biotech?.cda_pandadoc_file_id;
+
+              if (cda_pandadoc_file_id === null) {
+                const docResponse = await createBiotechCda(user);
+                cda_pandadoc_file_id = docResponse.id as string;
+              }
+
+              return await context.prisma.biotech.update({
+                where: {
+                  id: user.customer.biotech_id
+                },
+                data: {
+                  cda_pandadoc_file_id,
+                  cda_pandadoc_signer: user.email,
+                }
+              })
+            });
+          }
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+      return null;
+    },
+    skipCda: async (_, __, context) => {
+      // gating this mutation to remove skip cda feature
+      if (process.env.REMOVE_CDA === 'true') {
+        try {
+          const vendor = await context.prisma.vendorMember.findFirst({
+            where: {
+              user_id: context.req.user_id
+            }
+          });
+
+          if (vendor) {
+            await context.prisma.$transaction(async (trx) => {
+              const user = await trx.user.findFirstOrThrow({
+                where: {
+                  id: context.req.user_id,
+                },
+                include: {
+                  vendor_member: {
+                    include: {
+                      vendor_company: true
+                    }
+                  }
+                }
+              });
+
+              invariant(user.vendor_member, new PublicError('Vendor member not found.'));
+
+              return await trx.vendorCompany.update({
+                where: {
+                  id: user.vendor_member.vendor_company_id
+                },
+                data: {
+                  skip_cda: true,
+                }
+              })
+            });
+          } else {
+            await context.prisma.$transaction(async (trx) => {
+              const user = await trx.user.findFirstOrThrow({
+                where: {
+                  id: context.req.user_id,
+                },
+                include: {
+                  customer: {
+                    include: {
+                      biotech: true
+                    }
+                  }
+                }
+              });
+
+              invariant(user.customer, new PublicError('Customer not found.'));
+
+              return await context.prisma.biotech.update({
+                where: {
+                  id: user.customer.biotech_id
+                },
+                data: {
+                  skip_cda: true,
+                }
+              })
+            });
+          }
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+      return null;
     },
   },
 };
