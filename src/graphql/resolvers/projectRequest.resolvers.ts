@@ -291,8 +291,14 @@ const resolvers: Resolvers<Context> = {
           sendPrivateProjectRequestSubmissionEmail(user);
 
           // Send email to admin
+          const biotechInfo = await trx.biotech.findFirst({
+            where: {
+              id: user.customer.biotech_id,
+            },
+          });
+          invariant(biotechInfo, 'Biotech not found.');
           const data = {
-            biotech_name: user.customer?.biotech?.name!,
+            biotech_name: biotechInfo.name,
             inviter_full_name: `${user.first_name} ${user.last_name}`,
             vendor_company_name: args.company_name,
             website: args.website,
