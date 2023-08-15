@@ -130,7 +130,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      // TODO: Send email to admin
+      // Send email to admin
       const data = {
         biotech_name: user.customer?.biotech?.name!,
         inviter_full_name: `${user.first_name} ${user.last_name}`,
