@@ -54,19 +54,19 @@ export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (email
   await sendMail(mailData);
 };
 
-export const sendVendorMemberInvitationByBiotechEmail = (receiver: User, biotech_name: string, inviter: User) => {
+export const sendVendorMemberInvitationByBiotechEmail = async (receiver: User, biotech_name: string, inviter: User, buttonUrl: string) => {
   const mailData = {
     from: `Cromatic <${mailSender}>`,
     to: receiver.email,
     replyTo: mailSender,
     templateId: vendorMemberInvitationByBiotechTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
+      login_url: buttonUrl,
       receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
       biotech_name: biotech_name,
       inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
     },
   };
 
-  sendMail(mailData);
+  return await sendMail(mailData);
 };
