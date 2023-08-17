@@ -1,0 +1,13 @@
+type ProjectDeclineFeedback {
+  id: String
+  reason: String
+  project_connection_id: String
+  project_connection: ProjectConnection
+}
+
+type Mutation {
+  createProjectDeclineFeedback(
+    project_connection_id: String!,
+    reason: String
+  ): ProjectDeclineFeedback
+}
