@@ -8,6 +8,7 @@ type ProjectDeclineFeedback {
 type Mutation {
   createProjectDeclineFeedback(
     project_connection_id: String!,
-    reason: String
+    project_decline_tag_ids: [String]!
+    reason: String,
   ): ProjectDeclineFeedback
 }
