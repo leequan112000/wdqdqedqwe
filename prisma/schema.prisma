@@ -148,7 +148,7 @@ model VendorCompany {
   facebook_url                String?
   cro_extra_info              String?
   stripe_account              String?
-  is_on_marketplace           Boolean  @default(true)
+  is_on_marketplace           Boolean   @default(true)
   invited_by                  String?
   commission_rate             Float     @default(5)
 
@@ -227,7 +227,7 @@ model ProjectRequest {
   project_request_comments      ProjectRequestComment[]
   project_connections           ProjectConnection[]
   project_request_collaborators ProjectRequestCollaborator[]
-  biotech_invite_vendors   BiotechInviteVendor[]
+  biotech_invite_vendors        BiotechInviteVendor[]
 
   @@index([customer_id])
   @@map("project_requests")
@@ -270,6 +270,7 @@ model ProjectConnection {
   project_attachments       ProjectAttachment[]
   MeetingEvent              MeetingEvent[]
   quotes                    Quote[]
+  ProjectDeclineFeedback    ProjectDeclineFeedback[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -600,21 +601,55 @@ model InvoiceItem {
 }
 
 model BiotechInviteVendor {
-  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_name        String
-  website             String
-  first_name          String
-  last_name           String
-  email               String
-  created_at          DateTime          @default(now())
-  updated_at          DateTime          @updatedAt
-  biotech_id          String?           @db.Uuid
-  biotech             Biotech?          @relation(fields: [biotech_id], references: [id])
-  inviter_id          String?           @db.Uuid
-  inviter             User?             @relation(fields: [inviter_id], references: [id])
-  project_request_id  String?           @db.Uuid
-  project_request     ProjectRequest?   @relation(fields: [project_request_id], references: [id])
-  project_connection  ProjectConnection?
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name       String
+  website            String
+  first_name         String
+  last_name          String
+  email              String
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  biotech_id         String?            @db.Uuid
+  biotech            Biotech?           @relation(fields: [biotech_id], references: [id])
+  inviter_id         String?            @db.Uuid
+  inviter            User?              @relation(fields: [inviter_id], references: [id])
+  project_request_id String?            @db.Uuid
+  project_request    ProjectRequest?    @relation(fields: [project_request_id], references: [id])
+  project_connection ProjectConnection?
 
   @@map("biotech_invite_vendors")
+}
+
+model ProjectDeclineFeedback {
+  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reason                      String?
+  project_connection_id       String                        @db.Uuid
+  project_connection          ProjectConnection             @relation(fields: [project_connection_id], references: [id])
+  created_at                  DateTime                      @default(now())
+  updated_at                  DateTime                      @updatedAt
+  ProjectDeclineTagConnection ProjectDeclineTagConnection[]
+
+  @@map("project_decline_feedbacks")
+}
+
+model ProjectDeclineTag {
+  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                        String                        @unique
+  created_at                  DateTime                      @default(now())
+  updated_at                  DateTime                      @updatedAt
+  ProjectDeclineTagConnection ProjectDeclineTagConnection[]
+
+  @@map("project_decline_tags")
+}
+
+model ProjectDeclineTagConnection {
+  id                          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_decline_tag_id      String                 @db.Uuid
+  project_decline_tag         ProjectDeclineTag      @relation(fields: [project_decline_tag_id], references: [id])
+  project_decline_feedback_id String                 @db.Uuid
+  project_decline_feedback    ProjectDeclineFeedback @relation(fields: [project_decline_feedback_id], references: [id])
+  created_at                  DateTime               @default(now())
+  updated_at                  DateTime               @updatedAt
+
+  @@map("project_decline_tag_connections")
 }
