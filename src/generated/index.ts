@@ -997,6 +997,15 @@ export type ProjectDeclineTag = {
   name?: Maybe<Scalars['String']>;
 };
 
+export type ProjectDeclineTagConnection = {
+  __typename?: 'ProjectDeclineTagConnection';
+  id?: Maybe<Scalars['String']>;
+  project_decline_feedback?: Maybe<ProjectDeclineFeedback>;
+  project_decline_feedback_id?: Maybe<Scalars['String']>;
+  project_decline_tag?: Maybe<ProjectDeclineTag>;
+  project_decline_tag_id?: Maybe<Scalars['String']>;
+};
+
 export type ProjectRequest = {
   __typename?: 'ProjectRequest';
   biotech?: Maybe<Biotech>;
@@ -1492,6 +1501,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectDeclineFeedback: ResolverTypeWrapper<ProjectDeclineFeedback>;
   ProjectDeclineTag: ResolverTypeWrapper<ProjectDeclineTag>;
+  ProjectDeclineTagConnection: ResolverTypeWrapper<ProjectDeclineTagConnection>;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
@@ -1556,6 +1566,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectConnectionFilter: ProjectConnectionFilter;
   ProjectDeclineFeedback: ProjectDeclineFeedback;
   ProjectDeclineTag: ProjectDeclineTag;
+  ProjectDeclineTagConnection: ProjectDeclineTagConnection;
   ProjectRequest: ProjectRequest;
   ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
@@ -2020,6 +2031,15 @@ export type ProjectDeclineTagResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProjectDeclineTagConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDeclineTagConnection'] = ResolversParentTypes['ProjectDeclineTagConnection']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_decline_feedback?: Resolver<Maybe<ResolversTypes['ProjectDeclineFeedback']>, ParentType, ContextType>;
+  project_decline_feedback_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_decline_tag?: Resolver<Maybe<ResolversTypes['ProjectDeclineTag']>, ParentType, ContextType>;
+  project_decline_tag_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ProjectRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequest'] = ResolversParentTypes['ProjectRequest']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2316,6 +2336,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectDeclineFeedback?: ProjectDeclineFeedbackResolvers<ContextType>;
   ProjectDeclineTag?: ProjectDeclineTagResolvers<ContextType>;
+  ProjectDeclineTagConnection?: ProjectDeclineTagConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
