@@ -30,7 +30,11 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: {
             include: {
-              biotech: true
+              biotech: {
+                include: {
+                  subscriptions: true
+                }
+              }
             }
           },
           vendor_member: {
@@ -62,6 +66,10 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
+      if (result?.customer && result.customer.biotech.subscriptions.length === 0) {
+        return false
+      }
+
       if (process.env.ENABLE_CDA === 'true') {
         if (
           result?.customer?.biotech?.cda_signed_at ||
@@ -71,12 +79,10 @@ const resolvers: Resolvers<Context> = {
           || result?.vendor_member?.vendor_company?.vendor_type === VendorType.ACADEMIC_LAB
           || (!result?.vendor_member?.vendor_company?.is_on_marketplace && result?.vendor_member?.vendor_company?.skip_cda && result?.vendor_member?.vendor_company?.skip_certification_tag && result?.vendor_member?.vendor_company?.invited_by !== 'admin')
         ) {
-          return true;
+          return true
         }
       } else {
-        if (result?.customer?.job_title || result?.vendor_member?.title) {
-          return true;
-        }
+        return true;
       }
 
       return false;
