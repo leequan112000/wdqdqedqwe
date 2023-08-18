@@ -7,6 +7,7 @@ import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail } from "../../mailer/vendorMember";
+import { app_env } from "../../environment";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -24,7 +25,7 @@ const resolvers: Resolvers<Context> = {
           is_on_marketplace: true,
           invited_by: InvitedByType.ADMIN,
         }
-      });  
+      });
     },
     inviteVendorCompaniesToProjectByAdmin: async (_, args, context) => {
       const projectRequest = await context.prisma.projectRequest.findFirst({
@@ -118,7 +119,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     inviteVendorCompanyToProjectByBiotech: async (_, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         const { biotech_invite_vendor_id, vendor_type } = args;
         invariant(biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
         invariant(vendor_type, 'Vendor type is required.')
@@ -136,7 +137,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        invariant(biotechInviteVendor, new PublicError ('Biotech invite vendor record not found.'));
+        invariant(biotechInviteVendor, new PublicError('Biotech invite vendor record not found.'));
         const biotech = biotechInviteVendor.biotech;
         const inviter = biotechInviteVendor.inviter;
         invariant(biotech, new PublicError('Biotech not found.'));
@@ -210,7 +211,12 @@ const resolvers: Resolvers<Context> = {
           });
 
           // Send email to existing vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
+          sendVendorMemberInvitationByBiotechEmail(
+            existingUser,
+            biotech.name,
+            inviter,
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+          );
           invariant(!existingUser, new PublicError('User already exists.'));
 
           return true;
@@ -268,11 +274,16 @@ const resolvers: Resolvers<Context> = {
           );
 
           // Send email to existing vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(existingUser, biotech.name, inviter);
+          sendVendorMemberInvitationByBiotechEmail(
+            existingUser,
+            biotech.name,
+            inviter,
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+          );
           invariant(!existingUser, new PublicError('User already exists.'));
 
           return true;
-        } else {     
+        } else {
           invariant(!existingVendorCompany, new PublicError('Vendor company already exists.'));
 
           const newVendorCompany = await context.prisma.vendorCompany.create({
@@ -329,7 +340,14 @@ const resolvers: Resolvers<Context> = {
           });
 
           // Send email to new vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(newUser, biotech.name, inviter);
+          sendVendorMemberInvitationByBiotechEmail(
+            newUser,
+            biotech.name,
+            inviter,
+            `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
+              newUser.reset_password_token!
+            )}`
+          );
 
           return true;
         }

@@ -5,6 +5,7 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
 import invariant from "../../helper/invariant";
+import { app_env } from "../../environment";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -101,7 +102,7 @@ const resolvers: Resolvers<Context> = {
       }
     },
     resendVendorMemberInviteByBiotech: async (_, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         invariant(args.biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
 
         const biotechInviteVendor = await context.prisma.biotechInviteVendor.findFirst({
@@ -153,6 +154,9 @@ const resolvers: Resolvers<Context> = {
         invariant(biotechInviteVendor.inviter, 'Inviter not found.');
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        const buttonUrl = `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
+          invitedUser.reset_password_token!
+        )}`;
 
         if (!invitedUser?.vendor_member?.title) {
           const resetInvitedUserPasswordExpiryDate = await context.prisma.user.update({
@@ -163,11 +167,21 @@ const resolvers: Resolvers<Context> = {
               reset_password_expiration: new Date(resetTokenExpiration),
             },
           });
-          sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
+          sendVendorMemberInvitationByBiotechEmail(
+            invitedUser,
+            biotechInviteVendor.biotech?.name,
+            biotechInviteVendor.inviter,
+            buttonUrl,
+          );
           return true;
         }
 
-        sendVendorMemberInvitationByBiotechEmail(invitedUser, biotechInviteVendor.biotech?.name, biotechInviteVendor.inviter);
+        sendVendorMemberInvitationByBiotechEmail(
+          invitedUser,
+          biotechInviteVendor.biotech?.name,
+          biotechInviteVendor.inviter,
+          buttonUrl,
+        );
         return true;
       }
       return null;
