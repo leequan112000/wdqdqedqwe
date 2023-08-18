@@ -7,7 +7,7 @@ const staging = {
   SERVER_URL: 'https://octavian-staging.herokuapp.com',
 };
 const prod = {
-  APP_URL: 'https://www.cro-matic.com',
+  APP_URL: 'https://www.cromatic.bio',
   SERVER_URL: 'https://octavian.herokuapp.com',
 };
 
