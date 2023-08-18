@@ -119,7 +119,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     inviteVendorCompanyToProjectByBiotech: async (_, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         const { biotech_invite_vendor_id, vendor_type } = args;
         invariant(biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
         invariant(vendor_type, 'Vendor type is required.')
