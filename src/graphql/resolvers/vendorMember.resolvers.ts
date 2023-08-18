@@ -102,7 +102,7 @@ const resolvers: Resolvers<Context> = {
       }
     },
     resendVendorMemberInviteByBiotech: async (_, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         invariant(args.biotech_invite_vendor_id, 'Biotech invite vendor ID is required.');
 
         const biotechInviteVendor = await context.prisma.biotechInviteVendor.findFirst({
