@@ -145,6 +145,7 @@ beforeEach(() => {
     project_request_id: 'uuid',
     vendor_company_id: 'uuid',
     vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+    biotech_invite_vendor_id: null,
   };
 });
 
