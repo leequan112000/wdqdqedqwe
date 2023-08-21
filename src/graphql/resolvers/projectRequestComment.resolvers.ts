@@ -1,23 +1,31 @@
-import { ProjectRequestComment, ProjectRequest } from "@prisma/client";
-import { Request } from "express";
 import moment from "moment";
 import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { MutationCreateProjectRequestCommentArgs } from "../../generated";
+import { Resolvers } from "../../generated";
 import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
-export default {
+const resolvers: Resolvers<Context> = {
   ProjectRequestComment: {
-    project_request: async (parent: ProjectRequestComment, _: void, context: Context): Promise<ProjectRequest | null> => {
-      return await context.prisma.projectRequest.findFirst({
+    project_request: async (parent, _, context) => {
+      invariant(parent?.project_request_id, 'Missing project request id');
+
+      const projectRequest = await context.prisma.projectRequest.findFirst({
         where: {
-          id: parent.project_request_id
-        }
-      })
+          id: parent.project_request_id,
+        },
+      });
+
+      invariant(projectRequest, 'Project request not found');
+
+      return {
+        ...projectRequest,
+        max_budget: projectRequest.max_budget?.toNumber() || 0,
+      };
     },
   },
   Mutation: {
-    createProjectRequestComment: async (_: void, args: MutationCreateProjectRequestCommentArgs, context: Context & { req: Request }) => {
+    createProjectRequestComment: async (_, args, context) => {
       try {
         return await context.prisma.$transaction(async (trx) => {
           const customer = await trx.customer.findFirstOrThrow({
@@ -35,10 +43,7 @@ export default {
             include: { biotech: true },
           });
 
-
-          if (!projectRequest) {
-            throw new PublicError('Project request not found.');
-          }
+          invariant(projectRequest, new PublicError('Project request not found.'));
 
           const fifteenMinBefore = moment().subtract(15, 'minute');
           const commentsWithinThePast15Min = await trx.projectRequestComment.findFirst({
@@ -63,14 +68,14 @@ export default {
             createSendAdminNewProjectRequestCommentJob({
               biotechName: projectRequest.biotech.name,
             });
-
           }
-
           return newComment;
         });
       } catch (error) {
-        return error;
+        throw error;
       }
     },
   }
 };
+
+export default resolvers;

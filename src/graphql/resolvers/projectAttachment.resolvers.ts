@@ -13,6 +13,7 @@ import { PublicError } from '../errors/PublicError';
 import { byteToKB } from "../../helper/filesize";
 import { toDollar } from "../../helper/money";
 import { getFilenameWithVersion } from "../../helper/documentUpload";
+import invariant from "../../helper/invariant";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -52,9 +53,7 @@ async function getBuffer(stream: Readable): Promise<{ buffer: Buffer, byteSize: 
 const resolvers: Resolvers<Context> = {
   ProjectAttachment: {
     project_connection: async (parent, _, context) => {
-      if (!parent.project_connection_id) {
-        throw new InternalError("Project connection id not found.");
-      }
+      invariant(parent.project_connection_id, 'Project connection id not found.');
       return await context.prisma.projectConnection.findFirst({
         where: {
           id: parent.project_connection_id,
@@ -62,9 +61,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     milestone: async (parent, _, context) => {
-      if (!parent.milestone_id) {
-        throw new InternalError("Milestone id not found.");
-      }
+      invariant(parent.milestone_id, 'Milestone id not found.');
       const milestone = await context.prisma.milestone.findFirst({
         where: {
           id: parent.milestone_id,
@@ -79,9 +76,7 @@ const resolvers: Resolvers<Context> = {
         : null;
     },
     signed_url: async (parent) => {
-      if (!parent.key) {
-        throw new InternalError('Key not found');
-      }
+      invariant(parent.key, 'Key not found.');
       return await getSignedUrl(parent.key);
     },
     formatted_filesize: async (parent,) => {
@@ -115,18 +110,14 @@ const resolvers: Resolvers<Context> = {
       const { files, project_connection_id } = args;
       const currectUserId = context.req.user_id;
 
-      if (!currectUserId) {
-        throw new InternalError('Current user id not found');
-      }
+      invariant(currectUserId, 'Current user id not found.');
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
           id: project_connection_id,
         }
       });
-      if (!projectConnection) {
-        throw new InternalError('Project connection not found');
-      }
+      invariant(projectConnection, 'Project connection not found.');
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -153,11 +144,8 @@ const resolvers: Resolvers<Context> = {
             const { byteSize } = await getBuffer(stream);
             const filesizeKB = byteToKB(byteSize);
             const canUpload = uploadLimitTracker.validateFilesize(filesizeKB);
-            if (canUpload) {
-              uploadLimitTracker.addUsed(filesizeKB)
-            } else {
-              throw new PublicError(`Not enought space - ${uploadData.filename}`)
-            }
+            invariant(canUpload, new PublicError(`Not enought space - ${uploadData.filename}`));
+            uploadLimitTracker.addUsed(filesizeKB);
           }
 
           // Handle same name upload
@@ -229,9 +217,7 @@ const resolvers: Resolvers<Context> = {
       const { file, project_connection_id } = args;
       const currectUserId = context.req.user_id;
 
-      if (!currectUserId) {
-        throw new InternalError('Current user id not found');
-      }
+      invariant(currectUserId, 'Current user id not found.');
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -247,9 +233,7 @@ const resolvers: Resolvers<Context> = {
           id: project_connection_id,
         }
       });
-      if (!projectConnection) {
-        throw new InternalError('Project connection not found');
-      }
+      invariant(projectConnection, 'Project connection not found.');
 
       return await context.prisma.$transaction(async (trx) => {
         const existingContract = await context.prisma.projectAttachment.findFirst({

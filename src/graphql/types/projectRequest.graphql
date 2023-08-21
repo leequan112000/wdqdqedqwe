@@ -18,6 +18,7 @@ type ProjectRequest {
   project_start_time_requirement: String
   project_deadline_requirement: String
   status: String!
+  is_private: Boolean!
   created_at: Date
   updated_at: Date
   biotech_id: String
@@ -26,6 +27,7 @@ type ProjectRequest {
   customer: Customer
   project_connections(filter: ProjectRequestProjectConnectionFilter): [ProjectConnection]
   project_request_comments: [ProjectRequestComment]
+  project_request_collaborators: [ProjectRequestCollaborator]
 }
 
 type Query {
@@ -47,6 +49,13 @@ type Mutation {
     vendor_location_requirement: String
     project_start_time_requirement: String
     project_deadline_requirement: String
+    is_private: Boolean!
+    first_name: String
+    last_name: String
+    email: String
+    company_name: String
+    website: String
   ): ProjectRequest
+  setProjectRequestPublic(project_request_id: String!): ProjectRequest
   withdrawProjectRequest(project_request_id: String!): ProjectRequest
 }

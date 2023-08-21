@@ -6,6 +6,7 @@ if (process.env.NODE_ENV === 'production') {
     'https://caesar.herokuapp.com',
     'https://platform.cro-matic.com',
     'https://www.cro-matic.com',
+    'https://www.cromatic.bio',
   ];
 } else if (process.env.NODE_ENV === 'staging') {
   origin = [
@@ -19,6 +20,8 @@ if (process.env.NODE_ENV === 'production') {
     'http://localhost:9000',
     'https://localhost:9000',
     'https://studio.apollographql.com',
+    'https://octavian-test-85ec4e8ad99d.herokuapp.com',
+    'https://github.com',
   ];
 }
 

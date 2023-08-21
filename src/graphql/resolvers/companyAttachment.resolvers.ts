@@ -6,6 +6,7 @@ import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { Readable } from 'stream';
 import { PublicError } from '../errors/PublicError';
 import { CompanyAttachmentDocumentType, COMPANY_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
+import invariant from "../../helper/invariant";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -45,9 +46,7 @@ async function getBuffer(stream: Readable): Promise<{ buffer: Buffer, byteSize: 
 const resolvers: Resolvers<Context> = {
   CompanyAttachment: {
     vendor_company: async (parent, _, context) => {
-      if (!parent.vendor_company_id) {
-        throw new InternalError('Vendor company id not found.');
-      }
+      invariant(parent.vendor_company_id, 'Vendor company id not found.');
 
       return await context.prisma.vendorCompany.findFirst({
         where: {
@@ -56,9 +55,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     signed_url: async (parent) => {
-      if (!parent.key) {
-        throw new InternalError('Key not found.');
-      }
+      invariant(parent.key, 'Company attachment key not found.');
 
       return await getSignedUrl(parent.key);
     },
@@ -74,22 +71,18 @@ const resolvers: Resolvers<Context> = {
       const { file, vendor_company_id } = args;
       const currectUserId = context.req.user_id;
 
-      if (!currectUserId) {
-        throw new InternalError('Current user id not found.');
-      }
+      invariant(currectUserId, 'Current user id not found.')
 
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
           id: vendor_company_id,
         },
       });
-      if (!vendorCompany) {
-        throw new InternalError('Vendor company not found.');
-      }
+      invariant(vendorCompany, 'Vendor company not found.');
 
       const data = await file;
       const { filename, key, filesize, contextType } = await storeUpload(
-        data, 
+        data,
         COMPANY_ATTACHMENT_DOCUMENT_TYPE[CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE],
       );
 
@@ -100,9 +93,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (filesize > 10000000) {
-        throw new PublicError('File size must be less than 10MB.');
-      }
+      invariant(filesize <= 10000000, new PublicError('File size must be less than 10MB.'));
 
       let attachment;
       if (existingAttachment) {
@@ -139,8 +130,8 @@ const resolvers: Resolvers<Context> = {
         data: {
           ...attachment,
           byte_size: Number(attachment.byte_size) / 1000,
-          document_type: COMPANY_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type], 
-          contextType,  
+          document_type: COMPANY_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
+          contextType,
         }
       };
     },
@@ -151,9 +142,7 @@ const resolvers: Resolvers<Context> = {
           id: id,
         },
       });
-      if (!deletedAttachment) {
-        throw new InternalError('Attachment not found.');
-      };
+      invariant(deletedAttachment, 'Attachment not found.');
 
       await deleteObject(deletedAttachment.key);
       return {

@@ -2,12 +2,17 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import { AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
-import { sendProjectRequestSubmissionEmail } from "../../mailer/projectRequest";
+import {
+  sendPrivateProjectRequestSubmissionEmail,
+  sendProjectRequestSubmissionEmail,
+} from "../../mailer/projectRequest";
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
+import invariant from "../../helper/invariant";
+import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -32,9 +37,7 @@ const resolvers: Resolvers<Context> = {
       })
     },
     project_connections: async (parent, args, context) => {
-      if (!parent.id) {
-        throw new Error('Missing id.');
-      }
+      invariant(parent.id, 'Missing project request id.');
 
       const { filter } = args;
 
@@ -78,9 +81,7 @@ const resolvers: Resolvers<Context> = {
       return projectConnections.map(({ quotes, ...pc }) => pc);
     },
     project_request_comments: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new Error('Missing id.');
-      }
+      invariant(parent.id, 'Missing project request id.');
 
       const data = await context.prisma.projectRequestComment.findMany({
         where: {
@@ -99,6 +100,14 @@ const resolvers: Resolvers<Context> = {
         updated_at: d.updated_at.toISOString()
       }))
       return processed;
+    },
+    project_request_collaborators: async (parent, _, context) => {
+      invariant(parent.id, 'Missing id.');
+      return await context.prisma.projectRequestCollaborator.findMany({
+        where: {
+          project_request_id: parent.id
+        },
+      });
     },
   },
   Query: {
@@ -163,9 +172,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!projectRequest) {
-          throw new PermissionDeniedError();
-        }
+        invariant(projectRequest, new PermissionDeniedError());
 
         if (vendor) {
           // Check if vendor is in the project connection
@@ -179,9 +186,7 @@ const resolvers: Resolvers<Context> = {
               }
             }
           });
-          if (!projectConnection) {
-            throw new PermissionDeniedError();
-          }
+          invariant(projectConnection, new PermissionDeniedError());
         } else {
           // Check if customer is the project request owner / collaborator
           const customer = await context.prisma.customer.findFirst({
@@ -189,9 +194,7 @@ const resolvers: Resolvers<Context> = {
               user_id: context.req.user_id
             }
           });
-          if (!customer) {
-            throw new PermissionDeniedError();
-          }
+          invariant(customer, new PermissionDeniedError());
 
           if (projectRequest.customer_id !== customer.id) {
             const projectConnection = await context.prisma.projectConnection.findFirst({
@@ -204,9 +207,7 @@ const resolvers: Resolvers<Context> = {
                 }
               }
             });
-            if (!projectConnection) {
-              throw new PermissionDeniedError();
-            }
+            invariant(projectConnection, new PermissionDeniedError());
           }
         }
 
@@ -238,20 +239,78 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!user.customer) {
-          throw new PublicError('User is not a customer.');
-        }
+        invariant(user.customer, 'User is not a customer.');
         const projectRequest = await trx.projectRequest.create({
           data: {
             status: ProjectRequestStatus.PROCESSING,
             customer_id: user.customer.id,
             biotech_id: user.customer.biotech_id,
-            ...args,
+            title: args.title,
+            vendor_requirement: args.vendor_requirement,
+            objective_description: args.objective_description,
+            preparation_description: args.preparation_description,
+            in_contact_with_vendor: args.in_contact_with_vendor,
+            existing_vendor_contact_description: args.existing_vendor_contact_description,
+            project_challenge_description: args.project_challenge_description,
+            vendor_search_timeframe: args.vendor_search_timeframe,
+            max_budget: args.max_budget,
+            vendor_location_requirement: args.vendor_location_requirement,
+            project_start_time_requirement: args.project_start_time_requirement,
+            project_deadline_requirement: args.project_deadline_requirement,
+            is_private: args.is_private,
           }
         });
 
-        sendProjectRequestSubmissionEmail(user);
-        createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        if (!projectRequest.is_private){
+          sendProjectRequestSubmissionEmail(user);
+          createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        } else {
+          invariant(args.company_name, 'Company name is required.');
+          invariant(args.website, 'Website is required.');
+          invariant(args.email, 'Email is required.');
+          invariant(args.first_name, 'First name is required.');
+          invariant(args.last_name, 'Last name is required.');
+          const admins = await context.prisma.admin.findMany({
+            where: {
+              team: AdminTeam.SCIENCE
+            }
+          });
+          
+          const biotechInviteVendor = await trx.biotechInviteVendor.create({
+            data: {
+              biotech_id: user.customer.biotech_id,
+              project_request_id: projectRequest.id,
+              company_name: args.company_name,
+              website: args.website,
+              email: args.email,
+              first_name: args.first_name,
+              last_name: args.last_name,
+              inviter_id: user.id,
+            },
+          });
+          sendPrivateProjectRequestSubmissionEmail(user);
+
+          // Send email to admin
+          const biotechInfo = await trx.biotech.findFirst({
+            where: {
+              id: user.customer.biotech_id,
+            },
+          });
+          invariant(biotechInfo, 'Biotech not found.');
+          const data = {
+            biotech_name: biotechInfo.name,
+            inviter_full_name: `${user.first_name} ${user.last_name}`,
+            vendor_company_name: args.company_name,
+            website: args.website,
+            first_name: args.first_name,
+            last_name: args.last_name,
+            email: args.email,
+            project_request_name: projectRequest.title,
+          };
+          await Promise.all(admins.map(async (admin) => {
+            sendAdminBiotechInviteVendorNoticeEmail(admin, data);
+          }));
+        }
 
         return {
           ...projectRequest,
@@ -278,26 +337,62 @@ const resolvers: Resolvers<Context> = {
           id: args.project_request_id
         },
       });
-      if (projectRequest) {
-        if (projectRequest.biotech_id !== user.customer?.biotech_id) {
-          throw new PermissionDeniedError();
+      invariant(projectRequest, new PublicError('Project request not found.'));
+
+      invariant(projectRequest.biotech_id === user.customer?.biotech_id, new PermissionDeniedError());
+
+      const updatedRequest = await context.prisma.projectRequest.update({
+        data: {
+          status: ProjectRequestStatus.WITHDRAWN,
+        },
+        where: {
+          id: args.project_request_id,
+        },
+      });
+
+      return {
+        ...updatedRequest,
+        max_budget: updatedRequest.max_budget?.toNumber() || 0,
+      };
+    },
+    setProjectRequestPublic: async (_, args, context) => {
+      const user = await context.prisma.user.findFirstOrThrow({
+        where: {
+          id: context.req.user_id
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true
+            }
+          }
         }
+      });
 
-        const updatedRequest = await context.prisma.projectRequest.update({
-          data: {
-            status: ProjectRequestStatus.WITHDRAWN,
-          },
-          where: {
-            id: args.project_request_id,
-          },
-        });
+      const projectRequest = await context.prisma.projectRequest.findFirst({
+        where: {
+          id: args.project_request_id
+        },
+      });
+      invariant(projectRequest, new PublicError('Project request not found.'));
 
-        return {
-          ...updatedRequest,
-          max_budget: updatedRequest.max_budget?.toNumber() || 0,
-        };
-      }
-      throw new PublicError('Project request not found.')
+      invariant(projectRequest.biotech_id === user.customer?.biotech_id, new PermissionDeniedError());
+
+      const updatedRequest = await context.prisma.projectRequest.update({
+        data: {
+          is_private: false,
+        },
+        where: {
+          id: args.project_request_id,
+        },
+      });
+
+      createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+
+      return {
+        ...updatedRequest,
+        max_budget: updatedRequest.max_budget?.toNumber() || 0,
+      };
     },
   },
 };

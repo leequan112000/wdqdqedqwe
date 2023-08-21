@@ -10,6 +10,8 @@ type VendorCompany {
   cda_signed_at: Date
   vendor_type: String
   skip_cda: Boolean
+  is_on_marketplace: Boolean
+  invited_by: String
 }
 
 type Mutation {
@@ -20,9 +22,14 @@ type Mutation {
     description: String
     vendor_type: String
     skip_cda: Boolean
+    invited_by: String
   ): VendorCompany
   inviteVendorCompaniesToProjectByAdmin(
     project_request_id: String!
     vendor_company_ids: [String]!
+  ): Boolean
+  inviteVendorCompanyToProjectByBiotech(
+    biotech_invite_vendor_id: String!
+    vendor_type: String!
   ): Boolean
 }

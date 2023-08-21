@@ -3,46 +3,36 @@ import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../../generated";
-import { InternalError } from "../errors/InternalError";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Customer: {
     user: async (parent, _, context) => {
-      if (!parent.user_id) {
-        throw new InternalError('Missing user id.');
-      }
+      invariant(parent.user_id, 'Missing user id.');
       const user = await context.prisma.user.findFirst({
         where: {
           id: parent.user_id
         }
       });
 
-      if (!user) {
-        throw new PublicError('User not found.')
-      }
+      invariant(user, new PublicError('User not found.'));
 
       return user;
     },
     biotech: async (parent, _, context) => {
-      if (!parent.biotech_id) {
-        throw new InternalError('Missing biotech id.');
-      }
+      invariant(parent.biotech_id, 'Missing biotech id.');
       const biotech = await context.prisma.biotech.findFirst({
         where: {
           id: parent.biotech_id
         }
       });
 
-      if (!biotech) {
-        throw new PublicError('Biotech not found')
-      }
+      invariant(biotech, new PublicError('Biotech not found.'));
 
       return biotech;
     },
     project_requests: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new PublicError('Missing customer id.')
-      }
+      invariant(parent.id, new PublicError('Missing customer id.'));
       const projectRequests = await context.prisma.projectRequest.findMany({
         where: {
           customer_id: parent.id
@@ -57,9 +47,7 @@ const resolvers: Resolvers<Context> = {
       return processedResult;
     },
     customer_connections: async (parent, _, context) => {
-      if (!parent.id) {
-        throw new InternalError('Missing customer id.')
-      }
+      invariant(parent.id, 'Missing customer id.');
       const connections = await context.prisma.customerConnection.findMany({
         where: {
           customer_id: parent.id
@@ -77,9 +65,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!customer) {
-        throw new PublicError('Customer not found.')
-      }
+      invariant(customer, new PublicError('Customer not found.'));
       return customer;
     }
   },
@@ -92,9 +78,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (customer) {
-          throw new PublicError('Customer already exist!');
-        }
+        invariant(!customer, new PublicError('Customer already exist!'));
 
         const biotech = await trx.biotech.findFirst({
           where: {
@@ -105,9 +89,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (biotech) {
-          throw new PublicError('Your company has already setup an account. Please ask any user from your account to invite you to the company account.');
-        }
+        invariant(!biotech, new PublicError('Your company has already setup an account. Please ask any user from your account to invite you to the company account.'));
 
         const newBiotech = await trx.biotech.create({
           data: {
@@ -145,9 +127,7 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (user) {
-          throw new PublicError('User already exist!');
-        }
+        invariant(!user, new PublicError('User already exists!'));
 
         const currentUser = await trx.user.findFirstOrThrow({
           where: {

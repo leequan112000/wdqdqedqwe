@@ -4,6 +4,7 @@ import { PublicError } from "../../graphql/errors/PublicError";
 import { toDollar } from "../../helper/money";
 import { MilestonePaymentStatus } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -26,23 +27,16 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!milestone) {
-        throw new PublicError('Milestone not found!');
-      }
-
-      if (milestone.payment_status !== MilestonePaymentStatus.PAID) {
-        throw new PublicError('Milestone has not been paid by the biotech yet');
-      }
-
-      if (milestone.vendor_payment_status === MilestonePaymentStatus.PROCESSING || milestone.vendor_payment_status === MilestonePaymentStatus.PAID) {
-        throw new PublicError('Milestone has paid to the vendor');
-      }
+      invariant(milestone, new PublicError('Milestone not found!'));
+      invariant(milestone.payment_status === MilestonePaymentStatus.PAID, new PublicError('Milestone has not been paid by the biotech yet'));
+      invariant(
+        milestone.vendor_payment_status !== MilestonePaymentStatus.PROCESSING
+        && milestone.vendor_payment_status !== MilestonePaymentStatus.PAID,
+        new PublicError('Milestone has paid to the vendor.'),
+      );
 
       const vendorCompany = milestone.quote.project_connection.vendor_company;
-
-      if (!vendorCompany.stripe_account) {
-        throw new PublicError('Vendor company has no Stripe account');
-      }
+      invariant(vendorCompany.stripe_account, new PublicError('Vendor company has no Stripe account'));
 
       try {
         const stripe = await getStripeInstance();
@@ -54,9 +48,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         // Check if stripe transfer success
-        if (!transfer?.id) {
-          throw new PublicError('Stripe Transfer: Missing transfer Id');
-        }
+        invariant(transfer.id, new PublicError('Stripe Transfer: Missing transfer Id'));
 
         const updatedMilestone = await context.prisma.milestone.update({
           where: {

@@ -1,6 +1,8 @@
 import { InternalError } from "../../graphql/errors/InternalError";
 import { Resolvers } from "../../generated";
 import { Context } from "../../types/context";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../../graphql/errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -14,9 +16,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (existingCertificationTagConnection) {
-        throw new InternalError('Certification Tag Connection already exist.');
-      }
+      invariant(!existingCertificationTagConnection, new PublicError('Certification Tag Connection already exist.'))
 
       const certificationTag = await context.prisma.certificationTag.findFirst({
         where: {
@@ -24,9 +24,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!certificationTag) {
-        throw new InternalError('Certification tag not found.');
-      }
+      invariant(certificationTag, new PublicError('Certification tag not found.'));
 
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
@@ -34,9 +32,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      if (!vendorCompany) {
-        throw new InternalError('Vendor company not found.');
-      }
+      invariant(vendorCompany, new PublicError('Vendor company not found.'));
 
       return await context.prisma.certificationTagConnection.create({
         data: {
@@ -58,13 +54,11 @@ const resolvers: Resolvers<Context> = {
 
       const existingCertificationTagConnection = await context.prisma.certificationTagConnection.findFirst({
         where: {
-          id: id || '',
+          id,
         }
       });
 
-      if (!existingCertificationTagConnection) {
-        throw new InternalError('Certification tag connection not found.');
-      }
+      invariant(existingCertificationTagConnection, new PublicError('Certification tag connection not found.'));
 
       return await context.prisma.certificationTagConnection.delete({
         where: {
