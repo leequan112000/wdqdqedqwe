@@ -603,10 +603,10 @@ const resolvers: Resolvers<Context> = {
       }));
     },
     bioInvitedProjectConnections: async (parent, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         const { project_request_id } = args;
         invariant(project_request_id, 'Project request id is required.');
-        
+
         const projectConnections = await context.prisma.projectConnection.findMany({
           where: {
             project_request_id,

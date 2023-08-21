@@ -1,6 +1,6 @@
 import { AdminTeam, EmailType, MilestoneEventType, NotificationType, QuoteNotificationActionContent } from "../helper/constant";
 import { createQueue } from "../helper/queue";
-import { prisma } from "../connectDB";
+import prisma from "../prisma";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
 import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";

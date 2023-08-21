@@ -2,7 +2,10 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { CasbinAct, CasbinObj, CompanyCollaboratorRoleType, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import {
+  CasbinAct, CasbinObj, CompanyCollaboratorRoleType,
+  AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
+} from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import {
@@ -13,6 +16,7 @@ import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.que
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
 import { hasPermission } from "../../helper/casbin";
+import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -311,6 +315,57 @@ const resolvers: Resolvers<Context> = {
 
         sendProjectRequestSubmissionEmail(user);
         createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+
+        if (!projectRequest.is_private) {
+          sendProjectRequestSubmissionEmail(user);
+          createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        } else {
+          invariant(args.company_name, 'Company name is required.');
+          invariant(args.website, 'Website is required.');
+          invariant(args.email, 'Email is required.');
+          invariant(args.first_name, 'First name is required.');
+          invariant(args.last_name, 'Last name is required.');
+          const admins = await context.prisma.admin.findMany({
+            where: {
+              team: AdminTeam.SCIENCE
+            }
+          });
+
+          const biotechInviteVendor = await trx.biotechInviteVendor.create({
+            data: {
+              biotech_id: user.customer.biotech_id,
+              project_request_id: projectRequest.id,
+              company_name: args.company_name,
+              website: args.website,
+              email: args.email,
+              first_name: args.first_name,
+              last_name: args.last_name,
+              inviter_id: user.id,
+            },
+          });
+          sendPrivateProjectRequestSubmissionEmail(user);
+
+          // Send email to admin
+          const biotechInfo = await trx.biotech.findFirst({
+            where: {
+              id: user.customer.biotech_id,
+            },
+          });
+          invariant(biotechInfo, 'Biotech not found.');
+          const data = {
+            biotech_name: biotechInfo.name,
+            inviter_full_name: `${user.first_name} ${user.last_name}`,
+            vendor_company_name: args.company_name,
+            website: args.website,
+            first_name: args.first_name,
+            last_name: args.last_name,
+            email: args.email,
+            project_request_name: projectRequest.title,
+          };
+          await Promise.all(admins.map(async (admin) => {
+            sendAdminBiotechInviteVendorNoticeEmail(admin, data);
+          }));
+        }
 
         if (!projectRequest.is_private) {
           sendProjectRequestSubmissionEmail(user);

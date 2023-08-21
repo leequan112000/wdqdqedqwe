@@ -1,0 +1,114 @@
+{
+  "id": "evt_1NaW8tFCPw5SimmnORKppNbM",
+  "object": "event",
+  "api_version": "2022-08-01",
+  "created": 1690948475,
+  "data": {
+    "object": {
+      "id": "cs_test_a16zOSViH3e8HIWOdd5mu3o39mw38eD4jDtE45Bj8So7HHypA1cKWjbnMI",
+      "object": "checkout.session",
+      "after_expiration": null,
+      "allow_promotion_codes": null,
+      "amount_subtotal": 100000,
+      "amount_total": 100000,
+      "automatic_tax": {
+        "enabled": false,
+        "status": null
+      },
+      "billing_address_collection": null,
+      "cancel_url": "https://caesar-staging.herokuapp.com/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
+      "client_reference_id": "350a792a-2b63-4f9b-8c9a-1bd05c0c0e11",
+      "consent": null,
+      "consent_collection": null,
+      "created": 1690948440,
+      "currency": "usd",
+      "currency_conversion": null,
+      "custom_fields": [
+      ],
+      "custom_text": {
+        "shipping_address": null,
+        "submit": null
+      },
+      "customer": "cus_NjZkMjFyWLz0YC",
+      "customer_creation": null,
+      "customer_details": {
+        "address": {
+          "city": null,
+          "country": "MY",
+          "line1": null,
+          "line2": null,
+          "postal_code": null,
+          "state": null
+        },
+        "email": "hao+b2@cro-matic.com",
+        "name": "Hao",
+        "phone": null,
+        "tax_exempt": "none",
+        "tax_ids": [
+        ]
+      },
+      "customer_email": null,
+      "expires_at": 1691034840,
+      "invoice": null,
+      "invoice_creation": {
+        "enabled": false,
+        "invoice_data": {
+          "account_tax_ids": null,
+          "custom_fields": null,
+          "description": null,
+          "footer": null,
+          "metadata": {
+          },
+          "rendering_options": null
+        }
+      },
+      "livemode": false,
+      "locale": null,
+      "metadata": {
+        "quote_id": "997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
+        "payment_type": "milestone",
+        "milestone_id": "b5dc61ce-899d-4816-ba48-0d166354cf2e"
+      },
+      "mode": "payment",
+      "payment_intent": "pi_3NaW8QFCPw5Simmn0X92HgXr",
+      "payment_link": null,
+      "payment_method_collection": "always",
+      "payment_method_options": {
+        "us_bank_account": {
+          "verification_method": "automatic"
+        }
+      },
+      "payment_method_types": [
+        "us_bank_account"
+      ],
+      "payment_status": "unpaid",
+      "phone_number_collection": {
+        "enabled": false
+      },
+      "recovered_from": null,
+      "setup_intent": null,
+      "shipping_address_collection": null,
+      "shipping_cost": null,
+      "shipping_details": null,
+      "shipping_options": [
+      ],
+      "status": "complete",
+      "submit_type": null,
+      "subscription": null,
+      "success_url": "https://caesar-staging.herokuapp.com/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
+      "total_details": {
+        "amount_discount": 0,
+        "amount_shipping": 0,
+        "amount_tax": 0
+      },
+      "url": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": null,
+    "idempotency_key": null
+  },
+  "type": "checkout.session.async_payment_failed"
+}

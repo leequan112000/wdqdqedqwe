@@ -1,5 +1,5 @@
 import { User, ProjectConnection, CustomerConnection, VendorMemberConnection, ProjectRequest } from "@prisma/client";
-import { prisma } from "../connectDB";
+import prisma from "../prisma";
 
 export const getReceiversByProjectConnection = async (projectConnectionId: string, senderUserId: string): Promise<{
   receivers: User[];

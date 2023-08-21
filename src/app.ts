@@ -14,7 +14,7 @@ import { useServer } from 'graphql-ws/lib/use/ws'
 import corsConfig from './cors';
 import { Context } from './types/context'
 import { authMiddleware } from './middlewares/auth';
-import { prisma } from './connectDB';
+import prisma from './prisma';
 import routes from './routes';
 import schema from './graphql/index';
 import adminSchema from './graphql-admin/index';

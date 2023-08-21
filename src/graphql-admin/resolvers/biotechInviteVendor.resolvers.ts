@@ -6,7 +6,7 @@ import invariant from "../../helper/invariant";
 const resolvers: Resolvers<Context> = {
   Mutation: {
     updateBiotechInviteVendor: async (_, args, context) => {
-      if (process.env.BIOTECH_INVITE_CRO) {
+      if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         const biotechInviteVendor = await context.prisma.biotechInviteVendor.findFirst({
           where: {
             id: args.id,

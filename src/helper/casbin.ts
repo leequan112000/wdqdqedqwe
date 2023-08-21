@@ -1,6 +1,6 @@
 import { newEnforcer, newModelFromString } from 'casbin';
 import { PrismaAdapter } from 'casbin-prisma-adapter';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import { CasbinAct, CasbinObj, CasbinRole } from './constant';
 
 const rbac_models = `
