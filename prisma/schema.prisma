@@ -270,7 +270,7 @@ model ProjectConnection {
   project_attachments       ProjectAttachment[]
   MeetingEvent              MeetingEvent[]
   quotes                    Quote[]
-  ProjectDeclineFeedback    ProjectDeclineFeedback[]
+  project_decline_feedbacks ProjectDeclineFeedback[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -621,23 +621,23 @@ model BiotechInviteVendor {
 }
 
 model ProjectDeclineFeedback {
-  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  reason                      String?
-  project_connection_id       String                        @db.Uuid
-  project_connection          ProjectConnection             @relation(fields: [project_connection_id], references: [id])
-  created_at                  DateTime                      @default(now())
-  updated_at                  DateTime                      @updatedAt
-  ProjectDeclineTagConnection ProjectDeclineTagConnection[]
+  id                              String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reason                          String?
+  project_connection_id           String                        @db.Uuid
+  project_connection              ProjectConnection             @relation(fields: [project_connection_id], references: [id])
+  created_at                      DateTime                      @default(now())
+  updated_at                      DateTime                      @updatedAt
+  project_decline_tag_connections ProjectDeclineTagConnection[]
 
   @@map("project_decline_feedbacks")
 }
 
 model ProjectDeclineTag {
-  id                          String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                        String                        @unique
-  created_at                  DateTime                      @default(now())
-  updated_at                  DateTime                      @updatedAt
-  ProjectDeclineTagConnection ProjectDeclineTagConnection[]
+  id                              String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                            String                        @unique
+  created_at                      DateTime                      @default(now())
+  updated_at                      DateTime                      @updatedAt
+  project_decline_tag_connections ProjectDeclineTagConnection[]
 
   @@map("project_decline_tags")
 }
