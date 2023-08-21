@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import { createSendUserExpiredQuoteNoticeEmailJob } from '../queues/email.queues';
 import { CreateSendUserExpiredQuoteNoticeEmailJobParam } from '../queues/types';
 import { QuoteStatus } from '../helper/constant';

@@ -1,4 +1,4 @@
-import { prisma } from "../connectDB";
+import prisma from "../prisma";
 import { byteToKB } from "./filesize";
 
 // Note: all sizes in kilobytes

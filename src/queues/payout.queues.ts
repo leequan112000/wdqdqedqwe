@@ -1,6 +1,6 @@
 import { AdminTeam, MilestonePaymentStatus } from "../helper/constant";
 import { createQueue } from "../helper/queue";
-import { prisma } from "../connectDB";
+import prisma from "../prisma";
 import { getStripeInstance } from "../helper/stripe";
 import { sendAdminGeneralNoticeEmail } from "../mailer/admin";
 import invariant from "../helper/invariant";

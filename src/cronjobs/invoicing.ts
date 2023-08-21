@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { customAlphabet } from 'nanoid';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import { InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
