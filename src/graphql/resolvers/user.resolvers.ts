@@ -70,7 +70,7 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
-      if (process.env.DISABLED_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
         return true;
       } else {
         if (
@@ -307,7 +307,7 @@ const resolvers: Resolvers<Context> = {
     },
     skip_cda: async (parent, _, context) => {
       // gating this subscription to remove skip cda feature
-      if (process.env.DISABLED_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
         return null;
       } else {
         if (parent.customer?.biotech?.skip_cda) {
@@ -365,7 +365,7 @@ const resolvers: Resolvers<Context> = {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         // gating this subscription to remove subscribe cda feature
-        if (process.env.DISABLED_CDA === 'true') {
+        if (process.env.DISABLE_CDA === 'true') {
           return null;
         } else {
           const vendor = await context.prisma.vendorMember.findFirst({
@@ -402,7 +402,7 @@ const resolvers: Resolvers<Context> = {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         // gating this subscription to remove subscribe cda feature
-        if (process.env.DISABLED_CDA === 'true') {
+        if (process.env.DISABLE_CDA === 'true') {
           return null;
         } else {
           const vendor = await context.prisma.vendorMember.findFirst({
@@ -627,7 +627,7 @@ const resolvers: Resolvers<Context> = {
     },
     createCda: async (_, __, context) => {
       // gating this mutation to remove create cda feature
-      if (process.env.DISABLED_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
         return null;
       } else {
         try {
@@ -714,7 +714,7 @@ const resolvers: Resolvers<Context> = {
     },
     skipCda: async (_, __, context) => {
       // gating this mutation to remove skip cda feature
-      if (process.env.DISABLED_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
         return null;
       } else {
         try {
