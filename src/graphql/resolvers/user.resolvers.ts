@@ -4,11 +4,11 @@ import { checkPassword, createTokens, hashPassword, createResetPasswordToken } f
 import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
-import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
 import { VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
+import authService from "../../services/auth/auth.service";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -573,21 +573,11 @@ const resolvers: Resolvers<Context> = {
 
       invariant(user, new PublicError('User not found.'));
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-      const updatedUser = await context.prisma.user.update({
-        where: {
-          email: args.email,
-        },
-        data: {
-          reset_password_token: createResetPasswordToken(),
-          reset_password_expiration: new Date(resetTokenExpiration),
-        },
-      });
+      const updatedUser = authService.forgotPassword({ email: args.email }, { prisma: context.prisma });
 
       if (!updatedUser) {
         return false;
       }
-      sendResetPasswordEmail(updatedUser);
       return true;
     },
     resetPassword: async (_, args, context) => {

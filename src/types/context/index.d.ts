@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { Request, Response } from "express";
 import { PubSubEngine } from 'graphql-subscriptions';
 
@@ -7,4 +7,8 @@ export interface Context {
   req: Request;
   res: Response;
   pubsub: PubSubEngine;
+}
+
+export interface ServiceContext {
+  prisma: PrismaClient;
 }

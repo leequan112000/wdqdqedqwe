@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
 import { pubsub } from "../../helper/pubsub";
-import { prisma } from '../../connectDB';
+import prisma from '../../prisma';
 import { createBiotechViewCdaSession, sendCda } from '../../helper/pandadoc';
 import invariant from "../../helper/invariant";
 
