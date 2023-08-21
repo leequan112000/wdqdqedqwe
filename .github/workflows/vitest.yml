@@ -6,10 +6,7 @@ name: Vitest
 on:
   pull_request:
     types:
-      - ready_for_review
-  pull_request_review:
-    types:
-      - submitted
+      - review_requested
 
 jobs:
   build:
