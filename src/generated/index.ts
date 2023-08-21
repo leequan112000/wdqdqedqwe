@@ -1322,7 +1322,6 @@ export type UploadResult = {
 
 export type User = {
   __typename?: 'User';
-  can_be_removed?: Maybe<Scalars['Boolean']>;
   /** @deprecated Remove after all cda expired. */
   cda_signed_at?: Maybe<Scalars['Date']>;
   cda_url?: Maybe<Scalars['String']>;
@@ -2212,7 +2211,6 @@ export type UploadResultResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  can_be_removed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_collaborator_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -357,10 +357,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(users, 'Current user is not customer nor vendor member');
 
-      return users.map((u) => ({
-        ...u,
-        can_be_removed: u.id !== context.req.user_id, // cannot delete current user
-      }))
+      return users;
     },
     external_collaborators: async (parent, args, context) => {
       invariant(parent.id, 'Project connection id not found.');
