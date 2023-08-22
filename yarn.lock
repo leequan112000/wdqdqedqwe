@@ -2519,6 +2519,11 @@
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.25.24.tgz#8c7688559979f7079aacaf31aa881c3aa410b718"
   integrity sha512-XJfwUVUKDHF5ugKwIcxEgc9k8b7HbznCp6eUfWgu710hMPNIO4aw4/zB5RogDQz8nd6gyCDpU9O/m6qYEWY6yQ==
 
+"@supercharge/promise-pool@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@supercharge/promise-pool/-/promise-pool-3.0.0.tgz#11a6a68b41a0f9a917926e007a18cbcc5b50c0d8"
+  integrity sha512-AV9k1G1r73ppq5z08zXvbFF0skvqzgR5ZAVYQy+wDqQgehe7zDLXgeEo4EisKSKS2aK+aoFi27gzYw2Eny+g7g==
+
 "@tootallnate/once@2":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
