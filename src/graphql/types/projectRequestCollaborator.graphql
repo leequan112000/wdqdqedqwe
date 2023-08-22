@@ -7,3 +7,14 @@ type ProjectRequestCollaborator {
   customer_id: String
   customer: Customer
 }
+
+type Mutation {
+  updateProjectRequestCollaborators(
+    project_request_id: String!
+    customer_ids: [String]!
+  ): [ProjectRequestCollaborator]
+  removeProjectRequestCollaborator(
+    project_request_id: String!
+    customer_id: String!
+  ): ProjectRequestCollaborator
+}

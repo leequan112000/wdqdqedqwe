@@ -21,6 +21,7 @@ import { getReceiversByProjectConnection } from "./utils";
 import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
 import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
 import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
+import invariant from "../helper/invariant";
 
 type EmailJob = {
   type: EmailType;
@@ -286,8 +287,9 @@ emailQueue.process(async (job, done) => {
                 id: {
                   in: projectConnection.customer_connections.map(cc => cc.customer_id),
                 }
-              }
-            }
+              },
+              is_active: true,
+            },
           });
 
           await Promise.all(
@@ -402,8 +404,9 @@ emailQueue.process(async (job, done) => {
               id: {
                 in: milestone.quote.project_connection.customer_connections.map(cc => cc.customer_id),
               }
-            }
-          }
+            },
+            is_active: true,
+          },
         });
 
         const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
@@ -428,7 +431,19 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
-        const {  receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const { receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+
+        const receiver = await prisma.user.findFirst({
+          where: {
+            email: receiverEmail,
+          },
+        });
+        invariant(receiver, 'Receiver not found.');
+        if (receiver.is_active === false) {
+          done(null, 'Deactivated');
+          break;
+        }
+
         const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
         const resp = await sendQuoteExpiringNoticeEmail({
           button_url: buttonUrl,
@@ -441,8 +456,20 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
-        const {  receiverEmail, receiverName, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
+        const { receiverEmail, receiverName, quotes } = data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
+
+        const receiver = await prisma.user.findFirst({
+          where: {
+            email: receiverEmail,
+          },
+        });
+        invariant(receiver, 'Receiver not found.');
+        if (receiver.is_active === false) {
+          done(null, 'Deactivated');
+          break;
+        }
+
         const resp = await sendQuoteExpiredNoticeEmail({
           button_url: buttonUrl,
           receiver_full_name: receiverName,
@@ -456,6 +483,18 @@ emailQueue.process(async (job, done) => {
         const { invoiceId, invoiceMonth, invoicePeriod, invoiceTotalAmount,
           receiverCompanyName, receiverEmail, receiverId } = data as CreateBillingNoticeEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoiceId}`;
+
+        const receiver = await prisma.user.findFirst({
+          where: {
+            email: receiverEmail,
+          },
+        });
+        invariant(receiver, 'Receiver not found.');
+        if (receiver.is_active === false) {
+          done(null, 'Deactivated');
+          break;
+        }
+
         const resp = await sendBillingNoticeEmail({
           button_url: buttonUrl,
           invoice_month: invoiceMonth,
@@ -481,6 +520,9 @@ emailQueue.process(async (job, done) => {
           where: {
             vendor_company_id: vendorCompanyId,
             is_primary_member: true,
+            user: {
+              is_active: true,
+            },
           },
           include: {
             user: true,
@@ -514,6 +556,9 @@ emailQueue.process(async (job, done) => {
           where: {
             vendor_company_id: vendorCompanyId,
             is_primary_member: true,
+            user: {
+              is_active: true,
+            },
           },
           include: {
             user: true,
@@ -552,6 +597,9 @@ emailQueue.process(async (job, done) => {
           where: {
             vendor_company_id: vendorCompanyId,
             is_primary_member: true,
+            user: {
+              is_active: true,
+            },
           },
           include: {
             user: true,
@@ -584,6 +632,18 @@ emailQueue.process(async (job, done) => {
       case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL: {
         const { receiverEmail, receiverName, requests, expiringIn } = data as CreateVendorProjectRequestExpiringNoticeEmailJobParam;
         const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`
+
+        const receiver = await prisma.user.findFirst({
+          where: {
+            email: receiverEmail,
+          },
+        });
+        invariant(receiver, 'Receiver not found.');
+        if (receiver.is_active === false) {
+          done(null, 'Deactivated');
+          break;
+        }
+
         const resp = await sendVendorProjectRequestExpiringEmail(
           {
             button_url: buttonUrl,
@@ -598,7 +658,19 @@ emailQueue.process(async (job, done) => {
       }
       case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL: {
         const { receiverEmail, receiverName, requests } = data as CreateVendorProjectRequestExpiredNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/projects/expired`
+        const buttonUrl = `${app_env.APP_URL}/app/projects/expired`;
+
+        const receiver = await prisma.user.findFirst({
+          where: {
+            email: receiverEmail,
+          },
+        });
+        invariant(receiver, 'Receiver not found.');
+        if (receiver.is_active === false) {
+          done(null, 'Deactivated');
+          break;
+        }
+
         const resp = await sendVendorProjectRequestExpiredEmail(
           {
             button_url: buttonUrl,

@@ -49,10 +49,12 @@ async function main() {
   expiredQuotes.forEach((quote) => {
     quote.project_connection.customer_connections.forEach((cc) => {
       const userId = cc.customer.user_id;
-      if (!expiredQuotesGroupByUserId[userId]) {
-        expiredQuotesGroupByUserId[userId] = { quotes: [], userData: cc.customer.user };
+      if (cc.customer.user.is_active === true) {
+        if (!expiredQuotesGroupByUserId[userId]) {
+          expiredQuotesGroupByUserId[userId] = { quotes: [], userData: cc.customer.user };
+        }
+        expiredQuotesGroupByUserId[userId].quotes.unshift(quote)
       }
-      expiredQuotesGroupByUserId[userId].quotes.unshift(quote)
     })
   });
 

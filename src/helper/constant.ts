@@ -193,6 +193,44 @@ export enum StripeWebhookPaymentType {
   INVOICE = 'invoice',
 }
 
+export enum CasbinObj {
+  PROJECT_REQUEST = 'project_request',
+  COMPANY_COLLABORATOR_USER = 'company_collaborator/user',
+  COMPANY_COLLABORATOR_ADMIN = 'company_collaborator/admin',
+  COMPANY_COLLABORATOR_OWNER = 'company_collaborator/owner',
+  PROJECT_COLLABORATOR = 'project_collaborator',
+  PAYOUT_ACCOUNT = 'payout_account',
+  MILESTONE_PAYMENT = 'milestone/payment',
+  COMPANY_INFO = 'company_info',
+}
+
+export enum CasbinAct {
+  READ = 'read',
+  WRITE = 'write',
+  DELETE = 'delete',
+  ALL = '*',
+}
+
+export enum CasbinRole {
+  OWNER = 'role:owner',
+  ADMIN = 'role:admin',
+  USER = 'role:user',
+}
+
+export enum CompanyCollaboratorRoleType {
+  OWNER = 'owner',
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
+export enum GqlErrorCode {
+  UNAUTHENTICATED = 'UNAUTHENTICATED',
+  INTERNAL_ERROR = 'INTERNAL_ERROR_CODE',
+  PUBLIC_ERROR = 'PUBLIC_ERROR_CODE',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
+  SESSION_EXPIRED = 'SESSION_EXPIRED',
+}
+
 export enum InvitedByType {
   ADMIN = 'admin',
 }

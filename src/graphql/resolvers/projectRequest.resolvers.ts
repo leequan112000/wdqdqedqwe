@@ -2,7 +2,10 @@ import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus } from "../../helper/constant";
+import {
+  CasbinAct, CasbinObj, CompanyCollaboratorRoleType,
+  AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
+} from "../../helper/constant";
 import { Prisma } from "@prisma/client";
 import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
 import {
@@ -12,6 +15,7 @@ import {
 import { createSendAdminNewProjectRequestEmailJob } from "../../queues/email.queues";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
+import { hasPermission } from "../../helper/casbin";
 import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
@@ -118,38 +122,63 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      const data = await context.prisma.projectRequest.findMany({
-        where: {
-          ...(args.status && args.status.length > 0 ? {
-            status: {
-              in: args.status.filter(nonNullable),
-            }
-          } : {}),
-          OR: [
-            // by project request collaborator
-            {
-              project_connections: {
-                some: {
-                  customer_connections: {
-                    some: {
-                      customer_id: customer.id,
+      let data = [];
+      if (customer.role === CompanyCollaboratorRoleType.OWNER || customer.role === CompanyCollaboratorRoleType.ADMIN) {
+        data = await context.prisma.projectRequest.findMany({
+          where: {
+            ...(args.status && args.status.length > 0 ? {
+              status: {
+                in: args.status.filter(nonNullable),
+              }
+            } : {}),
+            OR: {
+              biotech_id: customer.biotech_id
+            },
+          },
+          orderBy: [
+            // Sort by status to grouped matched experiments first
+            { status: 'asc' },
+            { updated_at: 'desc' },
+          ]
+        });
+      } else {
+        data = await context.prisma.projectRequest.findMany({
+          where: {
+            ...(args.status && args.status.length > 0 ? {
+              status: {
+                in: args.status.filter(nonNullable),
+              }
+            } : {}),
+            OR: [
+              // by project connection collaborator
+              {
+                project_connections: {
+                  some: {
+                    customer_connections: {
+                      some: {
+                        customer_id: customer.id,
+                      },
                     },
                   },
                 },
               },
-            },
-            // by project request creator
-            {
-              customer_id: customer.id,
-            },
-          ],
-        },
-        orderBy: [
-          // Sort by status to grouped matched experiments first
-          { status: 'asc' },
-          { updated_at: 'desc' },
-        ]
-      });
+              // by project request collaborator
+              {
+                project_request_collaborators: {
+                  some: {
+                    customer_id: customer.id,
+                  }
+                }
+              },
+            ],
+          },
+          orderBy: [
+            // Sort by status to grouped matched experiments first
+            { status: 'asc' },
+            { updated_at: 'desc' },
+          ]
+        });
+      }
 
       const processed: ProjectRequest[] = data.map((d) => ({
         ...d,
@@ -188,7 +217,7 @@ const resolvers: Resolvers<Context> = {
           });
           invariant(projectConnection, new PermissionDeniedError());
         } else {
-          // Check if customer is the project request owner / collaborator
+          // Check if customer is the project request owner / admin / collaborator
           const customer = await context.prisma.customer.findFirst({
             where: {
               user_id: context.req.user_id
@@ -196,7 +225,7 @@ const resolvers: Resolvers<Context> = {
           });
           invariant(customer, new PermissionDeniedError());
 
-          if (projectRequest.customer_id !== customer.id) {
+          if (customer.role === CompanyCollaboratorRoleType.USER) {
             const projectConnection = await context.prisma.projectConnection.findFirst({
               where: {
                 project_request_id: projectRequest.id,
@@ -207,7 +236,14 @@ const resolvers: Resolvers<Context> = {
                 }
               }
             });
-            invariant(projectConnection, new PermissionDeniedError());
+
+            const projectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
+              where: {
+                project_request_id: projectRequest.id,
+                customer_id: customer.id
+              }
+            });
+            invariant(projectConnection || projectRequestCollaborator, new PermissionDeniedError());
           }
         }
 
@@ -225,10 +261,15 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createProjectRequest: async (_, args, context) => {
+      const { project_request_collaborators, ...project_request_args } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      const allowCreateProjectRequest = await hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowCreateProjectRequest, new PermissionDeniedError());
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirstOrThrow({
           where: {
-            id: context.req.user_id
+            id: currentUserId
           },
           include: {
             customer: {
@@ -261,7 +302,21 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        if (!projectRequest.is_private){
+        if (project_request_collaborators && project_request_collaborators.length > 0) {
+          await trx.projectRequestCollaborator.createMany({
+            data: project_request_collaborators.map((customerId) => {
+              return {
+                customer_id: customerId as string,
+                project_request_id: projectRequest.id
+              }
+            })
+          });
+        }
+
+        sendProjectRequestSubmissionEmail(user);
+        createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+
+        if (!projectRequest.is_private) {
           sendProjectRequestSubmissionEmail(user);
           createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
         } else {
@@ -275,7 +330,7 @@ const resolvers: Resolvers<Context> = {
               team: AdminTeam.SCIENCE
             }
           });
-          
+
           const biotechInviteVendor = await trx.biotechInviteVendor.create({
             data: {
               biotech_id: user.customer.biotech_id,
@@ -312,6 +367,30 @@ const resolvers: Resolvers<Context> = {
           }));
         }
 
+        if (!projectRequest.is_private) {
+          sendProjectRequestSubmissionEmail(user);
+          createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
+        } else {
+          invariant(args.company_name, 'Company name is required.');
+          invariant(args.website, 'Website is required.');
+          invariant(args.email, 'Email is required.');
+          invariant(args.first_name, 'First name is required.');
+          invariant(args.last_name, 'Last name is required.');
+          const biotechInviteVendor = await trx.biotechInviteVendor.create({
+            data: {
+              biotech_id: user.customer.biotech_id,
+              project_request_id: projectRequest.id,
+              company_name: args.company_name,
+              website: args.website,
+              email: args.email,
+              first_name: args.first_name,
+              last_name: args.last_name,
+              inviter_id: user.id,
+            },
+          });
+          sendPrivateProjectRequestSubmissionEmail(user);
+        }
+
         return {
           ...projectRequest,
           max_budget: projectRequest.max_budget?.toNumber() || 0,
@@ -319,6 +398,10 @@ const resolvers: Resolvers<Context> = {
       });
     },
     withdrawProjectRequest: async (_, args, context) => {
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      const allowWithdrawProjectRequest = await hasPermission(currentUserId, CasbinObj.PROJECT_REQUEST, CasbinAct.WRITE);
+      invariant(allowWithdrawProjectRequest, new PermissionDeniedError())
       const user = await context.prisma.user.findFirstOrThrow({
         where: {
           id: context.req.user_id

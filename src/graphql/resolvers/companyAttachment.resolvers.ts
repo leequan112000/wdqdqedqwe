@@ -1,5 +1,4 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import storeUpload from "../../helper/storeUpload";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";

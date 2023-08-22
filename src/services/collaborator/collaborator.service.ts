@@ -1,0 +1,179 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { updateRoleForUser } from "../../helper/casbin";
+
+interface ServiceContext {
+  prisma: PrismaClient | Prisma.TransactionClient
+}
+
+type SetCustomerRoleAsAdminArgs = {
+  biotech_id: string;
+  customer_id: string;
+  user_id: string;
+}
+
+const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: ServiceContext) => {
+  const { biotech_id, customer_id, user_id } = args;
+
+  const projectConnections = await ctx.prisma.projectConnection.findMany({
+    where: {
+      project_request: {
+        biotech_id,
+      },
+      customer_connections: {
+        none: {
+          customer_id,
+        }
+      }
+    },
+  });
+
+  // Create customer connections to all matched project
+  const upsertTasks = projectConnections.map(async (pc) => {
+    return await ctx.prisma.customerConnection.upsert({
+      create: {
+        customer_id,
+        project_connection_id: pc.id,
+      },
+      update: {
+        customer_id,
+        project_connection_id: pc.id,
+      },
+      where: {
+        project_connection_id_customer_id: {
+          customer_id,
+          project_connection_id: pc.id,
+        }
+      }
+    })
+  });
+  await Promise.all(upsertTasks);
+
+  // Remove customer from all project request collaborator lists
+  await ctx.prisma.projectRequestCollaborator.deleteMany({
+    where: {
+      customer_id,
+    },
+  });
+
+  // Update customer role to admin
+  const updatedCustomer = await ctx.prisma.customer.update({
+    where: {
+      user_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.ADMIN,
+    },
+  });
+
+  await updateRoleForUser(user_id, CasbinRole.ADMIN);
+
+  return updatedCustomer;
+}
+
+type SetCustomerRoleAsUser = {
+  customer_id: string;
+}
+
+const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContext) => {
+  const { customer_id } = args;
+  const updatedCustomer = await ctx.prisma.customer.update({
+    where: {
+      id: customer_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.USER,
+    },
+  });
+
+  await updateRoleForUser(updatedCustomer.user_id, CasbinRole.USER);
+
+  return updatedCustomer;
+}
+
+type SetVendorMemberRoleAsAdminArgs = {
+  vendor_company_id: string;
+  vendor_member_id: string;
+  user_id: string;
+}
+
+const setVendorMemberAsAdmin = async (args: SetVendorMemberRoleAsAdminArgs, ctx: ServiceContext) => {
+  const { vendor_company_id, vendor_member_id, user_id } = args;
+
+  const projectConnections = await ctx.prisma.projectConnection.findMany({
+    where: {
+      vendor_company_id: vendor_company_id,
+      vendor_member_connections: {
+        none: {
+          vendor_member_id: vendor_member_id,
+        },
+      },
+    },
+  });
+
+  // Create vendor member connection to all project connections
+  const upsertTasks = projectConnections.map(async (pc) => {
+    await ctx.prisma.vendorMemberConnection.upsert({
+      create: {
+        vendor_member_id: vendor_member_id,
+        project_connection_id: pc.id,
+      },
+      update: {
+        vendor_member_id: vendor_member_id,
+        project_connection_id: pc.id,
+      },
+      where: {
+        project_connection_id_vendor_member_id: {
+          vendor_member_id: vendor_member_id,
+          project_connection_id: pc.id,
+        },
+      },
+    });
+  });
+
+  await Promise.all(upsertTasks);
+
+  // Update vendor member role to admin
+  const updatedVendorMember = await ctx.prisma.vendorMember.update({
+    where: {
+      user_id: user_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.ADMIN,
+    },
+  });
+
+  await updateRoleForUser(user_id, CasbinRole.ADMIN);
+
+  return updatedVendorMember;
+}
+
+type SetVendorMemberAsUser = {
+  vendor_member_id: string;
+}
+
+const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceContext) => {
+  const { vendor_member_id } = args;
+
+  const updatedVendorMember = await ctx.prisma.vendorMember.update({
+    where: {
+      id: vendor_member_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.USER,
+    },
+  });
+
+  await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.USER);
+
+  return updatedVendorMember;
+}
+
+const collaboratorService = {
+  setCustomerAsAdmin,
+  setCustomerAsUser,
+  setVendorMemberAsAdmin,
+  setVendorMemberAsUser,
+}
+
+export default collaboratorService;
