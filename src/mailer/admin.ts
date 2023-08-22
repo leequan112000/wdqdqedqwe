@@ -40,6 +40,7 @@ export const sendAdminNewProjectRequestCommentEmail = async (data: AdminNewProje
       retool_url: process.env.RETOOL_PROJECT_URL,
       biotech_name: data.biotech_name,
       admin_name: data.admin_name,
+      project_request_name: data.project_request_name,
     },
   });
 
