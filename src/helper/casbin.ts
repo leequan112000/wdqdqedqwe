@@ -101,3 +101,8 @@ export const deleteRolesForUser = async (userId: string) => {
   const e = await createEnforcer();
   return await e.deleteRolesForUser(user);
 }
+
+export const addPermissionForRole = async (role: CasbinRole, obj: CasbinObj, act: CasbinAct) => {
+  const e = await createEnforcer();
+  await e.addPermissionForUser(role, obj, act);
+}
