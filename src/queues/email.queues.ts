@@ -70,7 +70,7 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.ADMIN_NEW_PROJECT_REQUEST_COMMENT: {
-        const { biotechName } = data;
+        const { biotechName, projectRequestName } = data;
 
         const admins = await prisma.admin.findMany({
           where: {
@@ -83,6 +83,7 @@ emailQueue.process(async (job, done) => {
             sendAdminNewProjectRequestCommentEmail({
               admin_name: admin.username,
               biotech_name: biotechName,
+              project_request_name: projectRequestName,
             }, admin.email);
           })
         );
@@ -748,7 +749,7 @@ export const createSendAdminProjectInvitationJob = (data: {
   emailQueue.add({ type: EmailType.ADMIN_PROJECT_INVITATION, data })
 }
 
-export const createSendAdminNewProjectRequestCommentJob = (data: { biotechName: string }) => {
+export const createSendAdminNewProjectRequestCommentJob = (data: { biotechName: string, projectRequestName: string }) => {
   emailQueue.add({ type: EmailType.ADMIN_NEW_PROJECT_REQUEST_COMMENT, data })
 }
 
