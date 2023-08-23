@@ -376,8 +376,55 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
   return true;
 }
 
+type UnregisterBiotechAccountEventArgs = {
+  biotech_id: string;
+}
+
+const unregisterBiotechAccount = async (args: UnregisterBiotechAccountEventArgs, ctx: ServiceContext) => {
+  // This function is use to unregister account that vendor wrongly signed up as biotech
+  const { biotech_id } = args;
+  const biotech = await ctx.prisma.biotech.findFirst({
+    where: {
+      id: biotech_id,
+    },
+    include: {
+      customers: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
+
+  invariant(biotech, 'Biotech not found.');
+
+  // Biotech should have only one user
+  await ctx.prisma.customer.delete({
+    where: {
+      id: biotech.customers[0].id
+    }
+  });
+
+  await ctx.prisma.user.delete({
+    where: {
+      id: biotech.customers[0].user_id
+    }
+  });
+
+  await ctx.prisma.biotech.delete({
+    where: {
+      id: biotech_id
+    }
+  });
+
+  await deleteRolesForUser(biotech.customers[0].user_id);
+
+  return true;
+}
+
 const userService = {
   purgeTestDataByUser,
+  unregisterBiotechAccount,
 };
 
 export default userService;
