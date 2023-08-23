@@ -470,12 +470,12 @@ const resolvers: Resolvers<Context> = {
 
       switch (userRole) {
         case CompanyCollaboratorRoleType.USER: {
-          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
         case CompanyCollaboratorRoleType.ADMIN: {
-          const allowDeactivateUser = await hasPermission(user.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
