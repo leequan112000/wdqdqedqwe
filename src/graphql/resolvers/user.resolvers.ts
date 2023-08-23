@@ -518,7 +518,8 @@ const resolvers: Resolvers<Context> = {
           data: {
             user_id: newCreatedUser.id,
             biotech_id: newBiotech.id,
-          }
+            role: CasbinRole.OWNER,
+          },
         });
 
         await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
