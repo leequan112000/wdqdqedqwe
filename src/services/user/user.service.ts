@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import invariant from "../../helper/invariant";
 import { deleteRolesForUser } from "../../helper/casbin";
+import { PublicError } from "../../graphql/errors/PublicError";
 
 interface ServiceContext {
   prisma: PrismaClient | Prisma.TransactionClient;
@@ -24,7 +25,9 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
 
   invariant(user, 'User not found.');
 
-  invariant((user?.first_name.includes('[TEST]') || user?.first_name === 'Cypress'), 'The user is not a test user. Abort deletion.');
+  if (!user?.first_name.includes('[TEST]') || user?.first_name !== 'Cypress') {
+    throw new PublicError('The user is not a test user. Abort deletion.');
+  }
 
   if (user.customer) {
     const biotech = await ctx.prisma.biotech.findFirst({
