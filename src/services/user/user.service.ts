@@ -24,7 +24,7 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
 
   invariant(user, 'User not found.');
 
-  invariant((user?.first_name.includes('[TEST]') || user?.first_name !== 'Cypress'), 'The user is not a test user. Abort deletion.');
+  invariant((user?.first_name.includes('[TEST]') || user?.first_name === 'Cypress'), 'The user is not a test user. Abort deletion.');
 
   if (user.customer) {
     const biotech = await ctx.prisma.biotech.findFirst({
