@@ -215,18 +215,10 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
         id: user.vendor_member.vendor_company_id,
       },
       include: {
+        project_connections: true,
         vendor_members: {
           include: {
-            vendor_member_connections: {
-              include: {
-                project_connection: {
-                  include: {
-                    chats: true,
-                    customer_connections: true
-                  }
-                }
-              }
-            }
+            vendor_member_connections: true
           }
         }
       }
@@ -234,10 +226,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
 
     invariant(vendorCompany, 'Vendor company not found.');
 
-    let projectConnectionIds: string[] = [];
-    for (const vendorMember of vendorCompany.vendor_members) {
-      projectConnectionIds.concat(vendorMember.vendor_member_connections.map(v => v.project_connection_id));
-    }
+    const projectConnectionIds = vendorCompany.project_connections.map(v => v.id);
+    const userIds = vendorCompany.vendor_members.map(v => v.user_id);
 
     // Delete customer_connections
     await ctx.prisma.customerConnection.deleteMany({
@@ -312,19 +302,19 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       }
     });
 
-    // Delete project_connections
-    await ctx.prisma.projectConnection.deleteMany({
+    // Delete vendor_member_connections
+    await ctx.prisma.vendorMemberConnection.deleteMany({
       where: {
-        project_request_id: {
+        project_connection_id: {
           in: projectConnectionIds,
         }
       }
     });
 
-    // Delete vendor_member_connections
-    await ctx.prisma.vendorMemberConnection.deleteMany({
+    // Delete project_connections
+    await ctx.prisma.projectConnection.deleteMany({
       where: {
-        project_connection_id: {
+        id: {
           in: projectConnectionIds,
         }
       }
@@ -344,6 +334,16 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       }
     });
 
+    // Delete notifications
+    await ctx.prisma.notification.deleteMany({
+      where: {
+        OR: [
+          { recipient_id: { in: userIds } },
+          { sender_id: { in: userIds } },
+        ]
+      }
+    });
+
     // Delete vendor_members
     await ctx.prisma.vendorMember.deleteMany({
       where: {
@@ -354,7 +354,6 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
     });
 
     // Delete users
-    const userIds = vendorCompany.vendor_members.map(v => v.user_id);
     await ctx.prisma.user.deleteMany({
       where: {
         id: {
