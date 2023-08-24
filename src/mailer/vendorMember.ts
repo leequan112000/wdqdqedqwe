@@ -54,7 +54,7 @@ export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (email
   await sendMail(mailData);
 };
 
-export const sendVendorMemberInvitationByBiotechEmail = async (receiver: User, biotech_name: string, inviter: User, buttonUrl: string) => {
+export const sendVendorMemberInvitationByBiotechEmail = async (receiver: User, biotech_name: string, inviter: User, buttonUrl: string, project_request_name: string) => {
   const mailData = {
     from: `Cromatic <${mailSender}>`,
     to: receiver.email,
@@ -65,6 +65,7 @@ export const sendVendorMemberInvitationByBiotechEmail = async (receiver: User, b
       receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
       biotech_name: biotech_name,
       inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
+      project_request_name: project_request_name,
     },
   };
 

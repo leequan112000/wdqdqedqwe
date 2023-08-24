@@ -112,11 +112,14 @@ const resolvers: Resolvers<Context> = {
           include: {
             biotech: true,
             inviter: true,
+            project_request: true,
           },
         });
 
+        const projectRequest = biotechInviteVendor?.project_request;
         invariant(biotechInviteVendor, 'Biotech invite vendor record not found.');
         invariant(biotechInviteVendor.project_request_id, 'Project request ID is not found.');
+        invariant(projectRequest, 'Project request not found.');
         const vendorCompany = await context.prisma.vendorCompany.findFirst({
           where: {
             name: biotechInviteVendor.company_name,
@@ -172,6 +175,7 @@ const resolvers: Resolvers<Context> = {
             biotechInviteVendor.biotech?.name,
             biotechInviteVendor.inviter,
             buttonUrl,
+            projectRequest.title,
           );
           return true;
         }
@@ -181,6 +185,7 @@ const resolvers: Resolvers<Context> = {
           biotechInviteVendor.biotech?.name,
           biotechInviteVendor.inviter,
           buttonUrl,
+          projectRequest.title,
         );
         return true;
       }
