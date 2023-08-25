@@ -13,11 +13,12 @@ import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 
 import { createResetPasswordToken } from "../../helper/auth";
-import { checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus } from "../../helper/constant";
+import { checkAllowAddProjectCollaborator, checkAllowRemoveProjectCollaborator, checkProjectConnectionPermission } from "../../helper/accessControl";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
+import { addRoleForUser } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -356,10 +357,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(users, 'Current user is not customer nor vendor member');
 
-      return users.map((u) => ({
-        ...u,
-        can_be_removed: u.id !== context.req.user_id, // cannot delete current user
-      }))
+      return users;
     },
     external_collaborators: async (parent, args, context) => {
       invariant(parent.id, 'Project connection id not found.');
@@ -639,8 +637,8 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     acceptProjectConnection: async (_, args, context) => {
       const currentDate = new Date();
-
-      invariant(context.req.user_id, 'Current user id not found.');
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -701,12 +699,15 @@ const resolvers: Resolvers<Context> = {
 
       createSendUserAcceptProjectRequestNoticeJob({
         projectConnectionId: projectConnection.id,
-        senderUserId: context.req.user_id,
+        senderUserId: currentUserId,
       });
 
       return updatedProjectConnection;
     },
     declinedProjectConnection: async (_, args, context) => {
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+
       const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -731,6 +732,8 @@ const resolvers: Resolvers<Context> = {
     },
     addProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
+
+      await checkAllowAddProjectCollaborator(context);
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -829,6 +832,8 @@ const resolvers: Resolvers<Context> = {
     removeProjectCollaborator: async (parent, args, context) => {
       const { project_connection_id, user_id } = args;
 
+      await checkAllowRemoveProjectCollaborator(context);
+
       const user = await context.prisma.user.findFirst({
         where: {
           id: user_id,
@@ -869,6 +874,8 @@ const resolvers: Resolvers<Context> = {
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
       const { project_connection_id, email, first_name, last_name, custom_message } = args;
+
+      await checkAllowAddProjectCollaborator(context);
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -958,6 +965,8 @@ const resolvers: Resolvers<Context> = {
           });
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
         }
+
+        await addRoleForUser(newUser.id, CasbinRole.USER);
 
         const projectConnection = await trx.projectConnection.findFirst({
           where: {

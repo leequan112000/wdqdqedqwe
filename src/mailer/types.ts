@@ -71,6 +71,7 @@ export type ProjectRequestInvitationByAdminData = {
 export type AdminNewProjectRequestCommentNoticeData = {
   biotech_name: string;
   admin_name: string;
+  project_request_name: string;
 }
 
 export type AdminCroInterestNoticeData = {

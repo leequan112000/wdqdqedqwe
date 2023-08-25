@@ -67,6 +67,7 @@ const resolvers: Resolvers<Context> = {
           if (!commentsWithinThePast15Min) {
             createSendAdminNewProjectRequestCommentJob({
               biotechName: projectRequest.biotech.name,
+              projectRequestName: projectRequest.title,
             });
           }
           return newComment;

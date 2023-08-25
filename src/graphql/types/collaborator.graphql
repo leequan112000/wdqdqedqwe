@@ -1,5 +1,5 @@
 type Query {
-  collaborators: [User]
+  collaborators(active_only: Boolean): [User]
 }
 
 input InviteCollaboratorInput {
@@ -19,4 +19,7 @@ type Mutation {
     collaborators: [InviteCollaboratorInput!]!
   ): [User]
   resendInvitation(user_id: String!): User
+  updateCollaboratorRole(user_id: String!, role_type: String!): User
+  deactivateCollaborator(user_id: String!): User
+  reactivateCollaborator(user_id: String!): User
 }

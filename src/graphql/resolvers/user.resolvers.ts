@@ -4,11 +4,12 @@ import { checkPassword, createTokens, hashPassword, createResetPasswordToken } f
 import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
-import { sendResetPasswordEmail } from "../../mailer/user";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
-import { VendorType } from "../../helper/constant";
+import { CasbinRole, VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
+import { addRoleForUser } from "../../helper/casbin";
+import authService from "../../services/auth/auth.service";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -358,7 +359,32 @@ const resolvers: Resolvers<Context> = {
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
-    }
+    },
+    company_collaborator_role: async (parent, args, context) => {
+      if (parent.company_collaborator_role) {
+        return parent.company_collaborator_role;
+      }
+      invariant(parent.id, 'User id not found.');
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: parent.id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        }
+      });
+      invariant(user, 'User not found.');
+
+      if (user.customer) {
+        return user.customer.role;
+      }
+      if (user.vendor_member) {
+        return user.vendor_member.role;
+      }
+
+      throw new InternalError('User company collaborator role not found.');
+    },
   },
   Subscription: {
     cdaUrl: {
@@ -492,8 +518,11 @@ const resolvers: Resolvers<Context> = {
           data: {
             user_id: newCreatedUser.id,
             biotech_id: newBiotech.id,
-          }
+            role: CasbinRole.OWNER,
+          },
         });
+
+        await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
 
         // Genereate tokens
         const tokens = createTokens({ id: newCreatedUser.id });
@@ -508,8 +537,8 @@ const resolvers: Resolvers<Context> = {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email: email
-        }
+          email,
+        },
       });
 
       invariant(foundUser, new PublicError('User not found.'));
@@ -518,6 +547,8 @@ const resolvers: Resolvers<Context> = {
         foundUser && foundUser.encrypted_password !== null,
         new PublicError('User password not set, please proceed to forgot password to set a new password.')
       );
+
+      invariant(foundUser.is_active === true, new PublicError('Your account has been suspended.'))
 
       const isPasswordMatched = await checkPassword(password, foundUser, context);
       invariant(isPasswordMatched === true, new PublicError('Invalid email or password.'));
@@ -573,21 +604,11 @@ const resolvers: Resolvers<Context> = {
 
       invariant(user, new PublicError('User not found.'));
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-      const updatedUser = await context.prisma.user.update({
-        where: {
-          email: args.email,
-        },
-        data: {
-          reset_password_token: createResetPasswordToken(),
-          reset_password_expiration: new Date(resetTokenExpiration),
-        },
-      });
+      const updatedUser = authService.forgotPassword({ email: args.email }, { prisma: context.prisma });
 
       if (!updatedUser) {
         return false;
       }
-      sendResetPasswordEmail(updatedUser);
       return true;
     },
     resetPassword: async (_, args, context) => {

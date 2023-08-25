@@ -1,0 +1,114 @@
+{
+  "id": "evt_1NYO68FCPw5SimmnKo7WpH49",
+  "object": "event",
+  "api_version": "2022-08-01",
+  "created": 1690440896,
+  "data": {
+    "object": {
+      "id": "cs_test_a1bziXaKWjFtIlHrxdCj1KZfUhMYK0UE0EMj3XbNAHGqACdm1IuDI0WvJb",
+      "object": "checkout.session",
+      "after_expiration": null,
+      "allow_promotion_codes": null,
+      "amount_subtotal": 100000,
+      "amount_total": 100000,
+      "automatic_tax": {
+        "enabled": false,
+        "status": null
+      },
+      "billing_address_collection": null,
+      "cancel_url": "http://localhost:3000/app/project-connection/49491737-4921-42c9-8e50-60505b0d6c66/quote/9449bc01-2af9-414d-ae08-662834cde0d3",
+      "client_reference_id": "036354b5-6c6f-4976-84c5-f38352efdbec",
+      "consent": null,
+      "consent_collection": null,
+      "created": 1690440808,
+      "currency": "usd",
+      "currency_conversion": null,
+      "custom_fields": [
+      ],
+      "custom_text": {
+        "shipping_address": null,
+        "submit": null
+      },
+      "customer": "cus_OL34lf2mh18CzV",
+      "customer_creation": null,
+      "customer_details": {
+        "address": {
+          "city": null,
+          "country": "MY",
+          "line1": null,
+          "line2": null,
+          "postal_code": null,
+          "state": null
+        },
+        "email": "hao+b13m1@cro-matic.com",
+        "name": "Hao",
+        "phone": null,
+        "tax_exempt": "none",
+        "tax_ids": [
+        ]
+      },
+      "customer_email": null,
+      "expires_at": 1690527207,
+      "invoice": null,
+      "invoice_creation": {
+        "enabled": false,
+        "invoice_data": {
+          "account_tax_ids": null,
+          "custom_fields": null,
+          "description": null,
+          "footer": null,
+          "metadata": {
+          },
+          "rendering_options": null
+        }
+      },
+      "livemode": false,
+      "locale": null,
+      "metadata": {
+        "quote_id": "9449bc01-2af9-414d-ae08-662834cde0d3",
+        "payment_type": "milestone",
+        "milestone_id": "4805ac73-1fbf-414c-bc54-2e6f8d3e8d84"
+      },
+      "mode": "payment",
+      "payment_intent": "pi_3NYO4kFCPw5Simmn0HBJGP7h",
+      "payment_link": null,
+      "payment_method_collection": "always",
+      "payment_method_options": {
+        "us_bank_account": {
+          "verification_method": "automatic"
+        }
+      },
+      "payment_method_types": [
+        "us_bank_account"
+      ],
+      "payment_status": "paid",
+      "phone_number_collection": {
+        "enabled": false
+      },
+      "recovered_from": null,
+      "setup_intent": null,
+      "shipping_address_collection": null,
+      "shipping_cost": null,
+      "shipping_details": null,
+      "shipping_options": [
+      ],
+      "status": "complete",
+      "submit_type": null,
+      "subscription": null,
+      "success_url": "http://localhost:3000/app/project-connection/49491737-4921-42c9-8e50-60505b0d6c66/quote/9449bc01-2af9-414d-ae08-662834cde0d3",
+      "total_details": {
+        "amount_discount": 0,
+        "amount_shipping": 0,
+        "amount_tax": 0
+      },
+      "url": null
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 2,
+  "request": {
+    "id": null,
+    "idempotency_key": null
+  },
+  "type": "checkout.session.async_payment_succeeded"
+}
