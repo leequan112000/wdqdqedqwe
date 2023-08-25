@@ -1,5 +1,4 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
 import { Resolvers } from "../../generated";
 import mime from "mime-types";
 import storeUpload from "../../helper/storeUpload";

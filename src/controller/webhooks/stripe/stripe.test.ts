@@ -61,6 +61,7 @@ beforeEach(() => {
     team: 'Cromatic',
     updated_at: new Date(),
     user_id: 'uuid',
+    role: 'user',
   };
 
   biotech = {
