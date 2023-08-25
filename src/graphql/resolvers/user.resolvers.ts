@@ -4,7 +4,7 @@ import { checkPassword, createTokens, hashPassword, createResetPasswordToken } f
 import { createBiotechCda, createBiotechViewCdaSession, createVendorCompanyCda, createVendorCompanyViewCdaSession } from "../../helper/pandadoc";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
 import { CasbinRole, CompanyCollaboratorRoleType, VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";

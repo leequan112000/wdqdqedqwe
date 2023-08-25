@@ -1,5 +1,5 @@
 import { PublicError } from '../../graphql/errors/PublicError';
-import { Resolvers } from '../../generated';
+import { Resolvers } from "../generated";
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';

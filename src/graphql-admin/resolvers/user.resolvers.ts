@@ -1,5 +1,5 @@
 import userService from '../../services/user/user.service';
-import { Resolvers } from '../../generated';
+import { Resolvers } from "../generated";
 import { Context } from '../../types/context';
 
 const resolver: Resolvers<Context> = {

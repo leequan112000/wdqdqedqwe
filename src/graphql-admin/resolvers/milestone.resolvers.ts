@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { toDollar } from "../../helper/money";
 import { MilestonePaymentStatus } from "../../helper/constant";

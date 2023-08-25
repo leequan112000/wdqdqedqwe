@@ -1,5 +1,5 @@
 import { frontendPermissionObject } from "../../helper/casbin";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 

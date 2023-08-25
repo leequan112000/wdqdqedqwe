@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {

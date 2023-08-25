@@ -5,9 +5,10 @@
   "main": "server.ts",
   "scripts": {
     "build": "yarn prisma generate && tsc --project ./ && yarn copy-graphql",
-    "start:dev": "concurrently \"yarn nodemon src/server.ts\" \"yarn generate --watch\"",
+    "start:dev": "concurrently \"yarn nodemon src/server.ts\" \"yarn generate --watch\" \"yarn generate:admin --watch\"",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
+    "generate:admin": "graphql-codegen --config ./codegen-admin.ts",
     "copy-graphql": "cp -r ./src/graphql/types ./dist/graphql/types && cp -r ./src/graphql-admin/types ./dist/graphql-admin/types",
     "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
     "db:push": "yarn prisma db push",

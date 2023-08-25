@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { NotificationType } from "../../helper/constant";
 import { withFilter } from "graphql-subscriptions";
 import { pubsub } from "../../helper/pubsub";

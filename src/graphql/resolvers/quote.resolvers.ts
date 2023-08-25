@@ -1,6 +1,6 @@
 import moment from 'moment'
 import { toCent, toDollar } from "../../helper/money";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import { nanoid } from "nanoid";
 import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent, QuoteStatus } from "../../helper/constant";

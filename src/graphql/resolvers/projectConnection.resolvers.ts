@@ -2,7 +2,7 @@ import { app_env } from "../../environment";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { Prisma } from "@prisma/client";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";

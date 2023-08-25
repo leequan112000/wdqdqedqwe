@@ -1,7 +1,7 @@
 import { pubsub } from "../../helper/pubsub";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers, MessageEdge } from "../../generated";
+import { Resolvers, MessageEdge } from "../generated";
 import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 
