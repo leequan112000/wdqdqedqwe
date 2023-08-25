@@ -6,7 +6,7 @@ import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { Resolvers } from "../../generated";
 import { InternalError } from "../errors/InternalError";
-import { CasbinRole, VendorType } from "../../helper/constant";
+import { CasbinRole, CompanyCollaboratorRoleType, VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
@@ -518,7 +518,7 @@ const resolvers: Resolvers<Context> = {
           data: {
             user_id: newCreatedUser.id,
             biotech_id: newBiotech.id,
-            role: CasbinRole.OWNER,
+            role: CompanyCollaboratorRoleType.OWNER,
           },
         });
 

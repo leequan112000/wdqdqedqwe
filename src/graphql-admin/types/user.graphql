@@ -5,3 +5,8 @@ type User {
   last_name: String
   reset_password_token: String
 }
+
+type Mutation {
+  purgeTestDataByUser(user_id: String!): Boolean
+  unregisterBiotechAccount(biotech_id: String!): Boolean
+}
