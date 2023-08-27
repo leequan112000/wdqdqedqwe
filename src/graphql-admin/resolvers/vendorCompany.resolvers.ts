@@ -127,8 +127,9 @@ const resolvers: Resolvers<Context> = {
                   createSendAdminProjectInvitationJob({
                     primaryMemberUserId: primaryVendorMember.user_id,
                     projectRequestId: projectRequest.id,
-                    projectRequestName: projectRequest.title,
+                    projectRequestTitle: projectRequest.title,
                     receiverEmail: primaryVendorMember.user.email,
+                    receiverFullName: `${primaryVendorMember.user.first_name} ${primaryVendorMember.user.last_name}`,
                     vendorCompanyId: primaryVendorMember.vendor_company_id,
                     projectConnectionId: projectConnection.id,
                   });

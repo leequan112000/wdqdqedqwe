@@ -64,8 +64,9 @@ export type QuoteExpiredNoticeData = {
 }
 
 export type ProjectRequestInvitationByAdminData = {
-  project_request_name: string;
+  project_request_title: string;
   login_url: string;
+  receiver_full_name: string;
 }
 
 export type AdminNewProjectRequestCommentNoticeData = {

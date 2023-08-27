@@ -47,7 +47,8 @@ export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (email
     templateId: vendorMemberInvitationToProjectRequestByAdminTemplate,
     dynamicTemplateData: {
       login_url: emailData.login_url,
-      project_request_name: emailData.project_request_name,
+      project_request_title: emailData.project_request_title,
+      receiver_full_name: emailData.receiver_full_name,
     },
   });
 
