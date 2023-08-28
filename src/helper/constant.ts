@@ -235,3 +235,9 @@ export enum GqlErrorCode {
 export enum InvitedByType {
   ADMIN = 'admin',
 }
+
+export enum ReviewQuestionType {
+  YES_NO = 'yes-no',
+  RATING = 'rating',
+  TEXT = 'text',
+}

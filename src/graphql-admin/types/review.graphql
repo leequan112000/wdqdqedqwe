@@ -1,0 +1,52 @@
+type ReviewQuestionSet {
+  id: String
+  name: String
+}
+
+type ReviewQuestion {
+  id: String
+  review_question_set_id: String
+  question_text: String
+  question_type: String
+  ordinal: Int
+}
+
+type ReviewQuestionOption {
+  id: String
+  option_text: String
+}
+
+type Mutation {
+  addReviewQuestionSet(
+    name: String!
+  ): ReviewQuestionSet
+  duplicateQuestionSet(
+    review_question_set_id: String!
+    name: String
+  ): ReviewQuestionSet
+  removeReviewQuestionSet(
+    review_question_set_id: String!
+  ): ReviewQuestionSet
+
+  addReviewQuestion(
+    review_question_set_id: String!
+    question_text: String!
+    question_type: String!
+  ): ReviewQuestion
+  updateReviewQuestion(
+    review_question_id: String!
+    question_text: String!
+    question_type: String!
+  ): ReviewQuestion
+  removeReviewQuestion(
+    review_question_id: String!
+  ): ReviewQuestion
+
+  addReviewQuestionOption(
+    review_question_id: String!
+    option_text: String!
+  ): ReviewQuestionOption
+  removeReviewQuestionOption(
+    review_question_option_id: String!
+  ): ReviewQuestionOption
+}
