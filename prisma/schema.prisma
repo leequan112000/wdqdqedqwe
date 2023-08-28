@@ -678,7 +678,7 @@ model ReviewQuestion {
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 
-  review_question_set     ReviewQuestionSet      @relation(fields: [review_question_set_id], references: [id])
+  review_question_set     ReviewQuestionSet      @relation(fields: [review_question_set_id], references: [id], onDelete: Cascade)
   review_question_options ReviewQuestionOption[]
   review_answers          ReviewAnswer[]
 
@@ -692,7 +692,7 @@ model ReviewQuestionOption {
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
-  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id])
+  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id], onDelete: Cascade)
 
   @@map("review_question_options")
 }
