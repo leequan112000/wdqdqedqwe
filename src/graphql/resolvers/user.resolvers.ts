@@ -71,7 +71,9 @@ const resolvers: Resolvers<Context> = {
         return false
       }
 
-      if (process.env.ENABLE_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
+        return true;
+      } else {
         if (
           result?.customer?.biotech?.cda_signed_at ||
           (!result?.customer?.biotech?.cda_signed_at && result?.customer?.biotech?.skip_cda) ||
@@ -82,8 +84,6 @@ const resolvers: Resolvers<Context> = {
         ) {
           return true
         }
-      } else {
-        return true;
       }
 
       return false;
@@ -308,7 +308,9 @@ const resolvers: Resolvers<Context> = {
     },
     skip_cda: async (parent, _, context) => {
       // gating this subscription to remove skip cda feature
-      if (process.env.ENABLE_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
+        return null;
+      } else {
         if (parent.customer?.biotech?.skip_cda) {
           return parent.customer.biotech.skip_cda;
         }
@@ -354,8 +356,6 @@ const resolvers: Resolvers<Context> = {
           return customer?.biotech?.skip_cda as boolean;
         }
       }
-
-      return null;
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
@@ -391,7 +391,9 @@ const resolvers: Resolvers<Context> = {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         // gating this subscription to remove subscribe cda feature
-        if (process.env.ENABLE_CDA === 'true') {
+        if (process.env.DISABLE_CDA === 'true') {
+          return null;
+        } else {
           const vendor = await context.prisma.vendorMember.findFirst({
             where: {
               user_id: context.req.user_id
@@ -420,14 +422,15 @@ const resolvers: Resolvers<Context> = {
           const channel = `cdaUrl:${channelId}`;
           return context.pubsub.asyncIterator(channel);
         }
-        return null;
       },
     },
     cdaSignedAt: {
       // @ts-ignore
       subscribe: async (_, __, context) => {
         // gating this subscription to remove subscribe cda feature
-        if (process.env.ENABLE_CDA === 'true') {
+        if (process.env.DISABLE_CDA === 'true') {
+          return null;
+        } else {
           const vendor = await context.prisma.vendorMember.findFirst({
             where: {
               user_id: context.req.user_id
@@ -462,7 +465,6 @@ const resolvers: Resolvers<Context> = {
           const channel = `cdaSignedAt:${channelId}`;
           return context.pubsub.asyncIterator(channel);
         }
-        return null;
       },
     },
   },
@@ -656,7 +658,9 @@ const resolvers: Resolvers<Context> = {
     },
     createCda: async (_, __, context) => {
       // gating this mutation to remove create cda feature
-      if (process.env.ENABLE_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
+        return null;
+      } else {
         try {
           const vendor = await context.prisma.vendorMember.findFirst({
             where: {
@@ -738,11 +742,12 @@ const resolvers: Resolvers<Context> = {
           return false;
         }
       }
-      return null;
     },
     skipCda: async (_, __, context) => {
       // gating this mutation to remove skip cda feature
-      if (process.env.ENABLE_CDA === 'true') {
+      if (process.env.DISABLE_CDA === 'true') {
+        return null;
+      } else {
         try {
           const vendor = await context.prisma.vendorMember.findFirst({
             where: {
@@ -808,7 +813,6 @@ const resolvers: Resolvers<Context> = {
           return false;
         }
       }
-      return null;
     },
   },
 };
