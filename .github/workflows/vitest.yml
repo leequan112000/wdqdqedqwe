@@ -6,7 +6,8 @@ name: Vitest
 on:
   pull_request:
     types:
-      - review_requested
+      - opened
+      - synchronize
 
 jobs:
   build:

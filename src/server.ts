@@ -1,5 +1,4 @@
 import { startServer } from './app';
-import connectDB from './connectDB'
+import './connectDB';
 
-connectDB();
 startServer();

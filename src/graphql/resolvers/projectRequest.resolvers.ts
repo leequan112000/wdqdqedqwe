@@ -131,9 +131,9 @@ const resolvers: Resolvers<Context> = {
                 in: args.status.filter(nonNullable),
               }
             } : {}),
-            OR: {
+            OR: [{
               biotech_id: customer.biotech_id
-            },
+            }],
           },
           orderBy: [
             // Sort by status to grouped matched experiments first
