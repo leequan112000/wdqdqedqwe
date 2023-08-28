@@ -95,6 +95,20 @@ const resolvers: Resolvers<Context> = {
 
       return reviewQuestionSet;
     },
+    updateReviewQuestionSet: async (_, args, context) => {
+      const { name, review_question_set_id } = args;
+
+      const updatedReviewQuestionSet = await context.prisma.reviewQuestionSet.update({
+        where: {
+          id: review_question_set_id,
+        },
+        data: {
+          name,
+        },
+      });
+
+      return updatedReviewQuestionSet;
+    },
 
     addReviewQuestion: async (_, args, context) => {
       const { question_text, question_type, review_question_set_id } = args;
