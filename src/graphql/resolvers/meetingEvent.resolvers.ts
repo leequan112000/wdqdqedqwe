@@ -3,7 +3,7 @@ import { find } from 'lodash';
 import moment from 'moment'
 import { createGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { MeetingPlatform } from '../../helper/constant';
 import { createNewMeetingNotificationJob } from '../../notification/meetingNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';

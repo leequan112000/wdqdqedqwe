@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { PublicError } from "../errors/PublicError";
 
@@ -36,10 +36,10 @@ const resolvers: Resolvers<Context> = {
             project_request_id,
           }
         });
-        
+
         // Find removed collaborators
         const removedCollaborators = existingCollaborators.filter((collaborator) => !customer_ids.includes(collaborator.customer_id));
-        
+
         // Find newly added collaborators
         const newCollaboratorCustomerIds = customer_ids.filter((customer_id) => !(existingCollaborators.map(c => c.customer_id).includes(customer_id!)));
 

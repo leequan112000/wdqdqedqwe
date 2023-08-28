@@ -1,6 +1,6 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers, StripeAccountData } from "../../generated";
+import { Resolvers, StripeAccountData } from "../generated";;
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
 import { hasPermission } from "../../helper/casbin";

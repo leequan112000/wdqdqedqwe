@@ -7,7 +7,7 @@ import {
   AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
 } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
-import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
+import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";;
 import {
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,

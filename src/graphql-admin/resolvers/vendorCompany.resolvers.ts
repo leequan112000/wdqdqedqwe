@@ -1,7 +1,7 @@
 import moment from "moment";
 import { Context } from "../../types/context";
 import { CompanyCollaboratorRoleType, InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";

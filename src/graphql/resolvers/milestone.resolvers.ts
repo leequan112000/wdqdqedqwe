@@ -1,5 +1,5 @@
 import { toDollar } from "../../helper/money";
-import { Resolvers, UploadResult } from "../../generated";
+import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
 import { PublicError } from "../errors/PublicError";
