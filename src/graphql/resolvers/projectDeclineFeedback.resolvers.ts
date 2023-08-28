@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
@@ -13,29 +13,22 @@ const resolvers: Resolvers<Context> = {
 
       invariant(existingProjectConnection, "Project connection not found");
 
-      const projectDeclineFeedback = await context.prisma.projectDeclineFeedback.create({
-        data: {
-          project_connection_id: args.project_connection_id,
-          reason: args.reason,
-        },
+      return await context.prisma.$transaction(async (trx) => {
+        const projectDeclineFeedback = await trx.projectDeclineFeedback.create({
+          data: {
+            project_connection_id: args.project_connection_id,
+            reason: args.reason,
+          },
+        });
+
+        await trx.projectDeclineTagConnection.createMany({
+          data: args.project_decline_tag_ids.map((project_decline_tag_id) => ({
+            project_decline_feedback_id: projectDeclineFeedback.id,
+            project_decline_tag_id: project_decline_tag_id as string,
+          })),
+        });
+        return projectDeclineFeedback;
       });
-
-      await Promise.all(
-        args.project_decline_tag_ids.map(async (project_decline_tag_id) => {
-          try {
-            await context.prisma.projectDeclineTagConnection.create({
-              data: {
-                project_decline_feedback_id: projectDeclineFeedback.id,
-                project_decline_tag_id: project_decline_tag_id as string,
-              },
-            });
-          } catch (error) {
-            // no-op
-          }
-        })
-      );
-
-      return projectDeclineFeedback;
     }
   }
 };
