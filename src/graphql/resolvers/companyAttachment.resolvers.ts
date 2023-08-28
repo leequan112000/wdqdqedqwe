@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import storeUpload from "../../helper/storeUpload";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { Readable } from 'stream';

@@ -1,5 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { PublicError } from "../errors/PublicError";
 import { sendAdminBiotechInviteVendorNoticeEmail } from "../../mailer/admin";

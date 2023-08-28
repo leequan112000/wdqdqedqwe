@@ -3,7 +3,7 @@ import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { app_env } from "../../environment";
 
@@ -112,11 +112,14 @@ const resolvers: Resolvers<Context> = {
           include: {
             biotech: true,
             inviter: true,
+            project_request: true,
           },
         });
 
+        const projectRequest = biotechInviteVendor?.project_request;
         invariant(biotechInviteVendor, 'Biotech invite vendor record not found.');
         invariant(biotechInviteVendor.project_request_id, 'Project request ID is not found.');
+        invariant(projectRequest, 'Project request not found.');
         const vendorCompany = await context.prisma.vendorCompany.findFirst({
           where: {
             name: biotechInviteVendor.company_name,
@@ -172,6 +175,7 @@ const resolvers: Resolvers<Context> = {
             biotechInviteVendor.biotech?.name,
             biotechInviteVendor.inviter,
             buttonUrl,
+            projectRequest.title,
           );
           return true;
         }
@@ -181,6 +185,7 @@ const resolvers: Resolvers<Context> = {
           biotechInviteVendor.biotech?.name,
           biotechInviteVendor.inviter,
           buttonUrl,
+          projectRequest.title,
         );
         return true;
       }

@@ -51,10 +51,11 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.ADMIN_PROJECT_INVITATION: {
-        const { receiverEmail, projectRequestName, projectRequestId, vendorCompanyId, primaryMemberUserId, projectConnectionId } = data;
+        const { receiverEmail, receiverFullName, projectRequestTitle, projectRequestId, vendorCompanyId, primaryMemberUserId, projectConnectionId } = data;
         await sendVendorMemberProjectRequestInvitationByAdminEmail({
           login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/project-request`,
-          project_request_name: projectRequestName,
+          project_request_title: projectRequestTitle,
+          receiver_full_name: receiverFullName,
         }, receiverEmail);
 
         const projectConnection = await prisma.projectConnection.findFirst({
@@ -740,7 +741,8 @@ export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
 
 export const createSendAdminProjectInvitationJob = (data: {
   receiverEmail: string;
-  projectRequestName: string;
+  receiverFullName: string;
+  projectRequestTitle: string;
   projectRequestId: string;
   vendorCompanyId: string;
   primaryMemberUserId: string;
