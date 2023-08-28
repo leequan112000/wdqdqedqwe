@@ -166,8 +166,10 @@ const resolvers: Resolvers<Context> = {
         invariant(biotechInviteVendor, new PublicError('Biotech invite vendor record not found.'));
         const biotech = biotechInviteVendor.biotech;
         const inviter = biotechInviteVendor.inviter;
+        const projectRequest = biotechInviteVendor.project_request;
         invariant(biotech, new PublicError('Biotech not found.'));
         invariant(inviter, new PublicError('Inviter not found.'));
+        invariant(projectRequest, new PublicError('Project request not found.'));
 
         const biotechCustomer = await context.prisma.customer.findFirst({
           where: {
@@ -241,7 +243,8 @@ const resolvers: Resolvers<Context> = {
             existingUser,
             biotech.name,
             inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
+            projectRequest.title
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -304,7 +307,8 @@ const resolvers: Resolvers<Context> = {
             existingUser,
             biotech.name,
             inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
+            projectRequest.title
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -372,7 +376,8 @@ const resolvers: Resolvers<Context> = {
             inviter,
             `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
               newUser.reset_password_token!
-            )}`
+            )}`,
+            projectRequest.title
           );
 
           return true;
