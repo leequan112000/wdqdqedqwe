@@ -36,11 +36,13 @@ type Mutation {
     review_question_set_id: String!
     question_text: String!
     question_type: String!
+    group_title: String
   ): ReviewQuestion
   updateReviewQuestion(
     review_question_id: String!
     question_text: String!
     question_type: String!
+    group_title: String
   ): ReviewQuestion
   removeReviewQuestion(
     review_question_id: String!

@@ -672,6 +672,7 @@ model QuoteReview {
 model ReviewQuestion {
   id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   review_question_set_id String   @db.Uuid
+  group_title            String?
   question_text          String
   question_type          String
   ordinal                Int      @default(0)

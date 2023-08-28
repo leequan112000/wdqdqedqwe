@@ -122,6 +122,7 @@ export type Mutation = {
 
 
 export type MutationAddReviewQuestionArgs = {
+  group_title?: InputMaybe<Scalars['String']>;
   question_text: Scalars['String'];
   question_type: Scalars['String'];
   review_question_set_id: Scalars['String'];
@@ -298,6 +299,7 @@ export type MutationUpdateLabSpecializationArgs = {
 
 
 export type MutationUpdateReviewQuestionArgs = {
+  group_title?: InputMaybe<Scalars['String']>;
   question_text: Scalars['String'];
   question_type: Scalars['String'];
   review_question_id: Scalars['String'];

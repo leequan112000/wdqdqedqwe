@@ -111,7 +111,7 @@ const resolvers: Resolvers<Context> = {
     },
 
     addReviewQuestion: async (_, args, context) => {
-      const { question_text, question_type, review_question_set_id } = args;
+      const { question_text, question_type, review_question_set_id, group_title } = args;
 
       const lastReviewQuestionInTheGroup = await context.prisma.reviewQuestion.findFirst({
         where: {
@@ -130,6 +130,7 @@ const resolvers: Resolvers<Context> = {
 
       const reviewQuestion = await context.prisma.reviewQuestion.create({
         data: {
+          group_title,
           question_type,
           question_text,
           review_question_set_id,
@@ -140,7 +141,7 @@ const resolvers: Resolvers<Context> = {
       return reviewQuestion;
     },
     updateReviewQuestion: async (_, args, context) => {
-      const { question_text, question_type, review_question_id } = args;
+      const { question_text, question_type, review_question_id, group_title } = args;
 
       await reviewService.checkIsQuestionAnswered(
         { review_question_id },
@@ -149,6 +150,7 @@ const resolvers: Resolvers<Context> = {
 
       const updatedReviewQuestion = await context.prisma.reviewQuestion.update({
         data: {
+          group_title,
           question_text,
           question_type,
         },
