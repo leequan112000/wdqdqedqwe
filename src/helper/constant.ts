@@ -237,7 +237,7 @@ export enum InvitedByType {
 }
 
 export enum ReviewQuestionType {
-  YES_NO = 'yes-no',
+  SINGLE_SELECT = 'single-select',
   RATING = 'rating',
   TEXT = 'text',
 }
