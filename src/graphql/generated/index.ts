@@ -863,7 +863,6 @@ export type ProjectConnection = {
   project_request?: Maybe<ProjectRequest>;
   project_request_id?: Maybe<Scalars['String']>;
   quotes?: Maybe<Array<Maybe<Quote>>>;
-  unsubscribed_has_new_message?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_company?: Maybe<VendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
@@ -1882,7 +1881,6 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   project_request?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType>;
   project_request_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   quotes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Quote']>>>, ParentType, ContextType>;
-  unsubscribed_has_new_message?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
