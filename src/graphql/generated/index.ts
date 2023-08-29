@@ -826,6 +826,34 @@ export type NotificationPageInfo = {
   hasPreviousPage?: Maybe<Scalars['Boolean']>;
 };
 
+export type Perk = {
+  __typename?: 'Perk';
+  created_at?: Maybe<Scalars['Date']>;
+  description?: Maybe<Scalars['String']>;
+  expired_at?: Maybe<Scalars['Date']>;
+  external_url?: Maybe<Scalars['String']>;
+  how_to_redeem?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  image_url?: Maybe<Scalars['String']>;
+  is_active?: Maybe<Scalars['Boolean']>;
+  perk_category?: Maybe<PerkCategory>;
+  perk_category_id?: Maybe<Scalars['String']>;
+  reward_description?: Maybe<Scalars['String']>;
+  terms?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type PerkCategory = {
+  __typename?: 'PerkCategory';
+  created_at?: Maybe<Scalars['Date']>;
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  perks?: Maybe<Array<Maybe<Perk>>>;
+  updated_at?: Maybe<Scalars['Date']>;
+};
+
 export type ProjectAttachment = {
   __typename?: 'ProjectAttachment';
   byte_size?: Maybe<Scalars['Float']>;
@@ -974,6 +1002,7 @@ export type Query = {
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   notificationsConnection?: Maybe<NotificationConnection>;
+  perkCategories?: Maybe<Array<Maybe<PerkCategory>>>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   projectDeclineTags?: Maybe<Array<Maybe<ProjectDeclineTag>>>;
@@ -1392,6 +1421,8 @@ export type ResolversTypes = ResolversObject<{
   NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
   NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
   NotificationPageInfo: ResolverTypeWrapper<NotificationPageInfo>;
+  Perk: ResolverTypeWrapper<Perk>;
+  PerkCategory: ResolverTypeWrapper<PerkCategory>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1456,6 +1487,8 @@ export type ResolversParentTypes = ResolversObject<{
   NotificationConnection: NotificationConnection;
   NotificationEdge: NotificationEdge;
   NotificationPageInfo: NotificationPageInfo;
+  Perk: Perk;
+  PerkCategory: PerkCategory;
   ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
@@ -1845,6 +1878,34 @@ export type NotificationPageInfoResolvers<ContextType = any, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PerkResolvers<ContextType = any, ParentType extends ResolversParentTypes['Perk'] = ResolversParentTypes['Perk']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  expired_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  external_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  how_to_redeem?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  image_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  perk_category?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType>;
+  perk_category_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reward_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  terms?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PerkCategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PerkCategory'] = ResolversParentTypes['PerkCategory']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  perks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Perk']>>>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ProjectAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectAttachment'] = ResolversParentTypes['ProjectAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -1978,6 +2039,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
+  perkCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['PerkCategory']>>>, ParentType, ContextType>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
   projectDeclineTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectDeclineTag']>>>, ParentType, ContextType>;
@@ -2204,6 +2266,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotificationConnection?: NotificationConnectionResolvers<ContextType>;
   NotificationEdge?: NotificationEdgeResolvers<ContextType>;
   NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
+  Perk?: PerkResolvers<ContextType>;
+  PerkCategory?: PerkCategoryResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
   ProjectDeclineFeedback?: ProjectDeclineFeedbackResolvers<ContextType>;
