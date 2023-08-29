@@ -1,13 +1,14 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { CompanyCollaboratorRoleType, InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
-import { Resolvers } from "../../generated";
+import { CasbinRole, CompanyCollaboratorRoleType, InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
+import { Resolvers } from "../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail } from "../../mailer/vendorMember";
 import { app_env } from "../../environment";
+import { addRoleForUser } from "../../helper/casbin";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -344,8 +345,11 @@ const resolvers: Resolvers<Context> = {
               user_id: newUser.id,
               vendor_company_id: newVendorCompany.id,
               is_primary_member: true,
+              role: CompanyCollaboratorRoleType.OWNER,
             }
           });
+
+          await addRoleForUser(newUser.id, CasbinRole.OWNER);
 
           const projectConnection = await context.prisma.projectConnection.create({
             data: {

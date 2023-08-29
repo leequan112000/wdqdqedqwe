@@ -1,5 +1,5 @@
 import { toDollar } from "../../helper/money";
-import { Resolvers, UploadResult } from "../../generated";
+import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
 import { PublicError } from "../errors/PublicError";
@@ -9,7 +9,7 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
@@ -83,11 +83,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           biotech: {
             include: {
-              subscriptions: {
-                where: {
-                  status: SubscriptionStatus.ACTIVE
-                }
-              }
+              subscriptions: true
             }
           }
         }

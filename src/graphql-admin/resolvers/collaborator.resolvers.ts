@@ -1,4 +1,4 @@
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
 import { sendVendorMemberInvitationByAdminEmail } from "../../mailer/vendorMember";

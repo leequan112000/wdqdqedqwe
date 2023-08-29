@@ -7,7 +7,7 @@ import {
   AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
 } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
-import { Resolvers, ProjectRequestComment, ProjectRequest } from "../../generated";
+import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";;
 import {
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,
@@ -313,13 +313,23 @@ const resolvers: Resolvers<Context> = {
           });
         }
 
-        sendProjectRequestSubmissionEmail(user);
-        createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
-
+        /**
+         * If PUBLIC request:
+         * - send public request submission confirmation email to the request creator
+         * - notify admin public request
+         */
         if (!projectRequest.is_private) {
           sendProjectRequestSubmissionEmail(user);
           createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
-        } else {
+        }
+
+        /**
+         * If PRIVATE request:
+         * - send private request submission confirmation email to the request creator
+         * - create biotech invite vendor record
+         * - notify admin biotech invite vendor
+         */
+        if (projectRequest.is_private) {
           invariant(args.company_name, 'Company name is required.');
           invariant(args.website, 'Website is required.');
           invariant(args.email, 'Email is required.');
@@ -331,7 +341,7 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          const biotechInviteVendor = await trx.biotechInviteVendor.create({
+          await trx.biotechInviteVendor.create({
             data: {
               biotech_id: user.customer.biotech_id,
               project_request_id: projectRequest.id,
@@ -365,30 +375,6 @@ const resolvers: Resolvers<Context> = {
           await Promise.all(admins.map(async (admin) => {
             sendAdminBiotechInviteVendorNoticeEmail(admin, data);
           }));
-        }
-
-        if (!projectRequest.is_private) {
-          sendProjectRequestSubmissionEmail(user);
-          createSendAdminNewProjectRequestEmailJob({ biotechName: user.customer.biotech.name });
-        } else {
-          invariant(args.company_name, 'Company name is required.');
-          invariant(args.website, 'Website is required.');
-          invariant(args.email, 'Email is required.');
-          invariant(args.first_name, 'First name is required.');
-          invariant(args.last_name, 'Last name is required.');
-          const biotechInviteVendor = await trx.biotechInviteVendor.create({
-            data: {
-              biotech_id: user.customer.biotech_id,
-              project_request_id: projectRequest.id,
-              company_name: args.company_name,
-              website: args.website,
-              email: args.email,
-              first_name: args.first_name,
-              last_name: args.last_name,
-              inviter_id: user.id,
-            },
-          });
-          sendPrivateProjectRequestSubmissionEmail(user);
         }
 
         return {

@@ -3,7 +3,7 @@ import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { sendCustomerInvitationEmail } from "../../mailer/customer";
 import { addRoleForUser, hasPermission, updateRoleForUser } from "../../helper/casbin";
 import invariant from "../../helper/invariant";

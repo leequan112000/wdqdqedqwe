@@ -2,7 +2,7 @@ import { app_env } from "../../environment";
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { Context } from "../../types/context";
 import { Prisma } from "@prisma/client";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
@@ -14,7 +14,7 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkAllowAddProjectCollaborator, checkAllowRemoveProjectCollaborator, checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, SubscriptionStatus, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
@@ -126,102 +126,18 @@ const resolvers: Resolvers<Context> = {
       });
     },
     messages: async (parent, args, context) => {
-      const currectUserId = context.req.user_id;
       invariant(parent.id, 'Project connection id not found.');
-      const user = await context.prisma.user.findFirst({
-        where: {
-          id: currectUserId,
-        },
-        include: {
-          customer: {
-            include: {
-              biotech: {
-                include: {
-                  subscriptions: true,
-                }
-              }
-            }
-          }
-        },
-        orderBy: {
-          updated_at: 'desc',
-        },
-      });
-      invariant(user, 'Current user not found.');
-
-      // This only applies to biotech.
-      // Because only biotech has subscriptions.
-      let messageFilter: Prisma.MessageWhereInput = {};
-      const subscriptions = user?.customer?.biotech.subscriptions;
-      if (subscriptions) {
-        const noActiveSubscription = subscriptions?.filter((s) => s.status === SubscriptionStatus.ACTIVE)?.length === 0;
-        if (noActiveSubscription && subscriptions?.[0]?.ended_at) {
-          messageFilter.created_at = {
-            lte: subscriptions[0].ended_at,
-          }
-        }
-      }
-
+      invariant(context.req.user_id, 'Current user not found.');
 
       const messages = await context.prisma.message.findMany({
         where: {
           chat: {
             project_connection_id: parent.id,
           },
-          ...messageFilter,
         },
       })
 
       return messages || [];
-    },
-    unsubscribed_has_new_message: async (parent, _, context) => {
-      const currectUserId = context.req.user_id;
-      invariant(parent.id, 'Project connection id not found.');
-
-      const user = await context.prisma.user.findFirst({
-        where: {
-          id: currectUserId,
-        },
-        include: {
-          customer: {
-            include: {
-              biotech: {
-                include: {
-                  subscriptions: true,
-                }
-              }
-            }
-          }
-        },
-        orderBy: {
-          updated_at: 'desc',
-        },
-      });
-      invariant(user, 'Current user not found.');
-
-      // This only applies to biotech.
-      // Because only biotech has subscriptions.
-      const subscriptions = user?.customer?.biotech.subscriptions;
-      if (subscriptions) {
-        const noActiveSubscription = subscriptions?.filter((s) => s.status === SubscriptionStatus.ACTIVE)?.length === 0;
-        if (noActiveSubscription && subscriptions?.[0]?.ended_at) {
-          const messages = await context.prisma.message.findMany({
-            where: {
-              chat: {
-                project_connection_id: parent.id,
-              },
-              created_at: {
-                gt: subscriptions[0].ended_at,
-              }
-            },
-          })
-
-          return messages.length > 0;
-        }
-      }
-
-
-      return false;
     },
     documents: async (parent, _, context) => {
       invariant(parent.id, 'Project connection id not found.');

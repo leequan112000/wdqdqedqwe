@@ -3,7 +3,7 @@ import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { app_env } from "../../environment";
 

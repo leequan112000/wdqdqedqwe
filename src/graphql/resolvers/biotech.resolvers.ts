@@ -1,7 +1,7 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { CompanyCollaboratorRoleType, SubscriptionStatus } from "../../helper/constant";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
 import invariant from "../../helper/invariant";
 import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";

@@ -2,7 +2,7 @@ import { GraphQLScalarType, Kind } from "graphql";
 import { isDate } from "moment";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.js";
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 
 const resolvers: Resolvers<Context> = {
   Date: new GraphQLScalarType({
