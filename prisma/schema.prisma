@@ -35,7 +35,6 @@ model User {
   project_attachments        ProjectAttachment[]
   CompanyAttachment          CompanyAttachment[]
   biotech_invite_vendors     BiotechInviteVendor[]
-  PerkRedemption             PerkRedemption[]
 
   @@map("users")
 }
@@ -679,29 +678,15 @@ model Perk {
   reward_description String
   how_to_redeem      String
   terms              String
-  affiliate_url      String?
+  external_url      String?
   is_active          Boolean          @default(true)
-  redeem_limit       Int?
   perk_category_id   String           @db.Uuid
   perk_category      PerkCategory     @relation(fields: [perk_category_id], references: [id])
   expired_at         DateTime?
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
-  PerkRedemption     PerkRedemption[]
 
   @@map("perks")
-}
-
-model PerkRedemption {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id    String   @db.Uuid
-  user       User     @relation(fields: [user_id], references: [id])
-  perk_id    String   @db.Uuid
-  perk       Perk     @relation(fields: [perk_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@map("perk_redemptions")
 }
 
 model CasbinRule {
