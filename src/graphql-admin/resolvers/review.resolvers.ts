@@ -187,10 +187,25 @@ const resolvers: Resolvers<Context> = {
     addReviewQuestionOption: async (_, args, context) => {
       const { option_text, review_question_id } = args;
 
+      const lastOption = await context.prisma.reviewQuestionOption.findFirst({
+        where: {
+          review_question_id,
+        },
+        orderBy: {
+          ordinal: 'desc',
+        },
+        take: 1,
+      });
+
+      const nextOrdinal = lastOption && lastOption.ordinal >= 0
+        ? lastOption.ordinal + 1
+        : undefined;
+
       const reviewQuestionOption = await context.prisma.reviewQuestionOption.create({
         data: {
           option_text,
           review_question_id,
+          ordinal: nextOrdinal,
         },
       });
 
