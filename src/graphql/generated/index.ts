@@ -299,6 +299,7 @@ export type Mutation = {
   createCustomer: Customer;
   createLabSpecialization?: Maybe<LabSpecialization>;
   createMeetingEvent?: Maybe<MeetingEvent>;
+  createProjectDeclineFeedback?: Maybe<ProjectDeclineFeedback>;
   createProjectRequest?: Maybe<ProjectRequest>;
   createProjectRequestComment?: Maybe<ProjectRequestComment>;
   createQuote?: Maybe<Quote>;
@@ -413,6 +414,13 @@ export type MutationCreateMeetingEventArgs = {
   start_time: Scalars['String'];
   timezone: Scalars['String'];
   title: Scalars['String'];
+};
+
+
+export type MutationCreateProjectDeclineFeedbackArgs = {
+  project_connection_id: Scalars['String'];
+  project_decline_tag_ids: Array<InputMaybe<Scalars['String']>>;
+  reason?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -868,6 +876,29 @@ export type ProjectConnectionFilter = {
   status?: InputMaybe<Scalars['String']>;
 };
 
+export type ProjectDeclineFeedback = {
+  __typename?: 'ProjectDeclineFeedback';
+  id?: Maybe<Scalars['String']>;
+  project_connection?: Maybe<ProjectConnection>;
+  project_connection_id?: Maybe<Scalars['String']>;
+  reason?: Maybe<Scalars['String']>;
+};
+
+export type ProjectDeclineTag = {
+  __typename?: 'ProjectDeclineTag';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type ProjectDeclineTagConnection = {
+  __typename?: 'ProjectDeclineTagConnection';
+  id?: Maybe<Scalars['String']>;
+  project_decline_feedback?: Maybe<ProjectDeclineFeedback>;
+  project_decline_feedback_id?: Maybe<Scalars['String']>;
+  project_decline_tag?: Maybe<ProjectDeclineTag>;
+  project_decline_tag_id?: Maybe<Scalars['String']>;
+};
+
 export type ProjectRequest = {
   __typename?: 'ProjectRequest';
   biotech?: Maybe<Biotech>;
@@ -946,6 +977,7 @@ export type Query = {
   notificationsConnection?: Maybe<NotificationConnection>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
+  projectDeclineTags?: Maybe<Array<Maybe<ProjectDeclineTag>>>;
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
@@ -1364,6 +1396,9 @@ export type ResolversTypes = ResolversObject<{
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
   ProjectConnection: ResolverTypeWrapper<ProjectConnection>;
   ProjectConnectionFilter: ProjectConnectionFilter;
+  ProjectDeclineFeedback: ResolverTypeWrapper<ProjectDeclineFeedback>;
+  ProjectDeclineTag: ResolverTypeWrapper<ProjectDeclineTag>;
+  ProjectDeclineTagConnection: ResolverTypeWrapper<ProjectDeclineTagConnection>;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
@@ -1425,6 +1460,9 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectAttachment: ProjectAttachment;
   ProjectConnection: ProjectConnection;
   ProjectConnectionFilter: ProjectConnectionFilter;
+  ProjectDeclineFeedback: ProjectDeclineFeedback;
+  ProjectDeclineTag: ProjectDeclineTag;
+  ProjectDeclineTagConnection: ProjectDeclineTagConnection;
   ProjectRequest: ProjectRequest;
   ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
@@ -1718,6 +1756,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
   createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
+  createProjectDeclineFeedback?: Resolver<Maybe<ResolversTypes['ProjectDeclineFeedback']>, ParentType, ContextType, RequireFields<MutationCreateProjectDeclineFeedbackArgs, 'project_connection_id' | 'project_decline_tag_ids'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
@@ -1853,6 +1892,29 @@ export type ProjectConnectionResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProjectDeclineFeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDeclineFeedback'] = ResolversParentTypes['ProjectDeclineFeedback']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
+  project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectDeclineTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDeclineTag'] = ResolversParentTypes['ProjectDeclineTag']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectDeclineTagConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectDeclineTagConnection'] = ResolversParentTypes['ProjectDeclineTagConnection']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_decline_feedback?: Resolver<Maybe<ResolversTypes['ProjectDeclineFeedback']>, ParentType, ContextType>;
+  project_decline_feedback_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_decline_tag?: Resolver<Maybe<ResolversTypes['ProjectDeclineTag']>, ParentType, ContextType>;
+  project_decline_tag_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ProjectRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequest'] = ResolversParentTypes['ProjectRequest']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1920,6 +1982,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
+  projectDeclineTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectDeclineTag']>>>, ParentType, ContextType>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
@@ -2145,6 +2208,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
   ProjectConnection?: ProjectConnectionResolvers<ContextType>;
+  ProjectDeclineFeedback?: ProjectDeclineFeedbackResolvers<ContextType>;
+  ProjectDeclineTag?: ProjectDeclineTagResolvers<ContextType>;
+  ProjectDeclineTagConnection?: ProjectDeclineTagConnectionResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;

@@ -1,0 +1,8 @@
+type ProjectDeclineTag {
+  id: String
+  name: String  
+}
+
+type Query {
+  projectDeclineTags: [ProjectDeclineTag]
+}

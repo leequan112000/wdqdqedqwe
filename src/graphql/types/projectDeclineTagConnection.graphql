@@ -1,0 +1,7 @@
+type ProjectDeclineTagConnection {
+  id: String
+  project_decline_tag_id: String
+  project_decline_feedback_id: String
+  project_decline_tag: ProjectDeclineTag
+  project_decline_feedback: ProjectDeclineFeedback
+}
