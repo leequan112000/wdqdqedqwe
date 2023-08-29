@@ -211,6 +211,33 @@ const resolvers: Resolvers<Context> = {
 
       return reviewQuestionOption;
     },
+    updateReviewQuestionOption: async (_, args, context) => {
+      const { option_text, review_question_option_id } = args;
+
+      const reviewQuestionOption = await context.prisma.reviewQuestionOption.findFirst({
+        where: {
+          id: review_question_option_id,
+        },
+      });
+
+      invariant(reviewQuestionOption, new PublicError('Review question option not found.'));
+
+      await reviewService.checkIsQuestionAnswered(
+        { review_question_id: reviewQuestionOption?.review_question_id },
+        { prisma: context.prisma },
+      );
+
+      const updatedReviewQuestionOption = await context.prisma.reviewQuestionOption.update({
+        data: {
+          option_text,
+        },
+        where: {
+          id: review_question_option_id,
+        },
+      });
+
+      return updatedReviewQuestionOption;
+    },
     removeReviewQuestionOption: async (_, args, context) => {
       const { review_question_option_id } = args;
 

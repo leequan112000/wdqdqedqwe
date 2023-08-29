@@ -52,6 +52,10 @@ type Mutation {
     review_question_id: String!
     option_text: String!
   ): ReviewQuestionOption
+  updateReviewQuestionOption(
+    review_question_option_id: String!
+    option_text: String!
+  ): ReviewQuestionOption
   removeReviewQuestionOption(
     review_question_option_id: String!
   ): ReviewQuestionOption

@@ -116,6 +116,7 @@ export type Mutation = {
   updateCertificationTag?: Maybe<CertificationTag>;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateReviewQuestion?: Maybe<ReviewQuestion>;
+  updateReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   updateReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   updateVendorMemberByAdmin?: Maybe<Scalars['Boolean']>;
 };
@@ -303,6 +304,12 @@ export type MutationUpdateReviewQuestionArgs = {
   question_text: Scalars['String'];
   question_type: Scalars['String'];
   review_question_id: Scalars['String'];
+};
+
+
+export type MutationUpdateReviewQuestionOptionArgs = {
+  option_text: Scalars['String'];
+  review_question_option_id: Scalars['String'];
 };
 
 
@@ -613,6 +620,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionArgs, 'question_text' | 'question_type' | 'review_question_id'>>;
+  updateReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionOptionArgs, 'option_text' | 'review_question_option_id'>>;
   updateReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionSetArgs, 'name' | 'review_question_set_id'>>;
   updateVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateVendorMemberByAdminArgs, 'user_id'>>;
 }>;
