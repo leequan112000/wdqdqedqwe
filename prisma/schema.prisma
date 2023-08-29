@@ -275,6 +275,7 @@ model ProjectConnection {
   project_attachments       ProjectAttachment[]
   MeetingEvent              MeetingEvent[]
   quotes                    Quote[]
+  project_decline_feedbacks ProjectDeclineFeedback[]
 
   @@index([project_request_id])
   @@index([vendor_company_id])
@@ -622,6 +623,40 @@ model BiotechInviteVendor {
   project_connection ProjectConnection?
 
   @@map("biotech_invite_vendors")
+}
+
+model ProjectDeclineFeedback {
+  id                              String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reason                          String?
+  project_connection_id           String                        @db.Uuid
+  project_connection              ProjectConnection             @relation(fields: [project_connection_id], references: [id])
+  created_at                      DateTime                      @default(now())
+  updated_at                      DateTime                      @updatedAt
+  project_decline_tag_connections ProjectDeclineTagConnection[]
+
+  @@map("project_decline_feedbacks")
+}
+
+model ProjectDeclineTag {
+  id                              String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                            String                        @unique
+  created_at                      DateTime                      @default(now())
+  updated_at                      DateTime                      @updatedAt
+  project_decline_tag_connections ProjectDeclineTagConnection[]
+
+  @@map("project_decline_tags")
+}
+
+model ProjectDeclineTagConnection {
+  id                          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_decline_tag_id      String                 @db.Uuid
+  project_decline_tag         ProjectDeclineTag      @relation(fields: [project_decline_tag_id], references: [id])
+  project_decline_feedback_id String                 @db.Uuid
+  project_decline_feedback    ProjectDeclineFeedback @relation(fields: [project_decline_feedback_id], references: [id])
+  created_at                  DateTime               @default(now())
+  updated_at                  DateTime               @updatedAt
+
+  @@map("project_decline_tag_connections")
 }
 
 model CasbinRule {
