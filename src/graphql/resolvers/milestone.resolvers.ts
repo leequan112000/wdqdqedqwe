@@ -9,7 +9,7 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
@@ -83,11 +83,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           biotech: {
             include: {
-              subscriptions: {
-                where: {
-                  status: SubscriptionStatus.ACTIVE
-                }
-              }
+              subscriptions: true
             }
           }
         }
@@ -95,6 +91,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(milestone, new PublicError('Milestone not found.'));
       invariant(customer, new PublicError('Customer not found.'));
+      invariant(customer.biotech.subscriptions.length > 0, new PublicError('Your Cromatic subscription has expired or has been canceled. Please renew your subscription to proceed.'));
       invariant(milestone.quote.status === QuoteStatus.ACCEPTED, new PublicError('The quote must be accepted before proceeding with the payment.'));
       invariant(milestone.payment_status !== MilestonePaymentStatus.PAID, new PublicError('The milestone has already been paid.'));
 
