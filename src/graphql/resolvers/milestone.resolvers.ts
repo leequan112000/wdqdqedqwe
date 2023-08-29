@@ -91,7 +91,6 @@ const resolvers: Resolvers<Context> = {
 
       invariant(milestone, new PublicError('Milestone not found.'));
       invariant(customer, new PublicError('Customer not found.'));
-      invariant(customer.biotech.subscriptions.length > 0, new PublicError('Your Cromatic subscription has expired or has been canceled. Please renew your subscription to proceed.'));
       invariant(milestone.quote.status === QuoteStatus.ACCEPTED, new PublicError('The quote must be accepted before proceeding with the payment.'));
       invariant(milestone.payment_status !== MilestonePaymentStatus.PAID, new PublicError('The milestone has already been paid.'));
 
