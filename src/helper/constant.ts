@@ -240,4 +240,5 @@ export enum ReviewQuestionType {
   SINGLE_SELECT = 'single-select',
   RATING = 'rating',
   TEXT = 'text',
+  LONG_TEXT = 'long-text',
 }
