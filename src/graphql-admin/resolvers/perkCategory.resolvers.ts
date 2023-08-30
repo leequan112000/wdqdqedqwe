@@ -24,6 +24,18 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    updatePerkCategory: async (_, args, context) => {
+      const { id, name, description } = args;
+      return await context.prisma.perkCategory.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          description,
+        }
+      });
+    },
     deletePerkCategory: async (_, args, context) => {
       const { id } = args;
       const perkCategory = await context.prisma.perkCategory.findFirst({
