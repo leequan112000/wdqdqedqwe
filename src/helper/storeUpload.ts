@@ -11,7 +11,7 @@ type UploadParamType = {
   createReadStream: () => any;
 }
 
-export default async function storeUpload(upload: UploadParamType, path: string = '') {
+export default async function storeUpload(upload: UploadParamType, path: string = '', isPublic: boolean = false) {
   try {
     const { createReadStream, filename } = upload;
     const mimeType = mime.lookup(filename);
@@ -22,9 +22,10 @@ export default async function storeUpload(upload: UploadParamType, path: string 
       client: s3Client,
       params: {
         Body: createReadStream(),
-        Bucket: config.s3.bucket,
+        Bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
         Key: key,
         ContentType: contextType,
+        ...(isPublic? { ACL: "public-read" } : {})
       },
     });
 
@@ -39,6 +40,7 @@ export default async function storeUpload(upload: UploadParamType, path: string 
     return {
       key,
       filename,
+      bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
       filesize: headObjectResp.ContentLength || 0,
       contextType,
     }
