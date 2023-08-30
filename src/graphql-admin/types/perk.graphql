@@ -28,4 +28,20 @@ type Mutation {
     is_active: Boolean!,
     expired_at: Date,
   ): Perk
+  updatePerk(
+    id: String!,
+    image: Upload!
+    title: String!, 
+    description: String!,
+    reward_description: String!,
+    how_to_redeem: String!,
+    terms: String!,
+    external_url: String,
+    perk_category_id: String!,
+    is_active: Boolean!,
+    expired_at: Date,
+  ): Perk
+  deactivatePerk(id: String!): Perk
+  activatePerk(id: String!): Perk
+  deletePerk(id: String!): Perk
 }

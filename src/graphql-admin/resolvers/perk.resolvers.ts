@@ -29,6 +29,53 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    updatePerk: async (_, args, context) => {
+      const { id, image, ...perkData } = args;
+
+      const data = await image;
+      const { bucket, key } = await storeUpload(data, 'perks', true);
+      const image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
+
+      return await context.prisma.perk.update({
+        where: {
+          id,
+        },
+        data: {
+          image_url,
+          ...perkData,
+        }
+      });
+    },
+    deactivatePerk: async (_, args, context) => {
+      const { id } = args;
+      return await context.prisma.perk.update({
+        where: {
+          id,
+        },
+        data: {
+          is_active: false,
+        }
+      });
+    },
+    activatePerk: async (_, args, context) => {
+      const { id } = args;
+      return await context.prisma.perk.update({
+        where: {
+          id,
+        },
+        data: {
+          is_active: true,
+        }
+      });
+    },
+    deletePerk: async (_, args, context) => {
+      const { id } = args;
+      return await context.prisma.perk.delete({
+        where: {
+          id,
+        }
+      });
+    },
   }
 };
 
