@@ -30,7 +30,7 @@ type Mutation {
   ): Perk
   updatePerk(
     id: String!,
-    image: Upload!
+    image: Upload,
     title: String!, 
     description: String!,
     reward_description: String!,

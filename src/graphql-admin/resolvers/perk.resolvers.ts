@@ -31,10 +31,18 @@ const resolvers: Resolvers<Context> = {
     },
     updatePerk: async (_, args, context) => {
       const { id, image, ...perkData } = args;
+      const currentPerk = await context.prisma.perk.findFirst({
+        where: { id }
+      });
 
-      const data = await image;
-      const { bucket, key } = await storeUpload(data, 'perks', true);
-      const image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
+      invariant(currentPerk, 'Perk not found.');
+
+      let image_url = currentPerk?.image_url;
+      if (image) {
+        const data = await image;
+        const { bucket, key } = await storeUpload(data, 'perks', true);
+        image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
+      }
 
       return await context.prisma.perk.update({
         where: {
