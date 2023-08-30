@@ -37,12 +37,14 @@ type Mutation {
     question_text: String!
     question_type: String!
     group_title: String
+    is_required: Boolean
   ): ReviewQuestion
   updateReviewQuestion(
     review_question_id: String!
     question_text: String!
     question_type: String!
     group_title: String
+    is_required: Boolean
   ): ReviewQuestion
   removeReviewQuestion(
     review_question_id: String!
