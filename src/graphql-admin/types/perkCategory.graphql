@@ -1,0 +1,16 @@
+type PerkCategory {
+  id: String
+  name: String
+  description: String
+  perks: [Perk]
+  created_at: Date
+  updated_at: Date
+}
+
+type Mutation {
+  createPerkCategory(
+    name: String!, 
+    description: String!,
+  ): PerkCategory
+  deletePerkCategory(id: String!): Boolean
+}
