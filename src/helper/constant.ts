@@ -243,3 +243,9 @@ export enum ReviewQuestionType {
   TEXT = 'text',
   LONG_TEXT = 'long-text',
 }
+
+export enum OrdinalAction {
+  INSERT = 'insert',
+  AFTER = 'after',
+  BEFORE = 'before',
+}

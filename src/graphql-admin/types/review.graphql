@@ -38,6 +38,8 @@ type Mutation {
     question_type: String!
     group_title: String
     is_required: Boolean
+    ordinal: Int!
+    ordinal_action: String!
   ): ReviewQuestion
   updateReviewQuestion(
     review_question_id: String!
@@ -45,6 +47,8 @@ type Mutation {
     question_type: String!
     group_title: String
     is_required: Boolean
+    ordinal: Int!
+    ordinal_action: String!
   ): ReviewQuestion
   removeReviewQuestion(
     review_question_id: String!

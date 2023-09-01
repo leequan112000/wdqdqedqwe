@@ -1,8 +1,10 @@
+import { sortBy } from 'lodash';
 import { PublicError } from '../../graphql/errors/PublicError';
 import invariant from '../../helper/invariant';
 import reviewService from '../../services/review/review.service';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
+import { OrdinalAction } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -50,6 +52,8 @@ const resolvers: Resolvers<Context> = {
               question_text: rq.question_text,
               question_type: rq.question_type,
               ordinal: rq.ordinal,
+              group_title: rq.group_title,
+              is_required: rq.is_required,
               review_question_options: {
                 createMany: {
                   data: options,
@@ -69,21 +73,13 @@ const resolvers: Resolvers<Context> = {
     removeReviewQuestionSet: async (_, args, context) => {
       const { review_question_set_id } = args;
 
-      const reviewQuestionSet = await context.prisma.reviewQuestionSet.findFirst({
-        where: {
-          id: review_question_set_id,
+      const reviewQuestionSet = await reviewService.checkIsQuestionSetAnswered(
+        {
+          review_question_set_id,
         },
-        include: {
-          reviews: {
-            take: 1,
-          },
+        {
+          prisma: context.prisma,
         },
-      });
-
-      invariant(reviewQuestionSet, new PublicError('Review question set not found.'));
-      invariant(
-        reviewQuestionSet.reviews.length === 0,
-        new PublicError('Review question set is answered'),
       );
 
       await context.prisma.reviewQuestionSet.delete({
@@ -112,33 +108,45 @@ const resolvers: Resolvers<Context> = {
     addReviewQuestion: async (_, args, context) => {
       const {
         question_text, question_type, review_question_set_id,
-        group_title, is_required,
+        group_title, is_required, ordinal, ordinal_action,
       } = args;
 
-      const lastReviewQuestionInTheGroup = await context.prisma.reviewQuestion.findFirst({
-        where: {
+      await reviewService.checkIsQuestionSetAnswered(
+        {
           review_question_set_id,
         },
-        orderBy: {
-          ordinal: 'desc',
+        {
+          prisma: context.prisma,
         },
-        take: 1,
-      });
+      );
 
-      const nextOrdinal = lastReviewQuestionInTheGroup?.ordinal !== undefined
-        && lastReviewQuestionInTheGroup?.ordinal >= 0
-        ? lastReviewQuestionInTheGroup.ordinal + 1
-        : undefined;
-
-      const reviewQuestion = await context.prisma.reviewQuestion.create({
-        data: {
-          group_title,
-          question_type,
-          question_text,
+      const reviewQuestion = await context.prisma.$transaction(async (trx) => {
+        await reviewService.shiftQuestions({
+          ordinal,
+          ordinal_action: ordinal_action as OrdinalAction,
           review_question_set_id,
-          ordinal: nextOrdinal,
-          is_required: is_required ?? false,
-        },
+        }, {
+          prisma: trx,
+        });
+
+        const nextOrdinal = ordinal_action === OrdinalAction.AFTER
+          ? ordinal + 1
+          : ordinal_action === OrdinalAction.BEFORE
+            ? ordinal - 1
+            : ordinal;
+
+        const reviewQuestion = await trx.reviewQuestion.create({
+          data: {
+            group_title,
+            question_type,
+            question_text,
+            review_question_set_id,
+            ordinal: nextOrdinal,
+            is_required: is_required ?? false,
+          },
+        });
+
+        return reviewQuestion;
       });
 
       return reviewQuestion;
@@ -146,24 +154,47 @@ const resolvers: Resolvers<Context> = {
     updateReviewQuestion: async (_, args, context) => {
       const {
         question_text, question_type, review_question_id,
-        group_title, is_required,
+        group_title, is_required, ordinal, ordinal_action,
       } = args;
 
-      await reviewService.checkIsQuestionAnswered(
+      const existingReviewQuestion = await reviewService.checkIsQuestionAnswered(
         { review_question_id },
         { prisma: context.prisma },
       );
 
-      const updatedReviewQuestion = await context.prisma.reviewQuestion.update({
-        data: {
-          group_title,
-          question_text,
-          question_type,
-          is_required: is_required ?? undefined,
-        },
-        where: {
-          id: review_question_id,
-        },
+      const isOrdinalChanges = existingReviewQuestion.ordinal !== ordinal;
+
+      const updatedReviewQuestion = await context.prisma.$transaction(async (trx) => {
+        if (isOrdinalChanges) {
+          await reviewService.shiftQuestions({
+            ordinal,
+            ordinal_action: ordinal_action as OrdinalAction,
+            review_question_set_id: existingReviewQuestion.review_question_set_id,
+          }, {
+            prisma: trx,
+          });
+        }
+
+        const nextOrdinal = ordinal_action === OrdinalAction.AFTER
+          ? ordinal + 1
+          : ordinal_action === OrdinalAction.BEFORE
+            ? ordinal - 1
+            : ordinal;
+
+        const updatedReviewQuestion = await context.prisma.reviewQuestion.update({
+          data: {
+            group_title,
+            question_text,
+            question_type,
+            is_required: is_required ?? undefined,
+            ordinal: nextOrdinal,
+          },
+          where: {
+            id: review_question_id,
+          },
+        });
+
+        return updatedReviewQuestion;
       });
 
       return updatedReviewQuestion;

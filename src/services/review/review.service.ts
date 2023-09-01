@@ -1,6 +1,8 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, ReviewQuestion } from "@prisma/client";
 import { PublicError } from "../../graphql/errors/PublicError";
 import invariant from "../../helper/invariant";
+import { OrdinalAction } from "../../helper/constant";
+import { sortBy } from "lodash";
 
 const QUOTE_REVIEW_QUESTION_SET_ID = process.env.QUOTE_REVIEW_QUESTION_SET_ID || '';
 
@@ -182,10 +184,79 @@ const checkIsQuestionAnswered = async (args: CheckIsQuestionAnsweredArgs, contex
   return reviewQuestion;
 }
 
+type CheckIsQuestionSetAnsweredArgs = {
+  review_question_set_id: string;
+}
+
+const checkIsQuestionSetAnswered = async (args: CheckIsQuestionSetAnsweredArgs, context: ServiceContext) => {
+  const { review_question_set_id } = args;
+  const reviewQuestionSet = await context.prisma.reviewQuestionSet.findFirst({
+    where: {
+      id: review_question_set_id,
+    },
+    include: {
+      reviews: {
+        take: 1,
+      },
+    },
+  });
+
+  invariant(reviewQuestionSet, new PublicError('Review question set not found.'));
+  invariant(
+    reviewQuestionSet.reviews.length === 0,
+    new PublicError('Review question set is answered'),
+  );
+
+  return reviewQuestionSet;
+}
+
+type ShiftQuestionsArgs = {
+  review_question_set_id: string;
+  ordinal: number;
+  ordinal_action: OrdinalAction;
+}
+
+const shiftQuestions = async (args: ShiftQuestionsArgs, context: ServiceContext) => {
+  const { ordinal, ordinal_action, review_question_set_id } = args;
+
+  const existingQuestions = await context.prisma.reviewQuestion.findMany({
+    where: {
+      review_question_set_id,
+    },
+    orderBy: {
+      ordinal: 'desc',
+    },
+  });
+
+  let questionsToShift: ReviewQuestion[] = [];
+  if (ordinal_action === OrdinalAction.INSERT) {
+    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal);
+  } else if (ordinal_action === OrdinalAction.AFTER) {
+    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal + 1);
+  } else if (ordinal_action === OrdinalAction.BEFORE) {
+    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal - 1);
+  }
+
+  const sorted = sortBy(questionsToShift, 'ordinal');
+  const shiftTasks = sorted.map(async (q) => {
+    await context.prisma.reviewQuestion.update({
+      where: {
+        id: q.id,
+      },
+      data: {
+        ordinal: q.ordinal + 1,
+      },
+    });
+  });
+  await Promise.all(shiftTasks);
+}
+
 const reviewService = {
   getQuoteReviewQuestions,
   draftQuoteReview,
   checkIsQuestionAnswered,
+  checkIsQuestionSetAnswered,
+  shiftQuestions,
 }
 
 export default reviewService;
