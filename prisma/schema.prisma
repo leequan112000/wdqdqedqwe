@@ -687,7 +687,6 @@ model Review {
   quote_review        QuoteReview?
   review_answers      ReviewAnswer[]
 
-  @@unique([user_id, review_question_set_id])
   @@map("reviews")
 }
 
