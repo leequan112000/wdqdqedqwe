@@ -68,7 +68,6 @@ const resolvers: Resolvers<Context> = {
     },
     removeReviewQuestionSet: async (_, args, context) => {
       const { review_question_set_id } = args;
-      console.log(review_question_set_id)
 
       const reviewQuestionSet = await context.prisma.reviewQuestionSet.findFirst({
         where: {

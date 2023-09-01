@@ -54,6 +54,7 @@ export enum QuoteStatus {
   PENDING_DECISION = 'pending_decision',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
+  COMPLETED = 'completed',
   EXPIRED = 'expired',
 }
 

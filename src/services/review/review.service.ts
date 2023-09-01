@@ -1,8 +1,13 @@
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PublicError } from "../../graphql/errors/PublicError";
 import invariant from "../../helper/invariant";
-import { ServiceContext } from "../../types/context";
 
 const QUOTE_REVIEW_QUESTION_SET_ID = process.env.QUOTE_REVIEW_QUESTION_SET_ID || '';
+
+interface ServiceContext {
+  prisma: PrismaClient | Prisma.TransactionClient;
+}
+
 
 type GetQuoteReviewQuestionsArgs = {
   quote_id: string;
@@ -58,35 +63,56 @@ type DraftQuoteReviewArgs = {
   }>;
   current_user_id: string;
   quote_id: string;
+  is_final?: boolean;
 }
 
 const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceContext) => {
-  const { current_user_id, quote_id, review_input } = args;
+  const { current_user_id, quote_id, review_input, is_final } = args;
   // Check if review & quote record exist
-  const review = await context.prisma.review.upsert({
-    create: {
+
+  let review = await context.prisma.review.findFirst({
+    where: {
+      quote_review: {
+        quote_id,
+      },
       user_id: current_user_id,
       review_question_set_id: QUOTE_REVIEW_QUESTION_SET_ID,
-      is_draft: true,
-      quote_review: {
-        create: {
-          quote_id,
-        },
-      },
-    },
-    update: {
-      is_draft: true,
-    },
-    where: {
-      user_id_review_question_set_id: {
-        user_id: current_user_id,
-        review_question_set_id: QUOTE_REVIEW_QUESTION_SET_ID,
-      }
     },
     include: {
       quote_review: true,
     },
   });
+
+  if (review === null) {
+    review = await context.prisma.review.create({
+      data: {
+        user_id: current_user_id,
+        review_question_set_id: QUOTE_REVIEW_QUESTION_SET_ID,
+        is_draft: true,
+        quote_review: {
+          create: {
+            quote_id,
+          },
+        },
+      },
+      include: {
+        quote_review: true,
+      },
+    });
+  }
+
+  invariant(review, 'Review is null');
+
+  if (is_final === true) {
+    await context.prisma.review.update({
+      data: {
+        is_draft: false,
+      },
+      where: {
+        id: review.id,
+      },
+    });
+  }
 
   // Create / upsert review answer
   const promises = review_input.map(async (ri) => {
@@ -94,7 +120,7 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
       return await context.prisma.reviewAnswer.upsert({
         where: {
           review_id_review_question_id: {
-            review_id: review.id,
+            review_id: review!.id,
             review_question_id: ri.review_question_id,
           }
         },
@@ -103,7 +129,7 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
           option_value: ri.option_value,
           rating_value: ri.rating_value,
           review_question_id: ri.review_question_id,
-          review_id: review.id,
+          review_id: review!.id,
         },
         update: {
           answer_text: ri.answer_text,
@@ -118,12 +144,15 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
           option_value: ri.option_value,
           rating_value: ri.rating_value,
           review_question_id: ri.review_question_id,
-          review_id: review.id,
+          review_id: review!.id,
         }
       });
     }
   });
-  return await Promise.all(promises);
+
+  const reviewAnswers = await Promise.all(promises);
+
+  return reviewAnswers;
 }
 
 type CheckIsQuestionAnsweredArgs = {

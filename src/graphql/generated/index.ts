@@ -306,6 +306,7 @@ export type Mutation = {
   deactivateCollaborator?: Maybe<User>;
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
+  draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -473,6 +474,13 @@ export type MutationDeclineQuoteArgs = {
 
 export type MutationDeclinedProjectConnectionArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationDraftQuoteReviewArgs = {
+  input?: InputMaybe<Array<ReviewInput>>;
+  is_final_step?: InputMaybe<Scalars['Boolean']>;
+  quote_id: Scalars['String'];
 };
 
 
@@ -980,6 +988,8 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
+  quoteReview?: Maybe<Review>;
+  quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
@@ -1080,6 +1090,16 @@ export type QueryQuoteArgs = {
 };
 
 
+export type QueryQuoteReviewArgs = {
+  quote_id: Scalars['String'];
+};
+
+
+export type QueryQuoteReviewQuestionsArgs = {
+  quote_id: Scalars['String'];
+};
+
+
 export type QuerySearchCertificationTagsArgs = {
   search_content?: InputMaybe<Scalars['String']>;
 };
@@ -1114,6 +1134,56 @@ export type Quote = {
   total_in_escrow?: Maybe<Scalars['Float']>;
   total_milestones_paid?: Maybe<Scalars['Float']>;
   total_payment?: Maybe<Scalars['Float']>;
+};
+
+export type Review = {
+  __typename?: 'Review';
+  id?: Maybe<Scalars['String']>;
+  is_draft?: Maybe<Scalars['Boolean']>;
+  review_answers?: Maybe<Array<Maybe<ReviewAnswer>>>;
+  review_question_set_id?: Maybe<Scalars['String']>;
+  review_questions?: Maybe<Array<Maybe<ReviewQuestion>>>;
+};
+
+export type ReviewAnswer = {
+  __typename?: 'ReviewAnswer';
+  answer_text?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  option_value?: Maybe<Scalars['String']>;
+  rating_value?: Maybe<Scalars['Int']>;
+  review_question_id?: Maybe<Scalars['String']>;
+};
+
+export type ReviewInput = {
+  answer_text?: InputMaybe<Scalars['String']>;
+  option_value?: InputMaybe<Scalars['String']>;
+  rating_value?: InputMaybe<Scalars['Int']>;
+  review_question_id: Scalars['String'];
+};
+
+export type ReviewQuestion = {
+  __typename?: 'ReviewQuestion';
+  group_title?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_required?: Maybe<Scalars['Boolean']>;
+  ordinal?: Maybe<Scalars['Int']>;
+  question_text?: Maybe<Scalars['String']>;
+  question_type?: Maybe<Scalars['String']>;
+  review_question_options?: Maybe<Array<Maybe<ReviewQuestionOption>>>;
+  review_question_set_id?: Maybe<Scalars['String']>;
+};
+
+export type ReviewQuestionOption = {
+  __typename?: 'ReviewQuestionOption';
+  id?: Maybe<Scalars['String']>;
+  option_text?: Maybe<Scalars['String']>;
+  ordinal?: Maybe<Scalars['Int']>;
+};
+
+export type ReviewQuestionSet = {
+  __typename?: 'ReviewQuestionSet';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type StripeAccountCapabilities = {
@@ -1404,6 +1474,12 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: ResolverTypeWrapper<{}>;
   Quote: ResolverTypeWrapper<Quote>;
+  Review: ResolverTypeWrapper<Review>;
+  ReviewAnswer: ResolverTypeWrapper<ReviewAnswer>;
+  ReviewInput: ReviewInput;
+  ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
+  ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
+  ReviewQuestionSet: ResolverTypeWrapper<ReviewQuestionSet>;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -1468,6 +1544,12 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: {};
   Quote: Quote;
+  Review: Review;
+  ReviewAnswer: ReviewAnswer;
+  ReviewInput: ReviewInput;
+  ReviewQuestion: ReviewQuestion;
+  ReviewQuestionOption: ReviewQuestionOption;
+  ReviewQuestionSet: ReviewQuestionSet;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -1762,6 +1844,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
+  draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -1984,6 +2067,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
+  quoteReview?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType, RequireFields<QueryQuoteReviewArgs, 'quote_id'>>;
+  quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2010,6 +2095,49 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   total_in_escrow?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_milestones_paid?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_payment?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['Review'] = ResolversParentTypes['Review']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_draft?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  review_answers?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType>;
+  review_question_set_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  review_questions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewAnswerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewAnswer'] = ResolversParentTypes['ReviewAnswer']> = ResolversObject<{
+  answer_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  option_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rating_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  review_question_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestion'] = ResolversParentTypes['ReviewQuestion']> = ResolversObject<{
+  group_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_required?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  ordinal?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  question_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  question_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  review_question_options?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestionOption']>>>, ParentType, ContextType>;
+  review_question_set_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionOptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestionOption'] = ResolversParentTypes['ReviewQuestionOption']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  option_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ordinal?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestionSet'] = ResolversParentTypes['ReviewQuestionSet']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2214,6 +2342,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;
+  Review?: ReviewResolvers<ContextType>;
+  ReviewAnswer?: ReviewAnswerResolvers<ContextType>;
+  ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
+  ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
+  ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;
