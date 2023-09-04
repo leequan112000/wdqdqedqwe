@@ -27,7 +27,24 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     perkCategories: async (_, __, context) => {
-      return await context.prisma.perkCategory.findMany();
+      const today = moment();
+      return await context.prisma.perkCategory.findMany({
+        where: {
+          perks: {
+            some: {
+              is_active: true,
+              OR: [
+                { expired_at: null },
+                {
+                  expired_at: {
+                    gt: today.startOf('d').toDate(),
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
     },
   }
 };
