@@ -132,9 +132,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const biotechUnpaidMilestones = milestones.filter((m) => m.payment_status === MilestonePaymentStatus.UNPAID);
+      const completedMilestones = milestones.filter((m) => m.status === MilestoneStatus.COMPLETED);
 
-      if (biotechUnpaidMilestones.length === 0) {
+      if (completedMilestones.length === milestones.length) {
         return QuoteStatus.COMPLETED;
       }
 
