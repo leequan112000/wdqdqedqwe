@@ -1,7 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
-import storeUpload from "../../helper/storeUpload";
+import storeUpload, { getFileExtFromBuffer } from "../../helper/storeUpload";
 
 const resolvers: Resolvers<Context> = {
   Perk: {
@@ -19,7 +19,15 @@ const resolvers: Resolvers<Context> = {
       const { image, ...perkData } = args;
 
       const data = await image;
-      const { bucket, key } = await storeUpload(data, 'perks', true);
+      const buffer = Buffer.from(data, 'base64');
+      const ext = await getFileExtFromBuffer(buffer);
+      const { bucket, key } = await storeUpload({
+        filename: `perks.${ext}`,
+        createReadStream: () => {
+          return buffer;
+        }
+      }, 'perks', true);
+
       const image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
 
       return await context.prisma.perk.create({
@@ -40,7 +48,14 @@ const resolvers: Resolvers<Context> = {
       let image_url = currentPerk?.image_url;
       if (image) {
         const data = await image;
-        const { bucket, key } = await storeUpload(data, 'perks', true);
+        const buffer = Buffer.from(data, 'base64');
+        const ext = await getFileExtFromBuffer(buffer);
+        const { bucket, key } = await storeUpload({
+          filename: `perks.${ext}`,
+          createReadStream: () => {
+            return buffer;
+          }
+        }, 'perks', true);
         image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
       }
 
