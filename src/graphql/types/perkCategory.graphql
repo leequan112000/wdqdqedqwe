@@ -1,0 +1,12 @@
+type PerkCategory {
+  id: String
+  name: String
+  description: String
+  perks: [Perk]
+  created_at: Date
+  updated_at: Date
+}
+
+type Query {
+  perkCategories: [PerkCategory]
+}
