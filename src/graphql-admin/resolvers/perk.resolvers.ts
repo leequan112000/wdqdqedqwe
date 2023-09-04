@@ -60,7 +60,7 @@ const resolvers: Resolvers<Context> = {
         image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
 
         // Delete outdated image
-        await deleteObject(new URL(image_url).pathname, true);
+        await deleteObject(new URL(image_url).pathname.slice(1), true);
       }
 
       return await context.prisma.perk.update({
@@ -109,7 +109,7 @@ const resolvers: Resolvers<Context> = {
         }
       });
       // Delete perk image from S3
-      await deleteObject(new URL(image_url).pathname, true);
+      await deleteObject(new URL(image_url).pathname.slice(1), true);
       return deletedPerk;
     },
   }
