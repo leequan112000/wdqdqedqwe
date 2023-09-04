@@ -164,7 +164,7 @@ const resolvers: Resolvers<Context> = {
             }
           }
 
-          const { filename, key, filesize, contextType } = await storeUpload(
+          const { filename, key, filesize, contentType } = await storeUpload(
             uploadData,
             PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.FILE],
           );
@@ -175,7 +175,7 @@ const resolvers: Resolvers<Context> = {
               filename,
               key,
               project_connection_id,
-              content_type: contextType,
+              content_type: contentType,
               uploader_id: currectUserId,
             }
           });
@@ -263,7 +263,7 @@ const resolvers: Resolvers<Context> = {
           }
         }
 
-        const { filename, key, filesize, contextType } = await storeUpload(
+        const { filename, key, filesize, contentType } = await storeUpload(
           data,
           PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.REDLINE_FILE],
         );
@@ -301,7 +301,7 @@ const resolvers: Resolvers<Context> = {
               filename,
               key,
               project_connection_id,
-              content_type: contextType,
+              content_type: contentType,
               uploader_id: currectUserId,
             }
           });
