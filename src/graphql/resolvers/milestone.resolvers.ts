@@ -102,7 +102,7 @@ const resolvers: Resolvers<Context> = {
               currency: 'usd',
               product_data: {
                 name: milestone.title,
-                description: milestone.description as string,
+                description: milestone.description || '-',
               },
               unit_amount: Number(milestone.amount),
             },

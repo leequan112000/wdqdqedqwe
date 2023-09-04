@@ -65,25 +65,6 @@ const resolvers: Resolvers<Context> = {
     }
   },
   Query: {
-    quoteReview: async (_, args, context) => {
-      const { quote_id } = args;
-      const currentUserId = context.req.user_id;
-      invariant(currentUserId, 'Current user id is missing.');
-
-      const review = await context.prisma.review.findFirst({
-        where: {
-          quote_review: {
-            quote_id,
-          },
-          user_id: currentUserId,
-        },
-        include: {
-          review_answers: true,
-        },
-      });
-
-      return review;
-    },
     /**
      * Usage: To view quote review question.
      * Return the question that answered previoudly if review record exists.

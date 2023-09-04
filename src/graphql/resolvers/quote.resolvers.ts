@@ -143,6 +143,26 @@ const resolvers: Resolvers<Context> = {
       }
       return null;
     },
+    quote_review: async (parent, _, context) => {
+      const quoteId = parent.id;
+      invariant(quoteId, 'Quote id not found.');
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+
+      const review = await context.prisma.review.findFirst({
+        where: {
+          quote_review: {
+            quote_id: quoteId,
+          },
+          user_id: currentUserId,
+        },
+        include: {
+          review_answers: true,
+        },
+      });
+
+      return review;
+    },
   },
   Query: {
     quote: async (_, args, context) => {

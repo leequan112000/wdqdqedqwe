@@ -988,7 +988,6 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
-  quoteReview?: Maybe<Review>;
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -1090,11 +1089,6 @@ export type QueryQuoteArgs = {
 };
 
 
-export type QueryQuoteReviewArgs = {
-  quote_id: Scalars['String'];
-};
-
-
 export type QueryQuoteReviewQuestionsArgs = {
   quote_id: Scalars['String'];
 };
@@ -1128,6 +1122,7 @@ export type Quote = {
   milestones?: Maybe<Array<Maybe<Milestone>>>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
+  quote_review?: Maybe<Review>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   total_amount?: Maybe<Scalars['Float']>;
@@ -2067,7 +2062,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
-  quoteReview?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType, RequireFields<QueryQuoteReviewArgs, 'quote_id'>>;
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
@@ -2089,6 +2083,7 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quote_review?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;

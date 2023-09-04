@@ -44,7 +44,6 @@ input ReviewInput {
 }
 
 type Query {
-  quoteReview(quote_id: String!): Review
   quoteReviewQuestions(quote_id: String!): [ReviewQuestion]
 }
 
