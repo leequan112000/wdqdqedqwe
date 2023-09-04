@@ -135,6 +135,7 @@ export type MutationAddReviewQuestionArgs = {
 
 export type MutationAddReviewQuestionOptionArgs = {
   option_text: Scalars['String'];
+  ordinal?: InputMaybe<Scalars['Int']>;
   review_question_id: Scalars['String'];
 };
 
@@ -315,6 +316,7 @@ export type MutationUpdateReviewQuestionArgs = {
 
 export type MutationUpdateReviewQuestionOptionArgs = {
   option_text: Scalars['String'];
+  ordinal: Scalars['Int'];
   review_question_option_id: Scalars['String'];
 };
 
@@ -626,7 +628,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionArgs, 'ordinal' | 'ordinal_action' | 'question_text' | 'question_type' | 'review_question_id'>>;
-  updateReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionOptionArgs, 'option_text' | 'review_question_option_id'>>;
+  updateReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionOptionArgs, 'option_text' | 'ordinal' | 'review_question_option_id'>>;
   updateReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionSetArgs, 'name' | 'review_question_set_id'>>;
   updateVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateVendorMemberByAdminArgs, 'user_id'>>;
 }>;

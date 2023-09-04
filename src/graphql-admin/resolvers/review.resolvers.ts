@@ -223,7 +223,7 @@ const resolvers: Resolvers<Context> = {
       return reviewQuestion;
     },
     addReviewQuestionOption: async (_, args, context) => {
-      const { option_text, review_question_id } = args;
+      const { option_text, review_question_id, ordinal } = args;
 
       const lastOption = await context.prisma.reviewQuestionOption.findFirst({
         where: {
@@ -235,9 +235,9 @@ const resolvers: Resolvers<Context> = {
         take: 1,
       });
 
-      const nextOrdinal = lastOption && lastOption.ordinal >= 0
+      const nextOrdinal = ordinal ?? (lastOption && lastOption.ordinal >= 0
         ? lastOption.ordinal + 1
-        : undefined;
+        : undefined);
 
       const reviewQuestionOption = await context.prisma.reviewQuestionOption.create({
         data: {
@@ -250,7 +250,7 @@ const resolvers: Resolvers<Context> = {
       return reviewQuestionOption;
     },
     updateReviewQuestionOption: async (_, args, context) => {
-      const { option_text, review_question_option_id } = args;
+      const { option_text, review_question_option_id, ordinal } = args;
 
       const reviewQuestionOption = await context.prisma.reviewQuestionOption.findFirst({
         where: {
@@ -268,6 +268,7 @@ const resolvers: Resolvers<Context> = {
       const updatedReviewQuestionOption = await context.prisma.reviewQuestionOption.update({
         data: {
           option_text,
+          ordinal,
         },
         where: {
           id: review_question_option_id,

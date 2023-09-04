@@ -57,10 +57,12 @@ type Mutation {
   addReviewQuestionOption(
     review_question_id: String!
     option_text: String!
+    ordinal: Int
   ): ReviewQuestionOption
   updateReviewQuestionOption(
     review_question_option_id: String!
     option_text: String!
+    ordinal: Int!
   ): ReviewQuestionOption
   removeReviewQuestionOption(
     review_question_option_id: String!
