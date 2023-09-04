@@ -988,6 +988,7 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
+  quoteReview?: Maybe<Review>;
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -1086,6 +1087,11 @@ export type QueryProjectRequestsArgs = {
 export type QueryQuoteArgs = {
   id?: InputMaybe<Scalars['String']>;
   project_connection_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryQuoteReviewArgs = {
+  quote_id: Scalars['String'];
 };
 
 
@@ -2062,6 +2068,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
+  quoteReview?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType, RequireFields<QueryQuoteReviewArgs, 'quote_id'>>;
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
