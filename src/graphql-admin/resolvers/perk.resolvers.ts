@@ -2,6 +2,7 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import storeUpload, { getFileExtFromBuffer } from "../../helper/storeUpload";
+import { deleteObject } from "../../helper/awsS3";
 
 const resolvers: Resolvers<Context> = {
   Perk: {
@@ -57,6 +58,9 @@ const resolvers: Resolvers<Context> = {
           }
         }, 'perks', true);
         image_url = `https://${bucket}.s3.amazonaws.com/${key}`;
+
+        // Delete outdated image
+        await deleteObject(new URL(image_url).pathname, true);
       }
 
       return await context.prisma.perk.update({
@@ -93,11 +97,20 @@ const resolvers: Resolvers<Context> = {
     },
     deletePerk: async (_, args, context) => {
       const { id } = args;
-      return await context.prisma.perk.delete({
+      const perk = await context.prisma.perk.findFirst({
+        where: { id }
+      });
+      invariant(perk, 'Perk not found.');
+      
+      let image_url = perk.image_url;
+      const deletedPerk = await context.prisma.perk.delete({
         where: {
           id,
         }
       });
+      // Delete perk image from S3
+      await deleteObject(new URL(image_url).pathname, true);
+      return deletedPerk;
     },
   }
 };
