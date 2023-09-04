@@ -665,7 +665,7 @@ model PerkCategory {
   description String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  Perk        Perk[]
+  perks        Perk[]
 
   @@map("perk_categories")
 }
