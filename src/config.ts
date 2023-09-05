@@ -6,5 +6,6 @@ export default {
     },
     region: process.env.AWS_S3_REGION,
     bucket: process.env.AWS_S3_BUCKET,
+    publicBucket: process.env.AWS_S3_PUBLIC_BUCKET,
   },
 };

@@ -154,7 +154,7 @@ const resolvers: Resolvers<Context> = {
         key: string;
         filename: string;
         filesize: number;
-        contextType: string | undefined;
+        contentType: string | undefined;
       }> = [];
 
 
@@ -179,7 +179,7 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         if (uploadedFiles.length > 0) {
           const attachments = await Promise.allSettled(
-            uploadedFiles.map(async ({ filesize, filename, key, contextType }) => {
+            uploadedFiles.map(async ({ filesize, filename, key, contentType }) => {
               const attachment = await trx.projectAttachment.create({
                 data: {
                   byte_size: filesize,
@@ -188,7 +188,7 @@ const resolvers: Resolvers<Context> = {
                   key,
                   project_connection_id: milestone.quote.project_connection_id,
                   milestone_id: milestone.id,
-                  content_type: contextType,
+                  content_type: contentType,
                   uploader_id: context.req.user_id,
                 }
               });

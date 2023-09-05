@@ -87,6 +87,7 @@ export type Milestone = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  activatePerk?: Maybe<Perk>;
   addReviewQuestion?: Maybe<ReviewQuestion>;
   addReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   addReviewQuestionSet?: Maybe<ReviewQuestionSet>;
@@ -95,12 +96,17 @@ export type Mutation = {
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
   createLabSpecialization?: Maybe<LabSpecialization>;
   createLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
+  createPerk?: Maybe<Perk>;
+  createPerkCategory?: Maybe<PerkCategory>;
   createVendorCompany?: Maybe<VendorCompany>;
+  deactivatePerk?: Maybe<Perk>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
   deleteCertificationTag?: Maybe<Scalars['Boolean']>;
   deleteCertificationTagConnection?: Maybe<CertificationTagConnection>;
   deleteLabSpecialization?: Maybe<Scalars['Boolean']>;
   deleteLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
+  deletePerk?: Maybe<Perk>;
+  deletePerkCategory?: Maybe<Scalars['Boolean']>;
   duplicateQuestionSet?: Maybe<ReviewQuestionSet>;
   inviteVendorCompaniesToProjectByAdmin?: Maybe<Scalars['Boolean']>;
   inviteVendorCompanyToProjectByBiotech?: Maybe<Scalars['Boolean']>;
@@ -115,10 +121,17 @@ export type Mutation = {
   updateBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   updateCertificationTag?: Maybe<CertificationTag>;
   updateLabSpecialization?: Maybe<LabSpecialization>;
+  updatePerk?: Maybe<Perk>;
+  updatePerkCategory?: Maybe<PerkCategory>;
   updateReviewQuestion?: Maybe<ReviewQuestion>;
   updateReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   updateReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   updateVendorMemberByAdmin?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationActivatePerkArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -179,6 +192,26 @@ export type MutationCreateLabSpecializationConnectionArgs = {
 };
 
 
+export type MutationCreatePerkArgs = {
+  description: Scalars['String'];
+  expired_at?: InputMaybe<Scalars['Date']>;
+  external_url?: InputMaybe<Scalars['String']>;
+  how_to_redeem: Scalars['String'];
+  image: Scalars['Upload'];
+  is_active: Scalars['Boolean'];
+  perk_category_id: Scalars['String'];
+  reward_description: Scalars['String'];
+  terms: Scalars['String'];
+  title: Scalars['String'];
+};
+
+
+export type MutationCreatePerkCategoryArgs = {
+  description: Scalars['String'];
+  name: Scalars['String'];
+};
+
+
 export type MutationCreateVendorCompanyArgs = {
   address?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -187,6 +220,11 @@ export type MutationCreateVendorCompanyArgs = {
   skip_cda?: InputMaybe<Scalars['Boolean']>;
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeactivatePerkArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -211,6 +249,16 @@ export type MutationDeleteLabSpecializationArgs = {
 
 
 export type MutationDeleteLabSpecializationConnectionArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationDeletePerkArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationDeletePerkCategoryArgs = {
   id: Scalars['String'];
 };
 
@@ -303,6 +351,28 @@ export type MutationUpdateLabSpecializationArgs = {
 };
 
 
+export type MutationUpdatePerkArgs = {
+  description: Scalars['String'];
+  expired_at?: InputMaybe<Scalars['Date']>;
+  external_url?: InputMaybe<Scalars['String']>;
+  how_to_redeem: Scalars['String'];
+  id: Scalars['String'];
+  image?: InputMaybe<Scalars['Upload']>;
+  is_active: Scalars['Boolean'];
+  perk_category_id: Scalars['String'];
+  reward_description: Scalars['String'];
+  terms: Scalars['String'];
+  title: Scalars['String'];
+};
+
+
+export type MutationUpdatePerkCategoryArgs = {
+  description: Scalars['String'];
+  id: Scalars['String'];
+  name: Scalars['String'];
+};
+
+
 export type MutationUpdateReviewQuestionArgs = {
   group_title?: InputMaybe<Scalars['String']>;
   is_required?: InputMaybe<Scalars['Boolean']>;
@@ -334,6 +404,34 @@ export type MutationUpdateVendorMemberByAdminArgs = {
   role?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   user_id: Scalars['String'];
+};
+
+export type Perk = {
+  __typename?: 'Perk';
+  created_at?: Maybe<Scalars['Date']>;
+  description?: Maybe<Scalars['String']>;
+  expired_at?: Maybe<Scalars['Date']>;
+  external_url?: Maybe<Scalars['String']>;
+  how_to_redeem?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  image_url?: Maybe<Scalars['String']>;
+  is_active?: Maybe<Scalars['Boolean']>;
+  perk_category?: Maybe<PerkCategory>;
+  perk_category_id?: Maybe<Scalars['String']>;
+  reward_description?: Maybe<Scalars['String']>;
+  terms?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type PerkCategory = {
+  __typename?: 'PerkCategory';
+  created_at?: Maybe<Scalars['Date']>;
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  perks?: Maybe<Array<Maybe<Perk>>>;
+  updated_at?: Maybe<Scalars['Date']>;
 };
 
 export type Query = {
@@ -485,6 +583,8 @@ export type ResolversTypes = ResolversObject<{
   LabSpecializationConnection: ResolverTypeWrapper<LabSpecializationConnection>;
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
+  Perk: ResolverTypeWrapper<Perk>;
+  PerkCategory: ResolverTypeWrapper<PerkCategory>;
   Query: ResolverTypeWrapper<{}>;
   ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
   ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
@@ -511,6 +611,8 @@ export type ResolversParentTypes = ResolversObject<{
   LabSpecializationConnection: LabSpecializationConnection;
   Milestone: Milestone;
   Mutation: {};
+  Perk: Perk;
+  PerkCategory: PerkCategory;
   Query: {};
   ReviewQuestion: ReviewQuestion;
   ReviewQuestionOption: ReviewQuestionOption;
@@ -599,6 +701,7 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  activatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationActivatePerkArgs, 'id'>>;
   addReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionArgs, 'ordinal' | 'ordinal_action' | 'question_text' | 'question_type' | 'review_question_set_id'>>;
   addReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionOptionArgs, 'option_text' | 'review_question_id'>>;
   addReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionSetArgs, 'name'>>;
@@ -607,12 +710,17 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
   createLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationConnectionArgs, 'lab_specialization_id' | 'vendor_company_id'>>;
+  createPerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationCreatePerkArgs, 'description' | 'how_to_redeem' | 'image' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
+  createPerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationCreatePerkCategoryArgs, 'description' | 'name'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
+  deactivatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationDeactivatePerkArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
   deleteCertificationTag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagArgs, 'id'>>;
   deleteCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagConnectionArgs, 'id'>>;
   deleteLabSpecialization?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationArgs, 'id'>>;
   deleteLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationDeleteLabSpecializationConnectionArgs, 'id'>>;
+  deletePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationDeletePerkArgs, 'id'>>;
+  deletePerkCategory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePerkCategoryArgs, 'id'>>;
   duplicateQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationDuplicateQuestionSetArgs, 'review_question_set_id'>>;
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorCompanyToProjectByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompanyToProjectByBiotechArgs, 'biotech_invite_vendor_id' | 'vendor_type'>>;
@@ -627,10 +735,40 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationUpdateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'id' | 'last_name' | 'website'>>;
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
+  updatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationUpdatePerkArgs, 'description' | 'how_to_redeem' | 'id' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
+  updatePerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationUpdatePerkCategoryArgs, 'description' | 'id' | 'name'>>;
   updateReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionArgs, 'ordinal' | 'ordinal_action' | 'question_text' | 'question_type' | 'review_question_id'>>;
   updateReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionOptionArgs, 'option_text' | 'ordinal' | 'review_question_option_id'>>;
   updateReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionSetArgs, 'name' | 'review_question_set_id'>>;
   updateVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateVendorMemberByAdminArgs, 'user_id'>>;
+}>;
+
+export type PerkResolvers<ContextType = any, ParentType extends ResolversParentTypes['Perk'] = ResolversParentTypes['Perk']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  expired_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  external_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  how_to_redeem?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  image_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  perk_category?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType>;
+  perk_category_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reward_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  terms?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PerkCategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PerkCategory'] = ResolversParentTypes['PerkCategory']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  perks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Perk']>>>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -713,6 +851,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LabSpecializationConnection?: LabSpecializationConnectionResolvers<ContextType>;
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Perk?: PerkResolvers<ContextType>;
+  PerkCategory?: PerkCategoryResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
