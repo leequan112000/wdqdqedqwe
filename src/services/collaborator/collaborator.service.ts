@@ -1,6 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { updateRoleForUser } from "../../helper/casbin";
+import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { hasPermission, updateRoleForUser } from "../../helper/casbin";
+import { PermissionDeniedError } from "../../graphql/errors/PermissionDeniedError";
+import invariant from "../../helper/invariant";
+import { InternalError } from "../../graphql/errors/InternalError";
 
 interface ServiceContext {
   prisma: PrismaClient | Prisma.TransactionClient
@@ -169,11 +172,37 @@ const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceCo
   return updatedVendorMember;
 }
 
+type CheckPermissionToEditRoleArgs = {
+  user_id: string;
+  role: CompanyCollaboratorRoleType;
+}
+
+const checkPermissionToEditRole = async (args: CheckPermissionToEditRoleArgs) => {
+  const { user_id, role } = args;
+
+  switch (role) {
+    case CompanyCollaboratorRoleType.USER: {
+      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE);
+      invariant(allow, new PermissionDeniedError());
+      break;
+    }
+    case CompanyCollaboratorRoleType.ADMIN: {
+      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE);
+      invariant(allow, new PermissionDeniedError());
+      break;
+    }
+    default: {
+      throw new InternalError('User has invalid role.');
+    }
+  }
+}
+
 const collaboratorService = {
   setCustomerAsAdmin,
   setCustomerAsUser,
   setVendorMemberAsAdmin,
   setVendorMemberAsUser,
+  checkPermissionToEditRole,
 }
 
 export default collaboratorService;
