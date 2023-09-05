@@ -486,6 +486,7 @@ export type MutationInviteCollaboratorArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+  role?: InputMaybe<Scalars['String']>;
 };
 
 

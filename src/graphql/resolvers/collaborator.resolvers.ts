@@ -70,13 +70,20 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     inviteCollaborator: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
+      const { role = CompanyCollaboratorRoleType.USER } = args;
+      const castedRole = (role as CompanyCollaboratorRoleType) || CompanyCollaboratorRoleType.USER;
+
       invariant(currentUserId, 'Current user id not found.');
-      const allowInviteCompanyCollaborator = await hasPermission(
-        currentUserId,
-        CasbinObj.COMPANY_COLLABORATOR_USER,
-        CasbinAct.WRITE
-      );
-      invariant(allowInviteCompanyCollaborator, new PermissionDeniedError());
+
+      // Check if current user has the permission to set the role.
+      if (castedRole) {
+        const roleEnum = Object.values(CompanyCollaboratorRoleType);
+        invariant(roleEnum.includes(castedRole as CompanyCollaboratorRoleType), 'Invalid company collaborator role.');
+        await collaboratorService.checkPermissionToEditRole({
+          role: castedRole,
+          user_id: currentUserId,
+        });
+      }
 
       // Check for existing user
       const existingUser = await context.prisma.user.findFirst({
@@ -133,6 +140,7 @@ const resolvers: Resolvers<Context> = {
             data: {
               user_id: newUser.id,
               biotech_id: currentUser.customer.biotech_id,
+              role: castedRole,
             },
           });
           sendCustomerInvitationEmail(currentUser, newUser, emailMessage);
@@ -144,6 +152,7 @@ const resolvers: Resolvers<Context> = {
             data: {
               user_id: newUser.id,
               vendor_company_id: currentUser.vendor_member.vendor_company_id,
+              role: castedRole,
             }
           });
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
