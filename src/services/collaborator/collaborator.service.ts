@@ -197,12 +197,71 @@ const checkPermissionToEditRole = async (args: CheckPermissionToEditRoleArgs) =>
   }
 }
 
+type UpdateUserRoleArgs = {
+  user_id: string;
+  role: CompanyCollaboratorRoleType;
+}
+
+const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => {
+  const { role, user_id } = args;
+  const user = await ctx.prisma.user.findFirst({
+    where: {
+      id: user_id,
+    },
+    include: {
+      customer: true,
+      vendor_member: true,
+    },
+  });
+
+  invariant(user, 'User not found.');
+
+  const isBiotech = !!user.customer;
+  const isVendor = !!user.vendor_member;
+
+  switch (role) {
+    case CompanyCollaboratorRoleType.ADMIN: {
+      if (isBiotech) {
+        await setCustomerAsAdmin({
+          biotech_id: user.customer!.biotech_id,
+          customer_id: user.customer!.id,
+          user_id
+        }, ctx);
+      }
+      if (isVendor) {
+        await setVendorMemberAsAdmin({
+          user_id,
+          vendor_company_id: user.vendor_member!.vendor_company_id,
+          vendor_member_id: user.vendor_member!.id,
+        }, ctx)
+      }
+      break;
+    }
+    case CompanyCollaboratorRoleType.USER: {
+      if (isBiotech) {
+        await setCustomerAsUser({
+          customer_id: user.customer!.id,
+        }, ctx);
+      }
+      if (isVendor) {
+        await setVendorMemberAsUser({
+          vendor_member_id: user.vendor_member!.id,
+        }, ctx);
+      }
+      break;
+    }
+    default:
+      throw new InternalError('Invalid role.');
+  }
+}
+
 const collaboratorService = {
   setCustomerAsAdmin,
   setCustomerAsUser,
   setVendorMemberAsAdmin,
   setVendorMemberAsUser,
   checkPermissionToEditRole,
+  updateUserRole,
 }
 
 export default collaboratorService;
