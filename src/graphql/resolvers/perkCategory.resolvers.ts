@@ -22,6 +22,9 @@ const resolvers: Resolvers<Context> = {
             }
           ]
         },
+        orderBy: {
+          title: 'asc',
+        },
       });
     },
   },
@@ -43,6 +46,9 @@ const resolvers: Resolvers<Context> = {
               ],
             },
           },
+        },
+        orderBy: {
+          name: 'asc',
         },
       });
     },

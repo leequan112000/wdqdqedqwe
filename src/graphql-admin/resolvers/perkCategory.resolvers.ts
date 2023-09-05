@@ -11,6 +11,9 @@ const resolvers: Resolvers<Context> = {
         where: {
           perk_category_id: parent.id,
         },
+        orderBy: {
+          title: 'asc',
+        },
       });
     },
   },
