@@ -1,4 +1,4 @@
-import { ReviewQuestion } from "@prisma/client";
+import { Review, ReviewAnswer, ReviewQuestion } from "@prisma/client";
 import { expect, test, beforeEach, describe } from 'vitest';
 import { MockContext, createMockContext } from "../../testContext";
 import { ServiceContext } from "../../types/context";
@@ -9,6 +9,8 @@ let mockCtx: MockContext;
 let ctx: ServiceContext;
 
 let existingQuestions: ReviewQuestion[];
+let existingReview: Review;
+let existingAnswers: ReviewAnswer[];
 
 beforeEach(() => {
   mockCtx = createMockContext();
@@ -46,6 +48,33 @@ beforeEach(() => {
       review_question_set_id: 'id-01',
       question_text: 'Text',
       question_type: 'Type',
+    },
+  ];
+  existingReview = {
+    id: 'id',
+    user_id: 'current-user-id',
+    review_question_set_id: 'review-question-set-id',
+    is_draft: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  existingAnswers = [
+    {
+      id: 'answer-id-01',
+      review_id: 'review-id',
+      review_question_id: 'review-question-id-1',
+      answer_text: 'Text',
+      option_value: null,
+      rating_value: null,
+    },
+    {
+      id: 'answer-id-02',
+      review_id: 'review-id',
+      review_question_id: 'review-question-id-2',
+      answer_text: null,
+      option_value: null,
+      rating_value: 2,
     },
   ];
 });
@@ -142,6 +171,67 @@ describe('review.service', () => {
           },
         },
       );
+    });
+  });
+
+  describe('draftQuoteReview', () => {
+    test('should return existing answers', async () => {
+      mockCtx.prisma.review.findFirst.mockResolvedValueOnce(existingReview);
+      mockCtx.prisma.reviewAnswer.upsert
+        .mockResolvedValueOnce(existingAnswers[0])
+        .mockResolvedValueOnce(existingAnswers[1]);
+
+      const reviewAnswers = await reviewService.draftQuoteReview(
+        {
+          current_user_id: 'current-user-id',
+          quote_id: 'quote-id',
+          review_input: [
+            {
+              review_question_id: 'review-question-id-1',
+              answer_text: 'Text',
+            },
+            {
+              review_question_id: 'review-question-id-1',
+              rating_value: 2,
+            },
+          ],
+          is_final: false,
+        },
+        ctx,
+      )
+
+      expect(mockCtx.prisma.review.create).not.toBeCalled();
+      expect(reviewAnswers).toEqual(existingAnswers);
+    });
+
+    test('should mark review as not draft', async () => {
+      mockCtx.prisma.review.findFirst.mockResolvedValueOnce(existingReview);
+      mockCtx.prisma.reviewAnswer.upsert
+        .mockResolvedValueOnce(existingAnswers[0])
+        .mockResolvedValueOnce(existingAnswers[1]);
+
+      const reviewAnswers = await reviewService.draftQuoteReview(
+        {
+          current_user_id: 'current-user-id',
+          quote_id: 'quote-id',
+          review_input: [
+            {
+              review_question_id: 'review-question-id-1',
+              answer_text: 'Text',
+            },
+            {
+              review_question_id: 'review-question-id-1',
+              rating_value: 2,
+            },
+          ],
+          is_final: true,
+        },
+        ctx,
+      )
+
+      expect(mockCtx.prisma.review.create).not.toBeCalled();
+      expect(mockCtx.prisma.review.update).toBeCalled()
+      expect(reviewAnswers).toEqual(existingAnswers);
     });
   });
 });
