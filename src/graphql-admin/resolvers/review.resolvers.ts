@@ -108,7 +108,7 @@ const resolvers: Resolvers<Context> = {
     addReviewQuestion: async (_, args, context) => {
       const {
         question_text, question_type, review_question_set_id,
-        group_title, is_required, ordinal, ordinal_action,
+        group_title, is_required, ordinal,
       } = args;
 
       await reviewService.checkIsQuestionSetAnswered(
@@ -123,17 +123,11 @@ const resolvers: Resolvers<Context> = {
       const reviewQuestion = await context.prisma.$transaction(async (trx) => {
         await reviewService.shiftQuestions({
           ordinal,
-          ordinal_action: ordinal_action as OrdinalAction,
           review_question_set_id,
         }, {
           prisma: trx,
         });
 
-        const nextOrdinal = ordinal_action === OrdinalAction.AFTER
-          ? ordinal + 1
-          : ordinal_action === OrdinalAction.BEFORE
-            ? ordinal - 1
-            : ordinal;
 
         const reviewQuestion = await trx.reviewQuestion.create({
           data: {
@@ -141,7 +135,7 @@ const resolvers: Resolvers<Context> = {
             question_type,
             question_text,
             review_question_set_id,
-            ordinal: nextOrdinal,
+            ordinal,
             is_required: is_required ?? false,
           },
         });
@@ -154,7 +148,7 @@ const resolvers: Resolvers<Context> = {
     updateReviewQuestion: async (_, args, context) => {
       const {
         question_text, question_type, review_question_id,
-        group_title, is_required, ordinal, ordinal_action,
+        group_title, is_required, ordinal,
       } = args;
 
       const existingReviewQuestion = await reviewService.checkIsQuestionAnswered(
@@ -168,18 +162,12 @@ const resolvers: Resolvers<Context> = {
         if (isOrdinalChanges) {
           await reviewService.shiftQuestions({
             ordinal,
-            ordinal_action: ordinal_action as OrdinalAction,
             review_question_set_id: existingReviewQuestion.review_question_set_id,
+            exclude_question_id: review_question_id,
           }, {
             prisma: trx,
           });
         }
-
-        const nextOrdinal = ordinal_action === OrdinalAction.AFTER
-          ? ordinal + 1
-          : ordinal_action === OrdinalAction.BEFORE
-            ? ordinal - 1
-            : ordinal;
 
         const updatedReviewQuestion = await context.prisma.reviewQuestion.update({
           data: {
@@ -187,7 +175,7 @@ const resolvers: Resolvers<Context> = {
             question_text,
             question_type,
             is_required: is_required ?? undefined,
-            ordinal: nextOrdinal,
+            ordinal,
           },
           where: {
             id: review_question_id,

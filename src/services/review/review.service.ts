@@ -168,8 +168,12 @@ const checkIsQuestionAnswered = async (args: CheckIsQuestionAnsweredArgs, contex
       id: review_question_id,
     },
     include: {
-      review_answers: {
-        take: 1,
+      review_question_set: {
+        include: {
+          reviews: {
+            take: 1,
+          },
+        },
       },
     },
   });
@@ -177,7 +181,7 @@ const checkIsQuestionAnswered = async (args: CheckIsQuestionAnsweredArgs, contex
   invariant(reviewQuestion, new PublicError('Review question not found.'));
 
   invariant(
-    reviewQuestion.review_answers.length === 0,
+    reviewQuestion.review_question_set.reviews.length === 0,
     new PublicError('The question is answered.'),
   );
 
@@ -213,29 +217,27 @@ const checkIsQuestionSetAnswered = async (args: CheckIsQuestionSetAnsweredArgs, 
 type ShiftQuestionsArgs = {
   review_question_set_id: string;
   ordinal: number;
-  ordinal_action: OrdinalAction;
+  exclude_question_id?: string;
 }
 
 const shiftQuestions = async (args: ShiftQuestionsArgs, context: ServiceContext) => {
-  const { ordinal, ordinal_action, review_question_set_id } = args;
+  const { ordinal, review_question_set_id, exclude_question_id } = args;
 
   const existingQuestions = await context.prisma.reviewQuestion.findMany({
     where: {
       review_question_set_id,
+      ...(exclude_question_id ? {
+        id: {
+          not: exclude_question_id,
+        }
+      } : {})
     },
     orderBy: {
       ordinal: 'desc',
     },
   });
 
-  let questionsToShift: ReviewQuestion[] = [];
-  if (ordinal_action === OrdinalAction.INSERT) {
-    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal);
-  } else if (ordinal_action === OrdinalAction.AFTER) {
-    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal + 1);
-  } else if (ordinal_action === OrdinalAction.BEFORE) {
-    questionsToShift = existingQuestions.filter((q) => q.ordinal >= ordinal - 1);
-  }
+  let questionsToShift: ReviewQuestion[] = existingQuestions.filter((q) => q.ordinal >= ordinal);;
 
   const sorted = sortBy(questionsToShift, 'ordinal');
   const shiftTasks = sorted.map(async (q) => {
