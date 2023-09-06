@@ -87,7 +87,6 @@ describe('review.service', () => {
 
       await reviewService.shiftQuestions({
         ordinal: 2,
-        ordinal_action: OrdinalAction.INSERT,
         review_question_set_id: 'id-01',
       }, ctx);
 
@@ -111,63 +110,6 @@ describe('review.service', () => {
           },
           data: {
             ordinal: existingQuestions[2].ordinal + 1,
-          },
-        },
-      );
-    });
-
-    test('ordinal action: after', async () => {
-      mockCtx.prisma.reviewQuestion.findMany.mockResolvedValueOnce(existingQuestions);
-
-      await reviewService.shiftQuestions({
-        ordinal: 2,
-        ordinal_action: OrdinalAction.AFTER,
-        review_question_set_id: 'id-01',
-      }, ctx);
-
-      expect(mockCtx.prisma.reviewQuestion.update).toBeCalledTimes(1);
-      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(
-        1,
-        {
-          where: {
-            id: existingQuestions[2].id,
-          },
-          data: {
-            ordinal: existingQuestions[2].ordinal + 1,
-          },
-        },
-      );
-    });
-
-    test('ordinal action: before', async () => {
-      mockCtx.prisma.reviewQuestion.findMany.mockResolvedValueOnce(existingQuestions);
-
-      await reviewService.shiftQuestions({
-        ordinal: 2,
-        ordinal_action: OrdinalAction.BEFORE,
-        review_question_set_id: 'id-01',
-      }, ctx);
-
-      expect(mockCtx.prisma.reviewQuestion.update).toBeCalledTimes(3);
-      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(
-        1,
-        {
-          where: {
-            id: existingQuestions[0].id,
-          },
-          data: {
-            ordinal: existingQuestions[0].ordinal + 1,
-          },
-        },
-      );
-      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(
-        2,
-        {
-          where: {
-            id: existingQuestions[1].id,
-          },
-          data: {
-            ordinal: existingQuestions[1].ordinal + 1,
           },
         },
       );
