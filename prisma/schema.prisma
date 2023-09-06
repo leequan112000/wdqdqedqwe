@@ -727,7 +727,7 @@ model QuoteReview {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  review Review @relation(fields: [review_id], references: [id])
+  review Review @relation(fields: [review_id], references: [id], onDelete: Cascade)
   quote  Quote  @relation(fields: [quote_id], references: [id])
 
   @@map("quote_reviews")
@@ -772,8 +772,8 @@ model ReviewAnswer {
   rating_value       Int?
   option_value       String?
 
-  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id])
-  review          Review         @relation(fields: [review_id], references: [id])
+  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id], onDelete: Cascade)
+  review          Review         @relation(fields: [review_id], references: [id], onDelete: Cascade)
 
   @@unique([review_id, review_question_id])
   @@map("review_answers")
