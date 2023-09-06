@@ -1,19 +1,20 @@
 import { toDollar } from "../../helper/money";
-import { Resolvers, UploadResult } from "../../generated";
+import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
 import { PublicError } from "../errors/PublicError";
-import { InternalError } from "../errors/InternalError";
 
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, SubscriptionStatus, StripeWebhookPaymentType } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
+import { hasPermission } from "../../helper/casbin";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
@@ -60,7 +61,11 @@ const resolvers: Resolvers<Context> = {
         : null;
     },
     milestoneCheckoutUrl: async (_, args, context) => {
-      const { id, success_url, cancel_url } = args
+      const { id, success_url, cancel_url } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
       const milestone = await context.prisma.milestone.findFirst({
@@ -78,11 +83,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           biotech: {
             include: {
-              subscriptions: {
-                where: {
-                  status: SubscriptionStatus.ACTIVE
-                }
-              }
+              subscriptions: true
             }
           }
         }
@@ -153,7 +154,7 @@ const resolvers: Resolvers<Context> = {
         key: string;
         filename: string;
         filesize: number;
-        contextType: string | undefined;
+        contentType: string | undefined;
       }> = [];
 
 
@@ -178,7 +179,7 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         if (uploadedFiles.length > 0) {
           const attachments = await Promise.allSettled(
-            uploadedFiles.map(async ({ filesize, filename, key, contextType }) => {
+            uploadedFiles.map(async ({ filesize, filename, key, contentType }) => {
               const attachment = await trx.projectAttachment.create({
                 data: {
                   byte_size: filesize,
@@ -187,7 +188,7 @@ const resolvers: Resolvers<Context> = {
                   key,
                   project_connection_id: milestone.quote.project_connection_id,
                   milestone_id: milestone.id,
-                  content_type: contextType,
+                  content_type: contentType,
                   uploader_id: context.req.user_id,
                 }
               });
@@ -242,6 +243,11 @@ const resolvers: Resolvers<Context> = {
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
       const { id, password } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
 

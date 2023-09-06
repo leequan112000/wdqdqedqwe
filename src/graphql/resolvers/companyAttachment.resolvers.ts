@@ -1,6 +1,5 @@
 import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import storeUpload from "../../helper/storeUpload";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { Readable } from 'stream';
@@ -81,7 +80,7 @@ const resolvers: Resolvers<Context> = {
       invariant(vendorCompany, 'Vendor company not found.');
 
       const data = await file;
-      const { filename, key, filesize, contextType } = await storeUpload(
+      const { filename, key, filesize, contentType } = await storeUpload(
         data,
         COMPANY_ATTACHMENT_DOCUMENT_TYPE[CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE],
       );
@@ -103,7 +102,7 @@ const resolvers: Resolvers<Context> = {
             filename,
             key,
             uploader_id: currectUserId,
-            content_type: contextType,
+            content_type: contentType,
           },
           where: {
             id: existingAttachment.id,
@@ -120,7 +119,7 @@ const resolvers: Resolvers<Context> = {
             key,
             vendor_company_id,
             uploader_id: currectUserId,
-            content_type: contextType,
+            content_type: contentType,
           },
         });
       }
@@ -131,7 +130,7 @@ const resolvers: Resolvers<Context> = {
           ...attachment,
           byte_size: Number(attachment.byte_size) / 1000,
           document_type: COMPANY_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
-          contextType,
+          contentType,
         }
       };
     },

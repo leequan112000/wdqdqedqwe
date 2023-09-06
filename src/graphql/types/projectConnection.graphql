@@ -14,7 +14,6 @@ type ProjectConnection {
   quotes: [Quote]
   chat: Chat
   messages: [Message]
-  unsubscribed_has_new_message: Boolean
   documents: [ProjectAttachment]
   final_contract: ProjectAttachment
   collaborators_not_invited: [User]

@@ -1,6 +1,6 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 import { PublicError } from "../errors/PublicError";
@@ -67,6 +67,7 @@ const resolvers: Resolvers<Context> = {
           if (!commentsWithinThePast15Min) {
             createSendAdminNewProjectRequestCommentJob({
               biotechName: projectRequest.biotech.name,
+              projectRequestName: projectRequest.title,
             });
           }
           return newComment;

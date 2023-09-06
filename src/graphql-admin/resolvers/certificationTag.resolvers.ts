@@ -1,5 +1,4 @@
-import { InternalError } from "../../graphql/errors/InternalError";
-import { Resolvers } from "../../generated";
+import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import { PublicError } from "../../graphql/errors/PublicError";
 import invariant from "../../helper/invariant";

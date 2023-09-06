@@ -17,9 +17,9 @@ export const getSignedUrl = async (key: string) => {
   return signedUrl;
 }
 
-export const deleteObject = async (key: string) => {
+export const deleteObject = async (key: string, isPublic = false) => {
   const deleteObjectCommand = new DeleteObjectCommand({
-    Bucket: config.s3.bucket,
+    Bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
     Key: key,
   });
   return await s3Client.send(deleteObjectCommand);

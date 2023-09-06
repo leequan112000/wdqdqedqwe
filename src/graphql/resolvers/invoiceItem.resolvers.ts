@@ -1,6 +1,5 @@
 import { Context } from "../../types/context";
-import { Resolvers } from "../../generated";
-import { InternalError } from "../errors/InternalError";
+import { Resolvers } from "../generated";
 import { toDollar } from "../../helper/money";
 import invariant from "../../helper/invariant";
 

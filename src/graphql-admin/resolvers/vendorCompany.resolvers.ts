@@ -1,13 +1,14 @@
 import moment from "moment";
 import { Context } from "../../types/context";
-import { InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
-import { Resolvers } from "../../generated";
+import { CasbinRole, CompanyCollaboratorRoleType, InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
+import { Resolvers } from "../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendVendorMemberInvitationByBiotechEmail } from "../../mailer/vendorMember";
 import { app_env } from "../../environment";
+import { addRoleForUser } from "../../helper/casbin";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -73,12 +74,37 @@ const resolvers: Resolvers<Context> = {
                   expired_at: newExpiryDate.toDate(),
                 }
               });
-              await trx.customerConnection.create({
-                data: {
-                  project_connection_id: projectConnection.id,
-                  customer_id: projectRequest.customer_id,
-                }
+
+              // Include owner, admin and request collaborators to customer connections
+              const biotechOwnerAndAdmins = await trx.customer.findMany({
+                where: {
+                  biotech_id: projectRequest.biotech_id,
+                  role: {
+                    in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+                  },
+                  user: {
+                    is_active: true,
+                  }
+                },
               });
+
+              const projectRequestCollaborators = await trx.projectRequestCollaborator.findMany({
+                where: { project_request_id: projectRequest.id },
+              });
+
+              await trx.customerConnection.createMany({
+                data: [
+                  ...biotechOwnerAndAdmins.map((c) => ({
+                    project_connection_id: projectConnection.id,
+                    customer_id: c.id,
+                  })),
+                  ...projectRequestCollaborators.map((c) => ({
+                    project_connection_id: projectConnection.id,
+                    customer_id: c.customer_id,
+                  })),
+                ]
+              });
+
               if (!projectRequest.initial_assigned_at) {
                 await trx.projectRequest.update({
                   where: {
@@ -102,8 +128,9 @@ const resolvers: Resolvers<Context> = {
                   createSendAdminProjectInvitationJob({
                     primaryMemberUserId: primaryVendorMember.user_id,
                     projectRequestId: projectRequest.id,
-                    projectRequestName: projectRequest.title,
+                    projectRequestTitle: projectRequest.title,
                     receiverEmail: primaryVendorMember.user.email,
+                    receiverFullName: `${primaryVendorMember.user.first_name} ${primaryVendorMember.user.last_name}`,
                     vendorCompanyId: primaryVendorMember.vendor_company_id,
                     projectConnectionId: projectConnection.id,
                   });
@@ -140,8 +167,10 @@ const resolvers: Resolvers<Context> = {
         invariant(biotechInviteVendor, new PublicError('Biotech invite vendor record not found.'));
         const biotech = biotechInviteVendor.biotech;
         const inviter = biotechInviteVendor.inviter;
+        const projectRequest = biotechInviteVendor.project_request;
         invariant(biotech, new PublicError('Biotech not found.'));
         invariant(inviter, new PublicError('Inviter not found.'));
+        invariant(projectRequest, new PublicError('Project request not found.'));
 
         const biotechCustomer = await context.prisma.customer.findFirst({
           where: {
@@ -215,7 +244,8 @@ const resolvers: Resolvers<Context> = {
             existingUser,
             biotech.name,
             inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
+            projectRequest.title
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -278,7 +308,8 @@ const resolvers: Resolvers<Context> = {
             existingUser,
             biotech.name,
             inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`
+            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
+            projectRequest.title
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -314,8 +345,11 @@ const resolvers: Resolvers<Context> = {
               user_id: newUser.id,
               vendor_company_id: newVendorCompany.id,
               is_primary_member: true,
+              role: CompanyCollaboratorRoleType.OWNER,
             }
           });
+
+          await addRoleForUser(newUser.id, CasbinRole.OWNER);
 
           const projectConnection = await context.prisma.projectConnection.create({
             data: {
@@ -346,7 +380,8 @@ const resolvers: Resolvers<Context> = {
             inviter,
             `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
               newUser.reset_password_token!
-            )}`
+            )}`,
+            projectRequest.title
           );
 
           return true;

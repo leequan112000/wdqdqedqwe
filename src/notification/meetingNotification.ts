@@ -12,7 +12,7 @@ export const createNewMeetingNotificationJob = (data: NewMeetingNotificationData
 
   return {
     notification_type: NotificationType.NEW_MEETING_NOTIFICATION,
-    message: `**${organizer_full_name}** invited you to a meeting for experiment **${project_title}**`,
+    message: `**${organizer_full_name}** invited you to a meeting for project **${project_title}**`,
     params: {
       meeting_event_id,
     },
@@ -32,7 +32,7 @@ export const createUpdateMeetingNotificationJob = (data: UpdateMeetingNotificati
 
   return {
     notification_type: NotificationType.UPDATE_MEETING_NOTIFICATION,
-    message: `**${organizer_full_name}** updated a meeting for experiment **${project_title}**`,
+    message: `**${organizer_full_name}** updated a meeting for project **${project_title}**`,
     params: {
       meeting_event_id,
     },
@@ -52,7 +52,7 @@ export const createRemoveMeetingNotificationJob = (data: RemoveMeetingNotificati
 
   return {
     notification_type: NotificationType.REMOVE_MEETING_NOTIFICATION,
-    message: `**${organizer_full_name}** canceled a meeting for experiment **${project_title}**`,
+    message: `**${organizer_full_name}** canceled a meeting for project **${project_title}**`,
     params: {
       meeting_event_id,
     },

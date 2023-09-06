@@ -1,5 +1,5 @@
 import { User, ProjectConnection, CustomerConnection, VendorMemberConnection, ProjectRequest } from "@prisma/client";
-import { prisma } from "../connectDB";
+import prisma from "../prisma";
 
 export const getReceiversByProjectConnection = async (projectConnectionId: string, senderUserId: string): Promise<{
   receivers: User[];
@@ -42,7 +42,8 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
           id: {
             in: projectConnection.customer_connections.map(cc => cc.customer_id),
           }
-        }
+        },
+        is_active: true,
       }
     });
   } else {
@@ -62,7 +63,8 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
           id: {
             in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
           }
-        }
+        },
+        is_active: true,
       }
     });
   }

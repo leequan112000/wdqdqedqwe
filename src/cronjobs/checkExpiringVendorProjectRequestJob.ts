@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { prisma } from '../connectDB';
+import prisma from '../prisma';
 import { ProjectConnectionVendorStatus } from '../helper/constant';
 import { Biotech, ProjectConnection, ProjectRequest, User } from '@prisma/client';
 import { CreateVendorProjectRequestExpiringNoticeEmailJobParam } from '../queues/types';
@@ -46,10 +46,12 @@ async function main() {
   expiringProjectConnections.forEach((pc) => {
     pc.vendor_member_connections.forEach((vmc) => {
       const userId = vmc.vendor_member.user_id;
-      if (!expiringProjectConnectionsGroupByUserId[userId]) {
-        expiringProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
+      if (vmc.vendor_member.user.is_active === true) {
+        if (!expiringProjectConnectionsGroupByUserId[userId]) {
+          expiringProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
+        }
+        expiringProjectConnectionsGroupByUserId[userId].projectConnections.unshift(pc);
       }
-      expiringProjectConnectionsGroupByUserId[userId].projectConnections.unshift(pc);
     });
   });
 
