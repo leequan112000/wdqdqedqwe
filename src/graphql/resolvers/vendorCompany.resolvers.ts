@@ -4,7 +4,7 @@ import { Resolvers, StripeAccountData } from "../generated";;
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
 import { hasPermission } from "../../helper/casbin";
-import { CasbinAct, CasbinObj } from "../../helper/constant";
+import { CasbinAct, CasbinObj, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
 
@@ -40,7 +40,7 @@ const resolvers: Resolvers<Context> = {
       const primaryMembers = await context.prisma.vendorMember.findMany({
         where: {
           vendor_company_id: parent.id,
-          is_primary_member: true,
+          role: CompanyCollaboratorRoleType.OWNER,
         },
       });
 
