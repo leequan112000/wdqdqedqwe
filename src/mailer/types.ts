@@ -175,3 +175,9 @@ export type VendorProjectRequestExpiredNoticeData = {
     biotech_full_name: string;
   }>;
 }
+
+export type ResetPasswordRequestData = {
+  receiver_full_name: string;
+  button_url: string;
+  reset_password_url: string;
+}

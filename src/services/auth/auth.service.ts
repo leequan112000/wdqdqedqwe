@@ -1,3 +1,4 @@
+import { app_env } from "../../environment";
 import { createResetPasswordToken } from "../../helper/auth";
 import { sendResetPasswordEmail } from "../../mailer/user";
 import { ServiceContext } from '../../types/context';
@@ -21,7 +22,12 @@ export const forgotPassword = async (args: ResetPasswordArgs, context: ServiceCo
   });
 
   if (updatedUser) {
-    sendResetPasswordEmail(updatedUser);
+    const resetPasswordUrl = `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(updatedUser.reset_password_token!)}`;
+    sendResetPasswordEmail({
+      button_url: resetPasswordUrl,
+      receiver_full_name: `${updatedUser.first_name} ${updatedUser.last_name}`,
+      reset_password_url: resetPasswordUrl,
+    }, updatedUser.email);
   }
 
   return updatedUser;

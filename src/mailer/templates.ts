@@ -29,3 +29,4 @@ export const invoicePaymentReminderTemplate = 'd-e566cd1bc6cc4d91a7d4ddffe65235a
 export const invoicePaymentOverdueNoticeTemplate = 'd-d9574498830a49d0838d9f8b9c8aca12';
 export const vendorRequestExpiringNoticeTemplate = 'd-ce9c888eb5ed4f13b666d2b0ef17f35b';
 export const vendorRequestExpiredNoticeTemplate = 'd-ba06aa3785d34ddea30c36b179bd6c29';
+export const resetPasswordRequestTemplate = 'd-3c2c50a1d51a44448e548d70c7f847c2';

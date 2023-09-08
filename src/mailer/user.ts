@@ -1,32 +1,13 @@
-import { User } from "@prisma/client";
 import { createMailData, mailSender, sendMail } from "./config";
-import { app_env } from "../environment";
+import { ResetPasswordRequestData } from "./types";
+import { resetPasswordRequestTemplate } from "./templates";
 
-export const sendResetPasswordEmail = (user: User) => {
+export const sendResetPasswordEmail = (emailData: ResetPasswordRequestData, receiverEmail: string) => {
   const mailData = createMailData({
-    to: user.email,
-    subject: 'Cromatic | Reset Cromatic Password',
-    html:
-      `Hi ${user.first_name},`
-      + '<br />'
-      + '<p>We’ve received a request to reset the password for your Cromatic account.</p>'
-      + '<p>To reset, click on the link below to set a new password:</p>'
-      + `<a href="${app_env.APP_URL}/reset-password?token=${encodeURIComponent(user.reset_password_token!)}">
-      ${app_env.APP_URL}/reset-password?token=${encodeURIComponent(user.reset_password_token!)}
-      </a>`
-      + '<br />'
-      + '<p>If you didn’t ask to change your password, don’t worry! Your password is still safe and you can delete this email.</p>'
-      + `<p>If you have any questions, please contact us at
-        <span>
-          <a href="mailto:${mailSender}">
-            ${mailSender}
-          </a>
-        </span>
-      </p>`
-      + '<br />'
-      + '<p>Best,</p>'
-      + '<p>Cromatic</p>'
+    to: receiverEmail,
+    templateId: resetPasswordRequestTemplate,
+    dynamicTemplateData: emailData,
   });
 
-  sendMail(mailData);
+  return sendMail(mailData);
 };
