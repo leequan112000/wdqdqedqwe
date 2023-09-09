@@ -1,13 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { hasPermission, updateRoleForUser } from "../../helper/casbin";
 import { PermissionDeniedError } from "../../graphql/errors/PermissionDeniedError";
 import invariant from "../../helper/invariant";
 import { InternalError } from "../../graphql/errors/InternalError";
-
-interface ServiceContext {
-  prisma: PrismaClient | Prisma.TransactionClient
-}
+import { ServiceContext } from "../../types/context";
 
 type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;

@@ -10,5 +10,5 @@ export interface Context {
 }
 
 export interface ServiceContext {
-  prisma: PrismaClient;
+  prisma: PrismaClient | Prisma.TransactionClient;
 }
