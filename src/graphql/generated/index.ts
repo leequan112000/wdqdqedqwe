@@ -317,6 +317,7 @@ export type Mutation = {
   markMilestoneAsCompleted?: Maybe<MarkMilestoneCompleteResponse>;
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
+  markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
   reactivateCollaborator?: Maybe<User>;
   refreshJWT?: Maybe<AuthResponse>;
@@ -533,6 +534,11 @@ export type MutationMarkNotificationAsReadArgs = {
 
 export type MutationMarkNotificationsInProjectAsReadArgs = {
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationMarkQuoteNotificationsAsReadArgs = {
+  quote_id: Scalars['String'];
 };
 
 
@@ -1805,6 +1811,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['MarkMilestoneCompleteResponse']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsCompletedArgs, 'id'>>;
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
+  markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   reactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationReactivateCollaboratorArgs, 'user_id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
