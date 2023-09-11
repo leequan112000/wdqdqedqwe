@@ -4,6 +4,7 @@ import { NotificationType } from "../../helper/constant";
 import { withFilter } from "graphql-subscriptions";
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
+import notificationService from "../../services/notification/notification.service";
 
 const resolvers: Resolvers<Context> = {
   Notification: {
@@ -49,10 +50,12 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_NOTIFICATION:
         case NotificationType.MILESTONE_NOTIFICATION:
         case NotificationType.MILESTONE_PAYMENT_FAILED_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
         case NotificationType.QUOTE_EXPIRED_NOTIFICATION:
         case NotificationType.QUOTE_EXPIRING_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+        case NotificationType.QUOTE_ACCEPTED_NOTIFICATION:
+        case NotificationType.QUOTE_DECLINED_NOTIFICATION:
+        case NotificationType.QUOTE_SUBMITTED_NOTIFICATION:
+          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
         case NotificationType.NEW_INVOICE_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_REMINDER_NOTIFICATION:
@@ -174,21 +177,53 @@ const resolvers: Resolvers<Context> = {
             path: ['project_connection_id'],
             equals: project_connection_id,
           },
+          notification_type: {
+            in: [
+              NotificationType.ACCEPT_REQUEST_NOTIFICATION,
+              NotificationType.ADMIN_INVITE_NOTIFICATION,
+              NotificationType.COLLABORATED_NOTIFICATION,
+              NotificationType.FILE_UPLOAD_NOTIFICATION,
+              NotificationType.FINAL_CONTRACT_UPLOAD_NOTIFICATION,
+              NotificationType.MESSAGE_NOTIFICATION,
+            ],
+          },
         },
       });
 
-      const updatedNotifications = await Promise.all(
-        notifications.map(async (notification) => {
-          return await context.prisma.notification.update({
-            where: {
-              id: notification.id,
-            },
-            data: {
-              read_at: new Date(),
-            },
-          });
-        })
-      );
+      const updatedNotifications = await notificationService
+        .markNotificationsAsRead({ notifications }, context);
+
+      return updatedNotifications;
+    },
+    markQuoteNotificationsAsRead: async (_, args, context) => {
+      const { quote_id } = args;
+
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+
+      const notifications = await context.prisma.notification.findMany({
+        where: {
+          recipient_id: currentUserId,
+          read_at: null,
+          params: {
+            path: ['quote_id'],
+            equals: quote_id,
+          },
+          notification_type: {
+            in: [
+              NotificationType.QUOTE_ACCEPTED_NOTIFICATION,
+              NotificationType.QUOTE_DECLINED_NOTIFICATION,
+              NotificationType.QUOTE_EXPIRED_NOTIFICATION,
+              NotificationType.QUOTE_EXPIRING_NOTIFICATION,
+              NotificationType.QUOTE_SUBMITTED_NOTIFICATION,
+              NotificationType.QUOTE_NOTIFICATION,
+            ],
+          },
+        },
+      });
+
+      const updatedNotifications = await notificationService
+        .markNotificationsAsRead({ notifications }, context);
 
       return updatedNotifications;
     },

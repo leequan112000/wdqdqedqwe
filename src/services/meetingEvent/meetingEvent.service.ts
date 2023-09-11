@@ -1,13 +1,9 @@
-import { PrismaClient, Prisma } from "@prisma/client";
 import invariant from "../../helper/invariant";
 import { cancelGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
 import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
-
-interface ServiceContext {
-  prisma: PrismaClient | Prisma.TransactionClient;
-}
+import { ServiceContext } from "../../types/context";
 
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;

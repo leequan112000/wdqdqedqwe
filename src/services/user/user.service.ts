@@ -1,11 +1,7 @@
-import { PrismaClient, Prisma } from "@prisma/client";
 import invariant from "../../helper/invariant";
 import { deleteRolesForUser } from "../../helper/casbin";
 import { PublicError } from "../../graphql/errors/PublicError";
-
-interface ServiceContext {
-  prisma: PrismaClient | Prisma.TransactionClient;
-}
+import { ServiceContext } from "../../types/context";
 
 type PurgeTestDataByUserEventArgs = {
   user_id: string;
