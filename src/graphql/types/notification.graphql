@@ -37,6 +37,7 @@ type Query {
 type Mutation {
   markNotificationAsRead(id: String!): Notification
   markNotificationsInProjectAsRead(project_connection_id: String!): [Notification]
+  markQuoteNotificationsAsRead(quote_id: String!): [Notification]
 }
 
 type Subscription {

@@ -1,10 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { updateRoleForUser } from "../../helper/casbin";
-
-interface ServiceContext {
-  prisma: PrismaClient | Prisma.TransactionClient
-}
+import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { hasPermission, updateRoleForUser } from "../../helper/casbin";
+import { PermissionDeniedError } from "../../graphql/errors/PermissionDeniedError";
+import invariant from "../../helper/invariant";
+import { InternalError } from "../../graphql/errors/InternalError";
+import { ServiceContext } from "../../types/context";
 
 type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;
@@ -169,11 +168,96 @@ const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceCo
   return updatedVendorMember;
 }
 
+type CheckPermissionToEditRoleArgs = {
+  user_id: string;
+  role: CompanyCollaboratorRoleType;
+}
+
+const checkPermissionToEditRole = async (args: CheckPermissionToEditRoleArgs) => {
+  const { user_id, role } = args;
+
+  switch (role) {
+    case CompanyCollaboratorRoleType.USER: {
+      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE);
+      invariant(allow, new PermissionDeniedError());
+      break;
+    }
+    case CompanyCollaboratorRoleType.ADMIN: {
+      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE);
+      invariant(allow, new PermissionDeniedError());
+      break;
+    }
+    default: {
+      throw new InternalError('User has invalid role.');
+    }
+  }
+}
+
+type UpdateUserRoleArgs = {
+  user_id: string;
+  role: CompanyCollaboratorRoleType;
+}
+
+const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => {
+  const { role, user_id } = args;
+  const user = await ctx.prisma.user.findFirst({
+    where: {
+      id: user_id,
+    },
+    include: {
+      customer: true,
+      vendor_member: true,
+    },
+  });
+
+  invariant(user, 'User not found.');
+
+  const isBiotech = !!user.customer;
+  const isVendor = !!user.vendor_member;
+
+  switch (role) {
+    case CompanyCollaboratorRoleType.ADMIN: {
+      if (isBiotech) {
+        await setCustomerAsAdmin({
+          biotech_id: user.customer!.biotech_id,
+          customer_id: user.customer!.id,
+          user_id
+        }, ctx);
+      }
+      if (isVendor) {
+        await setVendorMemberAsAdmin({
+          user_id,
+          vendor_company_id: user.vendor_member!.vendor_company_id,
+          vendor_member_id: user.vendor_member!.id,
+        }, ctx)
+      }
+      break;
+    }
+    case CompanyCollaboratorRoleType.USER: {
+      if (isBiotech) {
+        await setCustomerAsUser({
+          customer_id: user.customer!.id,
+        }, ctx);
+      }
+      if (isVendor) {
+        await setVendorMemberAsUser({
+          vendor_member_id: user.vendor_member!.id,
+        }, ctx);
+      }
+      break;
+    }
+    default:
+      throw new InternalError('Invalid role.');
+  }
+}
+
 const collaboratorService = {
   setCustomerAsAdmin,
   setCustomerAsUser,
   setVendorMemberAsAdmin,
   setVendorMemberAsUser,
+  checkPermissionToEditRole,
+  updateUserRole,
 }
 
 export default collaboratorService;
