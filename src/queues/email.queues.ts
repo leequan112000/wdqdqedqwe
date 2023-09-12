@@ -433,7 +433,7 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
-        const { receiverEmail, receiverName, expiringIn, quotes } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
+        const { receiverEmail, receiverName, expiringIn, listData, moreCount } = data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
 
         const receiver = await prisma.user.findFirst({
           where: {
@@ -451,7 +451,9 @@ emailQueue.process(async (job, done) => {
           button_url: buttonUrl,
           expiring_in: expiringIn,
           receiver_full_name: receiverName,
-          quotes: quotes,
+          list_data: listData,
+          more_count: moreCount,
+          view_more_url: buttonUrl,
         }, receiverEmail);
 
         done(null, resp);
