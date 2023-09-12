@@ -12,6 +12,8 @@ type Quote {
   total_in_escrow: Float
   total_payment: Float
   total_milestones_paid: Float
+
+  quote_review: Review
 }
 
 input CreateMilestoneInput {

@@ -54,6 +54,7 @@ export enum QuoteStatus {
   PENDING_DECISION = 'pending_decision',
   ACCEPTED = 'accepted',
   DECLINED = 'declined',
+  COMPLETED = 'completed',
   EXPIRED = 'expired',
 }
 
@@ -234,4 +235,17 @@ export enum GqlErrorCode {
 
 export enum InvitedByType {
   ADMIN = 'admin',
+}
+
+export enum ReviewQuestionType {
+  SINGLE_SELECT = 'single-select',
+  RATING = 'rating',
+  TEXT = 'text',
+  LONG_TEXT = 'long-text',
+}
+
+export enum OrdinalAction {
+  INSERT = 'insert',
+  AFTER = 'after',
+  BEFORE = 'before',
 }

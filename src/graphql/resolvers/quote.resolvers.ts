@@ -117,17 +117,51 @@ const resolvers: Resolvers<Context> = {
 
       return toDollar(amountPaid)
     },
-    status: async (parent) => {
+    status: async (parent, _, context) => {
       const now = new Date();
       if (parent.expired_at && parent.status) {
         if (parent.status === QuoteStatus.PENDING_DECISION && now >= new Date(parent.expired_at)) {
           return QuoteStatus.EXPIRED;
         }
       }
+
+      invariant(parent.id, 'Quote id not found.');
+      const milestones = await context.prisma.milestone.findMany({
+        where: {
+          quote_id: parent.id,
+        },
+      });
+
+      const completedMilestones = milestones.filter((m) => m.status === MilestoneStatus.COMPLETED);
+
+      if (completedMilestones.length === milestones.length) {
+        return QuoteStatus.COMPLETED;
+      }
+
       if (parent.status) {
         return parent.status;
       }
       return null;
+    },
+    quote_review: async (parent, _, context) => {
+      const quoteId = parent.id;
+      invariant(quoteId, 'Quote id not found.');
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+
+      const review = await context.prisma.review.findFirst({
+        where: {
+          quote_review: {
+            quote_id: quoteId,
+          },
+          user_id: currentUserId,
+        },
+        include: {
+          review_answers: true,
+        },
+      });
+
+      return review;
     },
   },
   Query: {
