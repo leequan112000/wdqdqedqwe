@@ -169,7 +169,6 @@ model VendorCompany {
 
 model VendorMember {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  is_primary_member Boolean  @default(false)
   phone             String?
   title             String?
   department        String?

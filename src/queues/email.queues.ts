@@ -1,4 +1,4 @@
-import { AdminTeam, EmailType, MilestoneEventType, NotificationType, QuoteNotificationActionContent } from "../helper/constant";
+import { AdminTeam, CompanyCollaboratorRoleType, EmailType, MilestoneEventType, NotificationType, QuoteNotificationActionContent } from "../helper/constant";
 import { createQueue } from "../helper/queue";
 import prisma from "../prisma";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
@@ -521,7 +521,7 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            is_primary_member: true,
+            role: CompanyCollaboratorRoleType.OWNER,
             user: {
               is_active: true,
             },
@@ -557,7 +557,7 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            is_primary_member: true,
+            role: CompanyCollaboratorRoleType.OWNER,
             user: {
               is_active: true,
             },
@@ -598,7 +598,7 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            is_primary_member: true,
+            role: CompanyCollaboratorRoleType.OWNER,
             user: {
               is_active: true,
             },

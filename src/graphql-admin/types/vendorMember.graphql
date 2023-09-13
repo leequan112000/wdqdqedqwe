@@ -1,7 +1,6 @@
 type VendorMember {
   id: String
   title: String
-  is_primary_member: Boolean
   phone: String
   department: String
   created_at: Date

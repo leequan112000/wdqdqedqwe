@@ -50,7 +50,6 @@ const resolvers: Resolvers<Context> = {
             title: args.title,
             phone: args.phone,
             department: args.department,
-            ...(args.is_primary_member !== null ? { is_primary_member: args.is_primary_member } : {}),
           }
         });
       } catch (error) {

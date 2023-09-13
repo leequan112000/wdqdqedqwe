@@ -489,7 +489,6 @@ export type VendorMember = {
   created_at?: Maybe<Scalars['Date']>;
   department?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
-  is_primary_member?: Maybe<Scalars['Boolean']>;
   phone?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
@@ -828,7 +827,6 @@ export type VendorMemberResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   department?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_primary_member?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
