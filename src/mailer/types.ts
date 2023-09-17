@@ -13,10 +13,11 @@ export type UploadNoticeData = {
 }
 
 export type NewMessageNoticeData = {
-  login_url: string;
+  button_url: string;
   receiver_full_name: string;
   project_title: string;
   company_name: string;
+  message_text: string;
 }
 
 export type QuoteNoticeData = {
@@ -173,4 +174,10 @@ export type VendorProjectRequestExpiredNoticeData = {
     project_request_title: string;
     biotech_full_name: string;
   }>;
+}
+
+export type ResetPasswordRequestData = {
+  receiver_full_name: string;
+  button_url: string;
+  reset_password_url: string;
 }

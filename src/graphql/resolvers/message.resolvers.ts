@@ -77,6 +77,7 @@ const resolvers: Resolvers<Context> = {
         createSendUserNewMessageNoticeJob({
           projectConnectionId: chat.project_connection_id,
           senderUserId: context.req.user_id,
+          messageText: newMessage.content,
         });
 
         return newMessage;

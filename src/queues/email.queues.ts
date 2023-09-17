@@ -222,7 +222,7 @@ emailQueue.process(async (job, done) => {
         break;
       }
       case EmailType.USER_NEW_MESSAGE_NOTICE: {
-        const { projectConnectionId, senderUserId } = data;
+        const { projectConnectionId, senderUserId, messageText } = data;
 
         const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, senderUserId);
 
@@ -243,10 +243,11 @@ emailQueue.process(async (job, done) => {
             if (!notification) {
               await sendNewMessageNoticeEmail(
                 {
-                  login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
+                  button_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
                   receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
                   project_title: projectConnection.project_request.title,
                   company_name: senderCompanyName,
+                  message_text: messageText,
                 },
                 receiver.email,
               );
@@ -710,7 +711,7 @@ export const createSendUserFileUploadNotice = (data: {
   emailQueue.add({ type: EmailType.USER_FILE_UPLOAD_NOTICE, data })
 }
 
-export const createSendUserNewMessageNoticeJob = (data: { projectConnectionId: string, senderUserId: string }) => {
+export const createSendUserNewMessageNoticeJob = (data: { projectConnectionId: string, senderUserId: string, messageText: string }) => {
   emailQueue.add({ type: EmailType.USER_NEW_MESSAGE_NOTICE, data })
 }
 
