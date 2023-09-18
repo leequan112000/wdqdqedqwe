@@ -518,6 +518,7 @@ export type MutationInviteProjectCollaboratorViaEmailArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   project_connection_id: Scalars['String'];
+  role?: InputMaybe<Scalars['String']>;
 };
 
 
