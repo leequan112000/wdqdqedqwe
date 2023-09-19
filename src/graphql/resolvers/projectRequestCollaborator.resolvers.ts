@@ -83,12 +83,25 @@ const resolvers: Resolvers<Context> = {
                   }
                 },
               });
-              await trx.customerConnection.createMany({
-                data: newCollaboratorCustomerIds.map((customer_id) => ({
-                  project_connection_id: pc.id,
-                  customer_id: customer_id as string,
-                })),
-              });
+
+              await Promise.all(newCollaboratorCustomerIds.map(async (cust_id) => {
+                await trx.customerConnection.upsert({
+                  create: {
+                    customer_id: cust_id!,
+                    project_connection_id: pc.id,
+                  },
+                  update: {
+                    customer_id: cust_id!,
+                    project_connection_id: pc.id,
+                  },
+                  where: {
+                    project_connection_id_customer_id: {
+                      customer_id: cust_id!,
+                      project_connection_id: pc.id,
+                    },
+                  },
+                })
+              }));
             })
           );
         }
