@@ -249,3 +249,9 @@ export enum OrdinalAction {
   AFTER = 'after',
   BEFORE = 'before',
 }
+
+export enum UserType {
+  CUSTOMER = 'customer',
+  VENDOR = 'vendor',
+  CROMATIC_ADMIN = 'cromatic-admin',
+}
