@@ -1,22 +1,28 @@
 export type CreateSendUserExpiredQuoteNoticeEmailJobParam = {
   receiverEmail: string;
   receiverName: string;
-  quotes: Array<{
-    short_id: string;
+  listData: Array<{
     project_request_title: string;
-    vendor_full_name: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
   }>;
+  moreCount?: number;
 }
 
 export type CreateSendUserExpiringQuoteNoticeEmailJobParam = {
   receiverEmail: string;
   receiverName: string;
   expiringIn: string;
-  quotes: Array<{
-    short_id: string;
+  listData: Array<{
     project_request_title: string;
-    vendor_full_name: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
   }>;
+  moreCount?: number;
 }
 
 export type CreateBillingNoticeEmailJobParam = {

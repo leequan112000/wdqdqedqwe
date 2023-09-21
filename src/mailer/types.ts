@@ -47,21 +47,29 @@ export type QuoteExpiringNoticeData = {
   receiver_full_name: string;
   button_url: string;
   expiring_in: string;
-  quotes: Array<{
-    short_id: string;
+  list_data: Array<{
     project_request_title: string;
-    vendor_full_name: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
   }>;
+  more_count?: number;
+  view_more_url?: string
 }
 
 export type QuoteExpiredNoticeData = {
   receiver_full_name: string;
   button_url: string;
-  quotes: Array<{
-    short_id: string;
+  list_data: Array<{
     project_request_title: string;
-    vendor_full_name: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
   }>;
+  more_count?: number;
+  view_more_url?: string
 }
 
 export type ProjectRequestInvitationByAdminData = {
