@@ -4,6 +4,7 @@ type Message {
   created_at: Date
   user_id: String
   user: User
+  type: String
 }
 
 type Mutation {

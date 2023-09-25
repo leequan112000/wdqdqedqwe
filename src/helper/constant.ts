@@ -255,3 +255,8 @@ export enum UserType {
   VENDOR = 'vendor',
   CROMATIC_ADMIN = 'cromatic-admin',
 }
+
+export enum MessageType {
+  SYSTEM = 'system-message',
+  ADMIN = 'admin-message',
+}
