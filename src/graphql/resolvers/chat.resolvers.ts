@@ -4,6 +4,7 @@ import { pubsub } from "../../helper/pubsub";
 import { withFilter } from "graphql-subscriptions";
 import invariant from "../../helper/invariant";
 import chatService from "../../services/chat/chat.service";
+import { MessageType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
@@ -107,6 +108,13 @@ const resolvers: Resolvers<Context> = {
         include: {
           messages: {
             take: 1,
+            where: {
+              type: {
+                notIn: [
+                  MessageType.SYSTEM,
+                ]
+              }
+            }
           },
           vendor_company: true,
           biotech: true,
@@ -117,7 +125,7 @@ const resolvers: Resolvers<Context> = {
         const biotechName = chat.biotech.name;
         const vendorCompanyName = chat.vendor_company.name;
 
-        chatService.createSystemMessage({
+        chatService.createAdminMessage({
           chat_id: chat.id,
           content: `Hello ${biotechName} & ${vendorCompanyName}!\nYou are now connected on Cromatic. Introduce yourselves and start collaborating!`,
         }, { prisma: context.prisma })
