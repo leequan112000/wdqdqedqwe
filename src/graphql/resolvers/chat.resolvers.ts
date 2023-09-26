@@ -109,11 +109,7 @@ const resolvers: Resolvers<Context> = {
           messages: {
             take: 1,
             where: {
-              type: {
-                notIn: [
-                  MessageType.SYSTEM,
-                ]
-              }
+              type: null
             }
           },
           vendor_company: true,
