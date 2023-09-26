@@ -19,6 +19,7 @@ import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
+import chatService from "../../services/chat/chat.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
 
 const resolvers: Resolvers<Context> = {
@@ -588,14 +589,14 @@ const resolvers: Resolvers<Context> = {
           });
         }
 
-        const chat = await trx.chat.findFirst({
+        let chat = await trx.chat.findFirst({
           where: {
             project_connection_id: projectConnection.id,
           },
         });
 
         if (!chat) {
-          await trx.chat.create({
+          chat = await trx.chat.create({
             data: {
               biotech_id: projectConnection.project_request.biotech_id,
               vendor_company_id: projectConnection.vendor_company_id,
@@ -603,6 +604,14 @@ const resolvers: Resolvers<Context> = {
             },
           });
         }
+
+        await chatService.createSystemMessage(
+          {
+            chat_id: chat.id,
+            content: "You've matched! Start your conversation by typing in the chat box for quick start!"
+          },
+          { prisma: trx }
+        )
 
         return await trx.projectConnection.update({
           where: {

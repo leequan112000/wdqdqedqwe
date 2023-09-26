@@ -168,12 +168,12 @@ model VendorCompany {
 }
 
 model VendorMember {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  phone             String?
-  title             String?
-  department        String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phone      String?
+  title      String?
+  department String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   user_id String @unique @db.Uuid
   user    User   @relation(fields: [user_id], references: [id])
@@ -373,8 +373,10 @@ model Message {
   chat_id String @db.Uuid
   chat    Chat   @relation(fields: [chat_id], references: [id])
 
-  user_id String @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user_id String? @db.Uuid
+  user    User?   @relation(fields: [user_id], references: [id])
+
+  type String?
 
   @@index([chat_id])
   @@index([user_id])
@@ -666,26 +668,26 @@ model PerkCategory {
   description String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  perks        Perk[]
+  perks       Perk[]
 
   @@map("perk_categories")
 }
 
 model Perk {
-  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   image_url          String
   title              String
   description        String
   reward_description String
   how_to_redeem      String
   terms              String
-  external_url      String?
-  is_active          Boolean          @default(true)
-  perk_category_id   String           @db.Uuid
-  perk_category      PerkCategory     @relation(fields: [perk_category_id], references: [id])
+  external_url       String?
+  is_active          Boolean      @default(true)
+  perk_category_id   String       @db.Uuid
+  perk_category      PerkCategory @relation(fields: [perk_category_id], references: [id])
   expired_at         DateTime?
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
 
   @@map("perks")
 }

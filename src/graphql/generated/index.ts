@@ -248,6 +248,7 @@ export type Message = {
   content?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']>;
 };
@@ -338,6 +339,7 @@ export type Mutation = {
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
+  startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
@@ -648,6 +650,11 @@ export type MutationSignUpUserArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
+};
+
+
+export type MutationStartChatArgs = {
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -1826,6 +1833,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1914,6 +1922,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;

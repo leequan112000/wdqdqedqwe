@@ -22,6 +22,7 @@ type Chat {
 
 type Mutation {
   createChat(project_connection_id: String!): Chat
+  startChat(project_connection_id: String!): Boolean
 }
 
 type Subscription {

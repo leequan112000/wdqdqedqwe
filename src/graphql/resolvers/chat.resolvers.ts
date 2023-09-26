@@ -3,6 +3,8 @@ import { Resolvers } from "../generated";
 import { pubsub } from "../../helper/pubsub";
 import { withFilter } from "graphql-subscriptions";
 import invariant from "../../helper/invariant";
+import chatService from "../../services/chat/chat.service";
+import { MessageType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Chat: {
@@ -22,7 +24,7 @@ const resolvers: Resolvers<Context> = {
       const currectUserId = context.req.user_id;
 
       invariant(currectUserId, 'Current user not found.');
-    
+
       const messages = await context.prisma.message.findMany({
         take: first,
         skip: after ? 1 : undefined, // Skip the cursor
@@ -96,6 +98,43 @@ const resolvers: Resolvers<Context> = {
         });
       });
     },
+    startChat: async (_, args, context) => {
+      const { project_connection_id } = args;
+
+      const chat = await context.prisma.chat.findFirst({
+        where: {
+          project_connection_id,
+        },
+        include: {
+          messages: {
+            take: 1,
+            where: {
+              type: {
+                notIn: [
+                  MessageType.SYSTEM,
+                ]
+              }
+            }
+          },
+          vendor_company: true,
+          biotech: true,
+        },
+      });
+
+      if (chat && chat.messages.length === 0) {
+        const biotechName = chat.biotech.name;
+        const vendorCompanyName = chat.vendor_company.name;
+
+        chatService.createAdminMessage({
+          chat_id: chat.id,
+          content: `Hello ${biotechName} & ${vendorCompanyName}!\nYou are now connected on Cromatic. Introduce yourselves and start collaborating!`,
+        }, { prisma: context.prisma })
+
+        return true;
+      }
+
+      return false;
+    }
   },
   Subscription: {
     newMessage: {
