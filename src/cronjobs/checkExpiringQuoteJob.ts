@@ -1,4 +1,5 @@
 import moment from 'moment';
+import * as lodash from 'lodash';
 import prisma from '../prisma';
 import { createSendUserExpiringQuoteNoticeEmailJob } from '../queues/email.queues';
 import { CreateSendUserExpiringQuoteNoticeEmailJobParam } from '../queues/types';
@@ -62,15 +63,30 @@ async function main() {
 
   const toSendQuoteExpiringEmailData: CreateSendUserExpiringQuoteNoticeEmailJobParam[] = Object.entries(expiringQuotesGroupByUserId).map(([_, data]) => {
     const { quotes, userData } = data;
+    const quotesGroupByProject = lodash.groupBy(quotes, (q) => q.project_connection.project_request.title);
+
+    const listData = Object.entries(quotesGroupByProject).map(([title, data]) => {
+      return {
+        project_request_title: title,
+        quotes: data.map((d) => {
+          return {
+            short_id: d.short_id,
+            vendor_full_name: d.project_connection.vendor_company.name,
+          }
+        }),
+      }
+    });
+
+    const moreCount = listData.length > 2
+      ? listData.length - 2
+      : undefined;
+
     return {
       receiverEmail: userData.email,
       receiverName: `${userData.first_name} ${userData.last_name}`,
-      quotes: quotes.map((q) => ({
-        short_id: q.short_id,
-        project_request_title: q.project_connection.project_request.title,
-        vendor_full_name: q.project_connection.vendor_company.name,
-      })),
+      listData: listData.slice(0, 2),
       expiringIn: `${EXPIRING_DAYS} days`,
+      moreCount,
     }
   });
 
@@ -95,7 +111,6 @@ async function main() {
   const notificationTask = createNotificationQueueJob({ data: expiringQuoteNotificationJobData });
 
   await Promise.all([...expiringQuoteTasks, notificationTask]);
-
   process.exit(0);
 }
 

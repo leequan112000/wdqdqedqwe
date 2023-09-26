@@ -14,12 +14,13 @@ import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/ve
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkAllowAddProjectCollaborator, checkAllowRemoveProjectCollaborator, checkProjectConnectionPermission } from "../../helper/accessControl";
-import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct } from "../../helper/constant";
+import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRequestStatus, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, ProjectConnectionCollaborationStatus, ProjectConnectionVendorExperimentStatus, NotificationType, ProjectConnectionVendorDisplayStatus, CasbinRole, CasbinObj, CasbinAct, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import chatService from "../../services/chat/chat.service";
+import collaboratorService from "../../services/collaborator/collaborator.service";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -798,13 +799,27 @@ const resolvers: Resolvers<Context> = {
       throw new InternalError('User is not customer nor vendor member');
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
-      const { project_connection_id, email, first_name, last_name, custom_message } = args;
+      const currentUserId = context.req.user_id;
+      const { project_connection_id, email, first_name, last_name, custom_message, role } = args;
+      const castedRole = (role as CompanyCollaboratorRoleType) || CompanyCollaboratorRoleType.USER;
+
+      invariant(currentUserId, 'Current user id not found.');
+
+      // Check if current user has the permission to set the role.
+      if (castedRole) {
+        const roleEnum = Object.values(CompanyCollaboratorRoleType);
+        invariant(roleEnum.includes(castedRole as CompanyCollaboratorRoleType), 'Invalid company collaborator role.');
+        await collaboratorService.checkPermissionToEditRole({
+          role: castedRole,
+          user_id: currentUserId,
+        });
+      }
 
       await checkAllowAddProjectCollaborator(context);
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
-          id: context.req.user_id,
+          id: currentUserId,
         },
         include: {
           customer: true,
@@ -835,13 +850,18 @@ const resolvers: Resolvers<Context> = {
         }
       }
 
+      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetToken = createResetPasswordToken();
+
+      const isBiotech = !!currentUser.customer;
+      const isVendor = !!currentUser.vendor_member;
+
       // If user doesn't exists
       // 1. Create new user
       // 2. Create customer/vendor member connection
       // 3. Send invitation email
       return await context.prisma.$transaction(async (trx) => {
-        const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-        const resetToken = createResetPasswordToken();
+
         const newUser = await trx.user.create({
           data: {
             first_name,
@@ -849,70 +869,54 @@ const resolvers: Resolvers<Context> = {
             email,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
+            customer: isBiotech
+              ? {
+                create: {
+                  biotech_id: currentUser.customer!.biotech_id,
+                  customer_connections: {
+                    create: {
+                      project_connection_id,
+                    },
+                  },
+                },
+              }
+              : undefined,
+            vendor_member: isVendor
+              ? {
+                create: {
+                  vendor_company_id: currentUser.vendor_member!.vendor_company_id,
+                  vendor_member_connections: {
+                    create: {
+                      project_connection_id,
+                    },
+                  },
+                },
+              }
+              : undefined,
+          },
+          include: {
+            customer: true,
+            vendor_member: true,
           },
         });
         const emailMessage = custom_message || '';
-        // If current user is a biotech member,
-        // create customer data for the new user
-        // create customer connection
-        if (currentUser.customer?.biotech_id) {
-          const newCustomer = await trx.customer.create({
-            data: {
-              user_id: newUser.id,
-              biotech_id: currentUser.customer.biotech_id,
-            },
-          });
-          await trx.customerConnection.create({
-            data: {
-              customer_id: newCustomer.id,
-              project_connection_id,
-            },
-          });
 
+        // Send email
+        if (isBiotech) {
           sendCustomerInvitationEmail(currentUser, newUser, emailMessage);
         }
-
-        // If current user is a vendor member,
-        // create vendor member data for the new user
-        // create vendor member connection
-        if (currentUser.vendor_member?.vendor_company_id) {
-          const newVendorMember = await trx.vendorMember.create({
-            data: {
-              user_id: newUser.id,
-              vendor_company_id: currentUser.vendor_member.vendor_company_id,
-            }
-          });
-          await trx.vendorMemberConnection.create({
-            data: {
-              vendor_member_id: newVendorMember.id,
-              project_connection_id,
-            },
-          });
+        if (isVendor) {
           sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
         }
 
-        await addRoleForUser(newUser.id, CasbinRole.USER);
+        // Update company role and casbin role
+        await collaboratorService.updateUserRole({
+          role: castedRole,
+          user_id: newUser.id,
+        }, { prisma: trx });
 
-        const projectConnection = await trx.projectConnection.findFirst({
-          where: {
-            id: project_connection_id,
-          },
-          include: {
-            project_request: {
-              select: {
-                title: true,
-              },
-            },
-          },
-        });
-
-        if (projectConnection) {
-          try {
-            createCollaboratedNotification(currentUser.id, newUser.id, projectConnection.id)
-          } catch (error) {
-            console.log(error)
-          }
-        }
+        // Create notification
+        createCollaboratedNotification(currentUser.id, newUser.id, project_connection_id)
 
         return newUser;
       });

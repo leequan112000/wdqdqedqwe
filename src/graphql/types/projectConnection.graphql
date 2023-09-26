@@ -46,5 +46,6 @@ type Mutation {
     email: String!
     custom_message: String,
     project_connection_id: String!
+    role: String
   ): User
 }
