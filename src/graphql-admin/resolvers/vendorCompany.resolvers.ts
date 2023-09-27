@@ -57,7 +57,9 @@ const resolvers: Resolvers<Context> = {
               const primaryVendorMembers = await trx.vendorMember.findMany({
                 where: {
                   vendor_company_id: vendor_company_id as string,
-                  role: CompanyCollaboratorRoleType.OWNER,
+                  role: {
+                    in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+                  },
                 },
                 include: {
                   user: true,
@@ -269,7 +271,9 @@ const resolvers: Resolvers<Context> = {
           const primaryVendorMembers = await context.prisma.vendorMember.findMany({
             where: {
               vendor_company_id: existingVendorCompany.id,
-              role: CompanyCollaboratorRoleType.OWNER,
+              role: {
+                in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+              },
             },
             include: {
               user: true,
