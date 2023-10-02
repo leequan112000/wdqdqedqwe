@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { customAlphabet } from 'nanoid';
 import prisma from '../prisma';
-import { InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
+import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
@@ -152,7 +152,7 @@ async function main() {
     const primaryMembers = await prisma.vendorMember.findMany({
       where: {
         vendor_company_id: invoice.vendor_company_id,
-        is_primary_member: true,
+        role: CompanyCollaboratorRoleType.OWNER,
       },
       include: {
         user: true,

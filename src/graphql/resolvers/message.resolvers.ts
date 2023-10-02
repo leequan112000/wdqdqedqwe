@@ -4,16 +4,25 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers, MessageEdge } from "../generated";
 import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
+import { UserType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Message: {
     user: async (parent, _, context) => {
-      invariant(parent.user_id, 'User id not found.')
-      return await context.prisma.user.findFirst({
-        where: {
-          id: parent.user_id
-        }
-      })
+      const userId = parent.user_id;
+      if (userId) {
+        return await context.prisma.user.findFirst({
+          where: {
+            id: userId,
+          },
+        });
+      }
+      return {
+        first_name: 'Cromatic',
+        last_name: 'Admin',
+        is_active: true,
+        user_type: UserType.CROMATIC_ADMIN,
+      };
     },
   },
   Mutation: {
@@ -77,6 +86,7 @@ const resolvers: Resolvers<Context> = {
         createSendUserNewMessageNoticeJob({
           projectConnectionId: chat.project_connection_id,
           senderUserId: context.req.user_id,
+          messageText: newMessage.content,
         });
 
         return newMessage;

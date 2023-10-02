@@ -20,7 +20,7 @@ beforeEach(() => {
 });
 
 test('forgotPassword should return prisma user object', async () => {
-  vi.mocked(sendResetPasswordEmail).mockImplementation(() => true);
+  vi.mocked(sendResetPasswordEmail).mockResolvedValueOnce(true);
 
   const user: User = {
     id: 'uuid-1',

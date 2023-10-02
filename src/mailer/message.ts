@@ -7,10 +7,11 @@ export const sendNewMessageNoticeEmail = async (emailData: NewMessageNoticeData,
     to: receiverEmail,
     templateId: newMessageNoticeTemplate,
     dynamicTemplateData: {
-      login_url: emailData.login_url,
+      button_url: emailData.button_url,
       project_title: emailData.project_title,
       receiver_full_name: emailData.receiver_full_name,
       company_name: emailData.company_name,
+      message_text: emailData.message_text,
     },
   });
 

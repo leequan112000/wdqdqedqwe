@@ -26,7 +26,9 @@ export const sendQuoteExpiringNoticeEmail = async (emailData: QuoteExpiringNotic
       receiver_full_name: emailData.receiver_full_name,
       button_url: emailData.button_url,
       expiring_in: emailData.expiring_in,
-      quotes: emailData.quotes,
+      list_data: emailData.list_data,
+      more_count: emailData.more_count,
+      view_more_url: emailData.view_more_url,
     },
   });
 
@@ -40,7 +42,9 @@ export const sendQuoteExpiredNoticeEmail = async (emailData: QuoteExpiredNoticeD
     dynamicTemplateData: {
       receiver_full_name: emailData.receiver_full_name,
       button_url: emailData.button_url,
-      quotes: emailData.quotes,
+      list_data: emailData.list_data,
+      more_count: emailData.more_count,
+      view_more_url: emailData.view_more_url,
     },
   });
 

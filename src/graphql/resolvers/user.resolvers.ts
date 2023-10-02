@@ -6,7 +6,7 @@ import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
-import { CasbinRole, CompanyCollaboratorRoleType, VendorType } from "../../helper/constant";
+import { CasbinRole, CompanyCollaboratorRoleType, UserType, VendorType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
@@ -14,13 +14,28 @@ import authService from "../../services/auth/auth.service";
 const resolvers: Resolvers<Context> = {
   User: {
     user_type: async (parent, _, context) => {
-      invariant(parent.id, 'Missing user id.');
-      const vendor = await context.prisma.vendorMember.findFirst({
+      if (parent.user_type) return parent.user_type;
+      if (!parent.id) return null;
+
+      const user = await context.prisma.user.findFirst({
         where: {
-          user_id: parent.id
-        }
+          id: parent.id,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
       });
-      return vendor ? 'vendor' : 'customer';
+      const isVendor = !!user?.vendor_member;
+      const isBiotech = !!user?.customer;
+      if (isVendor) {
+        return UserType.VENDOR;
+      }
+      if (isBiotech) {
+        return UserType.CUSTOMER;
+      }
+
+      return null;
     },
     has_completed_onboarding: async (parent, _, context) => {
       invariant(parent.id, 'Missing user id.');
@@ -156,14 +171,15 @@ const resolvers: Resolvers<Context> = {
       throw new InternalError('Missing user');
     },
     company_name: async (parent, _, context) => {
+      if (parent.company_name) return parent.company_name;
+
       if (parent.customer?.biotech?.name) {
         return parent.customer.biotech.name;
       }
       if (parent.vendor_member?.vendor_company?.name) {
         return parent.vendor_member.vendor_company.name;
       }
-
-      invariant(parent.id, 'Missing user id.');
+      if (!parent.id) return null;
 
       const customer = await context.prisma.customer.findFirst({
         where: {

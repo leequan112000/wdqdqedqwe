@@ -1,0 +1,57 @@
+type ReviewQuestion {
+  id: String
+  review_question_set_id: String
+  question_text: String
+  question_type: String
+  ordinal: Int
+  group_title: String
+  is_required: Boolean
+  review_question_options: [ReviewQuestionOption]
+}
+
+type ReviewQuestionOption {
+  id: String
+  option_text: String
+  ordinal: Int
+}
+
+type ReviewAnswer {
+  id: String
+  answer_text: String
+  rating_value: Int
+  option_value: String
+  review_question_id: String
+}
+
+type ReviewQuestionSet {
+  id: String
+  name: String
+}
+
+type Review {
+  id: String
+  is_draft: Boolean
+  review_question_set_id: String
+  review_questions: [ReviewQuestion]
+  review_answers: [ReviewAnswer]
+}
+
+input ReviewInput {
+  review_question_id: String!
+  answer_text: String
+  rating_value: Int
+  option_value: String
+}
+
+type Query {
+  quoteReview(quote_id: String!): Review
+  quoteReviewQuestions(quote_id: String!): [ReviewQuestion]
+}
+
+type Mutation {
+  draftQuoteReview(
+    input: [ReviewInput!]
+    quote_id: String!
+    is_final_step: Boolean
+  ): [ReviewAnswer]
+}

@@ -63,7 +63,6 @@ const resolver: Resolvers<Context> = {
           data: {
             user_id: newUser.id,
             vendor_company_id: args.vendor_company_id,
-            is_primary_member: noOwner,
           },
         });
 

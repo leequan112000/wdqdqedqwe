@@ -69,7 +69,6 @@ describe('quote.service', () => {
 
       mockCtx.prisma.quote.create.mockResolvedValueOnce(newQuote);
       mockCtx.prisma.milestone.create.mockResolvedValueOnce(newMilestone);
-      mockCtx.prisma.$transaction.mockImplementation((callback) => callback(mockCtx.prisma));
 
       const { milestones, ...rest } = await quoteService.createQuote(createQuoteInput, ctx);
 

@@ -35,6 +35,7 @@ model User {
   project_attachments        ProjectAttachment[]
   CompanyAttachment          CompanyAttachment[]
   biotech_invite_vendors     BiotechInviteVendor[]
+  reviews                    Review[]
 
   @@map("users")
 }
@@ -167,13 +168,12 @@ model VendorCompany {
 }
 
 model VendorMember {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  is_primary_member Boolean  @default(false)
-  phone             String?
-  title             String?
-  department        String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phone      String?
+  title      String?
+  department String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   user_id String @unique @db.Uuid
   user    User   @relation(fields: [user_id], references: [id])
@@ -373,8 +373,10 @@ model Message {
   chat_id String @db.Uuid
   chat    Chat   @relation(fields: [chat_id], references: [id])
 
-  user_id String @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user_id String? @db.Uuid
+  user    User?   @relation(fields: [user_id], references: [id])
+
+  type String?
 
   @@index([chat_id])
   @@index([user_id])
@@ -552,6 +554,7 @@ model Quote {
   milestones            Milestone[]
   status                String
   expired_at            DateTime?
+  quote_reviews         QuoteReview[]
 
   @@map("quotes")
 }
@@ -665,26 +668,26 @@ model PerkCategory {
   description String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  perks        Perk[]
+  perks       Perk[]
 
   @@map("perk_categories")
 }
 
 model Perk {
-  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   image_url          String
   title              String
   description        String
   reward_description String
   how_to_redeem      String
   terms              String
-  external_url      String?
-  is_active          Boolean          @default(true)
-  perk_category_id   String           @db.Uuid
-  perk_category      PerkCategory     @relation(fields: [perk_category_id], references: [id])
+  external_url       String?
+  is_active          Boolean      @default(true)
+  perk_category_id   String       @db.Uuid
+  perk_category      PerkCategory @relation(fields: [perk_category_id], references: [id])
   expired_at         DateTime?
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
 
   @@map("perks")
 }
@@ -700,4 +703,91 @@ model CasbinRule {
   v5    String?
 
   @@map("casbin_rule")
+}
+
+model Review {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                String   @db.Uuid
+  is_draft               Boolean
+  review_question_set_id String   @db.Uuid
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user                User              @relation(fields: [user_id], references: [id])
+  review_question_set ReviewQuestionSet @relation(fields: [review_question_set_id], references: [id])
+  quote_review        QuoteReview?
+  review_answers      ReviewAnswer[]
+
+  @@map("reviews")
+}
+
+model QuoteReview {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  review_id  String   @unique @db.Uuid
+  quote_id   String   @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  review Review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  quote  Quote  @relation(fields: [quote_id], references: [id])
+
+  @@map("quote_reviews")
+}
+
+model ReviewQuestion {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  review_question_set_id String   @db.Uuid
+  group_title            String?
+  question_text          String
+  question_type          String
+  ordinal                Int      @default(0)
+  is_required            Boolean  @default(false)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  review_question_set     ReviewQuestionSet      @relation(fields: [review_question_set_id], references: [id], onDelete: Cascade)
+  review_question_options ReviewQuestionOption[]
+  review_answers          ReviewAnswer[]
+
+  @@map("review_questions")
+}
+
+model ReviewQuestionOption {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  review_question_id String   @db.Uuid
+  option_text        String
+  ordinal            Int      @default(0)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id], onDelete: Cascade)
+
+  @@map("review_question_options")
+}
+
+model ReviewAnswer {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  review_question_id String  @db.Uuid
+  review_id          String  @db.Uuid
+  answer_text        String?
+  rating_value       Int?
+  option_value       String?
+
+  review_question ReviewQuestion @relation(fields: [review_question_id], references: [id], onDelete: Cascade)
+  review          Review         @relation(fields: [review_id], references: [id], onDelete: Cascade)
+
+  @@unique([review_id, review_question_id])
+  @@map("review_answers")
+}
+
+model ReviewQuestionSet {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  review_questions ReviewQuestion[]
+  reviews          Review[]
+
+  @@map("review_question_sets")
 }

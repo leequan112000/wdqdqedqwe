@@ -248,6 +248,7 @@ export type Message = {
   content?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']>;
 };
@@ -306,6 +307,7 @@ export type Mutation = {
   deactivateCollaborator?: Maybe<User>;
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
+  draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -317,6 +319,7 @@ export type Mutation = {
   markMilestoneAsCompleted?: Maybe<MarkMilestoneCompleteResponse>;
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
+  markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
   reactivateCollaborator?: Maybe<User>;
   refreshJWT?: Maybe<AuthResponse>;
@@ -336,6 +339,7 @@ export type Mutation = {
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
+  startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
@@ -476,6 +480,13 @@ export type MutationDeclinedProjectConnectionArgs = {
 };
 
 
+export type MutationDraftQuoteReviewArgs = {
+  input?: InputMaybe<Array<ReviewInput>>;
+  is_final_step?: InputMaybe<Scalars['Boolean']>;
+  quote_id: Scalars['String'];
+};
+
+
 export type MutationForgotPasswordArgs = {
   email?: InputMaybe<Scalars['String']>;
 };
@@ -509,6 +520,7 @@ export type MutationInviteProjectCollaboratorViaEmailArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   project_connection_id: Scalars['String'];
+  role?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -533,6 +545,11 @@ export type MutationMarkNotificationAsReadArgs = {
 
 export type MutationMarkNotificationsInProjectAsReadArgs = {
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationMarkQuoteNotificationsAsReadArgs = {
+  quote_id: Scalars['String'];
 };
 
 
@@ -633,6 +650,11 @@ export type MutationSignUpUserArgs = {
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
+};
+
+
+export type MutationStartChatArgs = {
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -758,7 +780,6 @@ export type MutationUpdateVendorCompanyLabSpecializationsArgs = {
 
 export type MutationUpdateVendorMemberArgs = {
   department?: InputMaybe<Scalars['String']>;
-  is_primary_member?: InputMaybe<Scalars['Boolean']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
@@ -1010,6 +1031,8 @@ export type Query = {
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
   quote?: Maybe<Quote>;
+  quoteReview?: Maybe<Review>;
+  quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
@@ -1110,6 +1133,16 @@ export type QueryQuoteArgs = {
 };
 
 
+export type QueryQuoteReviewArgs = {
+  quote_id: Scalars['String'];
+};
+
+
+export type QueryQuoteReviewQuestionsArgs = {
+  quote_id: Scalars['String'];
+};
+
+
 export type QuerySearchCertificationTagsArgs = {
   search_content?: InputMaybe<Scalars['String']>;
 };
@@ -1138,12 +1171,63 @@ export type Quote = {
   milestones?: Maybe<Array<Maybe<Milestone>>>;
   project_connection?: Maybe<ProjectConnection>;
   project_connection_id?: Maybe<Scalars['String']>;
+  quote_review?: Maybe<Review>;
   short_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   total_amount?: Maybe<Scalars['Float']>;
   total_in_escrow?: Maybe<Scalars['Float']>;
   total_milestones_paid?: Maybe<Scalars['Float']>;
   total_payment?: Maybe<Scalars['Float']>;
+};
+
+export type Review = {
+  __typename?: 'Review';
+  id?: Maybe<Scalars['String']>;
+  is_draft?: Maybe<Scalars['Boolean']>;
+  review_answers?: Maybe<Array<Maybe<ReviewAnswer>>>;
+  review_question_set_id?: Maybe<Scalars['String']>;
+  review_questions?: Maybe<Array<Maybe<ReviewQuestion>>>;
+};
+
+export type ReviewAnswer = {
+  __typename?: 'ReviewAnswer';
+  answer_text?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  option_value?: Maybe<Scalars['String']>;
+  rating_value?: Maybe<Scalars['Int']>;
+  review_question_id?: Maybe<Scalars['String']>;
+};
+
+export type ReviewInput = {
+  answer_text?: InputMaybe<Scalars['String']>;
+  option_value?: InputMaybe<Scalars['String']>;
+  rating_value?: InputMaybe<Scalars['Int']>;
+  review_question_id: Scalars['String'];
+};
+
+export type ReviewQuestion = {
+  __typename?: 'ReviewQuestion';
+  group_title?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_required?: Maybe<Scalars['Boolean']>;
+  ordinal?: Maybe<Scalars['Int']>;
+  question_text?: Maybe<Scalars['String']>;
+  question_type?: Maybe<Scalars['String']>;
+  review_question_options?: Maybe<Array<Maybe<ReviewQuestionOption>>>;
+  review_question_set_id?: Maybe<Scalars['String']>;
+};
+
+export type ReviewQuestionOption = {
+  __typename?: 'ReviewQuestionOption';
+  id?: Maybe<Scalars['String']>;
+  option_text?: Maybe<Scalars['String']>;
+  ordinal?: Maybe<Scalars['Int']>;
+};
+
+export type ReviewQuestionSet = {
+  __typename?: 'ReviewQuestionSet';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type StripeAccountCapabilities = {
@@ -1297,7 +1381,6 @@ export type VendorMember = {
   created_at?: Maybe<Scalars['Date']>;
   department?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
-  is_primary_member?: Maybe<Scalars['Boolean']>;
   phone?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
@@ -1436,6 +1519,12 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: ResolverTypeWrapper<{}>;
   Quote: ResolverTypeWrapper<Quote>;
+  Review: ResolverTypeWrapper<Review>;
+  ReviewAnswer: ResolverTypeWrapper<ReviewAnswer>;
+  ReviewInput: ReviewInput;
+  ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
+  ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
+  ReviewQuestionSet: ResolverTypeWrapper<ReviewQuestionSet>;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -1502,6 +1591,12 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
   Query: {};
   Quote: Quote;
+  Review: Review;
+  ReviewAnswer: ReviewAnswer;
+  ReviewInput: ReviewInput;
+  ReviewQuestion: ReviewQuestion;
+  ReviewQuestionOption: ReviewQuestionOption;
+  ReviewQuestionSet: ReviewQuestionSet;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -1738,6 +1833,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1796,6 +1892,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
+  draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -1805,6 +1902,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markMilestoneAsCompleted?: Resolver<Maybe<ResolversTypes['MarkMilestoneCompleteResponse']>, ParentType, ContextType, RequireFields<MutationMarkMilestoneAsCompletedArgs, 'id'>>;
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
+  markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   reactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationReactivateCollaboratorArgs, 'user_id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
@@ -1824,6 +1922,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
@@ -2047,6 +2146,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
+  quoteReview?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType, RequireFields<QueryQuoteReviewArgs, 'quote_id'>>;
+  quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2067,12 +2168,56 @@ export type QuoteResolvers<ContextType = any, ParentType extends ResolversParent
   milestones?: Resolver<Maybe<Array<Maybe<ResolversTypes['Milestone']>>>, ParentType, ContextType>;
   project_connection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType>;
   project_connection_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quote_review?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType>;
   short_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_in_escrow?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_milestones_paid?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_payment?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['Review'] = ResolversParentTypes['Review']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_draft?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  review_answers?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType>;
+  review_question_set_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  review_questions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewAnswerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewAnswer'] = ResolversParentTypes['ReviewAnswer']> = ResolversObject<{
+  answer_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  option_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rating_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  review_question_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestion'] = ResolversParentTypes['ReviewQuestion']> = ResolversObject<{
+  group_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_required?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  ordinal?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  question_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  question_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  review_question_options?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestionOption']>>>, ParentType, ContextType>;
+  review_question_set_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionOptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestionOption'] = ResolversParentTypes['ReviewQuestionOption']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  option_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ordinal?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ReviewQuestionSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestionSet'] = ResolversParentTypes['ReviewQuestionSet']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2215,7 +2360,6 @@ export type VendorMemberResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   department?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_primary_member?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2279,6 +2423,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;
+  Review?: ReviewResolvers<ContextType>;
+  ReviewAnswer?: ReviewAnswerResolvers<ContextType>;
+  ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
+  ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
+  ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;

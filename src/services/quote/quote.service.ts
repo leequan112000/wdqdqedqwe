@@ -31,49 +31,38 @@ export type CreateQuoteArgs = {
 export const createQuote = async (args: CreateQuoteArgs, context: ServiceContext) => {
   const { amount, milestones, project_connection_id, send_to_biotech, current_user_id } = args;
 
-  const newQuote = await context.prisma.$transaction(async (trx) => {
-    const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
-    const newQuote = await trx.quote.create({
-      data: {
-        amount: toCent(amount),
-        status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
-        project_connection_id,
-        short_id: generateQuoteShortId(),
-        expired_at: send_to_biotech ? expiryDate.toDate() : null,
-      },
+  const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
+  const newQuote = await context.prisma.quote.create({
+    data: {
+      amount: toCent(amount),
+      status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
+      project_connection_id,
+      short_id: generateQuoteShortId(),
+      expired_at: send_to_biotech ? expiryDate.toDate() : null,
+    },
+  });
+
+  let newMilestones;
+  if (milestones && milestones.length > 0) {
+    const tasks = milestones.map(async (m, i) => {
+      return await context.prisma.milestone.create({
+        data: {
+          amount: toCent(m.amount),
+          timeline: m.timeline,
+          description: m.description,
+          quote_id: newQuote.id,
+          status: MilestoneStatus.NOT_STARTED,
+          payment_status: MilestonePaymentStatus.UNPAID,
+          vendor_payment_status: MilestonePaymentStatus.UNPAID,
+          short_id: generateMilestoneShortId(),
+          title: m.title,
+          ordinal: i
+        }
+      })
     });
 
-    let newMilestones;
-    if (milestones && milestones.length > 0) {
-      const tasks = milestones.map(async (m, i) => {
-        return await trx.milestone.create({
-          data: {
-            amount: toCent(m.amount),
-            timeline: m.timeline,
-            description: m.description,
-            quote_id: newQuote.id,
-            status: MilestoneStatus.NOT_STARTED,
-            payment_status: MilestonePaymentStatus.UNPAID,
-            vendor_payment_status: MilestonePaymentStatus.UNPAID,
-            short_id: generateMilestoneShortId(),
-            title: m.title,
-            ordinal: i
-          }
-        })
-      });
-
-      newMilestones = await Promise.all(tasks);
-    }
-
-    return {
-      ...newQuote,
-      amount: toDollar(newQuote.amount.toNumber()),
-      milestones: (newMilestones || []).map((m) => ({
-        ...m,
-        amount: toDollar(m.amount.toNumber()),
-      })),
-    };
-  });
+    newMilestones = await Promise.all(tasks);
+  }
 
   if (send_to_biotech) {
     createSendUserQuoteNoticeJob({
@@ -84,7 +73,14 @@ export const createQuote = async (args: CreateQuoteArgs, context: ServiceContext
     });
   }
 
-  return newQuote;
+  return {
+    ...newQuote,
+    amount: toDollar(newQuote.amount.toNumber()),
+    milestones: (newMilestones || []).map((m) => ({
+      ...m,
+      amount: toDollar(m.amount.toNumber()),
+    })),
+  };
 }
 
 const quoteService = {

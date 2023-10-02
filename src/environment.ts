@@ -1,5 +1,5 @@
 const dev = {
-  APP_URL: 'https://localhost:3000',
+  APP_URL: 'http://localhost:3000',
   SERVER_URL: 'https://localhost:9000',
 };
 const staging = {
