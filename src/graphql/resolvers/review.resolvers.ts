@@ -18,9 +18,6 @@ const resolvers: Resolvers<Context> = {
           {
             ordinal: 'asc',
           },
-          {
-            created_at: 'asc',
-          },
         ],
       });
 
@@ -54,9 +51,6 @@ const resolvers: Resolvers<Context> = {
         orderBy: [
           {
             ordinal: 'asc',
-          },
-          {
-            created_at: 'asc',
           },
         ],
       });
