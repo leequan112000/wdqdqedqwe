@@ -86,7 +86,7 @@ const resolvers: Resolvers<Context> = {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id is missing.');
 
-      const reviewQuestions = reviewService.getQuoteReviewQuestions(
+      const reviewQuestions = await reviewService.getQuoteReviewQuestions(
         {
           current_user_id: currentUserId,
           quote_id: args.quote_id,
