@@ -1,0 +1,11 @@
+type BlanketPurchaseOrder {
+  id: String
+  po_number: String
+  name: String
+  amount: Float
+  created_at: Date
+  updated_at: Date
+  biotech_id: String
+  biotech: Biotech
+  blanket_purchase_order_transactions: [BlanketPurchaseOrderTransaction]
+}
