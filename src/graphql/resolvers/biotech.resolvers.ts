@@ -4,6 +4,7 @@ import { CompanyCollaboratorRoleType, SubscriptionStatus } from "../../helper/co
 import { Resolvers } from "../generated";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
 import invariant from "../../helper/invariant";
+import { toDollar } from "../../helper/money";
 import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
 
 const resolver: Resolvers<Context> = {
@@ -88,7 +89,38 @@ const resolver: Resolvers<Context> = {
       await uploadLimitTracker.init(id)
 
       return uploadLimitTracker.stats().used;
-    }
+    },
+    biotech_invoices: async (parent, _, context) => {
+      invariant(parent.id, 'Missing biotech id.');
+      return await context.prisma.biotechInvoice.findMany({
+        where: {
+          biotech_id: parent.id
+        },
+      });
+    },
+    purchase_orders: async (parent, _, context) => {
+      invariant(parent.id, 'Missing biotech id.');
+      return await context.prisma.purchaseOrder.findMany({
+        where: {
+          biotech_id: parent.id
+        },
+      });
+    },
+    blanket_purchase_orders: async (parent, _, context) => {
+      invariant(parent.id, 'Missing biotech id.');
+      const blanketPurchaseOrders = await context.prisma.blanketPurchaseOrder.findMany({
+        where: {
+          biotech_id: parent.id
+        },
+      });
+
+      return blanketPurchaseOrders.map((blanketPurchaseOrder) => {
+        return {
+          ...blanketPurchaseOrder,
+          amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
+        }
+      });
+    },
   },
   Query: {
     biotech: async (_, __, context) => {
