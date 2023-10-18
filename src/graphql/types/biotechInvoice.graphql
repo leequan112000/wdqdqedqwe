@@ -1,0 +1,21 @@
+type BiotechInvoice {
+  id: String
+  invoice_number: String
+  payment_status: String
+  stripe_txn_id: String
+  due_at: Date
+  created_at: Date
+  updated_at: Date
+  paid_at: Date
+  biotech_invoice_items: [BiotechInvoiceItem]
+  biotech_id: String
+  biotech: Biotech
+  total_amount: Float
+  purchase_order: PurchaseOrder
+  blanket_purchase_order_transaction: BlanketPurchaseOrderTransaction
+}
+
+type Query {
+  biotechInvoices: [BiotechInvoice]
+  biotechInvoice(id: String!): BiotechInvoice
+}
