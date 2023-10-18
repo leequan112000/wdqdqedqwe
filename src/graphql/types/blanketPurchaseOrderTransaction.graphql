@@ -1,0 +1,13 @@
+type BlanketPurchaseOrderTransaction {
+  id: String
+  amount: Float
+  transaction_type: String
+  blanket_purchase_order_id: String
+  blanket_purchase_order: BlanketPurchaseOrder
+  biotech_invoice_id: String
+  biotech_invoice: BiotechInvoice
+  user_id: String
+  user: User
+  created_at: Date
+  updated_at: Date
+}
