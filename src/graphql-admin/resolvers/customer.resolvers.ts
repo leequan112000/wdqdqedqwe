@@ -25,9 +25,11 @@ const resolver: Resolvers<Context> = {
   Mutation: {
     inviteCustomerByAdmin: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
+        const { first_name, last_name, email, biotech_id, role } = args;
+
         const user = await trx.user.findFirst({
           where: {
-            email: args.email,
+            email: email,
           },
         });
 
@@ -36,24 +38,24 @@ const resolver: Resolvers<Context> = {
         const owner = await trx.customer.findFirst({
           where: {
             role: CompanyCollaboratorRoleType.OWNER,
-            biotech_id: args.biotech_id,
+            biotech_id: biotech_id,
           },
         });
         const noOwner = owner === null;
 
         // Check if company has owner.
         invariant(
-          args.role === CompanyCollaboratorRoleType.OWNER && noOwner
-          || args.role !== CompanyCollaboratorRoleType.OWNER,
+          role === CompanyCollaboratorRoleType.OWNER && noOwner
+          || role !== CompanyCollaboratorRoleType.OWNER,
           new PublicError('Owner already exists!'),
         );
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
         const newUser = await trx.user.create({
           data: {
-            email: args.email,
-            first_name: args.first_name,
-            last_name: args.last_name,
+            email: email,
+            first_name: first_name,
+            last_name: last_name,
             reset_password_token: createResetPasswordToken(),
             reset_password_expiration: new Date(resetTokenExpiration),
           },
@@ -62,16 +64,16 @@ const resolver: Resolvers<Context> = {
         const newCustomer = await trx.customer.create({
           data: {
             user_id: newUser.id,
-            biotech_id: args.biotech_id,
+            biotech_id: biotech_id,
           },
         });
 
-        switch (args.role) {
+        switch (role) {
           case CompanyCollaboratorRoleType.ADMIN: {
             await collaboratorService.setCustomerAsAdmin(
               {
                 user_id: newUser.id,
-                biotech_id: args.biotech_id,
+                biotech_id: biotech_id,
                 customer_id: newCustomer.id,
               },
               { prisma: trx }
