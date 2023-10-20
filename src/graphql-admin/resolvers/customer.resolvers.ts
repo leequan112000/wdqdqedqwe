@@ -42,11 +42,12 @@ const resolver: Resolvers<Context> = {
           },
         });
         const noOwner = owner === null;
+        const isAddingOwner = role === CompanyCollaboratorRoleType.OWNER
 
         // Check if company has owner.
         invariant(
-          role === CompanyCollaboratorRoleType.OWNER && noOwner
-          || role !== CompanyCollaboratorRoleType.OWNER,
+          isAddingOwner && noOwner
+          || !isAddingOwner,
           new PublicError('Owner already exists!'),
         );
 
