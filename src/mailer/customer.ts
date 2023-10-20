@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
-import { createMailData, sendMail } from "./config";
-import { customerInvitationTemplate } from "./templates";
+import { createMailData, mailSender, sendMail } from "./config";
+import { customerInvitationByAdminTemplate, customerInvitationTemplate } from "./templates";
 import { app_env } from "../environment";
 
 export const sendCustomerInvitationEmail = (inviter: User, receiver: User, custom_message: string = '') => {
@@ -14,6 +14,21 @@ export const sendCustomerInvitationEmail = (inviter: User, receiver: User, custo
       receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
     },
   });
+
+  sendMail(mailData);
+};
+
+export const sendCustomerInvitationByAdminEmail = (receiver: User) => {
+  const mailData = {
+    from: `Cromatic <${mailSender}>`,
+    to: receiver.email,
+    replyTo: mailSender,
+    templateId: customerInvitationByAdminTemplate,
+    dynamicTemplateData: {
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
+      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+    },
+  };
 
   sendMail(mailData);
 };
