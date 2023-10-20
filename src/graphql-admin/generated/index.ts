@@ -55,6 +55,18 @@ export type CertificationTagConnection = {
   vendor_company_id?: Maybe<Scalars['String']>;
 };
 
+export type Customer = {
+  __typename?: 'Customer';
+  biotech_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  job_title?: Maybe<Scalars['String']>;
+  team?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+  user?: Maybe<User>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
 export type LabSpecialization = {
   __typename?: 'LabSpecialization';
   full_name?: Maybe<Scalars['String']>;
@@ -108,6 +120,7 @@ export type Mutation = {
   deletePerk?: Maybe<Perk>;
   deletePerkCategory?: Maybe<Scalars['Boolean']>;
   duplicateQuestionSet?: Maybe<ReviewQuestionSet>;
+  inviteCustomerByAdmin?: Maybe<VendorMember>;
   inviteVendorCompaniesToProjectByAdmin?: Maybe<Scalars['Boolean']>;
   inviteVendorCompanyToProjectByBiotech?: Maybe<Scalars['Boolean']>;
   inviteVendorMemberByAdmin?: Maybe<VendorMember>;
@@ -116,6 +129,7 @@ export type Mutation = {
   removeReviewQuestion?: Maybe<ReviewQuestion>;
   removeReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   removeReviewQuestionSet?: Maybe<ReviewQuestionSet>;
+  resendCustomerInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   unregisterBiotechAccount?: Maybe<Scalars['Boolean']>;
   updateBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
@@ -268,6 +282,15 @@ export type MutationDuplicateQuestionSetArgs = {
 };
 
 
+export type MutationInviteCustomerByAdminArgs = {
+  biotech_id: Scalars['String'];
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+  role: Scalars['String'];
+};
+
+
 export type MutationInviteVendorCompaniesToProjectByAdminArgs = {
   project_request_id: Scalars['String'];
   vendor_company_ids: Array<InputMaybe<Scalars['String']>>;
@@ -311,6 +334,11 @@ export type MutationRemoveReviewQuestionOptionArgs = {
 
 export type MutationRemoveReviewQuestionSetArgs = {
   review_question_set_id: Scalars['String'];
+};
+
+
+export type MutationResendCustomerInvitationByAdminArgs = {
+  user_id: Scalars['String'];
 };
 
 
@@ -572,6 +600,7 @@ export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
+  Customer: ResolverTypeWrapper<Customer>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -600,6 +629,7 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean'];
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
+  Customer: Customer;
   Date: Scalars['Date'];
   Float: Scalars['Float'];
   Int: Scalars['Int'];
@@ -656,6 +686,18 @@ export type CertificationTagConnectionResolvers<ContextType = any, ParentType ex
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CustomerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Customer'] = ResolversParentTypes['Customer']> = ResolversObject<{
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  team?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -719,6 +761,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deletePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationDeletePerkArgs, 'id'>>;
   deletePerkCategory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePerkCategoryArgs, 'id'>>;
   duplicateQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationDuplicateQuestionSetArgs, 'review_question_set_id'>>;
+  inviteCustomerByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteCustomerByAdminArgs, 'biotech_id' | 'email' | 'first_name' | 'last_name' | 'role'>>;
   inviteVendorCompaniesToProjectByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompaniesToProjectByAdminArgs, 'project_request_id' | 'vendor_company_ids'>>;
   inviteVendorCompanyToProjectByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInviteVendorCompanyToProjectByBiotechArgs, 'biotech_invite_vendor_id' | 'vendor_type'>>;
   inviteVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, RequireFields<MutationInviteVendorMemberByAdminArgs, 'email' | 'first_name' | 'last_name' | 'role' | 'vendor_company_id'>>;
@@ -727,6 +770,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionArgs, 'review_question_id'>>;
   removeReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionOptionArgs, 'review_question_option_id'>>;
   removeReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionSetArgs, 'review_question_set_id'>>;
+  resendCustomerInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendCustomerInvitationByAdminArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
   unregisterBiotechAccount?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnregisterBiotechAccountArgs, 'biotech_id'>>;
   updateBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationUpdateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'id' | 'last_name' | 'website'>>;
@@ -841,6 +885,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
+  Customer?: CustomerResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;
   LabSpecialization?: LabSpecializationResolvers<ContextType>;
