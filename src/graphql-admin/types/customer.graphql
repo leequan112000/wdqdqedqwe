@@ -20,5 +20,5 @@ type Mutation {
     email: String!
     biotech_id: String!
     role: String!
-  ): VendorMember
+  ): Customer
 }
