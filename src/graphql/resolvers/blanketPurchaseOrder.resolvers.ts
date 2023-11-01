@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { toDollar } from "../../helper/money";
+import { checkAllowCustomerOnlyPermission } from "../../helper/accessControl";
 import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
@@ -29,6 +30,28 @@ const resolvers: Resolvers<Context> = {
       });
     },
   },
+  Query: {
+    blanketPurchaseOrders: async (_, __, context) => {
+      await checkAllowCustomerOnlyPermission(context);
+
+      const currentCustomer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id
+        },
+      });
+
+      const blanketPurchaseOrders = await context.prisma.blanketPurchaseOrder.findMany({
+        where: {
+          biotech_id: currentCustomer?.biotech_id
+        }
+      });
+
+      return blanketPurchaseOrders.map((bpo) => ({
+        ...bpo,
+        amount: toDollar(bpo.amount.toNumber()),
+      }))
+    },
+  }
 };
 
 export default resolvers;

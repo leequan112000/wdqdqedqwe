@@ -9,3 +9,7 @@ type BlanketPurchaseOrder {
   biotech: Biotech
   blanket_purchase_order_transactions: [BlanketPurchaseOrderTransaction]
 }
+
+type Query {
+  blanketPurchaseOrders: [BlanketPurchaseOrder]
+}

@@ -1086,6 +1086,7 @@ export type Query = {
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
   biotechInvoice?: Maybe<BiotechInvoice>;
   biotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
+  blanketPurchaseOrders?: Maybe<Array<Maybe<BlanketPurchaseOrder>>>;
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
@@ -2290,6 +2291,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
   biotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
+  blanketPurchaseOrders?: Resolver<Maybe<Array<Maybe<ResolversTypes['BlanketPurchaseOrder']>>>, ParentType, ContextType>;
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
