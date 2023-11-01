@@ -354,6 +354,7 @@ export type Mutation = {
   acceptQuote?: Maybe<Quote>;
   addProjectCollaborator?: Maybe<User>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
+  createBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   createCda?: Maybe<Scalars['Boolean']>;
   createCertificationTag?: Maybe<CertificationTag>;
   createChat?: Maybe<Chat>;
@@ -444,6 +445,13 @@ export type MutationCreateBiotechInviteVendorArgs = {
   last_name: Scalars['String'];
   project_request_id: Scalars['String'];
   website: Scalars['String'];
+};
+
+
+export type MutationCreateBlanketPurchaseOrderArgs = {
+  amount: Scalars['Float'];
+  name: Scalars['String'];
+  po_number: Scalars['String'];
 };
 
 
@@ -2029,6 +2037,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
+  createBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationCreateBlanketPurchaseOrderArgs, 'amount' | 'name' | 'po_number'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;

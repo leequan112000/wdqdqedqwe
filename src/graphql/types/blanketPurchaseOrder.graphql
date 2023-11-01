@@ -13,3 +13,11 @@ type BlanketPurchaseOrder {
 type Query {
   blanketPurchaseOrders: [BlanketPurchaseOrder]
 }
+
+type Mutation {
+  createBlanketPurchaseOrder(
+    po_number: String!
+    name: String!
+    amount: Float!
+  ): BlanketPurchaseOrder
+}
