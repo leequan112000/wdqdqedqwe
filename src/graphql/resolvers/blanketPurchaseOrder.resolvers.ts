@@ -1,6 +1,6 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { toDollar } from "../../helper/money";
+import { toCent, toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission } from "../../helper/accessControl";
 import { CasbinObj } from "../../helper/constant";
 import { CasbinAct } from "../../helper/constant";
@@ -77,7 +77,7 @@ const resolvers: Resolvers<Context> = {
           data: {
             po_number,
             name,
-            amount,
+            amount: toCent(amount),
             biotech_id: customer.biotech_id,
           }
         });
