@@ -261,3 +261,8 @@ export enum MessageType {
   SYSTEM = 'system-message',
   ADMIN = 'admin-message',
 }
+
+export enum BlanketPurchaseOrderTransactionType {
+  DEBIT = 'debit',
+  CREDIT = 'credit',
+}
