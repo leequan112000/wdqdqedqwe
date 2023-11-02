@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { toCent, toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission } from "../../helper/accessControl";
-import { CasbinObj } from "../../helper/constant";
+import { BlanketPurchaseOrderTransactionType, CasbinObj } from "../../helper/constant";
 import { CasbinAct } from "../../helper/constant";
 import { hasPermission } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
@@ -32,6 +32,25 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(blanketPurchaseOrderTransaction.amount.toNumber()),
         }
       });
+    },
+    balance_amount: async (parent, _, context) => {
+      invariant(parent.id, 'Blanket Puchase Order ID not found.')
+      const blanketPurchaseOrderTransactions = await context.prisma.blanketPurchaseOrderTransaction.findMany({
+        where: {
+          blanket_purchase_order_id: parent.id
+        },
+      });
+
+      const remainingBalance = blanketPurchaseOrderTransactions.reduce((balance, transaction) => {
+        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.CREDIT) {
+          return balance + transaction.amount.toNumber();
+        } else if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
+          return balance - transaction.amount.toNumber();
+        }
+        return balance;
+      }, toCent(parent.amount || 0));
+
+      return toDollar(remainingBalance);
     },
   },
   Query: {

@@ -3,6 +3,7 @@ type BlanketPurchaseOrder {
   po_number: String
   name: String
   amount: Float
+  balance_amount: Float
   created_at: Date
   updated_at: Date
   biotech_id: String

@@ -113,6 +113,7 @@ export type BiotechInvoiceItem = {
 export type BlanketPurchaseOrder = {
   __typename?: 'BlanketPurchaseOrder';
   amount?: Maybe<Scalars['Float']>;
+  balance_amount?: Maybe<Scalars['Float']>;
   biotech?: Maybe<Biotech>;
   biotech_id?: Maybe<Scalars['String']>;
   blanket_purchase_order_transactions?: Maybe<Array<Maybe<BlanketPurchaseOrderTransaction>>>;
@@ -1807,6 +1808,7 @@ export type BiotechInvoiceItemResolvers<ContextType = any, ParentType extends Re
 
 export type BlanketPurchaseOrderResolvers<ContextType = any, ParentType extends ResolversParentTypes['BlanketPurchaseOrder'] = ResolversParentTypes['BlanketPurchaseOrder']> = ResolversObject<{
   amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  balance_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   blanket_purchase_order_transactions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BlanketPurchaseOrderTransaction']>>>, ParentType, ContextType>;
