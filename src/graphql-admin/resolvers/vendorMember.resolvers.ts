@@ -3,10 +3,10 @@ import { Resolvers } from "../generated";
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';
-import { sendVendorMemberInvitationByAdminEmail } from '../../mailer/vendorMember';
 import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
+import { createVendorMemberInvitationByAdminEmailJob } from '../../queues/email.queues';
 
 const resolver: Resolvers<Context> = {
   VendorMember: {
@@ -59,6 +59,8 @@ const resolver: Resolvers<Context> = {
           },
         });
 
+        invariant(newUser.reset_password_token);
+
         const newVendorMember = await trx.vendorMember.create({
           data: {
             user_id: newUser.id,
@@ -103,7 +105,11 @@ const resolver: Resolvers<Context> = {
             throw new PublicError('Invalid role.');
         }
 
-        sendVendorMemberInvitationByAdminEmail(newUser);
+        createVendorMemberInvitationByAdminEmailJob({
+          receiverEmail: newUser.email,
+          receiverName: `${newUser.first_name} ${newUser.last_name}`,
+          resetPasswordToken: newUser.reset_password_token,
+        });
         return newVendorMember;
       });
     },

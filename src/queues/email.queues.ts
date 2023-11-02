@@ -6,7 +6,7 @@ import { app_env } from "../environment";
 import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendAcceptProjectRequestEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
-import { sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
+import { sendVendorMemberInvitationByAdminEmail, sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createAdminInviteNotification from "../notification/adminInviteNotification";
 import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
@@ -18,9 +18,10 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateCustomerInvitationByADminEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorMemberInvitationByADminEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
 import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
 import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
+import { sendCustomerInvitationByAdminEmail } from '../mailer/customer'
 import invariant from "../helper/invariant";
 
 type EmailJob = {
@@ -689,6 +690,22 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
+      case EmailType.CUSTOMER_INVITATION_BY_ADMIN_EMAIL: {
+        const { receiverEmail, receiverName, resetPasswordToken } = data as CreateCustomerInvitationByADminEmailJobParam
+
+        const resp = await sendCustomerInvitationByAdminEmail(receiverEmail, receiverName, resetPasswordToken)
+
+        done(null, resp)
+        break;
+      }
+      case EmailType.VENDOR_INVITATION_BY_ADMIN_EMAIL: {
+        const { receiverEmail, receiverName, resetPasswordToken } = data as CreateVendorMemberInvitationByADminEmailJobParam
+
+        const resp = await sendVendorMemberInvitationByAdminEmail(receiverEmail, receiverName, resetPasswordToken)
+
+        done(null, resp)
+        break;
+      }
       default:
         done(new Error('No type match.'))
         break;
@@ -822,4 +839,16 @@ export const createVendorProjectRequestExpiredNoticeEmailJob = (
   data: CreateVendorProjectRequestExpiredNoticeEmailJobParam
 ) => {
   return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL, data });
+}
+
+export const createCustomerInvitationByAdminEmailJob = (
+  data: CreateCustomerInvitationByADminEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.CUSTOMER_INVITATION_BY_ADMIN_EMAIL, data });
+}
+
+export const createVendorMemberInvitationByAdminEmailJob = (
+  data: CreateVendorMemberInvitationByADminEmailJobParam
+) => {
+  return emailQueue.add({ type: EmailType.VENDOR_INVITATION_BY_ADMIN_EMAIL, data });
 }
