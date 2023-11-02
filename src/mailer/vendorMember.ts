@@ -26,19 +26,17 @@ export const sendVendorMemberInvitationByExistingMemberEmail = (inviter: User, r
   sendMail(mailData);
 };
 
-export const sendVendorMemberInvitationByAdminEmail = (receiver: User) => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
-    to: receiver.email,
-    replyTo: mailSender,
+export const sendVendorMemberInvitationByAdminEmail = async (receiverEmail: string, receiverName: string, resetPasswordToken: string) => {
+  const mailData = createMailData({
+    to: receiverEmail,
     templateId: vendorMemberInvitationByAdminTemplate,
     dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
-      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(resetPasswordToken)}`,
+      receiver_full_name: receiverName,
     },
-  };
+  });
 
-  sendMail(mailData);
+  return sendMail(mailData);
 };
 
 export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (emailData: ProjectRequestInvitationByAdminData, receiverEmail: string) => {
