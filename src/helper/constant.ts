@@ -167,6 +167,8 @@ export enum EmailType {
   USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL = 'user:invoice-payment-overdue-notice-email',
   USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL = 'user:vendor-project-request-expiring-notice-email',
   USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL = 'user:vendor-project-request-expired-notice-email',
+  CUSTOMER_INVITATION_BY_ADMIN_EMAIL = 'user:customer-invitation-by-admin-email',
+  VENDOR_INVITATION_BY_ADMIN_EMAIL = 'user:vendor-invitation-by-admin-email',
 }
 
 export enum VendorType {
