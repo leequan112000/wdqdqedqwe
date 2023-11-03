@@ -8,6 +8,8 @@ import { hasPermission } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
+import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
+
 const resolvers: Resolvers<Context> = {
   BlanketPurchaseOrder: {
     biotech: async (parent, _, context) => {
@@ -80,32 +82,17 @@ const resolvers: Resolvers<Context> = {
       const { po_number, name, amount } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Missing current user id.');
-      
+
       await checkAllowCustomerOnlyPermission(context);
       const allowCreatePurchaseOrder = await hasPermission(currentUserId, CasbinObj.PURCHASE_ORDER, CasbinAct.WRITE);
       invariant(allowCreatePurchaseOrder, new PermissionDeniedError());
 
-      return await context.prisma.$transaction(async (trx) => {
-        const customer = await trx.customer.findFirstOrThrow({
-          where: {
-            user_id: currentUserId
-          }
-        });
-
-        const blanketPurchaseOrder = await trx.blanketPurchaseOrder.create({
-          data: {
-            po_number,
-            name,
-            amount: toCent(amount),
-            biotech_id: customer.biotech_id,
-          }
-        });
-
-        return ({
-          ...blanketPurchaseOrder,
-          amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
-        })
-      });
+      return await blanketPurchaseOrderService.createBlanketPurchaseOrder({
+        po_number,
+        name,
+        amount,
+        current_user_id: currentUserId,
+      }, context);
     },
   }
 };
