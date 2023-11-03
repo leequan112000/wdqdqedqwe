@@ -39,6 +39,60 @@ export const createBlanketPurchaseOrder = async (args: CreateBlanketPurchaseOrde
   });
 }
 
+export type UpdateBlanketPurchaseOrderArgs = {
+  id: string;
+  po_number: string;
+  name: string;
+  amount: number;
+  current_user_id: string;
+}
+
+export const updateBlanketPurchaseOrder = async (args: UpdateBlanketPurchaseOrderArgs, context: ServiceContext) => {
+  const { id, po_number, name, amount, current_user_id } = args;
+  const allowEditPurchaseOrder = await hasPermission(current_user_id, CasbinObj.PURCHASE_ORDER, CasbinAct.WRITE);
+  invariant(allowEditPurchaseOrder, new PermissionDeniedError());
+
+  const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      blanket_purchase_order_transactions: true
+    }
+  });
+
+  invariant(blanketPurchaseOrder, 'Blanket Pruchase Order not found.');
+
+  const customer = await context.prisma.customer.findFirstOrThrow({
+    where: {
+      user_id: current_user_id
+    }
+  });
+
+  invariant(customer?.biotech_id === blanketPurchaseOrder.biotech_id, new PermissionDeniedError());
+
+  if (blanketPurchaseOrder.blanket_purchase_order_transactions.length > 0) {
+    invariant(toCent(amount) >= blanketPurchaseOrder.amount.toNumber(), new PublicError('Amount adjustments are allowed only for increasing the amount when transactions are present, decreasing is not permitted.'));
+    invariant(po_number === blanketPurchaseOrder.po_number, new PublicError('Modification of the Purchase Order number is not allowed when transactions are associated with it'));
+  }
+
+  const updatedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.update({
+    where: {
+      id,
+    },
+    data: {
+      po_number,
+      name,
+      amount: toCent(amount),
+    }
+  });
+
+  return ({
+    ...updatedBlanketPurchaseOrder,
+    amount: toDollar(updatedBlanketPurchaseOrder.amount.toNumber()),
+  });
+}
+
 export type RemoveBlanketPurchaseOrderArgs = {
   id: string;
   current_user_id: string;
@@ -84,6 +138,7 @@ export const removeBlanketPurchaseOrder = async (args: RemoveBlanketPurchaseOrde
 
 const blanketPurchaseOrderService = {
   createBlanketPurchaseOrder,
+  updateBlanketPurchaseOrder,
   removeBlanketPurchaseOrder,
 };
 

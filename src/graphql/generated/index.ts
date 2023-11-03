@@ -406,6 +406,7 @@ export type Mutation = {
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   updateBiotech?: Maybe<Biotech>;
+  updateBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
@@ -767,6 +768,14 @@ export type MutationUpdateBiotechArgs = {
   twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateBlanketPurchaseOrderArgs = {
+  amount: Scalars['Float'];
+  id: Scalars['String'];
+  name: Scalars['String'];
+  po_number: Scalars['String'];
 };
 
 
@@ -2094,6 +2103,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
+  updateBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationUpdateBlanketPurchaseOrderArgs, 'amount' | 'id' | 'name' | 'po_number'>>;
   updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;

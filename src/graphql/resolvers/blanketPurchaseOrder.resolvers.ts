@@ -91,6 +91,20 @@ const resolvers: Resolvers<Context> = {
         current_user_id: currentUserId,
       }, context);
     },
+    updateBlanketPurchaseOrder: async (_, args, context) => {
+      const { id, po_number, name, amount } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      await checkAllowCustomerOnlyPermission(context);
+
+      return await blanketPurchaseOrderService.updateBlanketPurchaseOrder({
+        id,
+        po_number,
+        name,
+        amount,
+        current_user_id: currentUserId,
+      }, context);
+    },
     removeBlanketPurchaseOrder: async (_, args, context) => {
       const { id } = args;
       const currentUserId = context.req.user_id;

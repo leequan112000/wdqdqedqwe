@@ -21,5 +21,11 @@ type Mutation {
     name: String!
     amount: Float!
   ): BlanketPurchaseOrder
+  updateBlanketPurchaseOrder(
+    id: String!
+    po_number: String!
+    name: String!
+    amount: Float!
+  ): BlanketPurchaseOrder
   removeBlanketPurchaseOrder(id: String!): BlanketPurchaseOrder
 }
