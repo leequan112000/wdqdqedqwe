@@ -1,33 +1,79 @@
-import { createMailData, sendMail } from "./config";
+import { createBulkEmailJobData } from "../helper/queue";
+import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
 import { contractUploadNoticeTemplate, contractUpdateNoticeTemplate, documentUploadNoticeTemplate } from "./templates";
-import type { UploadNoticeData } from "./types";
 
-export const sendDocumentUploadNoticeEmail = async (emailData: UploadNoticeData, receiverEmail: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+type DocumentUploadNoticeEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+  project_title: string;
+  company_name: string;
+}
+
+export const documentUploadNoticeEmail = async (emailData: DocumentUploadNoticeEmailData, receiverEmail: string) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: documentUploadNoticeTemplate,
-    dynamicTemplateData: {
-      login_url: emailData.login_url,
-      project_title: emailData.project_title,
-      receiver_full_name: emailData.receiver_full_name,
-      company_name: emailData.company_name,
-    },
   });
-
-  await sendMail(mailData);
 }
 
-export const sendContractUploadNoticeEmail = async (emailData: UploadNoticeData, receiverEmail: string, action: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: action === 'upload' ? contractUploadNoticeTemplate : contractUpdateNoticeTemplate,
-    dynamicTemplateData: {
-      login_url: emailData.login_url,
-      project_title: emailData.project_title,
-      receiver_full_name: emailData.receiver_full_name,
-      company_name: emailData.company_name,
-    },
-  });
-
-  await sendMail(mailData);
+type BulkDocumentUploadNoticeEmailData = {
+  emailData: DocumentUploadNoticeEmailData;
+  receiverEmail: string;
 }
+
+export const bulkDocumentUploadNoticeEmail = async (data: BulkDocumentUploadNoticeEmailData[]) => {
+  const bulks = createBulkEmailJobData(data, documentUploadNoticeTemplate)
+  createBulkSendMailJobs(bulks)
+}
+
+type ContractUploadNoticeEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+  project_title: string;
+  company_name: string;
+}
+
+export const contractUploadNoticeEmail = async (emailData: ContractUploadNoticeEmailData, receiverEmail: string) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: contractUploadNoticeTemplate,
+  });
+}
+
+type BulkContractUploadNoticeEmailData = {
+  emailData: ContractUploadNoticeEmailData;
+  receiverEmail: string;
+}
+
+export const bulkContractUploadNoticeEmail = async (data: BulkContractUploadNoticeEmailData[]) => {
+  const bulks = createBulkEmailJobData(data, contractUploadNoticeTemplate)
+  createBulkSendMailJobs(bulks)
+}
+
+type ContractUpdateNoticeEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+  project_title: string;
+  company_name: string;
+}
+
+export const contractUpdateNoticeEmail = async (emailData: ContractUpdateNoticeEmailData, receiverEmail: string) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: contractUpdateNoticeTemplate,
+  });
+}
+
+type BulkContractUpdateNoticeEmailData = {
+  emailData: ContractUpdateNoticeEmailData;
+  receiverEmail: string;
+}
+
+export const bulkContractUpdateNoticeEmail = async (data: BulkContractUpdateNoticeEmailData[]) => {
+  const bulks = createBulkEmailJobData(data, contractUploadNoticeTemplate)
+  createBulkSendMailJobs(bulks)
+}
+

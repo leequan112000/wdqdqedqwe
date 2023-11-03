@@ -1,18 +1,20 @@
-import { createMailData, sendMail } from "./config";
-import type { ProjectRequestInvitationByExistingMemberData } from "./types";
 import { projectRequestInvitationByExistingMemberTemplate } from "./templates";
+import { createSendMailJob } from "../queues/sendMail.queues";
 
-export const sendProjectCollaboratorInvitationEmail = async (emailData: ProjectRequestInvitationByExistingMemberData, receiverEmail: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+type ProjectRequestInvitationByExistingMemberEmailData = {
+  login_url: string;
+  project_title: string;
+  inviter_full_name: string;
+  receiver_full_name: string;
+};
+
+export const projectCollaboratorInvitationEmail = async (
+  emailData: ProjectRequestInvitationByExistingMemberEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: projectRequestInvitationByExistingMemberTemplate,
-    dynamicTemplateData: {
-      login_url: emailData.login_url,
-      inviter_full_name: emailData.inviter_full_name,
-      project_title: emailData.project_title,
-      receiver_full_name: emailData.receiver_full_name,
-    },
   });
-
-  await sendMail(mailData);
-}
+};

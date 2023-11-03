@@ -8,9 +8,8 @@ import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 
 import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
-import { sendProjectCollaboratorInvitationEmail } from '../../mailer/projectConnection';
-import { sendCustomerInvitationEmail } from "../../mailer/customer";
-import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { customerInvitationEmail } from "../../mailer/customer";
+import { projectCollaboratorInvitationEmail, vendorMemberInvitationByUserEmail } from '../../mailer'
 
 import { createResetPasswordToken } from "../../helper/auth";
 import { checkAllowAddProjectCollaborator, checkAllowRemoveProjectCollaborator, checkProjectConnectionPermission } from "../../helper/accessControl";
@@ -18,9 +17,9 @@ import { ProjectAttachmentDocumentType, ProjectConnectionVendorStatus, ProjectRe
 import { toDollar } from "../../helper/money";
 import { filterByCollaborationStatus } from "../../helper/projectConnection";
 import invariant from "../../helper/invariant";
-import { addRoleForUser } from "../../helper/casbin";
 import chatService from "../../services/chat/chat.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -733,7 +732,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         if (projectConnection) {
-          sendProjectCollaboratorInvitationEmail({
+          projectCollaboratorInvitationEmail({
             login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
             inviter_full_name: `${currentUser.first_name} ${currentUser.last_name}`,
             project_title: projectConnection.project_request.title,
@@ -901,12 +900,32 @@ const resolvers: Resolvers<Context> = {
         });
         const emailMessage = custom_message || '';
 
+        const newUserFullName = getUserFullName(newUser)
+        const resetPasswordUrl = createResetPasswordUrl(resetToken)
+        const currentUserFullName = getUserFullName(currentUser)
+
         // Send email
         if (isBiotech) {
-          sendCustomerInvitationEmail(currentUser, newUser, emailMessage);
+          customerInvitationEmail(
+            {
+              inviter_full_name: currentUserFullName,
+              inviter_message: emailMessage,
+              login_url: resetPasswordUrl,
+              receiver_full_name: newUserFullName,
+            },
+            newUser.email,
+          );
         }
         if (isVendor) {
-          sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
+          vendorMemberInvitationByUserEmail(
+            {
+              inviter_full_name: currentUserFullName,
+              inviter_message: emailMessage,
+              login_url: resetPasswordUrl,
+              receiver_full_name: newUserFullName,
+            },
+            newUser.email,
+          );
         }
 
         // Update company role and casbin role

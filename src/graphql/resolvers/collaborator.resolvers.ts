@@ -1,16 +1,17 @@
-import { sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { vendorMemberInvitationByUserEmail } from "../../mailer";
 import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
-import { sendCustomerInvitationEmail } from "../../mailer/customer";
+import { customerInvitationEmail } from "../../mailer/customer";
 import { addRoleForUser, hasPermission } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
 import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -154,13 +155,29 @@ const resolvers: Resolvers<Context> = {
           },
         });
         const emailMessage = args.custom_message || '';
+        const resetPasswordUrl = createResetPasswordUrl(resetToken)
+        const currentUserFullName = getUserFullName(currentUser)
+        const newUserFullName = getUserFullName(newUser)
 
         // Send email
         if (isBiotech) {
-          sendCustomerInvitationEmail(currentUser, newUser, emailMessage);
+          customerInvitationEmail({
+            inviter_full_name: currentUserFullName,
+            inviter_message: emailMessage,
+            login_url: resetPasswordUrl,
+            receiver_full_name: newUserFullName,
+          }, newUser.email)
         }
         if (isVendor) {
-          sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, emailMessage);
+          vendorMemberInvitationByUserEmail(
+            {
+              inviter_full_name: currentUserFullName,
+              inviter_message: emailMessage,
+              login_url: resetPasswordUrl,
+              receiver_full_name: newUserFullName
+            },
+            newUser.email,
+          )
         }
 
         // Update company role and casbin role
@@ -243,6 +260,9 @@ const resolvers: Resolvers<Context> = {
                 reset_password_expiration: new Date(resetTokenExpiration),
               },
             });
+            const newUserFullName = getUserFullName(newUser)
+            const resetPasswordUrl = createResetPasswordUrl(resetToken)
+            const currentUserFullName = getUserFullName(currentUser)
 
             // If current user is a biotech member, create customer data for the new user.
             if (currentUser.customer?.biotech_id) {
@@ -252,7 +272,15 @@ const resolvers: Resolvers<Context> = {
                   biotech_id: currentUser.customer.biotech_id,
                 },
               });
-              sendCustomerInvitationEmail(currentUser, newUser, "");
+              customerInvitationEmail(
+                {
+                  inviter_full_name: currentUserFullName,
+                  inviter_message: "",
+                  login_url: resetPasswordUrl,
+                  receiver_full_name: newUserFullName,
+                },
+                newUser.email,
+              );
             }
 
             // If current user is a vendor member, create vendor member data for the new user.
@@ -263,7 +291,15 @@ const resolvers: Resolvers<Context> = {
                   vendor_company_id: currentUser.vendor_member.vendor_company_id,
                 }
               });
-              sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, "");
+              vendorMemberInvitationByUserEmail(
+                {
+                  inviter_full_name: currentUserFullName,
+                  inviter_message: "",
+                  login_url: resetPasswordUrl,
+                  receiver_full_name: newUserFullName
+                },
+                newUser.email,
+              );
             }
 
             await addRoleForUser(newUser.id, CasbinRole.USER);
@@ -295,6 +331,8 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
+      invariant(currentUser, 'Current user not found.');
+
       const newUser = await context.prisma.user.findFirst({
         where: {
           id: args.user_id,
@@ -330,13 +368,32 @@ const resolvers: Resolvers<Context> = {
           reset_password_expiration: new Date(resetTokenExpiration),
         },
       });
+      const updatedUserFullName = getUserFullName(updatedNewUser)
+      const resetPasswordUrl = createResetPasswordUrl(resetToken)
+      const currentUserFullName = getUserFullName(currentUser)
 
       if (currentUser?.customer?.biotech_id) {
-        sendCustomerInvitationEmail(currentUser, updatedNewUser);
+        customerInvitationEmail(
+          {
+            inviter_full_name: currentUserFullName,
+            inviter_message: "",
+            login_url: resetPasswordUrl,
+            receiver_full_name: updatedUserFullName,
+          },
+          updatedNewUser.email,
+        );
         return updatedNewUser;
       }
       if (currentUser?.vendor_member?.vendor_company_id) {
-        sendVendorMemberInvitationByExistingMemberEmail(currentUser, updatedNewUser);
+        vendorMemberInvitationByUserEmail(
+          {
+            inviter_full_name: currentUserFullName,
+            inviter_message: "",
+            login_url: resetPasswordUrl,
+            receiver_full_name: updatedUserFullName
+          },
+          updatedNewUser.email,
+        );
         return updatedNewUser;
       }
 

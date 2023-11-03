@@ -5,7 +5,8 @@ import invariant from "../../helper/invariant";
 import { PublicError } from "../../graphql/errors/PublicError";
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { CompanyCollaboratorRoleType } from "../../helper/constant";
-import { createCustomerInvitationByAdminEmailJob, createVendorMemberInvitationByAdminEmailJob } from "../../queues/email.queues";
+import { customerInvitationByAdminEmail, vendorMemberInvitationByAdminEmail } from "../../mailer";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 function ignoreEmptyString(data: string | undefined | null) {
   if (data === "") {
@@ -48,12 +49,15 @@ const resolvers: Resolvers<Context> = {
 
       invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
 
-      createVendorMemberInvitationByAdminEmailJob(
+      const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+
+      vendorMemberInvitationByAdminEmail(
         {
-          receiverEmail: updatedNewUser.email,
-          receiverName: `${updatedNewUser.first_name} ${updatedNewUser.last_name}`,
-          resetPasswordToken: updatedNewUser.reset_password_token
-        }
+          login_url: resetPasswordUrl,
+          receiver_full_name: updatedNewUserFullName,
+        },
+        updatedNewUser.email,
       );
 
       return true;
@@ -90,12 +94,14 @@ const resolvers: Resolvers<Context> = {
 
       invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
 
-      createCustomerInvitationByAdminEmailJob(
+      const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+      customerInvitationByAdminEmail(
         {
-          receiverEmail: updatedNewUser.email,
-          receiverName: `${updatedNewUser.first_name} ${updatedNewUser.last_name}`,
-          resetPasswordToken: updatedNewUser.reset_password_token
-        }
+          login_url: resetPasswordUrl,
+          receiver_full_name: updatedNewUserFullName,
+        },
+        updatedNewUser.email,
       );
 
       return true;

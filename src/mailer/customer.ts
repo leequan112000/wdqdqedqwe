@@ -1,32 +1,39 @@
-import { User } from "@prisma/client";
-import { createMailData, sendMail } from "./config";
-import { customerInvitationByAdminTemplate, customerInvitationTemplate } from "./templates";
-import { app_env } from "../environment";
+import {
+  customerInvitationByAdminTemplate,
+  customerInvitationTemplate,
+} from "./templates";
+import { createSendMailJob } from "../queues/sendMail.queues";
 
-export const sendCustomerInvitationEmail = (inviter: User, receiver: User, custom_message: string = '') => {
-  const mailData = createMailData({
-    to: receiver.email,
-    templateId: customerInvitationTemplate,
-    dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
-      inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
-      inviter_message: custom_message,
-      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-    },
-  });
-
-  sendMail(mailData);
+type CustomerInvitationEmailData = {
+  login_url: string;
+  inviter_full_name: string;
+  inviter_message: string;
+  receiver_full_name: string;
 };
 
-export const sendCustomerInvitationByAdminEmail = async (receiverEmail: string, receiverName: string, resetPasswordToken: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: customerInvitationByAdminTemplate,
-    dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(resetPasswordToken)}`,
-      receiver_full_name: receiverName,
-    },
-  })
+export const customerInvitationEmail = (
+  emailData: CustomerInvitationEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: customerInvitationTemplate,
+  });
+};
 
-  return sendMail(mailData);
+type CustomerInvitationByAdminEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+};
+
+export const customerInvitationByAdminEmail = (
+  emailData: CustomerInvitationByAdminEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: customerInvitationByAdminTemplate,
+  });
 };
