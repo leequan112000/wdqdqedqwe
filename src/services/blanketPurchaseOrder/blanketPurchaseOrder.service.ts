@@ -1,5 +1,9 @@
 import { ServiceContext } from '../../types/context';
 import { toCent, toDollar } from '../../helper/money';
+import invariant from '../../helper/invariant';
+import { hasPermission } from '../../helper/casbin';
+import { CasbinAct, CasbinObj } from '../../helper/constant';
+import { PermissionDeniedError } from '../../graphql/errors/PermissionDeniedError';
 
 export type CreateBlanketPurchaseOrderArgs = {
   po_number: string;
@@ -10,6 +14,9 @@ export type CreateBlanketPurchaseOrderArgs = {
 
 export const createBlanketPurchaseOrder = async (args: CreateBlanketPurchaseOrderArgs, context: ServiceContext) => {
   const { po_number, name, amount, current_user_id } = args;
+  const allowCreatePurchaseOrder = await hasPermission(current_user_id, CasbinObj.PURCHASE_ORDER, CasbinAct.WRITE);
+  invariant(allowCreatePurchaseOrder, new PermissionDeniedError());
+
   const customer = await context.prisma.customer.findFirstOrThrow({
     where: {
       user_id: current_user_id
@@ -28,11 +35,55 @@ export const createBlanketPurchaseOrder = async (args: CreateBlanketPurchaseOrde
   return ({
     ...blanketPurchaseOrder,
     amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
-  })
+  });
+}
+
+export type DeleteBlanketPurchaseOrderArgs = {
+  id: string;
+  current_user_id: string;
+}
+
+export const deleteBlanketPurchaseOrder = async (args: DeleteBlanketPurchaseOrderArgs, context: ServiceContext) => {
+  const { id, current_user_id } = args;
+  const allowDeletePurchaseOrder = await hasPermission(current_user_id, CasbinObj.PURCHASE_ORDER, CasbinAct.DELETE);
+  invariant(allowDeletePurchaseOrder, new PermissionDeniedError());
+
+  const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      blanket_purchase_order_transactions: true
+    }
+  });
+
+  invariant(blanketPurchaseOrder, 'Blanket Pruchase Order not found.');
+
+  const customer = await context.prisma.customer.findFirstOrThrow({
+    where: {
+      user_id: current_user_id
+    }
+  });
+  
+  invariant(customer.biotech_id === blanketPurchaseOrder.biotech_id, new PermissionDeniedError());
+  
+  invariant(blanketPurchaseOrder.blanket_purchase_order_transactions.length > 0, 'Unable to delete Blanket Purchase Order with associated transactions for record-keeping purposes.');
+
+  const deletedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.delete({
+    where: {
+      id,
+    }
+  });
+
+  return ({
+    ...deletedBlanketPurchaseOrder,
+    amount: toDollar(deletedBlanketPurchaseOrder.amount.toNumber()),
+  });
 }
 
 const blanketPurchaseOrderService = {
   createBlanketPurchaseOrder,
+  deleteBlanketPurchaseOrder,
 };
 
 export default blanketPurchaseOrderService;

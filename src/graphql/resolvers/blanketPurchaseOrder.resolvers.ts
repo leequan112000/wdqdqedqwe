@@ -2,11 +2,8 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { toCent, toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission } from "../../helper/accessControl";
-import { BlanketPurchaseOrderTransactionType, CasbinObj } from "../../helper/constant";
-import { CasbinAct } from "../../helper/constant";
-import { hasPermission } from "../../helper/casbin";
+import { BlanketPurchaseOrderTransactionType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
 
@@ -82,15 +79,23 @@ const resolvers: Resolvers<Context> = {
       const { po_number, name, amount } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Missing current user id.');
-
       await checkAllowCustomerOnlyPermission(context);
-      const allowCreatePurchaseOrder = await hasPermission(currentUserId, CasbinObj.PURCHASE_ORDER, CasbinAct.WRITE);
-      invariant(allowCreatePurchaseOrder, new PermissionDeniedError());
 
       return await blanketPurchaseOrderService.createBlanketPurchaseOrder({
         po_number,
         name,
         amount,
+        current_user_id: currentUserId,
+      }, context);
+    },
+    deleteBlanketPurchaseOrder: async (_, args, context) => {
+      const { id } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing current user id.');
+      await checkAllowCustomerOnlyPermission(context);
+
+      return await blanketPurchaseOrderService.deleteBlanketPurchaseOrder({
+        id,
         current_user_id: currentUserId,
       }, context);
     },
