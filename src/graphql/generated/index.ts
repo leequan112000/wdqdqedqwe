@@ -369,7 +369,6 @@ export type Mutation = {
   deactivateCollaborator?: Maybe<User>;
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
-  deleteBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
@@ -387,6 +386,7 @@ export type Mutation = {
   reactivateCollaborator?: Maybe<User>;
   refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
+  removeBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   removeCompanyAttachment?: Maybe<CompanyAttachment>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
   removeProjectCollaborator?: Maybe<User>;
@@ -550,11 +550,6 @@ export type MutationDeclinedProjectConnectionArgs = {
 };
 
 
-export type MutationDeleteBlanketPurchaseOrderArgs = {
-  id: Scalars['String'];
-};
-
-
 export type MutationDraftQuoteReviewArgs = {
   input?: InputMaybe<Array<ReviewInput>>;
   is_final_step?: InputMaybe<Scalars['Boolean']>;
@@ -655,6 +650,11 @@ export type MutationReactivateCollaboratorArgs = {
 
 
 export type MutationRemoveAttachmentArgs = {
+  id: Scalars['String'];
+};
+
+
+export type MutationRemoveBlanketPurchaseOrderArgs = {
   id: Scalars['String'];
 };
 
@@ -2059,7 +2059,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
-  deleteBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationDeleteBlanketPurchaseOrderArgs, 'id'>>;
   draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
@@ -2075,6 +2074,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationReactivateCollaboratorArgs, 'user_id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
+  removeBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationRemoveBlanketPurchaseOrderArgs, 'id'>>;
   removeCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveCompanyAttachmentArgs, 'id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;

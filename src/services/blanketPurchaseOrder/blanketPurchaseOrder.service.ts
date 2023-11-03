@@ -38,12 +38,12 @@ export const createBlanketPurchaseOrder = async (args: CreateBlanketPurchaseOrde
   });
 }
 
-export type DeleteBlanketPurchaseOrderArgs = {
+export type RemoveBlanketPurchaseOrderArgs = {
   id: string;
   current_user_id: string;
 }
 
-export const deleteBlanketPurchaseOrder = async (args: DeleteBlanketPurchaseOrderArgs, context: ServiceContext) => {
+export const removeBlanketPurchaseOrder = async (args: RemoveBlanketPurchaseOrderArgs, context: ServiceContext) => {
   const { id, current_user_id } = args;
   const allowDeletePurchaseOrder = await hasPermission(current_user_id, CasbinObj.PURCHASE_ORDER, CasbinAct.DELETE);
   invariant(allowDeletePurchaseOrder, new PermissionDeniedError());
@@ -69,21 +69,21 @@ export const deleteBlanketPurchaseOrder = async (args: DeleteBlanketPurchaseOrde
   
   invariant(blanketPurchaseOrder.blanket_purchase_order_transactions.length > 0, 'Unable to delete Blanket Purchase Order with associated transactions for record-keeping purposes.');
 
-  const deletedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.delete({
+  const removedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.delete({
     where: {
       id,
     }
   });
 
   return ({
-    ...deletedBlanketPurchaseOrder,
-    amount: toDollar(deletedBlanketPurchaseOrder.amount.toNumber()),
+    ...removedBlanketPurchaseOrder,
+    amount: toDollar(removedBlanketPurchaseOrder.amount.toNumber()),
   });
 }
 
 const blanketPurchaseOrderService = {
   createBlanketPurchaseOrder,
-  deleteBlanketPurchaseOrder,
+  removeBlanketPurchaseOrder,
 };
 
 export default blanketPurchaseOrderService;
