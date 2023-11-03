@@ -65,7 +65,10 @@ const resolvers: Resolvers<Context> = {
       const blanketPurchaseOrders = await context.prisma.blanketPurchaseOrder.findMany({
         where: {
           biotech_id: currentCustomer?.biotech_id
-        }
+        },
+        orderBy: {
+          created_at: 'desc'
+        },
       });
 
       return blanketPurchaseOrders.map((bpo) => ({

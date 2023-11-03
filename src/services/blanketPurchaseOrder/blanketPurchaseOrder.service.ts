@@ -4,6 +4,7 @@ import invariant from '../../helper/invariant';
 import { hasPermission } from '../../helper/casbin';
 import { CasbinAct, CasbinObj } from '../../helper/constant';
 import { PermissionDeniedError } from '../../graphql/errors/PermissionDeniedError';
+import { PublicError } from '../../graphql/errors/PublicError';
 
 export type CreateBlanketPurchaseOrderArgs = {
   po_number: string;
@@ -59,15 +60,15 @@ export const removeBlanketPurchaseOrder = async (args: RemoveBlanketPurchaseOrde
 
   invariant(blanketPurchaseOrder, 'Blanket Pruchase Order not found.');
 
-  const customer = await context.prisma.customer.findFirstOrThrow({
+  const customer = await context.prisma.customer.findFirst({
     where: {
       user_id: current_user_id
     }
   });
+
+  invariant(customer?.biotech_id === blanketPurchaseOrder.biotech_id, new PermissionDeniedError());
   
-  invariant(customer.biotech_id === blanketPurchaseOrder.biotech_id, new PermissionDeniedError());
-  
-  invariant(blanketPurchaseOrder.blanket_purchase_order_transactions.length > 0, 'Unable to delete Blanket Purchase Order with associated transactions for record-keeping purposes.');
+  invariant(blanketPurchaseOrder.blanket_purchase_order_transactions.length === 0, new PublicError('Unable to delete Blanket Purchase Order with associated transactions for record-keeping purposes.'));
 
   const removedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.delete({
     where: {
