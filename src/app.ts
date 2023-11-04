@@ -103,7 +103,6 @@ export const adminApolloServer = new ApolloServer<Context>({
 export async function startServer() {
   app.use(Sentry.Handlers.requestHandler());
   app.use(routes);
-  app.use(Sentry.Handlers.errorHandler());
   app.use(express.json());
   app.use(cors(corsConfig));
   app.use(cookieParser());
@@ -203,6 +202,8 @@ export async function startServer() {
       },
     }),
   );
+
+  app.use(Sentry.Handlers.errorHandler());
 
   httpServer.listen(process.env.PORT || '9000');
 }
