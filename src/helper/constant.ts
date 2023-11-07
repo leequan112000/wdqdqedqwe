@@ -67,6 +67,7 @@ export enum MilestoneStatus {
 
 export enum MilestonePaymentStatus {
   UNPAID = 'unpaid',
+  PENDING = 'pending',
   PROCESSING = 'processing',
   PAID = 'paid',
 }
@@ -205,6 +206,7 @@ export enum CasbinObj {
   PAYOUT_ACCOUNT = 'payout_account',
   MILESTONE_PAYMENT = 'milestone/payment',
   PURCHASE_ORDER = 'purchase_order',
+  INVOICE = 'invoice',
 }
 
 export enum CasbinAct {

@@ -336,6 +336,7 @@ export type MessagesPageInfo = {
 export type Milestone = {
   __typename?: 'Milestone';
   amount?: Maybe<Scalars['Float']>;
+  biotech_invoice_item?: Maybe<BiotechInvoiceItem>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   payment_status?: Maybe<Scalars['String']>;
@@ -383,6 +384,7 @@ export type Mutation = {
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
+  payByPurchaseOrder?: Maybe<Milestone>;
   reactivateCollaborator?: Maybe<User>;
   refreshJWT?: Maybe<AuthResponse>;
   removeAttachment?: Maybe<ProjectAttachment>;
@@ -642,6 +644,12 @@ export type MutationOnboardBiotechArgs = {
   twitter_url?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
   zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationPayByPurchaseOrderArgs = {
+  id: Scalars['String'];
+  po_number: Scalars['String'];
 };
 
 
@@ -2035,6 +2043,7 @@ export type MessagesPageInfoResolvers<ContextType = any, ParentType extends Reso
 
 export type MilestoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['Milestone'] = ResolversParentTypes['Milestone']> = ResolversObject<{
   amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  biotech_invoice_item?: Resolver<Maybe<ResolversTypes['BiotechInvoiceItem']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2080,6 +2089,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
+  payByPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByPurchaseOrderArgs, 'id' | 'po_number'>>;
   reactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationReactivateCollaboratorArgs, 'user_id'>>;
   refreshJWT?: Resolver<Maybe<ResolversTypes['AuthResponse']>, ParentType, ContextType>;
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;

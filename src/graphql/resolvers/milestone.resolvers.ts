@@ -1,4 +1,7 @@
-import { toDollar } from "../../helper/money";
+import { Prisma } from "@prisma/client";
+import currency from "currency.js";
+import moment from "moment";
+
 import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
@@ -9,10 +12,12 @@ import { payVendorJob } from "../../queues/payout.queues";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, InvoicePaymentStatus } from "../../helper/constant";
+import { toDollar } from "../../helper/money";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
+import { generateInvoiceNumber } from "../../helper/invoice";
 import { hasPermission } from "../../helper/casbin";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
@@ -41,6 +46,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       return quote ? { ...quote, amount: toDollar(quote.amount.toNumber()) } : {};
+    },
+    biotech_invoice_item: async (parent, _, context) => {
+      invariant(parent.id, 'Missing milestone id.');
+      const biotechInvoiceItem = await context.prisma.biotechInvoiceItem.findFirst({
+        where: {
+          milestone_id: parent.id,
+        },
+      });
+
+      return biotechInvoiceItem ? { ...biotechInvoiceItem, amount: toDollar(biotechInvoiceItem.amount.toNumber()) } : null;
     },
   },
   Query: {
@@ -295,6 +310,111 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(updatedMilestone.quote.amount.toNumber())
         }
       }
+    },
+    payByPurchaseOrder: async (_, args, context) => {
+      const { id, po_number } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
+      await checkAllowCustomerOnlyPermission(context);
+      await checkMilestonePermission(context, id);
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: currentUserId,
+        },
+        include: {
+          biotech: true
+        }
+      });
+
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          quote: {
+            include: {
+              project_connection: true
+            }
+          }
+        }
+      });
+
+      invariant(milestone, new PublicError('Milestone not found.'));
+
+      const existingPO = await context.prisma.purchaseOrder.findFirst({
+        where: {
+          po_number,
+          biotech_id: customer?.biotech_id
+        },
+      });
+
+      invariant(!existingPO, new PublicError('Purchase order number already used for another payment. Please verify or contact support.'));
+
+      const existingBPO = await context.prisma.blanketPurchaseOrder.findFirst({
+        where: {
+          po_number,
+          biotech_id: customer?.biotech_id
+        },
+      });
+
+      invariant(!existingBPO, new PublicError('Your purchase order number matches a blanket PO. Please select \'Pay with Blanket PO\' instead.'));
+
+
+      return await context.prisma.$transaction(async (trx) => {
+        const today = moment();
+        const dueDate = today.clone().add(30, 'd');
+
+        const biotechInvoiceItemInputs: Prisma.BiotechInvoiceItemUncheckedCreateWithoutBiotech_invoiceInput = {
+          amount: currency(milestone.amount.toNumber(), { fromCents: true }).intValue,
+          name: milestone.title,
+          milestone_id: milestone.id,
+        };
+
+        const invoice = await trx.biotechInvoice.create({
+          data: {
+            invoice_number: generateInvoiceNumber(true),
+            payment_status: InvoicePaymentStatus.UNPAID,
+            due_at: dueDate.endOf('d').toDate(),
+            biotech_invoice_items: {
+              create: biotechInvoiceItemInputs,
+            },
+            biotech_id: customer?.biotech_id!,
+          },
+        });
+
+        await trx.purchaseOrder.create({
+          data: {
+            po_number,
+            biotech_invoice_id: invoice.id,
+            biotech_id: customer?.biotech_id!,
+          },
+        });
+
+        const updatedMilestone = await trx.milestone.update({
+          where: {
+            id,
+          },
+          include: {
+            quote: true
+          },
+          data: {
+            payment_status: MilestonePaymentStatus.PENDING,
+          },
+        });
+
+        return {
+          ...updatedMilestone,
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
+        }
+      });
     },
   }
 }

@@ -16,6 +16,7 @@ const main = async () => {
       { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.READ },
       { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.DELETE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.INVOICE, act: CasbinAct.READ },
     ].map(async (d) => {
       await addPermissionForRole(d.role, d.obj, d.act);
     });

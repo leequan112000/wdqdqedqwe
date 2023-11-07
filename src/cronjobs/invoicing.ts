@@ -1,5 +1,4 @@
 import moment from 'moment';
-import { customAlphabet } from 'nanoid';
 import prisma from '../prisma';
 import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
@@ -8,6 +7,7 @@ import currency from 'currency.js';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { createBillingNoticeEmailJob } from '../queues/email.queues';
+import { generateInvoiceNumber } from '../helper/invoice';
 
 const argv = yargs(hideBin(process.argv))
   .option('debug', {
@@ -16,11 +16,6 @@ const argv = yargs(hideBin(process.argv))
     default: false, // Default value if the argument is not provided
   })
   .parseSync();
-
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 18);
-function generateInvoiceNumber() {
-  return `in_${nanoid()}`
-}
 
 const today = moment();
 const isFirstDayOfMonth = today.date() === 1;
@@ -119,7 +114,7 @@ async function main() {
         data: {
           vendor_company_id: vendorCompanyId,
           due_at: dueDate.endOf('d').toDate(),
-          invoice_number: generateInvoiceNumber(),
+          invoice_number: generateInvoiceNumber(false),
           payment_status: invoiceItemInputs.length === 0 ? InvoicePaymentStatus.PAID : InvoicePaymentStatus.UNPAID,
           from_date: fromDate.toDate(),
           to_date: toDate.toDate(),
