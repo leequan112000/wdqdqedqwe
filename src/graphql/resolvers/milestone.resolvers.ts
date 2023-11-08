@@ -10,7 +10,7 @@ import biotechInvoiceService from "../../services/biotechInvoice/biotechInvoice.
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, InvoicePaymentStatus } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, BlanketPurchaseOrderTransactionType } from "../../helper/constant";
 import { toDollar } from "../../helper/money";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
@@ -375,6 +375,102 @@ const resolvers: Resolvers<Context> = {
             po_number,
             biotech_invoice_id: invoice.id,
             biotech_id: customer?.biotech_id!,
+          },
+        });
+
+        const updatedMilestone = await trx.milestone.update({
+          where: {
+            id,
+          },
+          include: {
+            quote: true
+          },
+          data: {
+            payment_status: MilestonePaymentStatus.PENDING,
+          },
+        });
+
+        return {
+          ...updatedMilestone,
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
+        }
+      });
+    },
+    payByBlanketPurchaseOrder: async (_, args, context) => {
+      const { id, blanket_purchase_order_id } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
+      await checkAllowCustomerOnlyPermission(context);
+      await checkMilestonePermission(context, id);
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: currentUserId,
+        },
+        include: {
+          biotech: true
+        }
+      });
+
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          quote: {
+            include: {
+              project_connection: true
+            }
+          }
+        }
+      });
+
+      invariant(milestone, new PublicError('Milestone not found.'));
+
+      const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
+        where: {
+          id: blanket_purchase_order_id,
+          biotech_id: customer?.biotech_id
+        },
+        include: {
+          blanket_purchase_order_transactions: true
+        }
+      });
+
+      invariant(blanketPurchaseOrder, new PublicError('Blanket Purchase Order not found.'));
+
+      const remainingBalanceInCent = blanketPurchaseOrder.blanket_purchase_order_transactions.reduce((balance, transaction) => {
+        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
+          return balance - transaction.amount.toNumber();
+        }
+        return balance;
+      }, blanketPurchaseOrder.amount.toNumber());
+
+      invariant(remainingBalanceInCent >= milestone.amount.toNumber(), new PublicError('Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount'));
+
+      return await context.prisma.$transaction(async (trx) => {
+        const invoice = await biotechInvoiceService.createBiotechInvoice({
+          milestone,
+          biotech_id: customer?.biotech_id as string,
+          paid: false,
+        }, {
+          prisma: trx
+        });
+
+        await trx.blanketPurchaseOrderTransaction.create({
+          data: {
+            amount: milestone.amount,
+            transaction_type: BlanketPurchaseOrderTransactionType.DEBIT,
+            blanket_purchase_order_id,
+            biotech_invoice_id: invoice.id,
+            user_id: currentUserId,
           },
         });
 
