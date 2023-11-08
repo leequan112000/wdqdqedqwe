@@ -1,7 +1,3 @@
-import { Prisma } from "@prisma/client";
-import currency from "currency.js";
-import moment from "moment";
-
 import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
@@ -10,6 +6,8 @@ import { PublicError } from "../errors/PublicError";
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";
 
+import biotechInvoiceService from "../../services/biotechInvoice/biotechInvoice.service";
+
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, InvoicePaymentStatus } from "../../helper/constant";
@@ -17,7 +15,6 @@ import { toDollar } from "../../helper/money";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
-import { generateInvoiceNumber } from "../../helper/invoice";
 import { hasPermission } from "../../helper/casbin";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
@@ -365,25 +362,12 @@ const resolvers: Resolvers<Context> = {
 
 
       return await context.prisma.$transaction(async (trx) => {
-        const today = moment();
-        const dueDate = today.clone().add(30, 'd');
-
-        const biotechInvoiceItemInputs: Prisma.BiotechInvoiceItemUncheckedCreateWithoutBiotech_invoiceInput = {
-          amount: currency(milestone.amount.toNumber(), { fromCents: true }).intValue,
-          name: milestone.title,
-          milestone_id: milestone.id,
-        };
-
-        const invoice = await trx.biotechInvoice.create({
-          data: {
-            invoice_number: generateInvoiceNumber(true),
-            payment_status: InvoicePaymentStatus.UNPAID,
-            due_at: dueDate.endOf('d').toDate(),
-            biotech_invoice_items: {
-              create: biotechInvoiceItemInputs,
-            },
-            biotech_id: customer?.biotech_id!,
-          },
+        const invoice = await biotechInvoiceService.createBiotechInvoice({
+          milestone,
+          biotech_id: customer?.biotech_id as string,
+          paid: false,
+        }, {
+          prisma: trx
         });
 
         await trx.purchaseOrder.create({
