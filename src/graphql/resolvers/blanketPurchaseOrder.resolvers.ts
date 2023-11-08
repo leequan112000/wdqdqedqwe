@@ -41,9 +41,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const remainingBalance = blanketPurchaseOrderTransactions.reduce((balance, transaction) => {
-        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.CREDIT) {
-          return balance + transaction.amount.toNumber();
-        } else if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
+        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
           return balance - transaction.amount.toNumber();
         }
         return balance;
@@ -97,13 +95,15 @@ const resolvers: Resolvers<Context> = {
       invariant(currentUserId, 'Missing current user id.');
       await checkAllowCustomerOnlyPermission(context);
 
-      return await blanketPurchaseOrderService.updateBlanketPurchaseOrder({
-        id,
-        po_number,
-        name,
-        amount,
-        current_user_id: currentUserId,
-      }, context);
+      return await context.prisma.$transaction(async (trx) => {
+        return await blanketPurchaseOrderService.updateBlanketPurchaseOrder({
+          id,
+          po_number,
+          name,
+          amount,
+          current_user_id: currentUserId,
+        }, { prisma: trx });
+      });
     },
     removeBlanketPurchaseOrder: async (_, args, context) => {
       const { id } = args;
