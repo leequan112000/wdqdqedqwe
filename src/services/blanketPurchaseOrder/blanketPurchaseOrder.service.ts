@@ -2,7 +2,7 @@ import { ServiceContext } from '../../types/context';
 import { toCent, toDollar } from '../../helper/money';
 import invariant from '../../helper/invariant';
 import { hasPermission } from '../../helper/casbin';
-import { CasbinAct, CasbinObj } from '../../helper/constant';
+import { BlanketPurchaseOrderTransactionType, CasbinAct, CasbinObj } from '../../helper/constant';
 import { PermissionDeniedError } from '../../graphql/errors/PermissionDeniedError';
 import { PublicError } from '../../graphql/errors/PublicError';
 
@@ -74,6 +74,17 @@ export const updateBlanketPurchaseOrder = async (args: UpdateBlanketPurchaseOrde
   if (blanketPurchaseOrder.blanket_purchase_order_transactions.length > 0) {
     invariant(toCent(amount) >= blanketPurchaseOrder.amount.toNumber(), new PublicError('Amount adjustments are allowed only for increasing the amount when transactions are present, decreasing is not permitted.'));
     invariant(po_number === blanketPurchaseOrder.po_number, new PublicError('Modification of the Purchase Order number is not allowed when transactions are associated with it'));
+
+    if (toCent(amount) > blanketPurchaseOrder.amount.toNumber()) {
+      await context.prisma.blanketPurchaseOrderTransaction.create({
+        data: {
+          amount: toCent(amount) - blanketPurchaseOrder.amount.toNumber(),
+          transaction_type: BlanketPurchaseOrderTransactionType.CREDIT,
+          blanket_purchase_order_id: id,
+          user_id: current_user_id,
+        },
+      });
+    }
   }
 
   const updatedBlanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.update({
