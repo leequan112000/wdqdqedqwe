@@ -1,6 +1,7 @@
 import type { Stripe } from 'stripe';
 import moment from 'moment';
 import prisma from '../../../prisma';
+import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
 import Sentry from '../../../sentry';
@@ -92,7 +93,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
-                await prisma.milestone.update({
+                const milestone = await prisma.milestone.update({
                   where: {
                     id: milestone_id,
                   },
@@ -101,6 +102,13 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                     payment_status: MilestonePaymentStatus.PROCESSING,
                   }
                 });
+
+                await biotechInvoiceService.createBiotechInvoice({
+                  milestone,
+                  biotech_id: customer?.biotech_id as string,
+                  paid: true,
+                }, { prisma });
+
                 console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
                 break;
               }
