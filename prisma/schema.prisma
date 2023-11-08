@@ -864,12 +864,12 @@ model BlanketPurchaseOrderTransaction {
   transaction_type          String
   user_id                   String   @db.Uuid
   blanket_purchase_order_id String   @db.Uuid
-  biotech_invoice_id        String   @unique @db.Uuid
+  biotech_invoice_id        String?  @unique @db.Uuid
   created_at                DateTime @default(now())
   updated_at                DateTime @updatedAt
 
   blanket_purchase_order BlanketPurchaseOrder @relation(fields: [blanket_purchase_order_id], references: [id])
-  biotech_invoice        BiotechInvoice       @relation(fields: [biotech_invoice_id], references: [id])
+  biotech_invoice        BiotechInvoice?       @relation(fields: [biotech_invoice_id], references: [id])
   user                   User                 @relation(fields: [user_id], references: [id])
 
   @@map("blanket_purchase_order_transactions")
