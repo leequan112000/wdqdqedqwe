@@ -843,13 +843,14 @@ model PurchaseOrder {
 }
 
 model BlanketPurchaseOrder {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  po_number  String
-  name       String
-  amount     Decimal  @db.Decimal(14, 2)
-  biotech_id String   @db.Uuid
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  po_number      String
+  name           String
+  balance_amount Decimal  @db.Decimal(14, 2)
+  amount         Decimal  @db.Decimal(14, 2)
+  biotech_id     String   @db.Uuid
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   biotech                             Biotech                           @relation(fields: [biotech_id], references: [id])
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
@@ -869,7 +870,7 @@ model BlanketPurchaseOrderTransaction {
   updated_at                DateTime @updatedAt
 
   blanket_purchase_order BlanketPurchaseOrder @relation(fields: [blanket_purchase_order_id], references: [id])
-  biotech_invoice        BiotechInvoice?       @relation(fields: [biotech_invoice_id], references: [id])
+  biotech_invoice        BiotechInvoice?      @relation(fields: [biotech_invoice_id], references: [id])
   user                   User                 @relation(fields: [user_id], references: [id])
 
   @@map("blanket_purchase_order_transactions")
