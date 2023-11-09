@@ -1,8 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { toCent, toDollar } from "../../helper/money";
+import { toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission } from "../../helper/accessControl";
-import { BlanketPurchaseOrderTransactionType } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 
 import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
@@ -32,23 +31,6 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
-    balance_amount: async (parent, _, context) => {
-      invariant(parent.id, 'Blanket Puchase Order ID not found.')
-      const blanketPurchaseOrderTransactions = await context.prisma.blanketPurchaseOrderTransaction.findMany({
-        where: {
-          blanket_purchase_order_id: parent.id
-        },
-      });
-
-      const remainingBalance = blanketPurchaseOrderTransactions.reduce((balance, transaction) => {
-        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
-          return balance - transaction.amount.toNumber();
-        }
-        return balance;
-      }, toCent(parent.amount || 0));
-
-      return toDollar(remainingBalance);
-    },
   },
   Query: {
     blanketPurchaseOrders: async (_, __, context) => {
@@ -71,6 +53,7 @@ const resolvers: Resolvers<Context> = {
 
       return blanketPurchaseOrders.map((bpo) => ({
         ...bpo,
+        balance_amount: toDollar(bpo.balance_amount.toNumber()),
         amount: toDollar(bpo.amount.toNumber()),
       }))
     },
@@ -82,12 +65,14 @@ const resolvers: Resolvers<Context> = {
       invariant(currentUserId, 'Missing current user id.');
       await checkAllowCustomerOnlyPermission(context);
 
-      return await blanketPurchaseOrderService.createBlanketPurchaseOrder({
-        po_number,
-        name,
-        amount,
-        current_user_id: currentUserId,
-      }, context);
+      return await context.prisma.$transaction(async (trx) => {
+        return await blanketPurchaseOrderService.createBlanketPurchaseOrder({
+          po_number,
+          name,
+          amount,
+          current_user_id: currentUserId,
+        }, { prisma: trx });
+      });
     },
     updateBlanketPurchaseOrder: async (_, args, context) => {
       const { id, po_number, name, amount } = args;
@@ -111,10 +96,12 @@ const resolvers: Resolvers<Context> = {
       invariant(currentUserId, 'Missing current user id.');
       await checkAllowCustomerOnlyPermission(context);
 
-      return await blanketPurchaseOrderService.removeBlanketPurchaseOrder({
-        id,
-        current_user_id: currentUserId,
-      }, context);
+      return await context.prisma.$transaction(async (trx) => {
+        return await blanketPurchaseOrderService.removeBlanketPurchaseOrder({
+          id,
+          current_user_id: currentUserId,
+        }, { prisma: trx });
+      });
     },
   }
 };
