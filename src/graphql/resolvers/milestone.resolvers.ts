@@ -7,11 +7,12 @@ import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";
 
 import biotechInvoiceService from "../../services/biotechInvoice/biotechInvoice.service";
+import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
 
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
 import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, BlanketPurchaseOrderTransactionType } from "../../helper/constant";
-import { toDollar } from "../../helper/money";
+import { toCent, toDollar } from "../../helper/money";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
@@ -445,15 +446,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(blanketPurchaseOrder, new PublicError('Blanket Purchase Order not found.'));
-
-      const remainingBalanceInCent = blanketPurchaseOrder.blanket_purchase_order_transactions.reduce((balance, transaction) => {
-        if (transaction.transaction_type === BlanketPurchaseOrderTransactionType.DEBIT) {
-          return balance - transaction.amount.toNumber();
-        }
-        return balance;
-      }, blanketPurchaseOrder.amount.toNumber());
-
-      invariant(remainingBalanceInCent >= milestone.amount.toNumber(), new PublicError('Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount'));
+      invariant(blanketPurchaseOrder.balance_amount.toNumber() >= milestone.amount.toNumber(), new PublicError('Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount'));
 
       return await context.prisma.$transaction(async (trx) => {
         const invoice = await biotechInvoiceService.createBiotechInvoice({
@@ -471,6 +464,16 @@ const resolvers: Resolvers<Context> = {
             blanket_purchase_order_id,
             biotech_invoice_id: invoice.id,
             user_id: currentUserId,
+          },
+        });
+
+        const balanceAmount = await blanketPurchaseOrderService.calculateBlanketPurchaseOrderBalanceAmount({ id: blanket_purchase_order_id }, { prisma: trx });
+        await trx.blanketPurchaseOrder.update({
+          where: {
+            id: blanket_purchase_order_id,
+          },
+          data: {
+            balance_amount: toCent(balanceAmount)
           },
         });
 
