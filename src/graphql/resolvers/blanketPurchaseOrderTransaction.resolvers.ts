@@ -13,7 +13,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      return blanketPurchaseOrder ? { ...blanketPurchaseOrder, amount: toDollar(blanketPurchaseOrder.amount.toNumber()) } : null;
+      return blanketPurchaseOrder ? {
+        ...blanketPurchaseOrder,
+        amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
+        balance_amount: toDollar(blanketPurchaseOrder.balance_amount.toNumber()),
+      } : null;
     },
     biotech_invoice: async (parent, _, context) => {
       invariant(parent.biotech_invoice_id, 'Invoice ID not found.');

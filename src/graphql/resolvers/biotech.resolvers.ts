@@ -118,6 +118,7 @@ const resolver: Resolvers<Context> = {
         return {
           ...blanketPurchaseOrder,
           amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
+          balance_amount: toDollar(blanketPurchaseOrder.balance_amount.toNumber()),
         }
       });
     },
