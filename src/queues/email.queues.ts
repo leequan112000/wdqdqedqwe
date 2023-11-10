@@ -3,14 +3,9 @@ import { createQueue } from "../helper/queue";
 import prisma from "../prisma";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
 import { app_env } from "../environment";
-import { sendContractUploadNoticeEmail, sendDocumentUploadNoticeEmail } from "../mailer/projectAttachment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
 import { sendAcceptProjectRequestEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
-import { sendVendorMemberInvitationByAdminEmail, sendVendorMemberProjectRequestInvitationByAdminEmail } from "../mailer/vendorMember";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
-import createAdminInviteNotification from "../notification/adminInviteNotification";
-import createFinalContractUploadNotification from "../notification/finalContractUploadNotification";
-import createFileUploadNotification from "../notification/fileUploadNotification";
 import createMessageNotification from "../notification/messageNotification";
 import createQuoteNotification from "../notification/quoteNotification";
 import { createMilestoneNotification, createMilestonePaymentFailedNotification } from "../notification/milestoneNotification";
@@ -18,10 +13,9 @@ import { sendMilestoneNoticeEmail } from "../mailer/milestone";
 import { sendNewSubscriptionEmail } from "../mailer/newsletter";
 import { sendQuoteExpiredNoticeEmail, sendQuoteExpiringNoticeEmail, sendQuoteNoticeEmail } from "../mailer/quote";
 import { getReceiversByProjectConnection } from "./utils";
-import { CreateBillingNoticeEmailJobParam, CreateCustomerInvitationByADminEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorMemberInvitationByADminEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
+import { CreateBillingNoticeEmailJobParam, CreateInvoicePaymentNoticeEmailJobParam, CreateInvoicePaymentOverdueNoticeEmailJobParam, CreateInvoicePaymentReminderEmailJobParam, CreateSendUserExpiredQuoteNoticeEmailJobParam, CreateSendUserExpiringQuoteNoticeEmailJobParam, CreateVendorProjectRequestExpiredNoticeEmailJobParam, CreateVendorProjectRequestExpiringNoticeEmailJobParam } from "./types";
 import { sendBillingNoticeEmail, sendInvoicePaymentNoticeEmail, sendInvoicePaymentOverdueNoticeEmail, sendInvoicePaymentReminderEmail } from "../mailer/invoice";
 import { createBillingNotification, createInvoicePaymentNotification, createInvoicePaymentOverdueNotification, createInvoicePaymentReminderNotification } from "../notification/invoiceNotification";
-import { sendCustomerInvitationByAdminEmail } from '../mailer/customer'
 import invariant from "../helper/invariant";
 
 type EmailJob = {
@@ -29,7 +23,7 @@ type EmailJob = {
   data: any;
 }
 
-const emailQueue = createQueue<EmailJob>('email');
+const emailQueue = createQueue<EmailJob>('email-old');
 
 emailQueue.process(async (job, done) => {
   const { data, type } = job.data;
@@ -49,26 +43,6 @@ emailQueue.process(async (job, done) => {
         );
 
         done(null, result);
-        break;
-      }
-      case EmailType.ADMIN_PROJECT_INVITATION: {
-        const { receiverEmail, receiverFullName, projectRequestTitle, projectRequestId, vendorCompanyId, primaryMemberUserId, projectConnectionId } = data;
-        await sendVendorMemberProjectRequestInvitationByAdminEmail({
-          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/project-request`,
-          project_request_title: projectRequestTitle,
-          receiver_full_name: receiverFullName,
-        }, receiverEmail);
-
-        const projectConnection = await prisma.projectConnection.findFirst({
-          where: {
-            project_request_id: projectRequestId,
-            vendor_company_id: vendorCompanyId,
-          }
-        })
-
-        await createAdminInviteNotification(primaryMemberUserId, projectConnection!.id);
-
-        done();
         break;
       }
       case EmailType.ADMIN_NEW_PROJECT_REQUEST_COMMENT: {
@@ -176,49 +150,6 @@ emailQueue.process(async (job, done) => {
           admins.map((admin) => sendAdminZeroAcceptedProjectNoticeEmail(admin, data))
         );
 
-        done();
-        break;
-      }
-      case EmailType.USER_FILE_UPLOAD_NOTICE: {
-        const {
-          projectConnectionId,
-          uploaderUserId,
-          isFinalContract,
-          action,
-        } = data;
-
-        const { receivers, projectConnection, senderCompanyName } = await getReceiversByProjectConnection(projectConnectionId, uploaderUserId);
-
-        if (isFinalContract) {
-          await Promise.all(
-            receivers.map(async (receiver) => {
-              await sendContractUploadNoticeEmail(
-                {
-                  login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-                  receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-                  project_title: projectConnection.project_request.title,
-                  company_name: senderCompanyName,
-                },
-                receiver.email,
-                action!,
-              );
-              await createFinalContractUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
-            })
-          );
-        } else {
-          await Promise.all(
-            receivers.map(async (receiver) => {
-              await sendDocumentUploadNoticeEmail({
-                login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-                project_title: projectConnection.project_request.title,
-                company_name: senderCompanyName,
-              }, receiver.email);
-
-              await createFileUploadNotification(uploaderUserId, receiver.id, projectConnection.id);
-            })
-          );
-        }
         done();
         break;
       }
@@ -690,22 +621,6 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
-      case EmailType.CUSTOMER_INVITATION_BY_ADMIN_EMAIL: {
-        const { receiverEmail, receiverName, resetPasswordToken } = data as CreateCustomerInvitationByADminEmailJobParam
-
-        const resp = await sendCustomerInvitationByAdminEmail(receiverEmail, receiverName, resetPasswordToken)
-
-        done(null, resp)
-        break;
-      }
-      case EmailType.VENDOR_INVITATION_BY_ADMIN_EMAIL: {
-        const { receiverEmail, receiverName, resetPasswordToken } = data as CreateVendorMemberInvitationByADminEmailJobParam
-
-        const resp = await sendVendorMemberInvitationByAdminEmail(receiverEmail, receiverName, resetPasswordToken)
-
-        done(null, resp)
-        break;
-      }
       default:
         done(new Error('No type match.'))
         break;
@@ -721,15 +636,6 @@ export const createSendAdminNewProjectRequestEmailJob = (data: {
   biotechName: string;
 }) => {
   emailQueue.add({ type: EmailType.ADMIN_NEW_PROJECT_REQUEST, data });
-}
-
-export const createSendUserFileUploadNotice = (data: {
-  projectConnectionId: string;
-  uploaderUserId: string;
-  isFinalContract: boolean;
-  action?: string;
-}) => {
-  emailQueue.add({ type: EmailType.USER_FILE_UPLOAD_NOTICE, data })
 }
 
 export const createSendUserNewMessageNoticeJob = (data: { projectConnectionId: string, senderUserId: string, messageText: string }) => {
@@ -759,18 +665,6 @@ export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
   milestoneId: string;
 }) => {
   emailQueue.add({ type: EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL, data })
-}
-
-export const createSendAdminProjectInvitationJob = (data: {
-  receiverEmail: string;
-  receiverFullName: string;
-  projectRequestTitle: string;
-  projectRequestId: string;
-  vendorCompanyId: string;
-  primaryMemberUserId: string;
-  projectConnectionId: string
-}) => {
-  emailQueue.add({ type: EmailType.ADMIN_PROJECT_INVITATION, data })
 }
 
 export const createSendAdminNewProjectRequestCommentJob = (data: { biotechName: string, projectRequestName: string }) => {
@@ -839,16 +733,4 @@ export const createVendorProjectRequestExpiredNoticeEmailJob = (
   data: CreateVendorProjectRequestExpiredNoticeEmailJobParam
 ) => {
   return emailQueue.add({ type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL, data });
-}
-
-export const createCustomerInvitationByAdminEmailJob = (
-  data: CreateCustomerInvitationByADminEmailJobParam
-) => {
-  return emailQueue.add({ type: EmailType.CUSTOMER_INVITATION_BY_ADMIN_EMAIL, data });
-}
-
-export const createVendorMemberInvitationByAdminEmailJob = (
-  data: CreateVendorMemberInvitationByADminEmailJobParam
-) => {
-  return emailQueue.add({ type: EmailType.VENDOR_INVITATION_BY_ADMIN_EMAIL, data });
 }

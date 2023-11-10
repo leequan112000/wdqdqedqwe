@@ -1,11 +1,11 @@
 import moment from "moment";
 import { createResetPasswordToken } from "../../helper/auth";
-import { sendVendorMemberInvitationByBiotechEmail, sendVendorMemberInvitationByExistingMemberEmail } from "../../mailer/vendorMember";
+import { vendorMemberInvitationByBiotechEmail, vendorMemberInvitationByUserEmail } from "../../mailer";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
-import { app_env } from "../../environment";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -77,10 +77,11 @@ const resolvers: Resolvers<Context> = {
           });
 
           const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+          const resetToken = createResetPasswordToken();
           const newUser = await trx.user.create({
             data: {
               ...args,
-              reset_password_token: createResetPasswordToken(),
+              reset_password_token: resetToken,
               reset_password_expiration: new Date(resetTokenExpiration),
             }
           });
@@ -92,7 +93,19 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          sendVendorMemberInvitationByExistingMemberEmail(currentUser, newUser, args.custom_message || "");
+          const newUserFullName = getUserFullName(newUser)
+          const resetPasswordUrl = createResetPasswordUrl(resetToken)
+          const currentUserFullName = getUserFullName(currentUser)
+
+          vendorMemberInvitationByUserEmail(
+            {
+              inviter_full_name: currentUserFullName,
+              inviter_message: args.custom_message || "",
+              login_url: resetPasswordUrl,
+              receiver_full_name: newUserFullName
+            },
+            newUser.email,
+          );
 
           return newVendorMember;
         });
@@ -154,11 +167,12 @@ const resolvers: Resolvers<Context> = {
         invariant(invitedUser, 'Invited user not found.');
         invariant(biotechInviteVendor.biotech?.name, 'Biotech name not found.');
         invariant(biotechInviteVendor.inviter, 'Inviter not found.');
+        const inviterFullName = getUserFullName(biotechInviteVendor.inviter);
+        const receiverFullName = getUserFullName(invitedUser);
 
+        invariant(invitedUser.reset_password_token, 'Reset password token not found.')
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
-        const buttonUrl = `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
-          invitedUser.reset_password_token!
-        )}`;
+        const resetPasswordUrl = createResetPasswordUrl(invitedUser.reset_password_token);
 
         if (!invitedUser?.vendor_member?.title) {
           const resetInvitedUserPasswordExpiryDate = await context.prisma.user.update({
@@ -169,22 +183,28 @@ const resolvers: Resolvers<Context> = {
               reset_password_expiration: new Date(resetTokenExpiration),
             },
           });
-          sendVendorMemberInvitationByBiotechEmail(
-            invitedUser,
-            biotechInviteVendor.biotech?.name,
-            biotechInviteVendor.inviter,
-            buttonUrl,
-            projectRequest.title,
+          vendorMemberInvitationByBiotechEmail(
+            {
+              biotech_name: biotechInviteVendor.biotech.name,
+              inviter_full_name: inviterFullName,
+              login_url: resetPasswordUrl,
+              project_request_name: projectRequest.title,
+              receiver_full_name: receiverFullName,
+            },
+            invitedUser.email,
           );
           return true;
         }
 
-        sendVendorMemberInvitationByBiotechEmail(
-          invitedUser,
-          biotechInviteVendor.biotech?.name,
-          biotechInviteVendor.inviter,
-          buttonUrl,
-          projectRequest.title,
+        vendorMemberInvitationByBiotechEmail(
+          {
+            biotech_name: biotechInviteVendor.biotech.name,
+            inviter_full_name: inviterFullName,
+            login_url: resetPasswordUrl,
+            project_request_name: projectRequest.title,
+            receiver_full_name: receiverFullName,
+          },
+          invitedUser.email,
         );
         return true;
       }

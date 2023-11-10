@@ -3,12 +3,14 @@ import { Context } from "../../types/context";
 import { CasbinRole, CompanyCollaboratorRoleType, InvitedByType, ProjectConnectionVendorStatus, ProjectRequestStatus } from "../../helper/constant";
 import { Resolvers } from "../generated";
 import { PublicError } from "../../graphql/errors/PublicError";
-import { createSendAdminProjectInvitationJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
 import { createResetPasswordToken } from "../../helper/auth";
-import { sendVendorMemberInvitationByBiotechEmail } from "../../mailer/vendorMember";
+import { vendorMemberInvitationByBiotechEmail, vendorMemberProjectRequestInvitationByAdminEmail } from "../../mailer/vendorMember";
 import { app_env } from "../../environment";
 import { addRoleForUser } from "../../helper/casbin";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
+import createAdminInviteNotificationJob from "../../notification/adminInviteNotification";
+import { createNotificationQueueJob } from "../../queues/notification.queues";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -127,15 +129,21 @@ const resolvers: Resolvers<Context> = {
                   });
 
                   // Send email and notification
-                  createSendAdminProjectInvitationJob({
-                    primaryMemberUserId: primaryVendorMember.user_id,
-                    projectRequestId: projectRequest.id,
-                    projectRequestTitle: projectRequest.title,
-                    receiverEmail: primaryVendorMember.user.email,
-                    receiverFullName: `${primaryVendorMember.user.first_name} ${primaryVendorMember.user.last_name}`,
-                    vendorCompanyId: primaryVendorMember.vendor_company_id,
-                    projectConnectionId: projectConnection.id,
+                  const primaryVendorMemberFullName = getUserFullName(primaryVendorMember.user)
+                  vendorMemberProjectRequestInvitationByAdminEmail(
+                    {
+                      login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
+                      project_request_title: projectRequest.title,
+                      receiver_full_name: primaryVendorMemberFullName,
+                    },
+                    primaryVendorMember.user.email,
+                  );
+                  const notificationJob = createAdminInviteNotificationJob({
+                    project_connection_id: projectConnection.id,
+                    project_title: projectRequest.title,
+                    recipient_id: primaryVendorMember.user_id,
                   });
+                  createNotificationQueueJob({ data: [ notificationJob ] });
                 })
               );
             })
@@ -203,6 +211,8 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
+        const inviterFullName = getUserFullName(inviter);
+
         // Check if the vendor company with the same user already exists
         // If vendor copmany is not in marketplace, assign request to this vendor company
         if (existingVendorCompany && existingUser
@@ -242,12 +252,17 @@ const resolvers: Resolvers<Context> = {
           });
 
           // Send email to existing vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(
-            existingUser,
-            biotech.name,
-            inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
-            projectRequest.title
+          const viewProjectConnectionUrl = `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`;
+          const existingUserFullName = getUserFullName(existingUser);
+          vendorMemberInvitationByBiotechEmail(
+            {
+              biotech_name: biotech.name,
+              inviter_full_name: inviterFullName,
+              login_url: viewProjectConnectionUrl,
+              project_request_name: projectRequest.title,
+              receiver_full_name: existingUserFullName,
+            },
+            existingUser.email,
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -308,12 +323,17 @@ const resolvers: Resolvers<Context> = {
           );
 
           // Send email to existing vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(
-            existingUser,
-            biotech.name,
-            inviter,
-            `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
-            projectRequest.title
+          const viewProjectConnectionUrl = `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`;
+          const existingUserFullName = getUserFullName(existingUser);
+          vendorMemberInvitationByBiotechEmail(
+            {
+              biotech_name: biotech.name,
+              inviter_full_name: inviterFullName,
+              login_url: viewProjectConnectionUrl,
+              project_request_name: projectRequest.title,
+              receiver_full_name: existingUserFullName,
+            },
+            existingUser.email,
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -333,13 +353,14 @@ const resolvers: Resolvers<Context> = {
           });
 
           const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+          const resetToken = createResetPasswordToken();
 
           const newUser = await context.prisma.user.create({
             data: {
               email: biotechInviteVendor.email,
               first_name: biotechInviteVendor.first_name,
               last_name: biotechInviteVendor.last_name,
-              reset_password_token: createResetPasswordToken(),
+              reset_password_token: resetToken,
               reset_password_expiration: new Date(resetTokenExpiration),
             }
           });
@@ -377,14 +398,17 @@ const resolvers: Resolvers<Context> = {
           });
 
           // Send email to new vendor member by biotech
-          sendVendorMemberInvitationByBiotechEmail(
-            newUser,
-            biotech.name,
-            inviter,
-            `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(
-              newUser.reset_password_token!
-            )}`,
-            projectRequest.title
+          const resetPasswordUrl = createResetPasswordUrl(resetToken);
+          const newUserFullName = getUserFullName(newUser);
+          vendorMemberInvitationByBiotechEmail(
+            {
+              biotech_name: biotech.name,
+              inviter_full_name: inviterFullName,
+              login_url: resetPasswordUrl,
+              project_request_name: projectRequest.title,
+              receiver_full_name: newUserFullName,
+            },
+            newUser.email,
           );
 
           return true;
