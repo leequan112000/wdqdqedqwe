@@ -6,11 +6,11 @@ import invariant from '../../helper/invariant';
 import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
-import { vendorMemberInvitationByAdminEmail } from '../../mailer';
+import { customerInvitationByAdminEmail } from '../../mailer';
 import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
 
 const resolver: Resolvers<Context> = {
-  VendorMember: {
+  Customer: {
     user: async (parent, _, context) => {
       invariant(parent.user_id, 'User id not found.')
       return await context.prisma.user.findFirst({
@@ -24,28 +24,31 @@ const resolver: Resolvers<Context> = {
     _dummy: () => 'admin graphql',
   },
   Mutation: {
-    inviteVendorMemberByAdmin: async (_, args, context) => {
+    inviteCustomerByAdmin: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
+        const { first_name, last_name, email, biotech_id, role } = args;
+
         const user = await trx.user.findFirst({
           where: {
-            email: args.email,
+            email: email,
           },
         });
 
         invariant(user === null, new PublicError('User already exist.'));
 
-        const owner = await trx.vendorMember.findFirst({
+        const owner = await trx.customer.findFirst({
           where: {
             role: CompanyCollaboratorRoleType.OWNER,
-            vendor_company_id: args.vendor_company_id,
+            biotech_id: biotech_id,
           },
         });
         const noOwner = owner === null;
+        const isAddingOwner = role === CompanyCollaboratorRoleType.OWNER
 
         // Check if company has owner.
         invariant(
-          args.role === CompanyCollaboratorRoleType.OWNER && noOwner
-          || args.role !== CompanyCollaboratorRoleType.OWNER,
+          isAddingOwner && noOwner
+          || !isAddingOwner,
           new PublicError('Owner already exists!'),
         );
 
@@ -53,48 +56,48 @@ const resolver: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            email: args.email,
-            first_name: args.first_name,
-            last_name: args.last_name,
+            email: email,
+            first_name: first_name,
+            last_name: last_name,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
           },
         });
 
-        invariant(newUser.reset_password_token);
+        invariant(newUser.reset_password_token, 'Missing reset password token');
 
-        const newVendorMember = await trx.vendorMember.create({
+        const newCustomer = await trx.customer.create({
           data: {
             user_id: newUser.id,
-            vendor_company_id: args.vendor_company_id,
+            biotech_id: biotech_id,
           },
         });
 
-        switch (args.role) {
+        switch (role) {
           case CompanyCollaboratorRoleType.ADMIN: {
-            await collaboratorService.setVendorMemberAsAdmin(
+            await collaboratorService.setCustomerAsAdmin(
               {
                 user_id: newUser.id,
-                vendor_company_id: args.vendor_company_id,
-                vendor_member_id: newVendorMember.id,
+                biotech_id: biotech_id,
+                customer_id: newCustomer.id,
               },
               { prisma: trx }
             );
             break;
           }
           case CompanyCollaboratorRoleType.USER: {
-            await collaboratorService.setVendorMemberAsUser(
+            await collaboratorService.setCustomerAsUser(
               {
-                vendor_member_id: newVendorMember.id,
+                customer_id: newCustomer.id,
               },
               { prisma: trx }
             );
             break;
           }
           case CompanyCollaboratorRoleType.OWNER: {
-            await trx.vendorMember.update({
+            await trx.customer.update({
               where: {
-                id: newVendorMember.id,
+                id: newCustomer.id,
               },
               data: {
                 role: CompanyCollaboratorRoleType.OWNER,
@@ -109,8 +112,7 @@ const resolver: Resolvers<Context> = {
 
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
         const newUserFullName = getUserFullName(newUser);
-
-        vendorMemberInvitationByAdminEmail(
+        customerInvitationByAdminEmail(
           {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
@@ -118,7 +120,7 @@ const resolver: Resolvers<Context> = {
           newUser.email,
         );
 
-        return newVendorMember;
+        return newCustomer;
       });
     },
   }

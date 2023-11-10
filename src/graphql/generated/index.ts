@@ -912,6 +912,21 @@ export type MutationWithdrawProjectRequestArgs = {
   project_request_id: Scalars['String'];
 };
 
+export type News = {
+  __typename?: 'News';
+  cover_img_url?: Maybe<Scalars['String']>;
+  excerpt?: Maybe<Scalars['String']>;
+  external_link?: Maybe<Scalars['String']>;
+  ghost_slug?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_featured?: Maybe<Scalars['Boolean']>;
+  logo_url?: Maybe<Scalars['String']>;
+  published_at?: Maybe<Scalars['Date']>;
+  title?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  url?: Maybe<Scalars['String']>;
+};
+
 export type Notification = {
   __typename?: 'Notification';
   created_at?: Maybe<Scalars['Date']>;
@@ -1129,6 +1144,7 @@ export type Query = {
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   customer?: Maybe<Customer>;
+  featuredNews?: Maybe<Array<Maybe<News>>>;
   invoice?: Maybe<Invoice>;
   invoiceCheckoutUrl?: Maybe<Scalars['String']>;
   invoices?: Maybe<Array<Maybe<Invoice>>>;
@@ -1136,6 +1152,7 @@ export type Query = {
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
   milestone?: Maybe<Milestone>;
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
+  news?: Maybe<Array<Maybe<News>>>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   notificationsConnection?: Maybe<NotificationConnection>;
   perkCategories?: Maybe<Array<Maybe<PerkCategory>>>;
@@ -1624,6 +1641,7 @@ export type ResolversTypes = ResolversObject<{
   MessagesPageInfo: ResolverTypeWrapper<MessagesPageInfo>;
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
+  News: ResolverTypeWrapper<News>;
   Notification: ResolverTypeWrapper<Notification>;
   NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
   NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
@@ -1701,6 +1719,7 @@ export type ResolversParentTypes = ResolversObject<{
   MessagesPageInfo: MessagesPageInfo;
   Milestone: Milestone;
   Mutation: {};
+  News: News;
   Notification: Notification;
   NotificationConnection: NotificationConnection;
   NotificationEdge: NotificationEdge;
@@ -2139,6 +2158,21 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   withdrawProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationWithdrawProjectRequestArgs, 'project_request_id'>>;
 }>;
 
+export type NewsResolvers<ContextType = any, ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']> = ResolversObject<{
+  cover_img_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  excerpt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  external_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ghost_slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_featured?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  published_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2341,6 +2375,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
   invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
   invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
@@ -2348,6 +2383,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
+  news?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
   perkCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['PerkCategory']>>>, ParentType, ContextType>;
@@ -2622,6 +2658,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MessagesPageInfo?: MessagesPageInfoResolvers<ContextType>;
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  News?: NewsResolvers<ContextType>;
   Notification?: NotificationResolvers<ContextType>;
   NotificationConnection?: NotificationConnectionResolvers<ContextType>;
   NotificationEdge?: NotificationEdgeResolvers<ContextType>;

@@ -10,6 +10,7 @@ export const operationWhitelist = [
   'SubmitCroInterest',
   'SubscribeEmailUpdates',
   'IntrospectionQuery',
+  'NewsPage_Query',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

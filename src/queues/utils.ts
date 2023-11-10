@@ -41,6 +41,9 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
         customer: {
           id: {
             in: projectConnection.customer_connections.map(cc => cc.customer_id),
+          },
+          has_setup_profile: {
+            equals: true
           }
         },
         is_active: true,
@@ -62,6 +65,9 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
         vendor_member: {
           id: {
             in: projectConnection.vendor_member_connections.map(vmc => vmc.vendor_member_id),
+          },
+          title: {
+            not: null
           }
         },
         is_active: true,

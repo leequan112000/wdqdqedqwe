@@ -1,74 +1,77 @@
-import { User } from "@prisma/client";
-import { createMailData, mailSender, sendMail } from "./config";
 import {
   vendorMemberInvitationByAdminTemplate,
   vendorMemberInvitationByExistingMemberTemplate,
   vendorMemberInvitationToProjectRequestByAdminTemplate,
-  vendorMemberInvitationByBiotechTemplate
+  vendorMemberInvitationByBiotechTemplate,
 } from "./templates";
-import { app_env } from "../environment";
-import { ProjectRequestInvitationByAdminData } from "./types";
+import { createSendMailJob } from "../queues/sendMail.queues";
 
-export const sendVendorMemberInvitationByExistingMemberEmail = (inviter: User, receiver: User, custom_message: string = '') => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
-    to: receiver.email,
-    replyTo: mailSender,
+type VendorMemberInvitationByUserEmailData = {
+  login_url: string;
+  inviter_full_name: string;
+  inviter_message: string;
+  receiver_full_name: string;
+};
+
+export const vendorMemberInvitationByUserEmail = (
+  emailData: VendorMemberInvitationByUserEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: vendorMemberInvitationByExistingMemberTemplate,
-    dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
-      inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
-      inviter_message: custom_message,
-      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-    },
-  };
-
-  sendMail(mailData);
-};
-
-export const sendVendorMemberInvitationByAdminEmail = (receiver: User) => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
-    to: receiver.email,
-    replyTo: mailSender,
-    templateId: vendorMemberInvitationByAdminTemplate,
-    dynamicTemplateData: {
-      login_url: `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(receiver.reset_password_token!)}`,
-      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-    },
-  };
-
-  sendMail(mailData);
-};
-
-export const sendVendorMemberProjectRequestInvitationByAdminEmail = async (emailData: ProjectRequestInvitationByAdminData, receiverEmail: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: vendorMemberInvitationToProjectRequestByAdminTemplate,
-    dynamicTemplateData: {
-      login_url: emailData.login_url,
-      project_request_title: emailData.project_request_title,
-      receiver_full_name: emailData.receiver_full_name,
-    },
   });
-
-  await sendMail(mailData);
 };
 
-export const sendVendorMemberInvitationByBiotechEmail = async (receiver: User, biotech_name: string, inviter: User, buttonUrl: string, project_request_name: string) => {
-  const mailData = {
-    from: `Cromatic <${mailSender}>`,
-    to: receiver.email,
-    replyTo: mailSender,
-    templateId: vendorMemberInvitationByBiotechTemplate,
-    dynamicTemplateData: {
-      login_url: buttonUrl,
-      receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-      biotech_name: biotech_name,
-      inviter_full_name: `${inviter.first_name} ${inviter.last_name}`,
-      project_request_name: project_request_name,
-    },
-  };
+type VendorMemberInvitationByAdminEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+};
 
-  return await sendMail(mailData);
+export const vendorMemberInvitationByAdminEmail = (
+  emailData: VendorMemberInvitationByAdminEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: vendorMemberInvitationByAdminTemplate,
+  });
+};
+
+type VendorMemberProjectRequestInvitationByAdminEmailData = {
+  login_url: string;
+  project_request_title: string;
+  receiver_full_name: string;
+};
+
+export const vendorMemberProjectRequestInvitationByAdminEmail = (
+  emailData: VendorMemberProjectRequestInvitationByAdminEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: vendorMemberInvitationToProjectRequestByAdminTemplate,
+  });
+};
+
+type VendorMemberInvitationByBiotechEmailData = {
+  login_url: string;
+  receiver_full_name: string;
+  biotech_name: string;
+  inviter_full_name: string;
+  project_request_name: string;
+};
+
+export const vendorMemberInvitationByBiotechEmail = (
+  emailData: VendorMemberInvitationByBiotechEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: vendorMemberInvitationByBiotechTemplate,
+  });
 };

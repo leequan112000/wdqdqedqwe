@@ -5,13 +5,6 @@ export type ProjectRequestInvitationByExistingMemberData = {
   receiver_full_name: string;
 }
 
-export type UploadNoticeData = {
-  login_url: string;
-  receiver_full_name: string;
-  project_title: string;
-  company_name: string;
-}
-
 export type NewMessageNoticeData = {
   button_url: string;
   receiver_full_name: string;
@@ -70,12 +63,6 @@ export type QuoteExpiredNoticeData = {
   }>;
   more_count?: number;
   view_more_url?: string
-}
-
-export type ProjectRequestInvitationByAdminData = {
-  project_request_title: string;
-  login_url: string;
-  receiver_full_name: string;
 }
 
 export type AdminNewProjectRequestCommentNoticeData = {

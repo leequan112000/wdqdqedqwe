@@ -1,9 +1,10 @@
 import { Context } from "../../types/context";
 import { createResetPasswordToken } from "../../helper/auth";
-import { sendCustomerInvitationEmail } from "../../mailer/customer";
+import { customerInvitationEmail } from "../../mailer/customer";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 const resolvers: Resolvers<Context> = {
   Customer: {
@@ -139,12 +140,13 @@ const resolvers: Resolvers<Context> = {
         });
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
             first_name: args.first_name,
             last_name: args.last_name,
             email: args.email,
-            reset_password_token: createResetPasswordToken(),
+            reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
           }
         });
@@ -156,7 +158,20 @@ const resolvers: Resolvers<Context> = {
           }
         });
 
-        sendCustomerInvitationEmail(currentUser, newUser, args.custom_message || "");
+
+        const newUserFullName = getUserFullName(newUser)
+        const resetPasswordUrl = createResetPasswordUrl(resetToken)
+        const currentUserFullName = getUserFullName(currentUser)
+
+        customerInvitationEmail(
+          {
+            inviter_full_name: currentUserFullName,
+            inviter_message: args.custom_message || "",
+            login_url: resetPasswordUrl,
+            receiver_full_name: newUserFullName,
+          },
+          newUser.email,
+        );
 
         return newCustomer;
       });
