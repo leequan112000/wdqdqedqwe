@@ -795,11 +795,9 @@ model ReviewQuestionSet {
 model News {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title         String
-  type          String
   excerpt       String?
   is_featured   Boolean   @default(false)
-  ghost_slug    String?
-  external_link String?
+  url           String?
   logo_url      String?
   cover_img_url String?
   is_published  Boolean   @default(false)

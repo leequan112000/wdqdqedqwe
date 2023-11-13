@@ -7,7 +7,7 @@ type Mutation {
     title: String!
     excerpt: String
     is_featured: Boolean
-    external_link: String
+    url: String
     logo_url: String
     cover_img_url: String
     published_at: Date
@@ -17,7 +17,7 @@ type Mutation {
     title: String
     excerpt: String
     is_featured: Boolean
-    external_link: String
+    url: String
     logo_url: String
     cover_img_url: String
     published_at: Date

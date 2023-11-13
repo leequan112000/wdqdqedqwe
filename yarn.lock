@@ -2529,6 +2529,13 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
+"@tryghost/content-api@^1.11.19":
+  version "1.11.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.11.19.tgz#65ba27d0a9da1f39f977b9f951a0ba8e765fb3ce"
+  integrity sha512-u3rWD7poV6DoUD6/VbUmKPEDxiEgJvrGUsWaMinOH+tBCu9oD/BM/M4MPy8mWsK0SVKLkA4ohpAaYzufNMEUfg==
+  dependencies:
+    axios "^1.0.0"
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
@@ -2785,6 +2792,11 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
   integrity sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==
+
+"@types/tryghost__content-api@^1.3.14":
+  version "1.3.14"
+  resolved "https://registry.yarnpkg.com/@types/tryghost__content-api/-/tryghost__content-api-1.3.14.tgz#93e408beccfe7dcf60eeaa9414ca2e36db873872"
+  integrity sha512-DJqupSY68PMzrw3nKntxCZS5SyKkQraPp4zxI58309dwmToksmJdDYyleMj5LcFkcK29El47SswIaICgQW1HDg==
 
 "@types/uuid@^9.0.1":
   version "9.0.1"
@@ -3077,6 +3089,15 @@ axios@^0.26.0:
   integrity sha512-fPwcX4EvnSHuInCMItEhAGnaSEXRBjtzh9fOtsE6E1G6p7vl7edEeZe11QHf18+6+9gR5PbKV/sGKNaD8YaMeA==
   dependencies:
     follow-redirects "^1.14.8"
+
+axios@^1.0.0:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.1.tgz#76550d644bf0a2d469a01f9244db6753208397d7"
+  integrity sha512-vfBmhDpKafglh0EldBEbVuoe7DyAavGSLWhuSm5ZSEKQnHhBf0xAAwybbNH1IkrJNGnS/VG4I5yxig1pCEXE4g==
+  dependencies:
+    follow-redirects "^1.15.0"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
 
 axios@^1.3.4:
   version "1.3.4"

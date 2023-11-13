@@ -213,11 +213,11 @@ export type MutationCreateLabSpecializationConnectionArgs = {
 export type MutationCreateNewsArgs = {
   cover_img_url?: InputMaybe<Scalars['String']>;
   excerpt?: InputMaybe<Scalars['String']>;
-  external_link?: InputMaybe<Scalars['String']>;
   is_featured?: InputMaybe<Scalars['Boolean']>;
   logo_url?: InputMaybe<Scalars['String']>;
   published_at?: InputMaybe<Scalars['Date']>;
   title: Scalars['String'];
+  url?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -412,12 +412,12 @@ export type MutationUpdateLabSpecializationArgs = {
 export type MutationUpdateNewsArgs = {
   cover_img_url?: InputMaybe<Scalars['String']>;
   excerpt?: InputMaybe<Scalars['String']>;
-  external_link?: InputMaybe<Scalars['String']>;
   is_featured?: InputMaybe<Scalars['Boolean']>;
   logo_url?: InputMaybe<Scalars['String']>;
   news_id: Scalars['String'];
   published_at?: InputMaybe<Scalars['Date']>;
   title?: InputMaybe<Scalars['String']>;
+  url?: InputMaybe<Scalars['String']>;
 };
 
 

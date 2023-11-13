@@ -1,5 +1,7 @@
 import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../../graphql/errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -7,7 +9,7 @@ const resolvers: Resolvers<Context> = {
       const {
         title,
         excerpt,
-        external_link,
+        url,
         is_featured,
         logo_url,
         cover_img_url,
@@ -18,12 +20,12 @@ const resolvers: Resolvers<Context> = {
         data: {
           title,
           excerpt,
-          external_link,
+          url,
           is_featured: is_featured != null ? is_featured : false,
           logo_url,
-          type: "news",
           cover_img_url,
-          published_at: published_at != null ? new Date(published_at) : undefined,
+          published_at:
+            published_at != null ? new Date(published_at) : undefined,
         },
       });
 
@@ -34,7 +36,7 @@ const resolvers: Resolvers<Context> = {
         news_id,
         title,
         excerpt,
-        external_link,
+        url,
         is_featured,
         logo_url,
         cover_img_url,
@@ -45,12 +47,12 @@ const resolvers: Resolvers<Context> = {
         data: {
           title: title !== null ? title : undefined,
           excerpt: excerpt !== null ? excerpt : undefined,
-          external_link: external_link !== null ? excerpt : undefined,
+          url: url !== null ? url : undefined,
           is_featured: is_featured != null ? is_featured : false,
-          logo_url: logo_url !== null ? excerpt : undefined,
-          type: "news",
-          cover_img_url: cover_img_url !== null ? excerpt : undefined,
-          published_at: published_at != null ? new Date(published_at) : undefined,
+          logo_url: logo_url !== null ? logo_url : undefined,
+          cover_img_url: cover_img_url !== null ? cover_img_url : undefined,
+          published_at:
+            published_at != null ? new Date(published_at) : undefined,
         },
         where: {
           id: news_id,
@@ -62,7 +64,15 @@ const resolvers: Resolvers<Context> = {
     publishNews: async (parent, args, context) => {
       const { news_id } = args;
 
-      const news = await context.prisma.news.update({
+      const news = await context.prisma.news.findUnique({
+        where: {
+          id: news_id,
+        },
+      });
+
+      invariant(news?.url, new PublicError("News doesn't has URL."));
+
+      await context.prisma.news.update({
         where: {
           id: news_id,
         },
