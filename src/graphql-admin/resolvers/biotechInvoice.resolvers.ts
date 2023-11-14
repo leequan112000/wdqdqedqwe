@@ -36,6 +36,13 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    paidBiotechInvoices: async (_, __, context) => {
+      return await context.prisma.biotechInvoice.findMany({
+        where: {
+          payment_status: InvoicePaymentStatus.PAID,
+        }
+      });
+    },
   },
   Mutation: {
     verifyBiotechInvoicePayment: async (_, args, context) => {

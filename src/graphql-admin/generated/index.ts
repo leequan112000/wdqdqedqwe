@@ -484,6 +484,7 @@ export type PerkCategory = {
 export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
+  paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
   verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
 };
 
@@ -854,6 +855,7 @@ export type PerkCategoryResolvers<ContextType = any, ParentType extends Resolver
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
   verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
 
