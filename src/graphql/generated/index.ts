@@ -94,6 +94,7 @@ export type BiotechInvoice = {
   paid_at?: Maybe<Scalars['Date']>;
   payment_status?: Maybe<Scalars['String']>;
   purchase_order?: Maybe<PurchaseOrder>;
+  reference_id?: Maybe<Scalars['String']>;
   stripe_txn_id?: Maybe<Scalars['String']>;
   total_amount?: Maybe<Scalars['Float']>;
   updated_at?: Maybe<Scalars['Date']>;
@@ -1838,6 +1839,7 @@ export type BiotechInvoiceResolvers<ContextType = any, ParentType extends Resolv
   paid_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   purchase_order?: Resolver<Maybe<ResolversTypes['PurchaseOrder']>, ParentType, ContextType>;
+  reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
