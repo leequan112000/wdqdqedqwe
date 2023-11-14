@@ -106,7 +106,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 await biotechInvoiceService.createBiotechInvoice({
                   milestone,
                   biotech_id: customer?.biotech_id as string,
-                  paid: true,
+                  payViaStripe: true,
                 }, { prisma });
 
                 console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
@@ -149,6 +149,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   },
                   data: {
                     payment_status: InvoicePaymentStatus.PAID,
+                    paid_at: new Date(),
                   }
                 });
 
@@ -191,6 +192,22 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   },
                   data: {
                     payment_status: MilestonePaymentStatus.PAID,
+                  }
+                });
+
+                const biotechInvoiceItem = await prisma.biotechInvoiceItem.findFirst({
+                  where: {
+                    milestone_id,
+                  }
+                });
+                
+                await prisma.biotechInvoice.update({
+                  where: {
+                    id: biotechInvoiceItem?.biotech_invoice_id
+                  },
+                  data: {
+                    payment_status: InvoicePaymentStatus.PAID,
+                    paid_at: new Date(),
                   }
                 });
 

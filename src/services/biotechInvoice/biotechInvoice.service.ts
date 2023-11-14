@@ -8,11 +8,11 @@ import { generateInvoiceNumber, generateInvoiceReferenceId } from '../../helper/
 export type CreateBiotechInvoiceArgs = {
   milestone: Milestone
   biotech_id: string
-  paid: boolean
+  payViaStripe: boolean
 }
 
 export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, context: ServiceContext) => {
-  const { milestone, biotech_id, paid } = args;
+  const { milestone, biotech_id, payViaStripe } = args;
   const today = moment();
   const dueDate = today.clone().add(30, 'd');
 
@@ -25,7 +25,7 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
   const invoice = await context.prisma.biotechInvoice.create({
     data: {
       invoice_number: generateInvoiceNumber(true),
-      payment_status: paid ? InvoicePaymentStatus.PAID : InvoicePaymentStatus.UNPAID,
+      payment_status: payViaStripe ? InvoicePaymentStatus.PROCESSING : InvoicePaymentStatus.UNPAID,
       due_at: dueDate.endOf('d').toDate(),
       biotech_invoice_items: {
         create: biotechInvoiceItemInputs,

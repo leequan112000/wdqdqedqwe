@@ -366,7 +366,7 @@ const resolvers: Resolvers<Context> = {
         const invoice = await biotechInvoiceService.createBiotechInvoice({
           milestone,
           biotech_id: customer?.biotech_id as string,
-          paid: false,
+          payViaStripe: false,
         }, {
           prisma: trx
         });
@@ -452,7 +452,7 @@ const resolvers: Resolvers<Context> = {
         const invoice = await biotechInvoiceService.createBiotechInvoice({
           milestone,
           biotech_id: customer?.biotech_id as string,
-          paid: false,
+          payViaStripe: false,
         }, {
           prisma: trx
         });
