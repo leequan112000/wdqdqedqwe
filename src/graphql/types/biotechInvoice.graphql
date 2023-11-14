@@ -3,6 +3,7 @@ type BiotechInvoice {
   invoice_number: String
   payment_status: String
   stripe_txn_id: String
+  reference_id: String
   due_at: Date
   created_at: Date
   updated_at: Date

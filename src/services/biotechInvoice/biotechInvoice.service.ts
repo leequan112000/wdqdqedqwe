@@ -3,7 +3,7 @@ import moment from 'moment';
 import currency from 'currency.js';
 import { ServiceContext } from '../../types/context';
 import { InvoicePaymentStatus } from '../../helper/constant';
-import { generateInvoiceNumber } from '../../helper/invoice';
+import { generateInvoiceNumber, generateInvoiceReferenceId } from '../../helper/invoice';
 
 export type CreateBiotechInvoiceArgs = {
   milestone: Milestone
@@ -31,6 +31,7 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
         create: biotechInvoiceItemInputs,
       },
       biotech_id,
+      reference_id: generateInvoiceReferenceId(),
     },
   });
   

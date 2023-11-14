@@ -623,6 +623,7 @@ model BiotechInvoice {
   updated_at                         DateTime                         @updatedAt
   paid_at                            DateTime?
   stripe_txn_id                      String?
+  reference_id                       String?
   biotech_invoice_items              BiotechInvoiceItem[]
   biotech                            Biotech                          @relation(fields: [biotech_id], references: [id])
   purchase_order                     PurchaseOrder?
