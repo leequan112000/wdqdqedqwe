@@ -1,11 +1,7 @@
 type News {
-  id: String
   title: String
   excerpt: String
-  type: String
   is_featured: Boolean
-  ghost_slug: String
-  external_link: String
   logo_url: String
   published_at: Date
   url: String
