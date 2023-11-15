@@ -37,6 +37,7 @@ model User {
   biotech_invite_vendors              BiotechInviteVendor[]
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
+  biotech_invoice_attachments         BiotechInvoiceAttachment[]
 
   @@map("users")
 }
@@ -628,6 +629,7 @@ model BiotechInvoice {
   biotech                            Biotech                          @relation(fields: [biotech_id], references: [id])
   purchase_order                     PurchaseOrder?
   blanket_purchase_order_transaction BlanketPurchaseOrderTransaction?
+  biotech_invoice_attachments        BiotechInvoiceAttachment[]
 
   @@map("biotech_invoices")
 }
@@ -892,4 +894,21 @@ model News {
   updated_at    DateTime  @updatedAt
 
   @@map("news")
+}
+
+model BiotechInvoiceAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
+
+  biotech_invoice_id String?         @db.Uuid
+  biotech_invoice    BiotechInvoice? @relation(fields: [biotech_invoice_id], references: [id])
+  uploader_id        String?         @db.Uuid
+  uploader           User?           @relation(fields: [uploader_id], references: [id])
+
+  @@map("biotech_invoice_attachments")
 }
