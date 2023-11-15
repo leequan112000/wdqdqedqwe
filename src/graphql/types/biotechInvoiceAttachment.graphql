@@ -1,0 +1,12 @@
+type BiotechInvoiceAttachment {
+  id: String
+  key: String
+  filename: String
+  byte_size: Float
+  created_at: Date
+  biotech_invoice_id: String
+  biotech_invoice: BiotechInvoice
+  signed_url: String
+  formatted_filesize: String
+  document_type: String
+}
