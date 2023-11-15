@@ -14,7 +14,7 @@ const resolvers: Resolvers<Context> = {
           title: n.title,
           excerpt: n.excerpt,
           is_featured: n.featured,
-          published_at: n.published_at,
+          published_at: n.published_at ? new Date(n.published_at) : undefined,
           url: new URL(`/news/${n.slug}`, app_env.APP_URL).href,
           cover_img_url: n.feature_image,
         };
@@ -25,7 +25,7 @@ const resolvers: Resolvers<Context> = {
           title: n.title,
           excerpt: n.excerpt,
           is_featured: n.featured,
-          published_at: n.published_at,
+          published_at: n.published_at ? new Date(n.published_at) : undefined,
           url: new URL(`/news/${n.slug}`, app_env.APP_URL).href,
           cover_img_url: n.feature_image,
         };
@@ -66,7 +66,7 @@ const resolvers: Resolvers<Context> = {
           title: n.title,
           excerpt: n.excerpt,
           is_featured: n.featured,
-          published_at: n.published_at,
+          published_at: n.published_at ? new Date(n.published_at) : undefined,
           url: new URL(`/news/${n.slug}`, app_env.APP_URL).href,
           cover_img_url: n.feature_image,
         };
