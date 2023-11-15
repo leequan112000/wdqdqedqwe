@@ -85,6 +85,7 @@ export type BiotechInvoice = {
   __typename?: 'BiotechInvoice';
   biotech?: Maybe<Biotech>;
   biotech_id?: Maybe<Scalars['String']>;
+  biotech_invoice_attachment?: Maybe<BiotechInvoiceAttachment>;
   biotech_invoice_items?: Maybe<Array<Maybe<BiotechInvoiceItem>>>;
   blanket_purchase_order_transaction?: Maybe<BlanketPurchaseOrderTransaction>;
   created_at?: Maybe<Scalars['Date']>;
@@ -98,6 +99,20 @@ export type BiotechInvoice = {
   stripe_txn_id?: Maybe<Scalars['String']>;
   total_amount?: Maybe<Scalars['Float']>;
   updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type BiotechInvoiceAttachment = {
+  __typename?: 'BiotechInvoiceAttachment';
+  biotech_invoice?: Maybe<BiotechInvoice>;
+  biotech_invoice_id?: Maybe<Scalars['String']>;
+  byte_size?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
+  filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
 };
 
 export type BiotechInvoiceItem = {
@@ -421,6 +436,7 @@ export type Mutation = {
   updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
   updateVendorCompanyLabSpecializations?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  uploadBiotechInvoicePaymentReceipt?: Maybe<BiotechInvoice>;
   uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
   uploadDocuments?: Maybe<Array<Maybe<UploadResult>>>;
@@ -882,6 +898,12 @@ export type MutationUpdateVendorMemberArgs = {
   department?: InputMaybe<Scalars['String']>;
   phone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUploadBiotechInvoicePaymentReceiptArgs = {
+  file: Scalars['Upload'];
+  id: Scalars['String'];
 };
 
 
@@ -1613,6 +1635,7 @@ export type ResolversTypes = ResolversObject<{
   Biotech: ResolverTypeWrapper<Biotech>;
   BiotechInviteVendor: ResolverTypeWrapper<BiotechInviteVendor>;
   BiotechInvoice: ResolverTypeWrapper<BiotechInvoice>;
+  BiotechInvoiceAttachment: ResolverTypeWrapper<BiotechInvoiceAttachment>;
   BiotechInvoiceItem: ResolverTypeWrapper<BiotechInvoiceItem>;
   BlanketPurchaseOrder: ResolverTypeWrapper<BlanketPurchaseOrder>;
   BlanketPurchaseOrderTransaction: ResolverTypeWrapper<BlanketPurchaseOrderTransaction>;
@@ -1691,6 +1714,7 @@ export type ResolversParentTypes = ResolversObject<{
   Biotech: Biotech;
   BiotechInviteVendor: BiotechInviteVendor;
   BiotechInvoice: BiotechInvoice;
+  BiotechInvoiceAttachment: BiotechInvoiceAttachment;
   BiotechInvoiceItem: BiotechInvoiceItem;
   BlanketPurchaseOrder: BlanketPurchaseOrder;
   BlanketPurchaseOrderTransaction: BlanketPurchaseOrderTransaction;
@@ -1830,6 +1854,7 @@ export type BiotechInviteVendorResolvers<ContextType = any, ParentType extends R
 export type BiotechInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['BiotechInvoice'] = ResolversParentTypes['BiotechInvoice']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  biotech_invoice_attachment?: Resolver<Maybe<ResolversTypes['BiotechInvoiceAttachment']>, ParentType, ContextType>;
   biotech_invoice_items?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoiceItem']>>>, ParentType, ContextType>;
   blanket_purchase_order_transaction?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrderTransaction']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -1843,6 +1868,20 @@ export type BiotechInvoiceResolvers<ContextType = any, ParentType extends Resolv
   stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BiotechInvoiceAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['BiotechInvoiceAttachment'] = ResolversParentTypes['BiotechInvoiceAttachment']> = ResolversObject<{
+  biotech_invoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType>;
+  biotech_invoice_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2153,6 +2192,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
   updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  uploadBiotechInvoicePaymentReceipt?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<MutationUploadBiotechInvoicePaymentReceiptArgs, 'file' | 'id'>>;
   uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
   uploadDocuments?: Resolver<Maybe<Array<Maybe<ResolversTypes['UploadResult']>>>, ParentType, ContextType, RequireFields<MutationUploadDocumentsArgs, 'files' | 'project_connection_id'>>;
@@ -2636,6 +2676,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Biotech?: BiotechResolvers<ContextType>;
   BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
   BiotechInvoice?: BiotechInvoiceResolvers<ContextType>;
+  BiotechInvoiceAttachment?: BiotechInvoiceAttachmentResolvers<ContextType>;
   BiotechInvoiceItem?: BiotechInvoiceItemResolvers<ContextType>;
   BlanketPurchaseOrder?: BlanketPurchaseOrderResolvers<ContextType>;
   BlanketPurchaseOrderTransaction?: BlanketPurchaseOrderTransactionResolvers<ContextType>;

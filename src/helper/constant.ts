@@ -136,6 +136,14 @@ export const COMPANY_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE]: 'vendor_company_file',
 }
 
+export enum BiotechInvoiceAttachmentDocumentType {
+  PAYMENT_RECEIPT,
+}
+
+export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT]: 'payment_receipt',
+}
+
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
 }

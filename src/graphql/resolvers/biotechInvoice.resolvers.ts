@@ -3,8 +3,11 @@ import { Resolvers } from "../generated";
 
 import { toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission, checkBiotechInvoicePermission } from "../../helper/accessControl";
-import { InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
+import { BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE, BiotechInvoiceAttachmentDocumentType, InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
 import invariant from "../../helper/invariant";
+import storeUpload from "../../helper/storeUpload";
+import { deleteObject } from "../../helper/awsS3";
+import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   BiotechInvoice: {
@@ -65,6 +68,16 @@ const resolvers: Resolvers<Context> = {
       const totalAmount = invoiceItems.reduce((acc, item) => acc + item.amount.toNumber(), 0);
       return toDollar(totalAmount);
     },
+    biotech_invoice_attachment: async (parent, _, context) => {
+      invariant(parent.id, 'Invoice ID not found.');
+      const attachment = await context.prisma.biotechInvoiceAttachment.findFirst({
+        where: {
+          biotech_invoice_id: parent.id,
+        },
+      });
+
+      return attachment ? { ...attachment, byte_size: Number(attachment.byte_size) } : {};
+    },
   },
   Query: {
     biotechInvoices: async (_, __, context) => {
@@ -89,6 +102,66 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.biotechInvoice.findFirst({
         where: {
           id
+        }
+      });
+    },
+  },
+  Mutation: {
+    uploadBiotechInvoicePaymentReceipt: async (_, args, context) => {
+      const { file, id } = args;
+      await checkBiotechInvoicePermission(context, id);
+
+      const data = await file;
+      const { filename, key, filesize, contentType } = await storeUpload(
+        data,
+        BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE[BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT],
+      );
+
+      const existingAttachment = await context.prisma.biotechInvoiceAttachment.findFirst({
+        where: {
+          biotech_invoice_id: id,
+          document_type: BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT,
+        },
+      });
+
+      invariant(filesize <= 10000000, new PublicError('File size must be less than 10MB.'));
+
+      let attachment;
+      if (existingAttachment) {
+        attachment = await context.prisma.biotechInvoiceAttachment.update({
+          data: {
+            byte_size: filesize,
+            filename,
+            key,
+            uploader_id: context.req.user_id,
+            content_type: contentType,
+          },
+          where: {
+            id: existingAttachment.id,
+          },
+        });
+
+        await deleteObject(existingAttachment.key);
+      } else {
+        attachment = await context.prisma.biotechInvoiceAttachment.create({
+          data: {
+            byte_size: filesize,
+            document_type: BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT,
+            filename,
+            key,
+            biotech_invoice_id: id,
+            uploader_id: context.req.user_id,
+            content_type: contentType,
+          },
+        });
+      }
+
+      return await context.prisma.biotechInvoice.update({
+        where: {
+          id,
+        },
+        data: {
+          payment_status: InvoicePaymentStatus.PROCESSING
         }
       });
     },

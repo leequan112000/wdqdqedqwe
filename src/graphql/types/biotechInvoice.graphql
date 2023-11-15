@@ -14,9 +14,17 @@ type BiotechInvoice {
   total_amount: Float
   purchase_order: PurchaseOrder
   blanket_purchase_order_transaction: BlanketPurchaseOrderTransaction
+  biotech_invoice_attachment: BiotechInvoiceAttachment
 }
 
 type Query {
   biotechInvoices: [BiotechInvoice]
   biotechInvoice(id: String!): BiotechInvoice
+}
+
+type Mutation {
+  uploadBiotechInvoicePaymentReceipt(
+    file: Upload!,
+    id: String!
+  ): BiotechInvoice
 }
