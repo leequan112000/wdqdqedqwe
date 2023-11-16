@@ -23,6 +23,16 @@ const resolvers: Resolvers<Context> = {
       const totalAmount = invoiceItems.reduce((acc, item) => acc + item.amount.toNumber(), 0);
       return toDollar(totalAmount);
     },
+    biotech_invoice_attachment: async (parent, _, context) => {
+      invariant(parent.id, 'Invoice ID not found.');
+      const attachment = await context.prisma.biotechInvoiceAttachment.findFirst({
+        where: {
+          biotech_invoice_id: parent.id,
+        },
+      });
+
+      return attachment ? { ...attachment, byte_size: Number(attachment.byte_size) } : {};
+    },
   },
   Query: {
     verificationPendingBiotechInvoices: async (_, __, context) => {
@@ -40,6 +50,14 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.biotechInvoice.findMany({
         where: {
           payment_status: InvoicePaymentStatus.PAID,
+        }
+      });
+    },
+    biotechInvoice: async (_, args, context) => {
+      const { id } = args;
+      return await context.prisma.biotechInvoice.findFirst({
+        where: {
+          id
         }
       });
     },

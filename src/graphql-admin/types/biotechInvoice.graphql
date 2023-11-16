@@ -10,11 +10,13 @@ type BiotechInvoice {
   paid_at: Date
   biotech_id: String
   total_amount: Float
+  biotech_invoice_attachment: BiotechInvoiceAttachment
 }
 
 type Query {
   verificationPendingBiotechInvoices: [BiotechInvoice]
   paidBiotechInvoices: [BiotechInvoice]
+  biotechInvoice(id: String!): BiotechInvoice
 }
 
 type Mutation {
