@@ -1,13 +1,17 @@
+import moment from "moment";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 
 import { toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission, checkBiotechInvoicePermission } from "../../helper/accessControl";
-import { BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE, BiotechInvoiceAttachmentDocumentType, InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
+import { AdminTeam, BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE, BiotechInvoiceAttachmentDocumentType, InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import storeUpload from "../../helper/storeUpload";
 import { deleteObject } from "../../helper/awsS3";
+
 import { PublicError } from "../errors/PublicError";
+
+import { bulkAdminBiotechInvoicePaymentNoticeEmail } from "../../mailer/admin";
 
 const resolvers: Resolvers<Context> = {
   BiotechInvoice: {
@@ -111,6 +115,35 @@ const resolvers: Resolvers<Context> = {
       const { file, id } = args;
       await checkBiotechInvoicePermission(context, id);
 
+      const biotechInvoice = await context.prisma.biotechInvoice.findFirst({
+        where: {
+          id
+        },
+        include: {
+          biotech_invoice_items: {
+            include: {
+              milestone: {
+                include: {
+                  quote: {
+                    include: {
+                      project_connection: {
+                        include: {
+                          vendor_company: true,
+                          project_request: true,
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          biotech: true,
+        }
+      });
+
+      invariant(biotechInvoice, 'Invoice not found.');
+
       const data = await file;
       const { filename, key, filesize, contentType } = await storeUpload(
         data,
@@ -155,6 +188,28 @@ const resolvers: Resolvers<Context> = {
           },
         });
       }
+
+      const totalAmount = biotechInvoice.biotech_invoice_items.reduce((acc, item) => acc + item.amount.toNumber(), 0);
+      const admins = await context.prisma.admin.findMany({
+        where: {
+          team: AdminTeam.SCIENCE,
+        },
+      });
+
+      const emailData = admins.map((admin) => ({
+        emailData: {
+          invoice_date: moment(biotechInvoice.created_at).format('ll'),
+          invoice_number: biotechInvoice.invoice_number,
+          invoice_total_amount: toDollar(totalAmount).toString(),
+          project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
+          biotech_company_name: biotechInvoice.biotech.name,
+          vendor_company_name: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.vendor_company.name as string,
+          button_url: process.env.RETOOL_PROJECT_URL as string,
+        },
+        receiverEmail: admin.email,
+      }));
+
+      bulkAdminBiotechInvoicePaymentNoticeEmail(emailData);
 
       return await context.prisma.biotechInvoice.update({
         where: {
