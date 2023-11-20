@@ -7,6 +7,7 @@ import {
   adminZeroAcceptedProjectNoticeTemplate,
   adminGeneralNoticeTemplate,
   adminBiotechInviteVendorNoticeTemplate,
+  adminBiotechInvoicePaymentNoticeTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
 import {
@@ -18,6 +19,8 @@ import {
   AdminBiotechInviteVendorNoticeData,
 } from "./types";
 import { CROMATIC_ADMIN_EMAIL } from "../helper/constant";
+import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
+import { createBulkEmailJobData } from "../helper/queue";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
   const mailData = createMailData({
@@ -138,4 +141,35 @@ export const sendAdminBiotechInviteVendorNoticeEmail = async (admin: Admin, data
   });
 
   return sendMail(mailData);
+}
+
+type AdminBiotechInvoicePaymentNoticeData = {
+  invoice_date: string;
+  invoice_number: string;
+  invoice_total_amount: string;
+  project_title: string;
+  biotech_company_name: string;
+  vendor_company_name: string;
+  button_url: string;
+}
+
+export const adminBiotechInvoicePaymentNoticeEmail = (
+  emailData: AdminBiotechInvoicePaymentNoticeData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: adminBiotechInvoicePaymentNoticeTemplate,
+  });
+};
+
+type BulkAdminBiotechInvoicePaymentNoticeData = {
+  emailData: AdminBiotechInvoicePaymentNoticeData;
+  receiverEmail: string;
+}
+
+export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (data: BulkAdminBiotechInvoicePaymentNoticeData[]) => {
+  const bulks = createBulkEmailJobData(data, adminBiotechInvoicePaymentNoticeTemplate)
+  createBulkSendMailJobs(bulks)
 }
