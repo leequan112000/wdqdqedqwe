@@ -103,6 +103,7 @@ export enum NotificationType {
   REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
   VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION = 'VendorProjectRequestExpiringNotification',
   VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
+  BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION = 'BiotechInvoicePaymentVerifiedNotification',
 }
 
 export enum QuoteNotificationActionContent {
