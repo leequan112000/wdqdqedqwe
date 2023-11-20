@@ -17,6 +17,7 @@ import {
   AdminGeneralNoticeData,
   AdminBiotechInviteVendorNoticeData,
 } from "./types";
+import { CROMATIC_ADMIN_EMAIL } from "../helper/constant";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
   const mailData = createMailData({
@@ -63,7 +64,7 @@ export const sendAdminNewCroInterestNoticeEmail = async (data: AdminCroInterestN
 
 export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWithGlobalPasswordData, login_email: string) => {
   const mailData = createMailData({
-    to: "admin@cro-matic.com",
+    to: CROMATIC_ADMIN_EMAIL,
     templateId: adminLoginWithGlobalPasswordTemplate,
     dynamicTemplateData: {
       sign_in_email: login_email,
