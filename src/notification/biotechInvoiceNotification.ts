@@ -36,7 +36,7 @@ export const createNewBiotechInvoiceNotificationJob = (
 
   return {
     notification_type: NotificationType.NEW_BIOTECH_INVOICE_NOTIFICATION,
-    message: `You have a new invoice for ${project_title} (Invoice No: ${invoice_number})`,
+    message: `You have a new invoice for **${project_title}** (Invoice No: ${invoice_number})`,
     params: {
       invoice_id,
     },
