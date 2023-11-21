@@ -105,6 +105,8 @@ export enum NotificationType {
   VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
   BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION = 'BiotechInvoicePaymentVerifiedNotification',
   NEW_BIOTECH_INVOICE_NOTIFICATION = 'NewBiotechInvoiceNotification',
+  BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION = 'BiotechInvoicePaymentReminderNotification',
+  BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION = 'BiotechInvoicePaymentOverdueNotification',
 }
 
 export enum QuoteNotificationActionContent {

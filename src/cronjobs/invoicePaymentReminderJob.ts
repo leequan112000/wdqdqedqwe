@@ -3,6 +3,8 @@ import { app_env } from '../environment';
 import prisma from '../prisma';
 import currency from 'currency.js';
 import { bulkBiotechInvoicePaymentOverdueNoticeEmail, bulkBiotechInvoicePaymentReminderEmail } from '../mailer/biotechInvoice';
+import { createBiotechInvoicePaymentOverdueNotificationJob, createBiotechInvoicePaymentReminderNotificationJob } from '../notification/biotechInvoiceNotification';
+import { createNotificationQueueJob } from '../queues/notification.queues';
 import { createInvoicePaymentOverdueNoticeEmailJob, createInvoicePaymentReminderEmailJob } from '../queues/email.queues';
 import { CompanyCollaboratorRoleType, InvoicePaymentStatus } from '../helper/constant';
 
@@ -61,7 +63,24 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
       },
     },
     include: {
-      biotech_invoice_items: true,
+      biotech_invoice_items: {
+        include: {
+          milestone: {
+            include: {
+              quote: {
+                include: {
+                  project_connection: {
+                    include: {
+                      vendor_company: true,
+                      project_request: true,
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       biotech: true,
     },
   });
@@ -94,7 +113,17 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
           },
           receiverEmail: r.user.email,
         }));
+        const notificationData = receivers.map((r) => {
+          return createBiotechInvoicePaymentReminderNotificationJob({
+            recipient_id: r.id,
+            invoice_id: biotechInvoice.id,
+            invoice_number: biotechInvoice.invoice_number,
+            project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
+            due_at: moment(biotechInvoice.due_at).format('ll'),
+          })
+        });
         bulkBiotechInvoicePaymentOverdueNoticeEmail(emailData);
+        createNotificationQueueJob({ data: notificationData });
       } else {
         const emailData = receivers.map((r) => ({
           emailData: {
@@ -108,7 +137,17 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
           },
           receiverEmail: r.user.email,
         }));
+        const notificationData = receivers.map((r) => {
+          return createBiotechInvoicePaymentOverdueNotificationJob({
+            recipient_id: r.id,
+            invoice_id: biotechInvoice.id,
+            invoice_number: biotechInvoice.invoice_number,
+            project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
+            overdue_period: duePeriod,
+          })
+        });
         bulkBiotechInvoicePaymentReminderEmail(emailData);
+        createNotificationQueueJob({ data: notificationData });
       }
     })
   );

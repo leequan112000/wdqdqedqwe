@@ -62,6 +62,8 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.INVOICE_PAYMENT_REMINDER_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
         case NotificationType.BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION:
+        case NotificationType.BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION:
+        case NotificationType.BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
           return `/app/invoices/${parent.params.invoice_id}`;
         case NotificationType.NEW_MEETING_NOTIFICATION:
         case NotificationType.UPDATE_MEETING_NOTIFICATION:
