@@ -1,3 +1,4 @@
+import currency from "currency.js";
 import moment from "moment";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
@@ -200,7 +201,7 @@ const resolvers: Resolvers<Context> = {
         emailData: {
           invoice_date: moment(biotechInvoice.created_at).format('ll'),
           invoice_number: biotechInvoice.invoice_number,
-          invoice_total_amount: toDollar(totalAmount).toString(),
+          invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
           project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
           biotech_company_name: biotechInvoice.biotech.name,
           vendor_company_name: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.vendor_company.name as string,

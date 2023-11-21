@@ -10,7 +10,6 @@ import { ServiceContext } from '../../types/context';
 
 import { CompanyCollaboratorRoleType, InvoicePaymentStatus } from '../../helper/constant';
 import { generateInvoiceNumber, generateInvoiceReferenceId } from '../../helper/invoice';
-import { toDollar } from '../../helper/money';
 
 export type CreateBiotechInvoiceArgs = {
   milestone: Milestone
@@ -81,7 +80,7 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
     emailData: {
       project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
       invoice_number: biotechInvoice.invoice_number,
-      invoice_total_amount: toDollar(totalAmount).toString(),
+      invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
       biotech_company_name: biotechInvoice.biotech.name,
       due_at: moment(biotechInvoice.due_at).format('ll'),
       button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`

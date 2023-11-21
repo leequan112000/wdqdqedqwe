@@ -1,3 +1,4 @@
+import currency from "currency.js";
 import moment from "moment";
 import { app_env } from "../../environment";
 import { Resolvers } from "../generated";
@@ -107,7 +108,7 @@ const resolvers: Resolvers<Context> = {
         emailData: {
           invoice_date: moment(biotechInvoice.created_at).format('ll'),
           invoice_number: biotechInvoice.invoice_number,
-          invoice_total_amount: toDollar(totalAmount).toString(),
+          invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
           biotech_company_name: biotechInvoice.biotech.name,
           button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
         },
@@ -118,7 +119,7 @@ const resolvers: Resolvers<Context> = {
           recipient_id: r.id,
           invoice_id: biotechInvoice.id,
           invoice_number: biotechInvoice.invoice_number,
-          invoice_total_amount: toDollar(totalAmount).toString(),
+          invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
         })
       })
       bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);

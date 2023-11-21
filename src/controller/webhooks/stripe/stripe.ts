@@ -1,4 +1,5 @@
 import type { Stripe } from 'stripe';
+import currency from 'currency.js';
 import moment from 'moment';
 import prisma from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
@@ -7,7 +8,6 @@ import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../../not
 import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import { createNotificationQueueJob } from '../../../queues/notification.queues';
 import invariant from '../../../helper/invariant';
-import { toDollar } from '../../../helper/money';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
 import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
@@ -238,7 +238,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   emailData: {
                     invoice_date: moment(biotechInvoice.created_at).format('ll'),
                     invoice_number: biotechInvoice.invoice_number,
-                    invoice_total_amount: toDollar(totalAmount).toString(),
+                    invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
                     biotech_company_name: biotechInvoice.biotech.name,
                     button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
                   },
@@ -249,7 +249,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                     recipient_id: r.id,
                     invoice_id: biotechInvoice.id,
                     invoice_number: biotechInvoice.invoice_number,
-                    invoice_total_amount: toDollar(totalAmount).toString(),
+                    invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
                   })
                 })
                 bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
