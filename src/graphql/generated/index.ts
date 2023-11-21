@@ -1216,6 +1216,11 @@ export type QueryBiotechInvoiceArgs = {
 };
 
 
+export type QueryBiotechInvoicesArgs = {
+  has_paid?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type QueryCollaboratorsArgs = {
   active_only?: InputMaybe<Scalars['Boolean']>;
 };
@@ -2412,7 +2417,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
-  biotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
+  biotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType, Partial<QueryBiotechInvoicesArgs>>;
   blanketPurchaseOrders?: Resolver<Maybe<Array<Maybe<ResolversTypes['BlanketPurchaseOrder']>>>, ParentType, ContextType>;
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;

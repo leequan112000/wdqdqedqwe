@@ -85,7 +85,8 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Query: {
-    biotechInvoices: async (_, __, context) => {
+    biotechInvoices: async (_, args, context) => {
+      const { has_paid } = args;
       await checkAllowCustomerOnlyPermission(context);
 
       const currentCustomer = await context.prisma.customer.findFirst({
@@ -94,10 +95,16 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const baseFilter: any = {
+        biotech_id: currentCustomer?.biotech_id,
+      };
+
+      if (has_paid !== undefined) {
+        baseFilter.payment_status = has_paid ? InvoicePaymentStatus.PAID : { not: InvoicePaymentStatus.PAID };
+      }
+
       return await context.prisma.biotechInvoice.findMany({
-        where: {
-          biotech_id: currentCustomer?.biotech_id,
-        }
+        where: baseFilter
       });
     },
     biotechInvoice: async (_, args, context) => {

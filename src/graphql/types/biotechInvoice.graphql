@@ -18,7 +18,7 @@ type BiotechInvoice {
 }
 
 type Query {
-  biotechInvoices: [BiotechInvoice]
+  biotechInvoices(has_paid: Boolean): [BiotechInvoice]
   biotechInvoice(id: String!): BiotechInvoice
 }
 
