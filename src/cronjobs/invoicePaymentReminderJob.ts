@@ -115,7 +115,7 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
         }));
         const notificationData = receivers.map((r) => {
           return createBiotechInvoicePaymentReminderNotificationJob({
-            recipient_id: r.id,
+            recipient_id: r.user_id,
             invoice_id: biotechInvoice.id,
             invoice_number: biotechInvoice.invoice_number,
             project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
@@ -139,7 +139,7 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
         }));
         const notificationData = receivers.map((r) => {
           return createBiotechInvoicePaymentOverdueNotificationJob({
-            recipient_id: r.id,
+            recipient_id: r.user_id,
             invoice_id: biotechInvoice.id,
             invoice_number: biotechInvoice.invoice_number,
             project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,

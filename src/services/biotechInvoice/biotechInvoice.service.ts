@@ -89,7 +89,7 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
   }));
   const notificationData = receivers.map((r) => {
     return createNewBiotechInvoiceNotificationJob({
-      recipient_id: r.id,
+      recipient_id: r.user_id,
       invoice_id: biotechInvoice.id,
       invoice_number: biotechInvoice.invoice_number,
       project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,

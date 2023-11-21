@@ -246,7 +246,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }));
                 const notificationData = receivers.map((r) => {
                   return createBiotechInvoicePaymentVerifiedNotificationJob({
-                    recipient_id: r.id,
+                    recipient_id: r.user_id,
                     invoice_id: biotechInvoice.id,
                     invoice_number: biotechInvoice.invoice_number,
                     invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
