@@ -21,3 +21,25 @@ export const createBiotechInvoicePaymentVerifiedNotificationJob = (
     recipient_id,
   };
 };
+
+type CreateNewBiotechInvoiceNotificationData = {
+  recipient_id: string;
+  invoice_id: string;
+  invoice_number: string;
+  project_title: string;
+}
+
+export const createNewBiotechInvoiceNotificationJob = (
+  data: CreateNewBiotechInvoiceNotificationData
+) => {
+  const { recipient_id, invoice_id, invoice_number, project_title } = data;
+
+  return {
+    notification_type: NotificationType.NEW_BIOTECH_INVOICE_NOTIFICATION,
+    message: `You have a new invoice for ${project_title} (Invoice No: ${invoice_number})`,
+    params: {
+      invoice_id,
+    },
+    recipient_id,
+  };
+};
