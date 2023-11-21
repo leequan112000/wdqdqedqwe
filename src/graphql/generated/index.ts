@@ -939,14 +939,10 @@ export type News = {
   __typename?: 'News';
   cover_img_url?: Maybe<Scalars['String']>;
   excerpt?: Maybe<Scalars['String']>;
-  external_link?: Maybe<Scalars['String']>;
-  ghost_slug?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
   is_featured?: Maybe<Scalars['Boolean']>;
   logo_url?: Maybe<Scalars['String']>;
   published_at?: Maybe<Scalars['Date']>;
   title?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
   url?: Maybe<Scalars['String']>;
 };
 
@@ -2208,14 +2204,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type NewsResolvers<ContextType = any, ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']> = ResolversObject<{
   cover_img_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   excerpt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  external_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  ghost_slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_featured?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   published_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
