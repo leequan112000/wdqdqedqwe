@@ -1,4 +1,4 @@
-import { Biotech, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote } from '@prisma/client';
+import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User } from '@prisma/client';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
 import Stripe from 'stripe';
 import { MockContext, createMockContext } from '../../../testContext';
@@ -23,8 +23,12 @@ import {
 import {
   InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, ProjectConnectionVendorStatus, QuoteStatus
 } from '../../../helper/constant';
+import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
+import { NotificationJob, createNotificationQueueJob } from '../../../queues/notification.queues';
 
 vi.mock('../../../prisma.ts');
+
+vi.mock('../../../services/biotechInvoice/biotechInvoice.service');
 
 vi.mock('@sendgrid/mail');
 
@@ -32,6 +36,14 @@ vi.mock('../../../queues/email.queues.ts', () => ({
   createInvoicePaymentNoticeEmailJob: vi.fn(),
   createSendUserMilestoneNoticeJob: vi.fn(),
   createSendUserMilestonePaymentFailedNoticeJob: vi.fn(),
+}));
+
+vi.mock('../../../mailer/biotechInvoice.ts', () => ({
+  bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail: vi.fn(),
+}));
+
+vi.mock('../../../queues/notification.queues.ts', () => ({
+  createNotificationQueueJob: vi.fn(),
 }));
 
 vi.mock('../../../helper/stripe.ts', () => ({
@@ -321,6 +333,55 @@ describe('process stripe event', () => {
             project_connection: ProjectConnection;
           };
         });
+
+        prisma.biotechInvoiceItem.findFirst.mockResolvedValue({
+          id: 'uuid',
+          name: 'Item Name',
+          amount: new Prisma.Decimal(1000),
+          biotech_invoice_id: 'uuid',
+          milestone_id: 'uuid',
+        });
+
+        prisma.biotechInvoice.update.mockResolvedValue({
+          id: 'uuid',
+          invoice_number: 'binv_uuid',
+          biotech_id: 'uuid',
+          payment_status: 'paid',
+          due_at: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
+          paid_at: new Date(),
+          stripe_txn_id: null,
+          reference_id: 'uuid',
+          biotech_invoice_items: [],
+          biotech,
+        } as BiotechInvoice & {
+          biotech_invoice_items: BiotechInvoiceItem[];
+          biotech: Biotech;
+        });
+
+        prisma.customer.findMany.mockResolvedValue([{
+          ...customer,
+          user: {
+            id: 'uuid',
+            email: 'user@cromatic.bio',
+            first_name: 'Cromatic',
+            last_name: 'User',
+            encrypted_password: 'password',
+            reset_password_token: null,
+            reset_password_expiration: null,
+            reset_password_sent_at: null,
+            remember_created_at: null,
+            created_at: new Date(),
+            updated_at: new Date(),
+            is_active: true,
+          }
+        } as Customer & {
+          user: User;
+        }]);
+
+        vi.mocked(bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail).mockImplementation(() => Promise.resolve());
+        vi.mocked(createNotificationQueueJob);
         vi.mocked(createSendUserMilestoneNoticeJob).mockImplementation(() => true);
 
         const { message, status } = await processStripeEvent(event);
