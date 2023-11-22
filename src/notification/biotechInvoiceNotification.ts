@@ -59,7 +59,7 @@ export const createBiotechInvoicePaymentReminderNotificationJob = (
 
   return {
     notification_type: NotificationType.BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION,
-    message: `Your payment for **${project_title}** (Invoice No: ${invoice_number}) invoice is due on ${due_at}.`,
+    message: `Your payment for **${project_title}** (Invoice No: ${invoice_number}) is due on ${due_at}.`,
     params: {
       invoice_id,
     },
@@ -82,7 +82,7 @@ export const createBiotechInvoicePaymentOverdueNotificationJob = (
 
   return {
     notification_type: NotificationType.BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION,
-    message: `Your payment for **${project_title}** (Invoice No: ${invoice_number}) invoice is now ${overdue_period} overdue.`,
+    message: `Your payment for **${project_title}** (Invoice No: ${invoice_number}) is ${overdue_period} overdue.`,
     params: {
       invoice_id,
     },
