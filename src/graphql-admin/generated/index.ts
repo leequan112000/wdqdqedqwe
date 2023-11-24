@@ -38,6 +38,36 @@ export type BiotechInviteVendor = {
   website?: Maybe<Scalars['String']>;
 };
 
+export type BiotechInvoice = {
+  __typename?: 'BiotechInvoice';
+  biotech_id?: Maybe<Scalars['String']>;
+  biotech_invoice_attachment?: Maybe<BiotechInvoiceAttachment>;
+  created_at?: Maybe<Scalars['Date']>;
+  due_at?: Maybe<Scalars['Date']>;
+  id?: Maybe<Scalars['String']>;
+  invoice_number?: Maybe<Scalars['String']>;
+  paid_at?: Maybe<Scalars['Date']>;
+  payment_status?: Maybe<Scalars['String']>;
+  reference_id?: Maybe<Scalars['String']>;
+  stripe_txn_id?: Maybe<Scalars['String']>;
+  total_amount?: Maybe<Scalars['Float']>;
+  updated_at?: Maybe<Scalars['Date']>;
+};
+
+export type BiotechInvoiceAttachment = {
+  __typename?: 'BiotechInvoiceAttachment';
+  biotech_invoice?: Maybe<BiotechInvoice>;
+  biotech_invoice_id?: Maybe<Scalars['String']>;
+  byte_size?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  document_type?: Maybe<Scalars['String']>;
+  filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
+};
+
 export type CertificationTag = {
   __typename?: 'CertificationTag';
   full_name?: Maybe<Scalars['String']>;
@@ -146,6 +176,7 @@ export type Mutation = {
   updateReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   updateReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   updateVendorMemberByAdmin?: Maybe<Scalars['Boolean']>;
+  verifyBiotechInvoicePayment?: Maybe<BiotechInvoice>;
 };
 
 
@@ -475,6 +506,11 @@ export type MutationUpdateVendorMemberByAdminArgs = {
   user_id: Scalars['String'];
 };
 
+
+export type MutationVerifyBiotechInvoicePaymentArgs = {
+  invoice_id: Scalars['String'];
+};
+
 export type News = {
   __typename?: 'News';
   id?: Maybe<Scalars['String']>;
@@ -511,6 +547,14 @@ export type PerkCategory = {
 export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
+  biotechInvoice?: Maybe<BiotechInvoice>;
+  paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
+  verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
+};
+
+
+export type QueryBiotechInvoiceArgs = {
+  id: Scalars['String'];
 };
 
 export type ReviewQuestion = {
@@ -645,6 +689,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = ResolversObject<{
   Admin: ResolverTypeWrapper<Admin>;
   BiotechInviteVendor: ResolverTypeWrapper<BiotechInviteVendor>;
+  BiotechInvoice: ResolverTypeWrapper<BiotechInvoice>;
+  BiotechInvoiceAttachment: ResolverTypeWrapper<BiotechInvoiceAttachment>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
@@ -675,6 +721,8 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Admin: Admin;
   BiotechInviteVendor: BiotechInviteVendor;
+  BiotechInvoice: BiotechInvoice;
+  BiotechInvoiceAttachment: BiotechInvoiceAttachment;
   Boolean: Scalars['Boolean'];
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
@@ -719,6 +767,36 @@ export type BiotechInviteVendorResolvers<ContextType = any, ParentType extends R
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BiotechInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['BiotechInvoice'] = ResolversParentTypes['BiotechInvoice']> = ResolversObject<{
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  biotech_invoice_attachment?: Resolver<Maybe<ResolversTypes['BiotechInvoiceAttachment']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  due_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  paid_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  payment_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stripe_txn_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  total_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BiotechInvoiceAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['BiotechInvoiceAttachment'] = ResolversParentTypes['BiotechInvoiceAttachment']> = ResolversObject<{
+  biotech_invoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType>;
+  biotech_invoice_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  document_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -837,6 +915,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionOptionArgs, 'option_text' | 'ordinal' | 'review_question_option_id'>>;
   updateReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionSetArgs, 'name' | 'review_question_set_id'>>;
   updateVendorMemberByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateVendorMemberByAdminArgs, 'user_id'>>;
+  verifyBiotechInvoicePayment?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<MutationVerifyBiotechInvoicePaymentArgs, 'invoice_id'>>;
 }>;
 
 export type NewsResolvers<ContextType = any, ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']> = ResolversObject<{
@@ -874,6 +953,9 @@ export type PerkCategoryResolvers<ContextType = any, ParentType extends Resolver
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
+  paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
+  verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
 
 export type ReviewQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestion'] = ResolversParentTypes['ReviewQuestion']> = ResolversObject<{
@@ -943,6 +1025,8 @@ export type VendorMemberResolvers<ContextType = any, ParentType extends Resolver
 export type Resolvers<ContextType = any> = ResolversObject<{
   Admin?: AdminResolvers<ContextType>;
   BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
+  BiotechInvoice?: BiotechInvoiceResolvers<ContextType>;
+  BiotechInvoiceAttachment?: BiotechInvoiceAttachmentResolvers<ContextType>;
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;

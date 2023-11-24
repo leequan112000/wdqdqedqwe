@@ -1,5 +1,6 @@
 export const ACCESS_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 14; // 14 days
 export const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 365 * 100; // 100 years
+export const CROMATIC_ADMIN_EMAIL = 'admin@cromatic.bio'
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
@@ -67,6 +68,7 @@ export enum MilestoneStatus {
 
 export enum MilestonePaymentStatus {
   UNPAID = 'unpaid',
+  PENDING = 'pending',
   PROCESSING = 'processing',
   PAID = 'paid',
 }
@@ -101,6 +103,10 @@ export enum NotificationType {
   REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
   VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION = 'VendorProjectRequestExpiringNotification',
   VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
+  BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION = 'BiotechInvoicePaymentVerifiedNotification',
+  NEW_BIOTECH_INVOICE_NOTIFICATION = 'NewBiotechInvoiceNotification',
+  BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION = 'BiotechInvoicePaymentReminderNotification',
+  BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION = 'BiotechInvoicePaymentOverdueNotification',
 }
 
 export enum QuoteNotificationActionContent {
@@ -133,6 +139,14 @@ export enum CompanyAttachmentDocumentType {
 
 export const COMPANY_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE]: 'vendor_company_file',
+}
+
+export enum BiotechInvoiceAttachmentDocumentType {
+  PAYMENT_RECEIPT,
+}
+
+export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
+  [BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT]: 'payment_receipt',
 }
 
 export enum MeetingPlatform {
@@ -206,6 +220,8 @@ export enum CasbinObj {
   PROJECT_COLLABORATOR = 'project_collaborator',
   PAYOUT_ACCOUNT = 'payout_account',
   MILESTONE_PAYMENT = 'milestone/payment',
+  PURCHASE_ORDER = 'purchase_order',
+  INVOICE = 'invoice',
 }
 
 export enum CasbinAct {
@@ -261,4 +277,9 @@ export enum UserType {
 export enum MessageType {
   SYSTEM = 'system-message',
   ADMIN = 'admin-message',
+}
+
+export enum BlanketPurchaseOrderTransactionType {
+  DEBIT = 'debit',
+  CREDIT = 'credit',
 }

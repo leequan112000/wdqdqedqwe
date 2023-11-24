@@ -1,0 +1,24 @@
+type BiotechInvoice {
+  id: String
+  invoice_number: String
+  payment_status: String
+  stripe_txn_id: String
+  reference_id: String
+  due_at: Date
+  created_at: Date
+  updated_at: Date
+  paid_at: Date
+  biotech_id: String
+  total_amount: Float
+  biotech_invoice_attachment: BiotechInvoiceAttachment
+}
+
+type Query {
+  verificationPendingBiotechInvoices: [BiotechInvoice]
+  paidBiotechInvoices: [BiotechInvoice]
+  biotechInvoice(id: String!): BiotechInvoice
+}
+
+type Mutation {
+  verifyBiotechInvoicePayment(invoice_id: String!): BiotechInvoice
+}

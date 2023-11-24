@@ -93,7 +93,7 @@ export const createInvoicePaymentOverdueNotification = async (data: CreateInvoic
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.INVOICE_PAYMENT_OVERDUE_NOTIFICATION,
-      message: `Your payment for **${invoice_date}** invoice is now ${overdue_period} overdue.`,
+      message: `Your payment for **${invoice_date}** invoice is ${overdue_period} overdue.`,
       params: {
         invoice_id,
       },

@@ -96,6 +96,29 @@ export const checkInvoicePermission = async (context: Context, invoiceId: string
   }
 }
 
+export const checkBiotechInvoicePermission = async (context: Context, biotechInvoiceId: string) => {
+  try {
+    const currentCustomer = await context.prisma.customer.findFirst({
+      where: {
+        user_id: context.req.user_id
+      },
+    });
+
+    invariant(currentCustomer, new PermissionDeniedError());
+
+    const biotechInvoice = await context.prisma.biotechInvoice.findFirst({
+      where: {
+        id: biotechInvoiceId,
+      },
+    });
+
+    invariant(biotechInvoice, new PermissionDeniedError());
+    invariant(biotechInvoice.biotech_id === currentCustomer.biotech_id, new PermissionDeniedError());
+  } catch (error) {
+    throw new PermissionDeniedError();
+  }
+}
+
 export const checkAllowVendorOnlyPermission = async (context: Context) => {
   try {
     const vendor = await context.prisma.vendorMember.findFirst({
