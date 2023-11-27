@@ -24,6 +24,15 @@ export const createBlanketPurchaseOrder = async (args: CreateBlanketPurchaseOrde
     }
   });
 
+  const existingBPO = await context.prisma.blanketPurchaseOrder.findFirst({
+    where: {
+      po_number,
+      biotech_id: customer.biotech_id
+    },
+  });
+
+  invariant(!existingBPO, new PublicError('A Blanket PO with the same PO number already exists.'));
+
   const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.create({
     data: {
       po_number,
