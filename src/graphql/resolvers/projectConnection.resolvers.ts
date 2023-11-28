@@ -6,6 +6,7 @@ import { Resolvers } from "../generated";
 
 import { InternalError } from "../errors/InternalError";
 import { PublicError } from "../errors/PublicError";
+import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 
 import { createSendUserAcceptProjectRequestNoticeJob } from "../../queues/email.queues";
 import { customerInvitationEmail } from "../../mailer/customer";
@@ -20,6 +21,7 @@ import invariant from "../../helper/invariant";
 import chatService from "../../services/chat/chat.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
 import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
+import { hasPermission } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -556,6 +558,8 @@ const resolvers: Resolvers<Context> = {
       const currentDate = new Date();
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
+      const allowAcceptProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowAcceptProjectConnection, new PermissionDeniedError());
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -632,6 +636,8 @@ const resolvers: Resolvers<Context> = {
     declinedProjectConnection: async (_, args, context) => {
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
+      const allowDeclineProjectConnection = await hasPermission(currentUserId, CasbinObj.PROJECT_CONNECTION, CasbinAct.WRITE);
+      invariant(allowDeclineProjectConnection, new PermissionDeniedError());
 
       const currentDate = new Date();
       const projectConnection = await context.prisma.projectConnection.findFirst({
