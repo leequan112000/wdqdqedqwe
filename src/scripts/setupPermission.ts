@@ -5,6 +5,7 @@ const main = async () => {
   try {
     const promises = [
       { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_REQUEST, act: CasbinAct.WRITE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_CONNECTION, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_USER, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_USER, act: CasbinAct.DELETE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_ADMIN, act: CasbinAct.WRITE },
