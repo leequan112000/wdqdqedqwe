@@ -99,7 +99,6 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                     id: milestone_id,
                   },
                   data: {
-                    status: MilestoneStatus.IN_PROGRESS,
                     payment_status: MilestonePaymentStatus.PROCESSING,
                   }
                 });

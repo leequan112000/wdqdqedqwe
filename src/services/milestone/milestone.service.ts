@@ -3,7 +3,7 @@ import currency from "currency.js";
 
 import { app_env } from "../../environment";
 import { ServiceContext } from "../../types/context";
-import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus } from "../../helper/constant";
+import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus } from "../../helper/constant";
 
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from "../../mailer/biotechInvoice";
 import { createBiotechInvoicePaymentVerifiedNotificationJob } from "../../notification/biotechInvoiceNotification";
@@ -30,6 +30,7 @@ const updateMilestoneAsPaid = async (args: UpdateMilestoneAsPaidArgs, ctx: Servi
       }
     },
     data: {
+      status: MilestoneStatus.IN_PROGRESS,
       payment_status: MilestonePaymentStatus.PAID,
     }
   });
