@@ -1,17 +1,13 @@
 import type { Stripe } from 'stripe';
-import currency from 'currency.js';
 import moment from 'moment';
 import prisma from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
-import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
-import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../../notification/biotechInvoiceNotification';
-import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
-import { createNotificationQueueJob } from '../../../queues/notification.queues';
+import milestoneService from '../../../services/milestone/milestone.service';
+import { InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
-import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
-import { app_env } from '../../../environment';
+import { createInvoicePaymentNoticeEmailJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
 
 export const processStripeEvent = async (event: Stripe.Event): Promise<{ status: number; message: string }> => {
   try {
@@ -184,84 +180,11 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
-                const updatedMilestone = await prisma.milestone.update({
-                  where: {
-                    id: milestone_id,
-                  },
-                  include: {
-                    quote: {
-                      include: {
-                        project_connection: true,
-                      }
-                    }
-                  },
-                  data: {
-                    payment_status: MilestonePaymentStatus.PAID,
-                  }
-                });
 
-                const biotechInvoiceItem = await prisma.biotechInvoiceItem.findFirst({
-                  where: {
-                    milestone_id,
-                  }
-                });
-                
-                const biotechInvoice = await prisma.biotechInvoice.update({
-                  where: {
-                    id: biotechInvoiceItem?.biotech_invoice_id
-                  },
-                  data: {
-                    payment_status: InvoicePaymentStatus.PAID,
-                    paid_at: new Date(),
-                  },
-                  include: {
-                    biotech_invoice_items: true,
-                    biotech: true,
-                  }
-                });
-
-                const receivers = await prisma.customer.findMany({
-                  where: {
-                    biotech_id: biotechInvoice.biotech_id,
-                    role: CompanyCollaboratorRoleType.OWNER,
-                    user: {
-                      is_active: true,
-                    },
-                  },
-                  include: {
-                    user: true,
-                  }
-                });
-
-                const totalAmount = biotechInvoice.biotech_invoice_items.reduce((acc, item) => acc + item.amount.toNumber(), 0);
-                const emailData = receivers.map((r) => ({
-                  emailData: {
-                    invoice_date: moment(biotechInvoice.created_at).format('ll'),
-                    invoice_number: biotechInvoice.invoice_number,
-                    invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
-                    biotech_company_name: biotechInvoice.biotech.name,
-                    button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
-                  },
-                  receiverEmail: r.user.email,
-                }));
-                const notificationData = receivers.map((r) => {
-                  return createBiotechInvoicePaymentVerifiedNotificationJob({
-                    recipient_id: r.user_id,
-                    invoice_id: biotechInvoice.id,
-                    invoice_number: biotechInvoice.invoice_number,
-                    invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
-                  })
-                })
-                bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
-                createNotificationQueueJob({ data: notificationData });
-
-                createSendUserMilestoneNoticeJob({
-                  projectConnectionId: updatedMilestone.quote.project_connection_id,
-                  milestoneTitle: updatedMilestone.title,
-                  quoteId: updatedMilestone.quote.id,
-                  senderUserId: customer.user_id!,
-                  milestoneEventType: MilestoneEventType.BIOTECH_PAID,
-                });
+                await milestoneService.updateMilestoneAsPaid({
+                  milestone_id,
+                  user_id: customer.user_id,
+                }, { prisma });
 
                 console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
                 break;

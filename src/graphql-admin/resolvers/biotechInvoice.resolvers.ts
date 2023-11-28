@@ -1,16 +1,10 @@
-import currency from "currency.js";
-import moment from "moment";
-import { app_env } from "../../environment";
+import milestoneService from "../../services/milestone/milestone.service";
 import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import { CompanyCollaboratorRoleType, InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { toDollar } from "../../helper/money";
 import { PublicError } from "../../graphql/errors/PublicError";
-
-import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from "../../mailer/biotechInvoice";
-import { createNotificationQueueJob } from "../../queues/notification.queues";
-import { createBiotechInvoicePaymentVerifiedNotificationJob } from "../../notification/biotechInvoiceNotification";
 
 const resolvers: Resolvers<Context> = {
   BiotechInvoice: {
@@ -90,7 +84,7 @@ const resolvers: Resolvers<Context> = {
       invariant(biotechInvoice.payment_status !== InvoicePaymentStatus.PAID, new PublicError('Invoice has already paid'));
       invariant(biotechInvoice.payment_status === InvoicePaymentStatus.PROCESSING, new PublicError('Invoice payment status invalid to perform this action'));
 
-      const receivers = await context.prisma.customer.findMany({
+      const biotechOwner = await context.prisma.customer.findFirst({
         where: {
           biotech_id: biotechInvoice.biotech_id,
           role: CompanyCollaboratorRoleType.OWNER,
@@ -103,35 +97,15 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      const totalAmount = biotechInvoice.biotech_invoice_items.reduce((acc, item) => acc + item.amount.toNumber(), 0);
-      const emailData = receivers.map((r) => ({
-        emailData: {
-          invoice_date: moment(biotechInvoice.created_at).format('ll'),
-          invoice_number: biotechInvoice.invoice_number,
-          invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
-          biotech_company_name: biotechInvoice.biotech.name,
-          button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
-        },
-        receiverEmail: r.user.email,
-      }));
-      const notificationData = receivers.map((r) => {
-        return createBiotechInvoicePaymentVerifiedNotificationJob({
-          recipient_id: r.user_id,
-          invoice_id: biotechInvoice.id,
-          invoice_number: biotechInvoice.invoice_number,
-          invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
-        })
-      })
-      bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
-      createNotificationQueueJob({ data: notificationData });
+      invariant(biotechOwner, new PublicError('Biotech owner not found.'));
 
-      return await context.prisma.biotechInvoice.update({
-        where: {
-          id: invoice_id,
-        },
-        data: {
-          payment_status: InvoicePaymentStatus.PAID,
-        }
+      return await context.prisma.$transaction(async (trx) => {
+        const { updatedBiotechInvoice } = await milestoneService.updateMilestoneAsPaid({
+          milestone_id: biotechInvoice.biotech_invoice_items[0].milestone_id as string,
+          user_id: biotechOwner.user_id,
+        }, { prisma: trx })
+
+        return updatedBiotechInvoice;
       });
     },
   }
