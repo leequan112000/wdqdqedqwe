@@ -23,4 +23,13 @@ type Mutation {
   updateCollaboratorRole(user_id: String!, role_type: String!): User
   deactivateCollaborator(user_id: String!): User
   reactivateCollaborator(user_id: String!): User
+
+  transferBiotechOwnership(
+    biotech_id: String!
+    user_id: String!
+  ): User
+  transferVendorCompanyOwnership(
+    vendor_company_id: String!
+    user_id: String!
+  ): User
 }
