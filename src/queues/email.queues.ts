@@ -458,7 +458,9 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            role: CompanyCollaboratorRoleType.OWNER,
+            role: {
+              in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+            },
             user: {
               is_active: true,
             },
@@ -494,7 +496,9 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            role: CompanyCollaboratorRoleType.OWNER,
+            role: {
+              in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+            },
             user: {
               is_active: true,
             },
@@ -535,7 +539,9 @@ emailQueue.process(async (job, done) => {
         const receivers = await prisma.vendorMember.findMany({
           where: {
             vendor_company_id: vendorCompanyId,
-            role: CompanyCollaboratorRoleType.OWNER,
+            role: {
+              in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+            },
             user: {
               is_active: true,
             },

@@ -58,7 +58,9 @@ const updateMilestoneAsPaid = async (args: UpdateMilestoneAsPaidArgs, ctx: Servi
   const receivers = await ctx.prisma.customer.findMany({
     where: {
       biotech_id: biotechInvoice.biotech_id,
-      role: CompanyCollaboratorRoleType.OWNER,
+      role: {
+        in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+      },
       user: {
         is_active: true,
       },
