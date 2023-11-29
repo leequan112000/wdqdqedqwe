@@ -159,6 +159,59 @@ const resolvers: Resolvers<Context> = {
       });
       return true;
     },
+    updateCustomerByAdmin: async (_, args, context) => {
+      const { user_id, team, first_name, last_name, role, job_title } = args;
+      await context.prisma.$transaction(async (trx) => {
+        await trx.user.update({
+          where: {
+            id: user_id,
+          },
+          data: {
+            first_name: ignoreEmptyString(first_name) ?? undefined,
+            last_name: ignoreEmptyString(last_name) ?? undefined,
+          },
+        });
+        const updatedCustomer = await trx.customer.update({
+          where: {
+            user_id,
+          },
+          data: {
+            job_title: ignoreEmptyString(job_title) ?? undefined,
+            team: ignoreEmptyString(team) ?? undefined,
+          },
+        });
+
+        switch (role) {
+          case CompanyCollaboratorRoleType.ADMIN: {
+            await collaboratorService.setCustomerAsAdmin(
+              {
+                user_id,
+                biotech_id: updatedCustomer.biotech_id,
+                customer_id: updatedCustomer.id,
+              },
+              { prisma: trx },
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.USER: {
+            await collaboratorService.setCustomerAsUser(
+              {
+                customer_id: updatedCustomer.id,
+              },
+              { prisma: trx },
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.OWNER: {
+            // ignore
+            break;
+          }
+          default:
+            throw new PublicError('Invalid role');
+        }
+      });
+      return true;
+    },
   }
 }
 
