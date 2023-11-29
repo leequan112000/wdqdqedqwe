@@ -90,6 +90,26 @@ const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContex
   return updatedCustomer;
 }
 
+type SetCustomerRoleAsOwner = {
+  customer_id: string;
+}
+
+const setCustomerAsOwner = async (args: SetCustomerRoleAsOwner, ctx: ServiceContext) => {
+  const { customer_id } = args;
+  const updatedCustomer = await ctx.prisma.customer.update({
+    where: {
+      id: customer_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.OWNER,
+    },
+  });
+
+  await updateRoleForUser(updatedCustomer.user_id, CasbinRole.OWNER);
+
+  return updatedCustomer;
+}
+
 type SetVendorMemberRoleAsAdminArgs = {
   vendor_company_id: string;
   vendor_member_id: string;
@@ -164,6 +184,27 @@ const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceCo
   });
 
   await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.USER);
+
+  return updatedVendorMember;
+}
+
+type SetVendorMemberAsOwner = {
+  vendor_member_id: string;
+}
+
+const setVendorMemberAsOwner = async (args: SetVendorMemberAsOwner, ctx: ServiceContext) => {
+  const { vendor_member_id } = args;
+
+  const updatedVendorMember = await ctx.prisma.vendorMember.update({
+    where: {
+      id: vendor_member_id,
+    },
+    data: {
+      role: CompanyCollaboratorRoleType.OWNER,
+    },
+  });
+
+  await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.OWNER);
 
   return updatedVendorMember;
 }
@@ -254,8 +295,10 @@ const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => 
 const collaboratorService = {
   setCustomerAsAdmin,
   setCustomerAsUser,
+  setCustomerAsOwner,
   setVendorMemberAsAdmin,
   setVendorMemberAsUser,
+  setVendorMemberAsOwner,
   checkPermissionToEditRole,
   updateUserRole,
 }
