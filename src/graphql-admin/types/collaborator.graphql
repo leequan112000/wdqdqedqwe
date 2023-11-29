@@ -17,4 +17,12 @@ type Mutation {
     team: String
     role: String
   ): Boolean
+  transferBiotechOwnershipByAdmin(
+    biotech_id: String!
+    user_id: String!
+  ): Boolean
+  transferVendorCompanyOwnershipByAdmin(
+    vendor_company_id: String!
+    user_id: String!
+  ): Boolean
 }

@@ -212,6 +212,88 @@ const resolvers: Resolvers<Context> = {
       });
       return true;
     },
+    transferBiotechOwnershipByAdmin: async (_, args, context) => {
+      const { biotech_id, user_id } = args;
+      const owner = await context.prisma.customer.findFirst({
+        where: {
+          biotech_id,
+          role: CompanyCollaboratorRoleType.OWNER,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      invariant(owner, new PublicError('Owner not found.'));
+
+      const newOwner = await context.prisma.customer.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('New owner user not found.'));
+      invariant(newOwner.biotech_id === biotech_id, new PublicError('The new owner does not belong to this biotech.'));
+      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this biotech.'));
+
+      await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setCustomerAsUser(
+          {
+            customer_id: owner.id,
+          },
+          { prisma: trx },
+        );
+
+        await collaboratorService.setCustomerAsOwner(
+          {
+            customer_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
+      });
+      return true;
+    },
+    transferVendorCompanyOwnershipByAdmin: async (_, args, context) => {
+      const { vendor_company_id, user_id } = args;
+      const owner = await context.prisma.vendorMember.findFirst({
+        where: {
+          vendor_company_id,
+          role: CompanyCollaboratorRoleType.OWNER,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      invariant(owner, new PublicError('Owner not found.'));
+
+      const newOwner = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('New owner user not found.'));
+      invariant(newOwner.vendor_company_id === vendor_company_id, new PublicError('The new owner does not belong to this vendor company.'));
+      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this vendor company.'));
+
+      await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setVendorMemberAsUser(
+          {
+            vendor_member_id: owner.id,
+          },
+          { prisma: trx },
+        );
+
+        await collaboratorService.setVendorMemberAsOwner(
+          {
+            vendor_member_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
+      });
+      return true;
+    },
   }
 }
 

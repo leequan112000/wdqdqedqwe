@@ -164,6 +164,8 @@ export type Mutation = {
   removeReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   resendCustomerInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
+  transferBiotechOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
+  transferVendorCompanyOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
   unpublishNews?: Maybe<News>;
   unregisterBiotechAccount?: Maybe<Scalars['Boolean']>;
   updateBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
@@ -402,6 +404,18 @@ export type MutationResendCustomerInvitationByAdminArgs = {
 
 export type MutationResendVendorMemberInvitationByAdminArgs = {
   user_id: Scalars['String'];
+};
+
+
+export type MutationTransferBiotechOwnershipByAdminArgs = {
+  biotech_id: Scalars['String'];
+  user_id: Scalars['String'];
+};
+
+
+export type MutationTransferVendorCompanyOwnershipByAdminArgs = {
+  user_id: Scalars['String'];
+  vendor_company_id: Scalars['String'];
 };
 
 
@@ -914,6 +928,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionSetArgs, 'review_question_set_id'>>;
   resendCustomerInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendCustomerInvitationByAdminArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
+  transferBiotechOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipByAdminArgs, 'biotech_id' | 'user_id'>>;
+  transferVendorCompanyOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipByAdminArgs, 'user_id' | 'vendor_company_id'>>;
   unpublishNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUnpublishNewsArgs, 'news_id'>>;
   unregisterBiotechAccount?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnregisterBiotechAccountArgs, 'biotech_id'>>;
   updateBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationUpdateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'id' | 'last_name' | 'website'>>;
