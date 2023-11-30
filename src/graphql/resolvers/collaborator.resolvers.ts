@@ -12,6 +12,7 @@ import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
 import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
+import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission } from "../../helper/accessControl";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -670,6 +671,88 @@ const resolvers: Resolvers<Context> = {
       }
 
       return user;
+    },
+    transferBiotechOwnership: async (_, args, context) => {
+      await checkAllowCustomerOnlyPermission(context);
+      const { user_id, biotech_id } = args;
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: true,
+        }
+      });
+
+      invariant(currentUser, 'Current user not found.');
+      invariant(currentUser.customer?.role === CasbinRole.OWNER, 'Only the owner has the permission to transfer ownership. Current user does not have this permission.');
+
+      const newOwner = await context.prisma.customer.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('Selected user not found.'));
+      invariant(newOwner.biotech_id === biotech_id, new PublicError('The new owner must belong to the same biotech as you.'));
+      invariant(currentUser.id !== user_id, new PublicError('The selected user is already the owner.'));
+
+      return await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setCustomerAsUser(
+          {
+            customer_id: currentUser.customer?.id as string,
+          },
+          { prisma: trx },
+        );
+
+        return await collaboratorService.setCustomerAsOwner(
+          {
+            customer_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
+      });
+    },
+    transferVendorCompanyOwnership: async (_, args, context) => {
+      await checkAllowVendorOnlyPermission(context);
+      const { user_id, vendor_company_id } = args;
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          vendor_member: true,
+        }
+      });
+
+      invariant(currentUser, 'Current user not found.');
+      invariant(currentUser.vendor_member?.role === CasbinRole.OWNER, 'Only the owner has the permission to transfer ownership. Current user does not have this permission.');
+
+      const newOwner = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('Selected user not found.'));
+      invariant(newOwner.vendor_company_id === vendor_company_id, new PublicError('The new owner must belong to the same vendor company as you.'));
+      invariant(currentUser.id !== user_id, new PublicError('The selected user is already the owner.'));
+
+      return await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setVendorMemberAsUser(
+          {
+            vendor_member_id: currentUser.vendor_member?.id as string,
+          },
+          { prisma: trx },
+        );
+
+        return await collaboratorService.setVendorMemberAsOwner(
+          {
+            vendor_member_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
+      });
     },
   },
 };

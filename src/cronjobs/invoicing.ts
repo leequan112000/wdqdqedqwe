@@ -147,7 +147,9 @@ async function main() {
     const primaryMembers = await prisma.vendorMember.findMany({
       where: {
         vendor_company_id: invoice.vendor_company_id,
-        role: CompanyCollaboratorRoleType.OWNER,
+        role: {
+          in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+        },
       },
       include: {
         user: true,

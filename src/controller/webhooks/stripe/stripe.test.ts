@@ -401,6 +401,7 @@ describe('process stripe event', () => {
           },
           data: {
             payment_status: MilestonePaymentStatus.PAID,
+            status: MilestoneStatus.IN_PROGRESS,
           },
         });
         expect(createSendUserMilestoneNoticeJob).toBeCalled();

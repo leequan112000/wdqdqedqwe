@@ -65,7 +65,9 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
   const receivers = await context.prisma.customer.findMany({
     where: {
       biotech_id: biotechInvoice.biotech_id,
-      role: CompanyCollaboratorRoleType.OWNER,
+      role: {
+        in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+      },
       user: {
         is_active: true,
       },

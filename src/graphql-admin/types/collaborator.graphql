@@ -9,4 +9,20 @@ type Mutation {
     department: String
     role: String
   ): Boolean
+  updateCustomerByAdmin(
+    user_id: String!
+    first_name: String
+    last_name: String
+    job_title: String
+    team: String
+    role: String
+  ): Boolean
+  transferBiotechOwnershipByAdmin(
+    biotech_id: String!
+    user_id: String!
+  ): Boolean
+  transferVendorCompanyOwnershipByAdmin(
+    vendor_company_id: String!
+    user_id: String!
+  ): Boolean
 }

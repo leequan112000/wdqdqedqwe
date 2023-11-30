@@ -91,7 +91,9 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
       const receivers = await prisma.customer.findMany({
         where: {
           biotech_id: biotechInvoice.biotech_id,
-          role: CompanyCollaboratorRoleType.OWNER,
+          role: {
+            in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+          },
           user: {
             is_active: true,
           },

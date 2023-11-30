@@ -164,10 +164,13 @@ export type Mutation = {
   removeReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   resendCustomerInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
+  transferBiotechOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
+  transferVendorCompanyOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
   unpublishNews?: Maybe<News>;
   unregisterBiotechAccount?: Maybe<Scalars['Boolean']>;
   updateBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   updateCertificationTag?: Maybe<CertificationTag>;
+  updateCustomerByAdmin?: Maybe<Scalars['Boolean']>;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateNews?: Maybe<News>;
   updatePerk?: Maybe<Perk>;
@@ -404,6 +407,18 @@ export type MutationResendVendorMemberInvitationByAdminArgs = {
 };
 
 
+export type MutationTransferBiotechOwnershipByAdminArgs = {
+  biotech_id: Scalars['String'];
+  user_id: Scalars['String'];
+};
+
+
+export type MutationTransferVendorCompanyOwnershipByAdminArgs = {
+  user_id: Scalars['String'];
+  vendor_company_id: Scalars['String'];
+};
+
+
 export type MutationUnpublishNewsArgs = {
   news_id: Scalars['String'];
 };
@@ -429,6 +444,16 @@ export type MutationUpdateCertificationTagArgs = {
   id: Scalars['String'];
   priority?: InputMaybe<Scalars['Int']>;
   short_name?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateCustomerByAdminArgs = {
+  first_name?: InputMaybe<Scalars['String']>;
+  job_title?: InputMaybe<Scalars['String']>;
+  last_name?: InputMaybe<Scalars['String']>;
+  role?: InputMaybe<Scalars['String']>;
+  team?: InputMaybe<Scalars['String']>;
+  user_id: Scalars['String'];
 };
 
 
@@ -903,10 +928,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionSetArgs, 'review_question_set_id'>>;
   resendCustomerInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendCustomerInvitationByAdminArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
+  transferBiotechOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipByAdminArgs, 'biotech_id' | 'user_id'>>;
+  transferVendorCompanyOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipByAdminArgs, 'user_id' | 'vendor_company_id'>>;
   unpublishNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUnpublishNewsArgs, 'news_id'>>;
   unregisterBiotechAccount?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnregisterBiotechAccountArgs, 'biotech_id'>>;
   updateBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationUpdateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'id' | 'last_name' | 'website'>>;
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
+  updateCustomerByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateCustomerByAdminArgs, 'user_id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUpdateNewsArgs, 'news_id'>>;
   updatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationUpdatePerkArgs, 'description' | 'how_to_redeem' | 'id' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;

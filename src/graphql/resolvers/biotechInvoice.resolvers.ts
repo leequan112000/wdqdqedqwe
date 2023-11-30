@@ -5,7 +5,7 @@ import { Resolvers } from "../generated";
 
 import { toDollar } from "../../helper/money";
 import { checkAllowCustomerOnlyPermission, checkBiotechInvoicePermission } from "../../helper/accessControl";
-import { AdminTeam, BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE, BiotechInvoiceAttachmentDocumentType, InvoicePaymentDisplayStatus, InvoicePaymentStatus } from "../../helper/constant";
+import { AdminTeam, BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE, BiotechInvoiceAttachmentDocumentType, InvoicePaymentDisplayStatus, InvoicePaymentStatus, MilestonePaymentStatus } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import storeUpload from "../../helper/storeUpload";
 import { deleteObject } from "../../helper/awsS3";
@@ -218,6 +218,19 @@ const resolvers: Resolvers<Context> = {
       }));
 
       bulkAdminBiotechInvoicePaymentNoticeEmail(emailData);
+
+      await Promise.all(
+        biotechInvoice.biotech_invoice_items.map(async (invoice_item) => {
+          await context.prisma.milestone.update({
+            where: {
+              id: invoice_item.milestone_id as string,
+            },
+            data: {
+              payment_status: MilestonePaymentStatus.PROCESSING,
+            }
+          });
+        })
+      );
 
       return await context.prisma.biotechInvoice.update({
         where: {
