@@ -1,0 +1,28 @@
+type News {
+  id: String
+}
+
+type Mutation {
+  createNews(
+    title: String!
+    excerpt: String
+    is_featured: Boolean
+    url: String
+    logo_url: String
+    cover_img_url: String
+    published_at: Date
+  ): News
+  updateNews(
+    news_id: String!
+    title: String
+    excerpt: String
+    is_featured: Boolean
+    url: String
+    logo_url: String
+    cover_img_url: String
+    published_at: Date
+  ): News
+  publishNews(news_id: String!): News
+  unpublishNews(news_id: String!): News
+  removeNews(news_id: String!): News
+}

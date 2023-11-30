@@ -6,7 +6,8 @@ import invariant from '../../helper/invariant';
 import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
-import { createCustomerInvitationByAdminEmailJob } from '../../queues/email.queues';
+import { customerInvitationByAdminEmail } from '../../mailer';
+import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
 
 const resolver: Resolvers<Context> = {
   Customer: {
@@ -52,12 +53,13 @@ const resolver: Resolvers<Context> = {
         );
 
         const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
             email: email,
             first_name: first_name,
             last_name: last_name,
-            reset_password_token: createResetPasswordToken(),
+            reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
           },
         });
@@ -108,11 +110,15 @@ const resolver: Resolvers<Context> = {
             throw new PublicError('Invalid role.');
         }
 
-        createCustomerInvitationByAdminEmailJob({
-          receiverEmail: newUser.email,
-          receiverName: `${newUser.first_name} ${newUser.last_name}`,
-          resetPasswordToken: newUser.reset_password_token,
-        });
+        const resetPasswordUrl = createResetPasswordUrl(resetToken);
+        const newUserFullName = getUserFullName(newUser);
+        customerInvitationByAdminEmail(
+          {
+            login_url: resetPasswordUrl,
+            receiver_full_name: newUserFullName,
+          },
+          newUser.email,
+        );
 
         return newCustomer;
       });

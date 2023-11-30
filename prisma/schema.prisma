@@ -25,17 +25,19 @@ model User {
   updated_at                DateTime  @updatedAt
   is_active                 Boolean   @default(true)
 
-  customer                   Customer?
-  vendor_member              VendorMember?
-  messages                   Message[]
-  notifications              Notification[]              @relation("ReceiverNotifications")
-  sent_notifications         Notification[]              @relation("SenderNotifications")
-  meetingAttendeeConnections MeetingAttendeeConnection[]
-  meetingEvents              MeetingEvent[]
-  project_attachments        ProjectAttachment[]
-  CompanyAttachment          CompanyAttachment[]
-  biotech_invite_vendors     BiotechInviteVendor[]
-  reviews                    Review[]
+  customer                            Customer?
+  vendor_member                       VendorMember?
+  messages                            Message[]
+  notifications                       Notification[]                    @relation("ReceiverNotifications")
+  sent_notifications                  Notification[]                    @relation("SenderNotifications")
+  meetingAttendeeConnections          MeetingAttendeeConnection[]
+  meetingEvents                       MeetingEvent[]
+  project_attachments                 ProjectAttachment[]
+  CompanyAttachment                   CompanyAttachment[]
+  biotech_invite_vendors              BiotechInviteVendor[]
+  reviews                             Review[]
+  blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
+  biotech_invoice_attachments         BiotechInvoiceAttachment[]
 
   @@map("users")
 }
@@ -110,11 +112,14 @@ model Biotech {
   facebook_url                                String?
   biotech_extra_info                          String?
 
-  customers              Customer[]
-  subscriptions          Subscription[]
-  chats                  Chat[]
-  project_requests       ProjectRequest[]
-  biotech_invite_vendors BiotechInviteVendor[]
+  customers               Customer[]
+  subscriptions           Subscription[]
+  chats                   Chat[]
+  project_requests        ProjectRequest[]
+  biotech_invite_vendors  BiotechInviteVendor[]
+  biotech_invoices        BiotechInvoice[]
+  purchase_orders         PurchaseOrder[]
+  blanket_purchase_orders BlanketPurchaseOrder[]
 
   @@map("biotechs")
 }
@@ -530,15 +535,16 @@ model Milestone {
   amount                Decimal             @db.Decimal(14, 2)
   created_at            DateTime            @default(now())
   updated_at            DateTime            @updatedAt
-  quote                 Quote               @relation(fields: [quote_id], references: [id])
   quote_id              String              @db.Uuid
   status                String
   payment_status        String
   vendor_payment_status String
   timeline              String?
   ordinal               Int                 @default(0)
-  ProjectAttachment     ProjectAttachment[]
+  quote                 Quote               @relation(fields: [quote_id], references: [id])
+  project_attachments   ProjectAttachment[]
   invoice_item          InvoiceItem?
+  biotech_invoice_item  BiotechInvoiceItem?
 
   @@map("milestones")
 }
@@ -606,6 +612,38 @@ model InvoiceItem {
   milestone_amount Decimal?   @db.Decimal(14, 2)
 
   @@map("invoice_items")
+}
+
+model BiotechInvoice {
+  id                                 String                           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoice_number                     String
+  biotech_id                         String                           @db.Uuid
+  payment_status                     String
+  due_at                             DateTime
+  created_at                         DateTime                         @default(now())
+  updated_at                         DateTime                         @updatedAt
+  paid_at                            DateTime?
+  stripe_txn_id                      String?
+  reference_id                       String?
+  biotech_invoice_items              BiotechInvoiceItem[]
+  biotech                            Biotech                          @relation(fields: [biotech_id], references: [id])
+  purchase_order                     PurchaseOrder?
+  blanket_purchase_order_transaction BlanketPurchaseOrderTransaction?
+  biotech_invoice_attachments        BiotechInvoiceAttachment[]
+
+  @@map("biotech_invoices")
+}
+
+model BiotechInvoiceItem {
+  id                 String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  amount             Decimal        @db.Decimal(14, 2)
+  biotech_invoice_id String         @db.Uuid
+  milestone_id       String?        @unique @db.Uuid
+  biotech_invoice    BiotechInvoice @relation(fields: [biotech_invoice_id], references: [id])
+  milestone          Milestone?     @relation(fields: [milestone_id], references: [id])
+
+  @@map("biotech_invoice_items")
 }
 
 model BiotechInviteVendor {
@@ -792,19 +830,84 @@ model ReviewQuestionSet {
   @@map("review_question_sets")
 }
 
+model PurchaseOrder {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  po_number          String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  biotech_invoice_id String   @unique @db.Uuid
+  biotech_id         String   @db.Uuid
+
+  biotech_invoice BiotechInvoice @relation(fields: [biotech_invoice_id], references: [id])
+  biotech         Biotech        @relation(fields: [biotech_id], references: [id])
+
+  @@unique([biotech_id, po_number])
+  @@map("purchase_orders")
+}
+
+model BlanketPurchaseOrder {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  po_number      String
+  name           String
+  balance_amount Decimal  @db.Decimal(14, 2)
+  amount         Decimal  @db.Decimal(14, 2)
+  biotech_id     String   @db.Uuid
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  biotech                             Biotech                           @relation(fields: [biotech_id], references: [id])
+  blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
+
+  @@unique([biotech_id, po_number])
+  @@map("blanket_purchase_orders")
+}
+
+model BlanketPurchaseOrderTransaction {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  amount                    Decimal  @db.Decimal(14, 2)
+  transaction_type          String
+  user_id                   String   @db.Uuid
+  blanket_purchase_order_id String   @db.Uuid
+  biotech_invoice_id        String?  @unique @db.Uuid
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
+
+  blanket_purchase_order BlanketPurchaseOrder @relation(fields: [blanket_purchase_order_id], references: [id])
+  biotech_invoice        BiotechInvoice?      @relation(fields: [biotech_invoice_id], references: [id])
+  user                   User                 @relation(fields: [user_id], references: [id])
+
+  @@map("blanket_purchase_order_transactions")
+}
+
 model News {
   id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title         String
-  type          String
   excerpt       String?
   is_featured   Boolean   @default(false)
-  ghost_slug    String?
-  external_link String?
+  url           String?
   logo_url      String?
   cover_img_url String?
+  is_published  Boolean   @default(false)
   published_at  DateTime?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
   @@map("news")
+}
+
+model BiotechInvoiceAttachment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key           String   @unique
+  filename      String
+  document_type Int
+  content_type  String?
+  byte_size     BigInt
+  created_at    DateTime @default(now())
+
+  biotech_invoice_id String?         @db.Uuid
+  biotech_invoice    BiotechInvoice? @relation(fields: [biotech_invoice_id], references: [id])
+  uploader_id        String?         @db.Uuid
+  uploader           User?           @relation(fields: [uploader_id], references: [id])
+
+  @@map("biotech_invoice_attachments")
 }

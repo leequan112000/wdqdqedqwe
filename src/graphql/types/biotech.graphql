@@ -33,6 +33,9 @@ type Biotech {
   twitter_url: String
   facebook_url: String
   biotech_extra_info: String
+  biotech_invoices: [BiotechInvoice]
+  purchase_orders: [PurchaseOrder]
+  blanket_purchase_orders: [BlanketPurchaseOrder]
 }
 
 type Query {

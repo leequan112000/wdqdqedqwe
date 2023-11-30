@@ -1,0 +1,31 @@
+type BlanketPurchaseOrder {
+  id: String
+  po_number: String
+  name: String
+  amount: Float
+  balance_amount: Float
+  created_at: Date
+  updated_at: Date
+  biotech_id: String
+  biotech: Biotech
+  blanket_purchase_order_transactions: [BlanketPurchaseOrderTransaction]
+}
+
+type Query {
+  blanketPurchaseOrders: [BlanketPurchaseOrder]
+}
+
+type Mutation {
+  createBlanketPurchaseOrder(
+    po_number: String!
+    name: String!
+    amount: Float!
+  ): BlanketPurchaseOrder
+  updateBlanketPurchaseOrder(
+    id: String!
+    po_number: String!
+    name: String!
+    amount: Float!
+  ): BlanketPurchaseOrder
+  removeBlanketPurchaseOrder(id: String!): BlanketPurchaseOrder
+}

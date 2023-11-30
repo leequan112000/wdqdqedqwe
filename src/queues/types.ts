@@ -77,15 +77,3 @@ export type CreateVendorProjectRequestExpiredNoticeEmailJobParam = {
     biotech_full_name: string;
   }>;
 }
-
-export type CreateCustomerInvitationByADminEmailJobParam = {
-  receiverEmail: string;
-  receiverName: string;
-  resetPasswordToken: string;
-}
-
-export type CreateVendorMemberInvitationByADminEmailJobParam = {
-  receiverEmail: string;
-  receiverName: string;
-  resetPasswordToken: string;
-}

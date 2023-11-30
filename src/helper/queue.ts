@@ -30,3 +30,10 @@ export function createQueue<T = any>(name: string) {
     }
   });
 }
+
+export function createBulkEmailJobData(
+  data: { emailData: { [x: string]: string }, receiverEmail: string }[],
+  templateId: string
+) {
+  return data.map((d) => ({ emailData: d.emailData, templateId, receiverEmail: d.receiverEmail }))
+}

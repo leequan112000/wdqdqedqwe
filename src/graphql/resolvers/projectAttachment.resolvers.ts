@@ -5,7 +5,6 @@ import storeUpload from "../../helper/storeUpload";
 import { ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { getZohoContractEditorUrl } from "../../helper/zoho";
-import { createSendUserFileUploadNotice } from "../../queues/email.queues";
 import { Readable } from 'stream';
 import UploadLimitTracker from '../../helper/uploadLimitTracker';
 import { PublicError } from '../errors/PublicError';
@@ -13,6 +12,12 @@ import { byteToKB } from "../../helper/filesize";
 import { toDollar } from "../../helper/money";
 import { getFilenameWithVersion } from "../../helper/documentUpload";
 import invariant from "../../helper/invariant";
+import { bulkContractUpdateNoticeEmail, bulkContractUploadNoticeEmail, bulkDocumentUploadNoticeEmail } from "../../mailer";
+import { getReceiversByProjectConnection } from "../../queues/utils";
+import { app_env } from "../../environment";
+import { createNotificationQueueJob } from "../../queues/notification.queues";
+import createFinalContractUploadNotificationJob from "../../notification/finalContractUploadNotification";
+import createFileUploadNotificationJob from "../../notification/fileUploadNotification";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 B'
@@ -127,6 +132,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      invariant(user, 'Current user not found');
+
       let uploadLimitTracker: UploadLimitTracker;
 
       if (user?.customer?.biotech_id) {
@@ -184,11 +191,31 @@ const resolvers: Resolvers<Context> = {
         }));
 
         if (result.filter((r) => r.status === 'fulfilled').length > 0) {
-          createSendUserFileUploadNotice({
-            projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id!,
-            isFinalContract: false,
-          });
+          const {
+            receivers,
+            projectConnection,
+            senderCompanyName,
+          } = await getReceiversByProjectConnection(project_connection_id, currectUserId);
+          const emailData = receivers.map((r) => ({
+            emailData: {
+              login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
+              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              project_title: projectConnection.project_request.title,
+              company_name: senderCompanyName,
+            },
+            receiverEmail: r.email,
+          }));
+          const notificationData = receivers.map((r) => {
+            return createFileUploadNotificationJob({
+              sender_id: currectUserId,
+              recipient_id: r.id,
+              project_connection_id,
+              project_title: projectConnection.project_request.title,
+              sender_fullname: `${user.first_name} ${user.last_name}`
+            })
+          })
+          bulkDocumentUploadNoticeEmail(emailData)
+          createNotificationQueueJob({ data: notificationData })
         }
 
         return result.map((r) => {
@@ -226,6 +253,8 @@ const resolvers: Resolvers<Context> = {
           customer: true,
         },
       });
+
+      invariant(user, 'Current user not found.')
 
       const projectConnection = await context.prisma.projectConnection.findFirst({
         where: {
@@ -268,6 +297,32 @@ const resolvers: Resolvers<Context> = {
           PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.REDLINE_FILE],
         );
 
+        const {
+          receivers,
+          projectConnection,
+          senderCompanyName,
+        } = await getReceiversByProjectConnection(project_connection_id, currectUserId);
+        // Prepare email data
+        const emailData = receivers.map((r) => ({
+          emailData: {
+            login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
+            receiver_full_name: `${r.first_name} ${r.last_name}`,
+            project_title: projectConnection.project_request.title,
+            company_name: senderCompanyName,
+          },
+          receiverEmail: r.email,
+        }));
+        // Prepare notification data
+        const notificationData = receivers.map((r) => {
+          return createFinalContractUploadNotificationJob({
+            sender_id: user.id,
+            recipient_id: r.id,
+            project_connection_id,
+            project_title: projectConnection.project_request.title,
+            sender_fullname: `${user.first_name} ${user.last_name}`
+          })
+        })
+
         let attachment;
 
         // If contract exist, replace with new version.
@@ -286,12 +341,7 @@ const resolvers: Resolvers<Context> = {
           // delete the old contract s3 object
           await deleteObject(existingContract.key);
 
-          createSendUserFileUploadNotice({
-            projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id!,
-            isFinalContract: true,
-            action: 'update',
-          });
+          bulkContractUploadNoticeEmail(emailData)
         } else {
           // Else create a new one.
           attachment = await context.prisma.projectAttachment.create({
@@ -306,13 +356,10 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-          createSendUserFileUploadNotice({
-            projectConnectionId: project_connection_id,
-            uploaderUserId: context.req.user_id!,
-            isFinalContract: true,
-            action: 'upload',
-          });
+          bulkContractUpdateNoticeEmail(emailData)
         }
+        // Send notification
+        createNotificationQueueJob({ data: notificationData })
 
         return {
           success: true,

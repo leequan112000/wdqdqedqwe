@@ -1,4 +1,3 @@
-import { toDollar } from "../../helper/money";
 import { Resolvers, UploadResult } from "../generated";;
 import { Context } from "../../types/context";
 
@@ -7,9 +6,13 @@ import { PublicError } from "../errors/PublicError";
 import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
 import { payVendorJob } from "../../queues/payout.queues";
 
+import biotechInvoiceService from "../../services/biotechInvoice/biotechInvoice.service";
+import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
+
 import { checkPassword } from "../../helper/auth";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct } from "../../helper/constant";
+import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, BlanketPurchaseOrderTransactionType } from "../../helper/constant";
+import { toCent, toDollar } from "../../helper/money";
 import { getStripeInstance } from "../../helper/stripe";
 import storeUpload from "../../helper/storeUpload";
 import invariant from "../../helper/invariant";
@@ -41,6 +44,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       return quote ? { ...quote, amount: toDollar(quote.amount.toNumber()) } : {};
+    },
+    biotech_invoice_item: async (parent, _, context) => {
+      invariant(parent.id, 'Missing milestone id.');
+      const biotechInvoiceItem = await context.prisma.biotechInvoiceItem.findFirst({
+        where: {
+          milestone_id: parent.id,
+        },
+      });
+
+      return biotechInvoiceItem ? { ...biotechInvoiceItem, amount: toDollar(biotechInvoiceItem.amount.toNumber()) } : null;
     },
   },
   Query: {
@@ -295,6 +308,196 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(updatedMilestone.quote.amount.toNumber())
         }
       }
+    },
+    payByPurchaseOrder: async (_, args, context) => {
+      const { id, po_number } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
+      await checkAllowCustomerOnlyPermission(context);
+      await checkMilestonePermission(context, id);
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: currentUserId,
+        },
+        include: {
+          biotech: true
+        }
+      });
+
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          quote: {
+            include: {
+              project_connection: true
+            }
+          }
+        }
+      });
+
+      invariant(milestone, new PublicError('Milestone not found.'));
+
+      const existingPO = await context.prisma.purchaseOrder.findFirst({
+        where: {
+          po_number,
+          biotech_id: customer?.biotech_id
+        },
+      });
+
+      invariant(!existingPO, new PublicError('Purchase order number already used for another payment. Please verify or contact support.'));
+
+      const existingBPO = await context.prisma.blanketPurchaseOrder.findFirst({
+        where: {
+          po_number,
+          biotech_id: customer?.biotech_id
+        },
+      });
+
+      invariant(!existingBPO, new PublicError('Your purchase order number matches a blanket PO. Please select \'Pay with Blanket PO\' instead.'));
+
+
+      return await context.prisma.$transaction(async (trx) => {
+        const invoice = await biotechInvoiceService.createBiotechInvoice({
+          milestone,
+          biotech_id: customer?.biotech_id as string,
+          payViaStripe: false,
+        }, {
+          prisma: trx
+        });
+
+        await trx.purchaseOrder.create({
+          data: {
+            po_number,
+            biotech_invoice_id: invoice.id,
+            biotech_id: customer?.biotech_id!,
+          },
+        });
+
+        const updatedMilestone = await trx.milestone.update({
+          where: {
+            id,
+          },
+          include: {
+            quote: true
+          },
+          data: {
+            payment_status: MilestonePaymentStatus.PENDING,
+          },
+        });
+
+        return {
+          ...updatedMilestone,
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
+        }
+      });
+    },
+    payByBlanketPurchaseOrder: async (_, args, context) => {
+      const { id, blanket_purchase_order_id } = args
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Current user id not found.');
+      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      invariant(allowMakePayment, new PermissionDeniedError());
+
+      await checkAllowCustomerOnlyPermission(context);
+      await checkMilestonePermission(context, id);
+
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: currentUserId,
+        },
+        include: {
+          biotech: true
+        }
+      });
+
+      const milestone = await context.prisma.milestone.findFirst({
+        where: {
+          id,
+        },
+        include: {
+          quote: {
+            include: {
+              project_connection: true
+            }
+          }
+        }
+      });
+
+      invariant(milestone, new PublicError('Milestone not found.'));
+
+      const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
+        where: {
+          id: blanket_purchase_order_id,
+          biotech_id: customer?.biotech_id
+        },
+        include: {
+          blanket_purchase_order_transactions: true
+        }
+      });
+
+      invariant(blanketPurchaseOrder, new PublicError('Blanket Purchase Order not found.'));
+      invariant(blanketPurchaseOrder.balance_amount.toNumber() >= milestone.amount.toNumber(), new PublicError('Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount'));
+
+      return await context.prisma.$transaction(async (trx) => {
+        const invoice = await biotechInvoiceService.createBiotechInvoice({
+          milestone,
+          biotech_id: customer?.biotech_id as string,
+          payViaStripe: false,
+        }, {
+          prisma: trx
+        });
+
+        await trx.blanketPurchaseOrderTransaction.create({
+          data: {
+            amount: milestone.amount,
+            transaction_type: BlanketPurchaseOrderTransactionType.DEBIT,
+            blanket_purchase_order_id,
+            biotech_invoice_id: invoice.id,
+            user_id: currentUserId,
+          },
+        });
+
+        const balanceAmount = await blanketPurchaseOrderService.calculateBlanketPurchaseOrderBalanceAmount({ id: blanket_purchase_order_id }, { prisma: trx });
+        await trx.blanketPurchaseOrder.update({
+          where: {
+            id: blanket_purchase_order_id,
+          },
+          data: {
+            balance_amount: toCent(balanceAmount)
+          },
+        });
+
+        const updatedMilestone = await trx.milestone.update({
+          where: {
+            id,
+          },
+          include: {
+            quote: true
+          },
+          data: {
+            payment_status: MilestonePaymentStatus.PENDING,
+          },
+        });
+
+        return {
+          ...updatedMilestone,
+          amount: toDollar(updatedMilestone.amount.toNumber()),
+          quote: {
+            ...updatedMilestone.quote,
+            amount: toDollar(updatedMilestone.quote.amount.toNumber())
+          }
+        }
+      });
     },
   }
 }

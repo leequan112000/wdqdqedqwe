@@ -1,0 +1,9 @@
+type BiotechInvoiceItem {
+  id: String
+  biotech_invoice_id: String
+  biotech_invoice: BiotechInvoice
+  name: String
+  amount: Float
+  milestone_id: String
+  milestone: Milestone
+}

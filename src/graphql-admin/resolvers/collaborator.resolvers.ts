@@ -5,7 +5,8 @@ import invariant from "../../helper/invariant";
 import { PublicError } from "../../graphql/errors/PublicError";
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { CompanyCollaboratorRoleType } from "../../helper/constant";
-import { createCustomerInvitationByAdminEmailJob, createVendorMemberInvitationByAdminEmailJob } from "../../queues/email.queues";
+import { customerInvitationByAdminEmail, vendorMemberInvitationByAdminEmail } from "../../mailer";
+import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 
 function ignoreEmptyString(data: string | undefined | null) {
   if (data === "") {
@@ -48,12 +49,15 @@ const resolvers: Resolvers<Context> = {
 
       invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
 
-      createVendorMemberInvitationByAdminEmailJob(
+      const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+
+      vendorMemberInvitationByAdminEmail(
         {
-          receiverEmail: updatedNewUser.email,
-          receiverName: `${updatedNewUser.first_name} ${updatedNewUser.last_name}`,
-          resetPasswordToken: updatedNewUser.reset_password_token
-        }
+          login_url: resetPasswordUrl,
+          receiver_full_name: updatedNewUserFullName,
+        },
+        updatedNewUser.email,
       );
 
       return true;
@@ -90,12 +94,14 @@ const resolvers: Resolvers<Context> = {
 
       invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
 
-      createCustomerInvitationByAdminEmailJob(
+      const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+      customerInvitationByAdminEmail(
         {
-          receiverEmail: updatedNewUser.email,
-          receiverName: `${updatedNewUser.first_name} ${updatedNewUser.last_name}`,
-          resetPasswordToken: updatedNewUser.reset_password_token
-        }
+          login_url: resetPasswordUrl,
+          receiver_full_name: updatedNewUserFullName,
+        },
+        updatedNewUser.email,
       );
 
       return true;
@@ -150,6 +156,141 @@ const resolvers: Resolvers<Context> = {
           default:
             throw new PublicError('Invalid role');
         }
+      });
+      return true;
+    },
+    updateCustomerByAdmin: async (_, args, context) => {
+      const { user_id, team, first_name, last_name, role, job_title } = args;
+      await context.prisma.$transaction(async (trx) => {
+        await trx.user.update({
+          where: {
+            id: user_id,
+          },
+          data: {
+            first_name: ignoreEmptyString(first_name) ?? undefined,
+            last_name: ignoreEmptyString(last_name) ?? undefined,
+          },
+        });
+        const updatedCustomer = await trx.customer.update({
+          where: {
+            user_id,
+          },
+          data: {
+            job_title: ignoreEmptyString(job_title) ?? undefined,
+            team: ignoreEmptyString(team) ?? undefined,
+          },
+        });
+
+        switch (role) {
+          case CompanyCollaboratorRoleType.ADMIN: {
+            await collaboratorService.setCustomerAsAdmin(
+              {
+                user_id,
+                biotech_id: updatedCustomer.biotech_id,
+                customer_id: updatedCustomer.id,
+              },
+              { prisma: trx },
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.USER: {
+            await collaboratorService.setCustomerAsUser(
+              {
+                customer_id: updatedCustomer.id,
+              },
+              { prisma: trx },
+            );
+            break;
+          }
+          case CompanyCollaboratorRoleType.OWNER: {
+            // ignore
+            break;
+          }
+          default:
+            throw new PublicError('Invalid role');
+        }
+      });
+      return true;
+    },
+    transferBiotechOwnershipByAdmin: async (_, args, context) => {
+      const { biotech_id, user_id } = args;
+      const owner = await context.prisma.customer.findFirst({
+        where: {
+          biotech_id,
+          role: CompanyCollaboratorRoleType.OWNER,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      invariant(owner, new PublicError('Owner not found.'));
+
+      const newOwner = await context.prisma.customer.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('New owner user not found.'));
+      invariant(newOwner.biotech_id === biotech_id, new PublicError('The new owner does not belong to this biotech.'));
+      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this biotech.'));
+
+      await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setCustomerAsUser(
+          {
+            customer_id: owner.id,
+          },
+          { prisma: trx },
+        );
+
+        await collaboratorService.setCustomerAsOwner(
+          {
+            customer_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
+      });
+      return true;
+    },
+    transferVendorCompanyOwnershipByAdmin: async (_, args, context) => {
+      const { vendor_company_id, user_id } = args;
+      const owner = await context.prisma.vendorMember.findFirst({
+        where: {
+          vendor_company_id,
+          role: CompanyCollaboratorRoleType.OWNER,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      invariant(owner, new PublicError('Owner not found.'));
+
+      const newOwner = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id,
+        },
+      });
+
+      invariant(newOwner, new PublicError('New owner user not found.'));
+      invariant(newOwner.vendor_company_id === vendor_company_id, new PublicError('The new owner does not belong to this vendor company.'));
+      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this vendor company.'));
+
+      await context.prisma.$transaction(async (trx) => {
+        await collaboratorService.setVendorMemberAsUser(
+          {
+            vendor_member_id: owner.id,
+          },
+          { prisma: trx },
+        );
+
+        await collaboratorService.setVendorMemberAsOwner(
+          {
+            vendor_member_id: newOwner.id,
+          },
+          { prisma: trx },
+        );
       });
       return true;
     },

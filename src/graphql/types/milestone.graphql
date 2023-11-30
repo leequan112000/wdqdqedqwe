@@ -11,6 +11,7 @@ type Milestone {
   project_attachments: [ProjectAttachment]
   quote_id: String
   quote: Quote
+  biotech_invoice_item: BiotechInvoiceItem
 }
 
 type MarkMilestoneCompleteResponse {
@@ -30,4 +31,6 @@ type Query {
 type Mutation {
   markMilestoneAsCompleted(id: String!, files: [Upload]): MarkMilestoneCompleteResponse
   verifyMilestoneAsCompleted(id: String!, password: String!): Milestone
+  payByPurchaseOrder(id: String!, po_number: String!): Milestone
+  payByBlanketPurchaseOrder(id: String!, blanket_purchase_order_id: String!): Milestone
 }

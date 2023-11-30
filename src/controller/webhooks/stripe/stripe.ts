@@ -1,11 +1,13 @@
 import type { Stripe } from 'stripe';
 import moment from 'moment';
 import prisma from '../../../prisma';
-import { InvoicePaymentStatus, MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
+import milestoneService from '../../../services/milestone/milestone.service';
+import { InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
-import Sentry from '../../../sentry';
-import { createInvoicePaymentNoticeEmailJob, createSendUserMilestoneNoticeJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
 import { getStripeInstance } from '../../../helper/stripe';
+import Sentry from '../../../sentry';
+import { createInvoicePaymentNoticeEmailJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
 
 export const processStripeEvent = async (event: Stripe.Event): Promise<{ status: number; message: string }> => {
   try {
@@ -92,15 +94,21 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
-                await prisma.milestone.update({
+                const milestone = await prisma.milestone.update({
                   where: {
                     id: milestone_id,
                   },
                   data: {
-                    status: MilestoneStatus.IN_PROGRESS,
                     payment_status: MilestonePaymentStatus.PROCESSING,
                   }
                 });
+
+                await biotechInvoiceService.createBiotechInvoice({
+                  milestone,
+                  biotech_id: customer?.biotech_id as string,
+                  payViaStripe: true,
+                }, { prisma });
+
                 console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
                 break;
               }
@@ -141,6 +149,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   },
                   data: {
                     payment_status: InvoicePaymentStatus.PAID,
+                    paid_at: new Date(),
                   }
                 });
 
@@ -170,29 +179,11 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
-                const updatedMilestone = await prisma.milestone.update({
-                  where: {
-                    id: milestone_id,
-                  },
-                  include: {
-                    quote: {
-                      include: {
-                        project_connection: true,
-                      }
-                    }
-                  },
-                  data: {
-                    payment_status: MilestonePaymentStatus.PAID,
-                  }
-                });
 
-                createSendUserMilestoneNoticeJob({
-                  projectConnectionId: updatedMilestone.quote.project_connection_id,
-                  milestoneTitle: updatedMilestone.title,
-                  quoteId: updatedMilestone.quote.id,
-                  senderUserId: customer.user_id!,
-                  milestoneEventType: MilestoneEventType.BIOTECH_PAID,
-                });
+                await milestoneService.updateMilestoneAsPaid({
+                  milestone_id,
+                  user_id: customer.user_id,
+                }, { prisma });
 
                 console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
                 break;

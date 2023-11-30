@@ -57,9 +57,13 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_SUBMITTED_NOTIFICATION:
           return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
         case NotificationType.NEW_INVOICE_NOTIFICATION:
+        case NotificationType.NEW_BIOTECH_INVOICE_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_REMINDER_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
+        case NotificationType.BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION:
+        case NotificationType.BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION:
+        case NotificationType.BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
           return `/app/invoices/${parent.params.invoice_id}`;
         case NotificationType.NEW_MEETING_NOTIFICATION:
         case NotificationType.UPDATE_MEETING_NOTIFICATION:

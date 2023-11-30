@@ -5,6 +5,7 @@ const main = async () => {
   try {
     const promises = [
       { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_REQUEST, act: CasbinAct.WRITE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_CONNECTION, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_USER, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_USER, act: CasbinAct.DELETE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.COMPANY_COLLABORATOR_ADMIN, act: CasbinAct.WRITE },
@@ -13,6 +14,10 @@ const main = async () => {
       { role: CasbinRole.ADMIN, obj: CasbinObj.MILESTONE_PAYMENT, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_COLLABORATOR, act: CasbinAct.WRITE },
       { role: CasbinRole.ADMIN, obj: CasbinObj.PROJECT_COLLABORATOR, act: CasbinAct.DELETE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.READ },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.WRITE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.PURCHASE_ORDER, act: CasbinAct.DELETE },
+      { role: CasbinRole.ADMIN, obj: CasbinObj.INVOICE, act: CasbinAct.READ },
     ].map(async (d) => {
       await addPermissionForRole(d.role, d.obj, d.act);
     });
