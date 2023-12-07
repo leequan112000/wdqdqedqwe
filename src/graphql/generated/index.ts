@@ -155,6 +155,26 @@ export type BlanketPurchaseOrderTransaction = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type CalendarEvent = {
+  __typename?: 'CalendarEvent';
+  description?: Maybe<Scalars['String']>;
+  end_time?: Maybe<Scalars['Date']>;
+  guests?: Maybe<Array<Maybe<CalendarUser>>>;
+  id?: Maybe<Scalars['String']>;
+  is_draft?: Maybe<Scalars['Boolean']>;
+  meeting_link?: Maybe<Scalars['String']>;
+  organizer?: Maybe<CalendarUser>;
+  start_time?: Maybe<Scalars['Date']>;
+  timezone?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
+export type CalendarUser = {
+  __typename?: 'CalendarUser';
+  email?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type CertificationTag = {
   __typename?: 'CertificationTag';
   full_name?: Maybe<Scalars['String']>;
@@ -1183,6 +1203,8 @@ export type Query = {
   invoices?: Maybe<Array<Maybe<Invoice>>>;
   meetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   meetingFormAttendees?: Maybe<Array<Maybe<User>>>;
+  microsoftCalendarAuthorizationUri?: Maybe<Scalars['String']>;
+  microsoftCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
   milestone?: Maybe<Milestone>;
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
   news?: Maybe<Array<Maybe<News>>>;
@@ -1655,6 +1677,8 @@ export type ResolversTypes = ResolversObject<{
   BlanketPurchaseOrder: ResolverTypeWrapper<BlanketPurchaseOrder>;
   BlanketPurchaseOrderTransaction: ResolverTypeWrapper<BlanketPurchaseOrderTransaction>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CalendarEvent: ResolverTypeWrapper<CalendarEvent>;
+  CalendarUser: ResolverTypeWrapper<CalendarUser>;
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
   Chat: ResolverTypeWrapper<Chat>;
@@ -1734,6 +1758,8 @@ export type ResolversParentTypes = ResolversObject<{
   BlanketPurchaseOrder: BlanketPurchaseOrder;
   BlanketPurchaseOrderTransaction: BlanketPurchaseOrderTransaction;
   Boolean: Scalars['Boolean'];
+  CalendarEvent: CalendarEvent;
+  CalendarUser: CalendarUser;
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
   Chat: Chat;
@@ -1937,6 +1963,26 @@ export type BlanketPurchaseOrderTransactionResolvers<ContextType = any, ParentTy
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CalendarEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['CalendarEvent'] = ResolversParentTypes['CalendarEvent']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarUser']>>>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_draft?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer?: Resolver<Maybe<ResolversTypes['CalendarUser']>, ParentType, ContextType>;
+  start_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CalendarUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['CalendarUser'] = ResolversParentTypes['CalendarUser']> = ResolversObject<{
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2436,6 +2482,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
+  microsoftCalendarAuthorizationUri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  microsoftCalendarEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarEvent']>>>, ParentType, ContextType>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   news?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
@@ -2693,6 +2741,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BiotechInvoiceItem?: BiotechInvoiceItemResolvers<ContextType>;
   BlanketPurchaseOrder?: BlanketPurchaseOrderResolvers<ContextType>;
   BlanketPurchaseOrderTransaction?: BlanketPurchaseOrderTransactionResolvers<ContextType>;
+  CalendarEvent?: CalendarEventResolvers<ContextType>;
+  CalendarUser?: CalendarUserResolvers<ContextType>;
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
   Chat?: ChatResolvers<ContextType>;

@@ -4,11 +4,14 @@ import moment from 'moment'
 import { createGoogleEvent } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { MeetingPlatform } from '../../helper/constant';
+import { MeetingPlatform, OauthProvider } from '../../helper/constant';
+import { microsoftClient, microsoftClientRefreshToken } from '../../helper/microsoft';
+import { codeChallenge } from '../../helper/oauth';
 import { createNewMeetingNotificationJob } from '../../notification/meetingNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
 import invariant from '../../helper/invariant';
 import meetingEventService from '../../services/meetingEvent/meetingEvent.service';
+import { PublicError } from '../errors/PublicError';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -237,6 +240,44 @@ const resolvers: Resolvers<Context> = {
       });
 
       return meetingEvents;
+    },
+    microsoftCalendarAuthorizationUri: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const authorizationUri = microsoftClient.code.getUri({
+        scopes: ['Calendars.Read offline_access'],
+        state: user_id,
+        query: {
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        },
+      });
+
+      return authorizationUri;
+    },
+    microsoftCalendarEvents: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      invariant(oauth, new PublicError('User not authenticated!'));
+
+      try {
+        return await meetingEventService.getMicrosoftCalendarEvents({ access_token: oauth.access_token }, context);
+      } catch (error: any) {
+        if (error.statusCode === 401) {
+          const newToken = await microsoftClientRefreshToken(oauth.access_token, oauth.refresh_token, user_id);
+          return await meetingEventService.getMicrosoftCalendarEvents({ access_token: newToken.accessToken }, context);
+        }
+        throw new PublicError('Something went wrong connecting to your calendar.');
+      }
     },
   },
   Mutation: {

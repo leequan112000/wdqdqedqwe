@@ -16,10 +16,30 @@ type MeetingEvent {
   project_connection_id: String
 }
 
+type CalendarUser {
+  name: String
+  email: String
+}
+
+type CalendarEvent {
+  id: String
+  title: String
+  description: String
+  start_time: Date
+  end_time: Date
+  timezone: String
+  meeting_link: String
+  guests: [CalendarUser]
+  organizer: CalendarUser
+  is_draft: Boolean
+}
+
 type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
   meetingEvents(status: String): [MeetingEvent]
   upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
+  microsoftCalendarAuthorizationUri: String
+  microsoftCalendarEvents: [CalendarEvent]
 }
 
 type Mutation {
