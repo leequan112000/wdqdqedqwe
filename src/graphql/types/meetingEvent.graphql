@@ -28,6 +28,7 @@ type CalendarEvent {
   start_time: Date
   end_time: Date
   timezone: String
+  all_day: Boolean
   meeting_link: String
   guests: [CalendarUser]
   organizer: CalendarUser

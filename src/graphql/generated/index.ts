@@ -157,6 +157,7 @@ export type BlanketPurchaseOrderTransaction = {
 
 export type CalendarEvent = {
   __typename?: 'CalendarEvent';
+  all_day?: Maybe<Scalars['Boolean']>;
   description?: Maybe<Scalars['String']>;
   end_time?: Maybe<Scalars['Date']>;
   guests?: Maybe<Array<Maybe<CalendarUser>>>;
@@ -1967,6 +1968,7 @@ export type BlanketPurchaseOrderTransactionResolvers<ContextType = any, ParentTy
 }>;
 
 export type CalendarEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['CalendarEvent'] = ResolversParentTypes['CalendarEvent']> = ResolversObject<{
+  all_day?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarUser']>>>, ParentType, ContextType>;

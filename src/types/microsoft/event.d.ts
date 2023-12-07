@@ -13,6 +13,7 @@ export interface MicrosoftCalendarEvent {
   onlineMeetingUrl?: string;
   isOnlineMeeting: boolean;
   isDraft: boolean;
+  isAllDay: boolean;
   start: {
     dateTime: string;
     timeZone: string;
