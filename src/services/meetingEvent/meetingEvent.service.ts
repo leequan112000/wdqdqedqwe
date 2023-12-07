@@ -1,9 +1,12 @@
 import invariant from "../../helper/invariant";
+import { microsoftGraphClient } from "../../helper/microsoft";
 import { cancelGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
 import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
 import { ServiceContext } from "../../types/context";
+import { MicrosoftCalendarEvent } from "../../types/microsoft/event";
+import { CalendarEvent } from "../../graphql/generated";
 
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
@@ -196,9 +199,39 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
   };
 }
 
+type GetMicrosoftCalendarEventsArgs = {
+  access_token: string;
+}
+
+const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, ctx: ServiceContext) => {
+  const client = microsoftGraphClient(args.access_token);
+
+  try {
+    const response: { value: MicrosoftCalendarEvent[] } = await client.api('/me/events').get();
+    return response.value.map((event) => ({
+      id: event.id,
+      title: event.subject,
+      description: event.bodyPreview,
+      start_time: event.start.dateTime,
+      end_time: event.end.dateTime,
+      timezone: event.start.timeZone,
+      meeting_link: event.onlineMeetingUrl || event.webLink,
+      guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
+      organizer: {
+        name: event.organizer.emailAddress.name,
+        email: event.organizer.emailAddress.address,
+      },
+      is_draft: event.isDraft,
+    } as CalendarEvent)) || [];
+  } catch (error) {
+    throw error;
+  }
+}
+
 const meetingEventService = {
   removeMeetingEvent,
   updateMeetingEvent,
+  getMicrosoftCalendarEvents,
 };
 
 export default meetingEventService;
