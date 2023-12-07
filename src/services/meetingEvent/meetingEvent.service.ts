@@ -1,3 +1,4 @@
+import moment from "moment";
 import invariant from "../../helper/invariant";
 import { microsoftGraphClient } from "../../helper/microsoft";
 import { cancelGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
@@ -212,8 +213,8 @@ const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, 
       id: event.id,
       title: event.subject,
       description: event.bodyPreview,
-      start_time: event.start.dateTime,
-      end_time: event.end.dateTime,
+      start_time: moment.utc(event.start.dateTime).format(),
+      end_time: moment.utc(event.end.dateTime).format(),
       timezone: event.start.timeZone,
       all_day: event.isAllDay,
       meeting_link: event.onlineMeetingUrl || event.webLink,
