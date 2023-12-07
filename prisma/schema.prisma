@@ -38,6 +38,7 @@ model User {
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
+  oauth                               Oauth[]
 
   @@map("users")
 }
@@ -910,4 +911,16 @@ model BiotechInvoiceAttachment {
   uploader           User?           @relation(fields: [uploader_id], references: [id])
 
   @@map("biotech_invoice_attachments")
+}
+
+model Oauth {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider      String
+  access_token  String
+  refresh_token String
+  user_id       String? @db.Uuid
+  user          User?   @relation(fields: [user_id], references: [id])
+
+  @@map("oauths")
+  @@unique([user_id, provider])
 }
