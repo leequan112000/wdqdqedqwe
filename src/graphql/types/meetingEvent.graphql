@@ -42,6 +42,7 @@ type Query {
   microsoftCalendarAuthorizationUri: String
   microsoftCalendarEvents: [CalendarEvent]
   googleCalendarAuthorizationUri: String
+  googleCalendarEvents: [CalendarEvent]
 }
 
 type Mutation {

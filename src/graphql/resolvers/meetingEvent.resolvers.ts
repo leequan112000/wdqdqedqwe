@@ -295,6 +295,25 @@ const resolvers: Resolvers<Context> = {
 
       return authorizationUri;
     },
+    googleCalendarEvents: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+
+      invariant(oauth, new PublicError('User not authenticated!'));
+
+      try {
+        return await meetingEventService.getGoogleCalendarEvents({ access_token: oauth.access_token, refresh_token: oauth.refresh_token }, context);
+      } catch (error: any) {
+        throw new PublicError('Something went wrong connecting to your calendar.');
+      }
+    },
   },
   Mutation: {
     createMeetingEvent: async (parent, args, context) => {
