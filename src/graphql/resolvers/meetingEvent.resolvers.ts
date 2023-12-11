@@ -256,22 +256,6 @@ const resolvers: Resolvers<Context> = {
 
       return authorizationUri;
     },
-    googleCalendarAuthorizationUri: async (_, __, context) => {
-      const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
-
-      const authorizationUri = googleClient.code.getUri({
-        scopes: ['https://www.googleapis.com/auth/calendar'],
-        state: user_id,
-        query: {
-          access_type: 'offline',
-          code_challenge: codeChallenge,
-          code_challenge_method: 'S256',
-        },
-      });
-
-      return authorizationUri;
-    },
     microsoftCalendarEvents: async (_, __, context) => {
       const { user_id } = context.req;
       invariant(user_id, 'User ID not found.');
@@ -294,6 +278,22 @@ const resolvers: Resolvers<Context> = {
         }
         throw new PublicError('Something went wrong connecting to your calendar.');
       }
+    },
+    googleCalendarAuthorizationUri: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const authorizationUri = googleClient.code.getUri({
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+        state: user_id,
+        query: {
+          access_type: 'offline',
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        },
+      });
+
+      return authorizationUri;
     },
   },
   Mutation: {
