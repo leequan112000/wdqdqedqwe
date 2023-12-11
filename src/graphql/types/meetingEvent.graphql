@@ -41,6 +41,7 @@ type Query {
   upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
   microsoftCalendarAuthorizationUri: String
   microsoftCalendarEvents: [CalendarEvent]
+  googleCalendarAuthorizationUri: String
 }
 
 type Mutation {

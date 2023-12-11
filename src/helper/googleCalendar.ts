@@ -1,6 +1,16 @@
+import ClientOAuth2 from 'client-oauth2';
 import { calendar } from '@googleapis/calendar';
 import { v4 as uuidv4 } from 'uuid';
 import { JWT } from 'google-auth-library'
+import { app_env } from '../environment';
+
+export const googleClient = new ClientOAuth2({
+  clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+  accessTokenUri: 'https://oauth2.googleapis.com/token',
+  authorizationUri: 'https://accounts.google.com/o/oauth2/v2/auth',
+  redirectUri: `${app_env.SERVER_URL}/auth/google/callback`,
+});
 
 const client = new JWT({
   email: process.env.GOOGLE_CLIENT_EMAIL!,

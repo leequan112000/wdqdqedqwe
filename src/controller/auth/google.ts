@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { microsoftClient } from '../../helper/microsoft';
+import { googleClient } from '../../helper/googleCalendar';
 import { OauthProvider } from '../../helper/constant';
 import { codeVerifier } from '../../helper/oauth';
 import { app_env } from '../../environment';
 import prisma from '../../prisma';
 
-export const microsoftCallback = async (req: Request, res: Response): Promise<void> => {
+export const googleCallback = async (req: Request, res: Response): Promise<void> => {
   try {
-    const response = await microsoftClient.code.getToken(
+    const response = await googleClient.code.getToken(
       `${req.protocol}://${req.get('host')}${req.originalUrl}`,
       {
         body: {
@@ -36,18 +36,18 @@ export const microsoftCallback = async (req: Request, res: Response): Promise<vo
       where: {
         user_id_provider: {
           user_id,
-          provider: OauthProvider.MICROSOFT,
+          provider: OauthProvider.GOOGLE,
         }
       },
       create: {
         user_id,
-        provider: OauthProvider.MICROSOFT,
+        provider: OauthProvider.GOOGLE,
         access_token: response.accessToken,
         refresh_token: response.refreshToken,
       },
       update: {
         user_id,
-        provider: OauthProvider.MICROSOFT,
+        provider: OauthProvider.GOOGLE,
         access_token: response.accessToken,
         refresh_token: response.refreshToken,
       },

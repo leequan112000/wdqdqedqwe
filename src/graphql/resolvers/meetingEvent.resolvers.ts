@@ -1,7 +1,7 @@
 import { Prisma, User } from '@prisma/client';
 import { find } from 'lodash';
 import moment from 'moment'
-import { createGoogleEvent } from "../../helper/googleCalendar";
+import { createGoogleEvent, googleClient } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { MeetingPlatform, OauthProvider } from '../../helper/constant';
@@ -249,6 +249,22 @@ const resolvers: Resolvers<Context> = {
         scopes: ['Calendars.Read offline_access'],
         state: user_id,
         query: {
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        },
+      });
+
+      return authorizationUri;
+    },
+    googleCalendarAuthorizationUri: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const authorizationUri = googleClient.code.getUri({
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+        state: user_id,
+        query: {
+          access_type: 'offline',
           code_challenge: codeChallenge,
           code_challenge_method: 'S256',
         },

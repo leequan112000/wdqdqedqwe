@@ -286,4 +286,5 @@ export enum BlanketPurchaseOrderTransactionType {
 
 export enum OauthProvider {
   MICROSOFT = 'microsoft',
+  GOOGLE = 'google',
 }
