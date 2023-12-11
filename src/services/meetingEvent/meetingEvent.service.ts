@@ -6,7 +6,7 @@ import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob 
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
 import { ServiceContext } from "../../types/context";
-import { MicrosoftCalendarEvent } from "../../types/microsoft/event";
+import { MicrosoftCalendarEvent } from "../../types/microsoft";
 import { CalendarEvent } from "../../graphql/generated";
 
 type RemoveMeetingEventArgs = {
