@@ -217,7 +217,7 @@ const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, 
       end_time: moment.utc(event.end.dateTime).format(),
       timezone: event.start.timeZone,
       all_day: event.isAllDay,
-      meeting_link: event.onlineMeetingUrl || event.webLink,
+      meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
       guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
       organizer: {
         name: event.organizer.emailAddress.name,

@@ -10,8 +10,10 @@ export interface MicrosoftCalendarEvent {
   subject: string;
   bodyPreview: string;
   webLink: string;
-  onlineMeetingUrl?: string;
   isOnlineMeeting: boolean;
+  onlineMeeting?: {
+    joinUrl: string;
+  };
   isDraft: boolean;
   isAllDay: boolean;
   start: {
