@@ -444,9 +444,11 @@ model MeetingEvent {
   updated_at                 DateTime                    @updatedAt
   project_connection_id      String                      @db.Uuid
   organizer_id               String                      @db.Uuid
+  is_sharable                Boolean                     @default(false)
   project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
   meetingAttendeeConnections MeetingAttendeeConnection[]
   organizer                  User                        @relation(fields: [organizer_id], references: [id])
+  meeting_guests             MeetingGuest[]
 
   @@map("meeting_events")
 }
@@ -910,4 +912,19 @@ model BiotechInvoiceAttachment {
   uploader           User?           @relation(fields: [uploader_id], references: [id])
 
   @@map("biotech_invoice_attachments")
+}
+
+model MeetingGuest {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String?
+  email            String
+  meeting_event_id String       @db.Uuid
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  status           String       @default("pending")
+  type             String
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  @@unique([email, meeting_event_id])
+  @@map("meeting_guests")
 }

@@ -14,6 +14,18 @@ type MeetingEvent {
   organizer: User
   project_request: ProjectRequest
   project_connection_id: String
+  external_guests: [ExternalGuest]
+}
+
+type ExternalGuest {
+  email: String
+  name: String
+  status: String
+}
+
+input ExternalGuestForInput {
+  email: String!
+  name: String
 }
 
 type Query {
@@ -42,4 +54,5 @@ type Mutation {
     attendees: [String!]!
   ): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
+  addExternalGuests(guests: [ExternalGuestForInput!]!, meeting_id: String!): [ExternalGuest]
 }

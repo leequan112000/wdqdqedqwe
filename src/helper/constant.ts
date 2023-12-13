@@ -283,3 +283,19 @@ export enum BlanketPurchaseOrderTransactionType {
   DEBIT = 'debit',
   CREDIT = 'credit',
 }
+
+export enum InvitationAnswer {
+  YES = 'yes',
+  NO = 'no',
+}
+
+export enum MeetingGuestStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+}
+
+export enum MeetingGuestType {
+  LINK = 'link',
+  INVITE = 'invite',
+}
