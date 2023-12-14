@@ -269,6 +269,7 @@ const resolvers: Resolvers<Context> = {
         attendees,
         description,
         project_connection_id,
+        is_sharable,
       } = args;
 
       const organizerUser = await context.prisma.user.findFirst({
@@ -340,6 +341,7 @@ const resolvers: Resolvers<Context> = {
             project_connection_id,
             platform_event_id: gEventId,
             organizer_id: organizerUser.id,
+            is_sharable: is_sharable || undefined,
             meetingAttendeeConnections: {
               create: data,
             },
@@ -474,7 +476,7 @@ const resolvers: Resolvers<Context> = {
           {
             button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${r.id}`,
             company_name: companyName!,
-            guest_name: r.name || 'guest',
+            guest_name: r.name || "guest",
             meeting_title: meeting.title,
           },
           r.email
@@ -482,6 +484,19 @@ const resolvers: Resolvers<Context> = {
       });
 
       return results;
+    },
+    updateMeetingEventSharable: async (parent, args, context) => {
+      const { is_sharable, meeting_event_id } = args;
+      const meetingEvent = await context.prisma.meetingEvent.update({
+        where: {
+          id: meeting_event_id,
+        },
+        data: {
+          is_sharable,
+        },
+      });
+
+      return meetingEvent;
     },
   },
 };

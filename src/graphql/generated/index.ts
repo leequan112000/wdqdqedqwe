@@ -447,6 +447,7 @@ export type Mutation = {
   updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
+  updateMeetingEventSharable?: Maybe<MeetingEvent>;
   updateProjectRequestCollaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
@@ -536,6 +537,7 @@ export type MutationCreateMeetingEventArgs = {
   attendees: Array<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   end_time: Scalars['String'];
+  is_sharable?: InputMaybe<Scalars['Boolean']>;
   project_connection_id: Scalars['String'];
   start_time: Scalars['String'];
   timezone: Scalars['String'];
@@ -882,6 +884,12 @@ export type MutationUpdateMeetingEventArgs = {
   start_time: Scalars['String'];
   timezone: Scalars['String'];
   title: Scalars['String'];
+};
+
+
+export type MutationUpdateMeetingEventSharableArgs = {
+  is_sharable: Scalars['Boolean'];
+  meeting_event_id: Scalars['String'];
 };
 
 
@@ -2303,6 +2311,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
+  updateMeetingEventSharable?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventSharableArgs, 'is_sharable' | 'meeting_event_id'>>;
   updateProjectRequestCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType, RequireFields<MutationUpdateProjectRequestCollaboratorsArgs, 'customer_ids' | 'project_request_id'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;

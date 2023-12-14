@@ -43,6 +43,7 @@ type Mutation {
     timezone: String!
     attendees: [String!]!
     project_connection_id: String!
+    is_sharable: Boolean
   ): MeetingEvent
   updateMeetingEvent(
     meeting_event_id: String!
@@ -53,6 +54,7 @@ type Mutation {
     timezone: String!
     attendees: [String!]!
   ): MeetingEvent
+  updateMeetingEventSharable(meeting_event_id: String!, is_sharable: Boolean!): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
   addExternalGuests(guests: [ExternalGuestForInput!]!, meeting_id: String!): [ExternalGuest]
 }
