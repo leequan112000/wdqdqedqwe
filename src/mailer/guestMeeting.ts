@@ -1,18 +1,20 @@
 import { createSendMailJob } from "../queues/sendMail.queues";
 import {
   meetingInvitationTemplate,
-  meetingRSVPUpdateNotificationTemplate,
+  acceptedMeetingRSVPNotificationForHostTemplate,
   meetingResponseConfirmationNotificationTemplate,
+  declinedMeetingRSVPNotificationForHostTemplate,
 } from "./templates";
 
-type MeetingResponseSubmittedEmailData = {
+type MeetingResponseConfirmationEmailData = {
   button_url: string;
   meeting_title: string;
   guest_name: string;
+  project_title: string;
 };
 
-export const meetingResponseSubmittedEmail = (
-  emailData: MeetingResponseSubmittedEmailData,
+export const meetingResponseConfirmationEmail = (
+  emailData: MeetingResponseConfirmationEmailData,
   receiverEmail: string
 ) => {
   createSendMailJob({
@@ -22,33 +24,54 @@ export const meetingResponseSubmittedEmail = (
   });
 };
 
-type MeetingRSVPUpdateNotificationEmailData = {
+type AcceptedMeetingRSVPUpdateNotificationEmailData = {
   button_url: string;
   meeting_title: string;
   host_name: string;
   guest_name: string;
+  project_title: string;
 };
 
-export const meetingRSVPUpdateNotificationEmail = (
-  emailData: MeetingRSVPUpdateNotificationEmailData,
+export const acceptedMeetingRSVPUpdateNotificationEmail = (
+  emailData: AcceptedMeetingRSVPUpdateNotificationEmailData,
   receiverEmail: string
 ) => {
   createSendMailJob({
     emailData,
     receiverEmail,
-    templateId: meetingRSVPUpdateNotificationTemplate,
+    templateId: acceptedMeetingRSVPNotificationForHostTemplate,
   });
 };
 
-type MeetingInvitationEmailData = {
+type DeclinedMeetingRSVPUpdateNotificationEmailData = {
+  button_url: string;
+  meeting_title: string;
+  host_name: string;
+  guest_name: string;
+  project_title: string;
+};
+
+export const declinedMeetingRSVPUpdateNotificationEmail = (
+  emailData: DeclinedMeetingRSVPUpdateNotificationEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: declinedMeetingRSVPNotificationForHostTemplate,
+  });
+};
+
+type MeetingInvitationForGuestEmailData = {
   guest_name: string;
   meeting_title: string;
   company_name: string;
   button_url: string;
+  project_title: string;
 };
 
-export const meetingInvitationEmail = (
-  emailData: MeetingInvitationEmailData,
+export const meetingInvitationForGuestEmail = (
+  emailData: MeetingInvitationForGuestEmailData,
   receiverEmail: string
 ) => {
   createSendMailJob({

@@ -2,8 +2,9 @@ import { MeetingGuest } from "@prisma/client";
 import { app_env } from "../../environment";
 import invariant from "../../helper/invariant";
 import {
-  meetingRSVPUpdateNotificationEmail,
-  meetingResponseSubmittedEmail,
+  acceptedMeetingRSVPUpdateNotificationEmail,
+  declinedMeetingRSVPUpdateNotificationEmail,
+  meetingResponseConfirmationEmail,
 } from "../../mailer/guestMeeting";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
@@ -13,6 +14,10 @@ import {
   MeetingGuestStatus,
   MeetingGuestType,
 } from "../../helper/constant";
+import {
+  createAcceptedMeetingRSVPNotification,
+  createDeclinedMeetingRSVPNotification,
+} from "../../notification/guestMeeting";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -64,6 +69,11 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           organizer: true,
+          project_connection: {
+            include: {
+              project_request: true,
+            },
+          },
         },
       });
 
@@ -88,20 +98,22 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      meetingResponseSubmittedEmail(
+      meetingResponseConfirmationEmail(
         {
           button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`,
           meeting_title: meeting.title,
           guest_name: name || "guest",
+          project_title: meeting.project_connection.project_request.title,
         },
         email
       );
-      meetingRSVPUpdateNotificationEmail(
+      acceptedMeetingRSVPUpdateNotificationEmail(
         {
           button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
           meeting_title: meeting.title,
           guest_name: name || "guest",
           host_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
+          project_title: meeting.project_connection.project_request.title,
         },
         meeting.organizer.email
       );
@@ -122,7 +134,16 @@ const resolvers: Resolvers<Context> = {
           id: token,
         },
         include: {
-          meeting_event: true,
+          meeting_event: {
+            include: {
+              organizer: true,
+              project_connection: {
+                include: {
+                  project_request: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -141,16 +162,65 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const {
+        organizer,
+        id: meetingEventId,
+        organizer_id,
+      } = meetingGuest.meeting_event;
+      const projectTitle =
+        meetingGuest.meeting_event.project_connection.project_request.title;
+      const guestName = name || "guest";
       // Send response confirmation email
       if (answer === InvitationAnswer.YES) {
-        meetingResponseSubmittedEmail(
+        meetingResponseConfirmationEmail(
           {
             button_url: `${app_env.APP_URL}/meeting/attendance/${meetingGuest.id}`,
             meeting_title: meetingGuest.meeting_event.title,
             guest_name: name || "guest",
+            project_title:
+              meetingGuest.meeting_event.project_connection.project_request
+                .title,
           },
           updatedMeetingGuest.email
         );
+        acceptedMeetingRSVPUpdateNotificationEmail(
+          {
+            button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
+            meeting_title: meetingGuest.meeting_event.title,
+            guest_name: name || "guest",
+            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            project_title:
+              meetingGuest.meeting_event.project_connection.project_request
+                .title,
+          },
+          organizer.email
+        );
+        createAcceptedMeetingRSVPNotification({
+          guest_name: guestName,
+          meeting_event_id: meetingEventId,
+          project_title: projectTitle,
+          recipient_id: organizer_id,
+        });
+      }
+      if (answer === InvitationAnswer.NO) {
+        declinedMeetingRSVPUpdateNotificationEmail(
+          {
+            button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
+            meeting_title: meetingGuest.meeting_event.title,
+            guest_name: name || "guest",
+            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            project_title:
+              meetingGuest.meeting_event.project_connection.project_request
+                .title,
+          },
+          organizer.email
+        );
+        createDeclinedMeetingRSVPNotification({
+          guest_name: guestName,
+          meeting_event_id: meetingEventId,
+          project_title: projectTitle,
+          recipient_id: organizer_id,
+        });
       }
 
       return {

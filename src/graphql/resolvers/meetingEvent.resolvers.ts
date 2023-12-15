@@ -9,7 +9,7 @@ import { createNewMeetingNotificationJob } from "../../notification/meetingNotif
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
-import { meetingInvitationEmail } from "../../mailer/guestMeeting";
+import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
 import { PublicError } from "../errors/PublicError";
 
@@ -441,6 +441,11 @@ const resolvers: Resolvers<Context> = {
               },
             },
           },
+          project_connection: {
+            include: {
+              project_request: true,
+            },
+          },
         },
       });
 
@@ -472,12 +477,13 @@ const resolvers: Resolvers<Context> = {
         meeting.organizer.vendor_member?.vendor_company?.name;
 
       results.map((r) => {
-        meetingInvitationEmail(
+        meetingInvitationForGuestEmail(
           {
             button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${r.id}`,
             company_name: companyName!,
             guest_name: r.name || "guest",
             meeting_title: meeting.title,
+            project_title: meeting.project_connection.project_request.title,
           },
           r.email
         );

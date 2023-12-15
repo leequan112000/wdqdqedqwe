@@ -37,5 +37,6 @@ export const biotechInvoicePaymentReminderTemplate = 'd-bc4bfb24e86c4273a3008907
 export const biotechInvoicePaymentOverdueNoticeTemplate = 'd-adc5f35b68b04b098f31566e0ccf42b4';
 export const biotechInvoicePaymentVerifiedByCromaticAdminTemplate = 'd-d99dd026fd734dd3814453262e997ba4';
 export const meetingResponseConfirmationNotificationTemplate = 'd-cec72b05077e4256ad8efb0cc8555c7a';
-export const meetingRSVPUpdateNotificationTemplate = 'd-c3cba40c56e048c3b601e11273e06057';
+export const acceptedMeetingRSVPNotificationForHostTemplate = 'd-c3cba40c56e048c3b601e11273e06057';
+export const declinedMeetingRSVPNotificationForHostTemplate = 'd-3ce45e86780c4555a7cbfb3fc6d136bd';
 export const meetingInvitationTemplate = 'd-9fc4542b21ef4c268af43b891d74d595';
