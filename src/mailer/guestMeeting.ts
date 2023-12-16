@@ -4,6 +4,7 @@ import {
   acceptedMeetingRSVPNotificationForHostTemplate,
   meetingResponseConfirmationNotificationTemplate,
   declinedMeetingRSVPNotificationForHostTemplate,
+  meetingInvitationForCromaticUserWithinProjectTemplate,
 } from "./templates";
 
 type MeetingResponseConfirmationEmailData = {
@@ -78,5 +79,24 @@ export const meetingInvitationForGuestEmail = (
     emailData,
     receiverEmail,
     templateId: meetingInvitationTemplate,
+  });
+};
+
+type MeetingInvitationForCromaticUserWithinProjectEmailData = {
+  guest_name: string;
+  meeting_title: string;
+  company_name: string;
+  button_url: string;
+  project_title: string;
+};
+
+export const meetingInvitationForCromaticUserWithinProjectEmail = (
+  emailData: MeetingInvitationForCromaticUserWithinProjectEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: meetingInvitationForCromaticUserWithinProjectTemplate,
   });
 };

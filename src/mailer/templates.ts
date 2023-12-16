@@ -40,3 +40,4 @@ export const meetingResponseConfirmationNotificationTemplate = 'd-cec72b05077e42
 export const acceptedMeetingRSVPNotificationForHostTemplate = 'd-c3cba40c56e048c3b601e11273e06057';
 export const declinedMeetingRSVPNotificationForHostTemplate = 'd-3ce45e86780c4555a7cbfb3fc6d136bd';
 export const meetingInvitationTemplate = 'd-9fc4542b21ef4c268af43b891d74d595';
+export const meetingInvitationForCromaticUserWithinProjectTemplate = 'd-1709403a96474306b82faf01a15b2e56';

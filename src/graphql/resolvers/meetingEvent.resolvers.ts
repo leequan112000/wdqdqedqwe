@@ -9,9 +9,13 @@ import { createNewMeetingNotificationJob } from "../../notification/meetingNotif
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
-import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
+import {
+  meetingInvitationForCromaticUserWithinProjectEmail,
+  meetingInvitationForGuestEmail,
+} from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
 import { PublicError } from "../errors/PublicError";
+import { checkIfUserInProjectConnection } from "../../services/projectConnection/projectConnection.service";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -451,9 +455,33 @@ const resolvers: Resolvers<Context> = {
 
       invariant(meeting, new PublicError("Invalid token."));
 
-      const results = await context.prisma.$transaction(
-        (guests || []).map((g) =>
-          context.prisma.meetingGuest.upsert({
+      const results = await context.prisma.$transaction(async (trx) => {
+        const tasks = (guests || []).map(async (g) => {
+          const existingUser = await trx.user.findFirst({
+            where: {
+              email: g.email,
+            },
+          });
+
+          let isPartOfProject = false;
+          if (existingUser) {
+            isPartOfProject = await checkIfUserInProjectConnection(
+              {
+                project_connection_id: meeting.project_connection_id,
+                user_id: existingUser.id,
+              },
+              {
+                prisma: trx,
+              }
+            );
+          }
+
+          // Take name of existing user from our DB
+          const guestName = existingUser
+            ? `${existingUser.first_name} ${existingUser.last_name}`
+            : g.name;
+
+          const updatedGuest = await trx.meetingGuest.upsert({
             where: {
               email_meeting_event_id: {
                 email: g.email,
@@ -462,31 +490,51 @@ const resolvers: Resolvers<Context> = {
             },
             create: {
               email: g.email,
-              name: g.name || null,
+              name: guestName || null,
               type: "invite",
               status: "pending",
               meeting_event_id: meeting_id,
             },
             update: {},
-          })
-        )
-      );
+          });
+
+          return {
+            ...updatedGuest,
+            is_part_of_project: isPartOfProject,
+          };
+        });
+
+        return Promise.all(tasks);
+      });
 
       const companyName =
         meeting.organizer.customer?.biotech?.name ||
         meeting.organizer.vendor_member?.vendor_company?.name;
 
       results.map((r) => {
-        meetingInvitationForGuestEmail(
-          {
-            button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${r.id}`,
-            company_name: companyName!,
-            guest_name: r.name || "guest",
-            meeting_title: meeting.title,
-            project_title: meeting.project_connection.project_request.title,
-          },
-          r.email
-        );
+        if (r.is_part_of_project) {
+          meetingInvitationForCromaticUserWithinProjectEmail(
+            {
+              button_url: `${app_env.APP_URL}/app/meeting-events`,
+              company_name: companyName!,
+              guest_name: r.name || "guest",
+              meeting_title: meeting.title,
+              project_title: meeting.project_connection.project_request.title,
+            },
+            r.email
+          );
+        } else {
+          meetingInvitationForGuestEmail(
+            {
+              button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${r.id}`,
+              company_name: companyName!,
+              guest_name: r.name || "guest",
+              meeting_title: meeting.title,
+              project_title: meeting.project_connection.project_request.title,
+            },
+            r.email
+          );
+        }
       });
 
       return results;

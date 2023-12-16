@@ -18,6 +18,7 @@ import {
   createAcceptedMeetingRSVPNotification,
   createDeclinedMeetingRSVPNotification,
 } from "../../notification/guestMeeting";
+import { checkIfUserInProjectConnection } from "../../services/projectConnection/projectConnection.service";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -79,6 +80,25 @@ const resolvers: Resolvers<Context> = {
 
       invariant(meeting, new PublicError("Invalid token"));
 
+      const existingUser = await context.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      let isPartOfProject = false;
+      if (existingUser) {
+        isPartOfProject = await checkIfUserInProjectConnection(
+          {
+            project_connection_id: meeting.project_connection_id,
+            user_id: existingUser.id,
+          },
+          {
+            prisma: context.prisma,
+          }
+        );
+      }
+
       const meetingGuest = await context.prisma.meetingGuest.upsert({
         where: {
           email_meeting_event_id: {
@@ -98,9 +118,13 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const guestButtonUrl = isPartOfProject
+        ? `${app_env.APP_URL}/app/meeting-events`
+        : `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`;
+
       meetingResponseConfirmationEmail(
         {
-          button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`,
+          button_url: guestButtonUrl,
           meeting_title: meeting.title,
           guest_name: name || "guest",
           project_title: meeting.project_connection.project_request.title,
@@ -109,7 +133,7 @@ const resolvers: Resolvers<Context> = {
       );
       acceptedMeetingRSVPUpdateNotificationEmail(
         {
-          button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
+          button_url: `${app_env.APP_URL}/app/meeting-events`,
           meeting_title: meeting.title,
           guest_name: name || "guest",
           host_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
@@ -185,7 +209,7 @@ const resolvers: Resolvers<Context> = {
         );
         acceptedMeetingRSVPUpdateNotificationEmail(
           {
-            button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
+            button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting
             meeting_title: meetingGuest.meeting_event.title,
             guest_name: name || "guest",
             host_name: `${organizer.first_name} ${organizer.last_name}`,
@@ -205,7 +229,7 @@ const resolvers: Resolvers<Context> = {
       if (answer === InvitationAnswer.NO) {
         declinedMeetingRSVPUpdateNotificationEmail(
           {
-            button_url: `${app_env.APP_URL}/app/meeting`, // Todo: update the link to view meeting
+            button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting
             meeting_title: meetingGuest.meeting_event.title,
             guest_name: name || "guest",
             host_name: `${organizer.first_name} ${organizer.last_name}`,
