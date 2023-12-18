@@ -18,6 +18,8 @@ type User {
   skip_cda: Boolean
   company_collaborator_role: String
   is_active: Boolean
+  country_code: String
+  phone_number: String
 }
 
 type AuthResponse {
@@ -53,6 +55,7 @@ type Mutation {
     last_name: String!
     email: String!
   ): User
+  addPhoneNumber(phone_number: String!, country_code: String!): User
   createCda: Boolean
   skipCda: Boolean
 }
