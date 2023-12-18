@@ -1,15 +1,26 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { createSendAdminCroInterestNoticeJob, createSendNewBlogSubscriptionEmailJob } from "../../queues/email.queues";
-import { searchContact, upsertContacts } from '../../helper/sendgrid';
+import {
+  createSendAdminCroInterestNoticeJob,
+  createSendNewBlogSubscriptionEmailJob,
+} from "../../queues/email.queues";
+import { searchContact, upsertContacts } from "../../helper/sendgrid";
 import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
     submitCroInterest: async (parent, args, context) => {
       const {
-        company_name, company_type, email, interest, service, first_name, last_name,
-      } = args
+        company_name,
+        company_type,
+        email,
+        interest,
+        service,
+        first_name,
+        last_name,
+        country_code,
+        phone_number,
+      } = args;
 
       const newInterestedCro = await context.prisma.interestedCro.create({
         data: {
@@ -20,6 +31,8 @@ const resolvers: Resolvers<Context> = {
           service,
           first_name,
           last_name,
+          phone_number,
+          country_code,
         },
       });
 
@@ -48,7 +61,7 @@ const resolvers: Resolvers<Context> = {
         return true;
       }
 
-      throw new PublicError('Something went wrong');
+      throw new PublicError("Something went wrong");
     },
   },
 };
