@@ -474,6 +474,8 @@ model InterestedCro {
   created_at   DateTime @default(now())
   first_name   String?
   last_name    String?
+  phone_number String?
+  country_code String?
 
   @@map("interested_cros")
 }
