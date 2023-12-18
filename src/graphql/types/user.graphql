@@ -41,6 +41,8 @@ type Mutation {
     last_name: String!
     password: String!
     company_name: String!
+    phone_number: String!
+    country_code: String!
   ): AuthResponse!
   signInUser(email: String!, password: String!): AuthResponse!
   refreshJWT: AuthResponse

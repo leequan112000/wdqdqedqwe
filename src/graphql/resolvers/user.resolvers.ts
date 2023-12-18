@@ -529,6 +529,8 @@ const resolvers: Resolvers<Context> = {
             first_name: args.first_name,
             last_name: args.last_name,
             encrypted_password: hashedPassword,
+            phone_number: args.phone_number,
+            country_code: args.country_code,
           }
         });
 
