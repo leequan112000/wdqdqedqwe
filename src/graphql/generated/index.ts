@@ -777,10 +777,12 @@ export type MutationSignInUserArgs = {
 
 export type MutationSignUpUserArgs = {
   company_name: Scalars['String'];
+  country_code: Scalars['String'];
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
+  phone_number: Scalars['String'];
 };
 
 
@@ -792,10 +794,12 @@ export type MutationStartChatArgs = {
 export type MutationSubmitCroInterestArgs = {
   company_name: Scalars['String'];
   company_type: Scalars['String'];
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   interest: Scalars['String'];
   last_name: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
   service: Scalars['String'];
 };
 
@@ -885,9 +889,11 @@ export type MutationUpdateQuoteArgs = {
 
 
 export type MutationUpdateUserInfoArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1514,6 +1520,7 @@ export type User = {
   cda_url?: Maybe<Scalars['String']>;
   company_collaborator_role?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
+  country_code?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   customer?: Maybe<Customer>;
   email?: Maybe<Scalars['String']>;
@@ -1525,6 +1532,7 @@ export type User = {
   is_active?: Maybe<Scalars['Boolean']>;
   last_name?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
+  phone_number?: Maybe<Scalars['String']>;
   skip_cda?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   user_type?: Maybe<Scalars['String']>;
@@ -2238,7 +2246,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
-  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
+  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2650,6 +2658,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   cda_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_collaborator_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2661,6 +2670,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
+  phone_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

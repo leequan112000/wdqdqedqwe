@@ -36,6 +36,8 @@ describe('collaborator.service', () => {
           reset_password_expiration: null,
           reset_password_sent_at: null,
           reset_password_token: null,
+          phone_number: "5555551234",
+          country_code: "1",
           created_at: new Date(),
           updated_at: new Date(),
           customer: {
@@ -80,6 +82,8 @@ describe('collaborator.service', () => {
           reset_password_expiration: null,
           reset_password_sent_at: null,
           reset_password_token: null,
+          phone_number: "5555551234",
+          country_code: "1",
           created_at: new Date(),
           updated_at: new Date(),
           customer: {
@@ -126,6 +130,8 @@ describe('collaborator.service', () => {
           reset_password_token: null,
           created_at: new Date(),
           updated_at: new Date(),
+          phone_number: "5555551234",
+          country_code: "1",
           vendor_member: {
             id: 'customer-id',
             vendor_company_id: 'biotech_id',
@@ -170,6 +176,8 @@ describe('collaborator.service', () => {
           reset_password_token: null,
           created_at: new Date(),
           updated_at: new Date(),
+          phone_number: "5555551234",
+          country_code: "1",
           vendor_member: {
             id: 'customer-id',
             vendor_company_id: 'biotech_id',

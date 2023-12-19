@@ -24,6 +24,8 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
   is_active                 Boolean   @default(true)
+  phone_number              String?
+  country_code              String?
 
   customer                            Customer?
   vendor_member                       VendorMember?
@@ -472,6 +474,8 @@ model InterestedCro {
   created_at   DateTime @default(now())
   first_name   String?
   last_name    String?
+  phone_number String?
+  country_code String?
 
   @@map("interested_cros")
 }
@@ -921,6 +925,6 @@ model Oauth {
   user_id       String? @db.Uuid
   user          User?   @relation(fields: [user_id], references: [id])
 
-  @@map("oauths")
   @@unique([user_id, provider])
+  @@map("oauths")
 }
