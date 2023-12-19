@@ -31,8 +31,8 @@ const resolvers: Resolvers<Context> = {
           service,
           first_name,
           last_name,
-          phone_number,
-          country_code,
+          phone_number: phone_number || null,
+          country_code: country_code || null,
         },
       });
 

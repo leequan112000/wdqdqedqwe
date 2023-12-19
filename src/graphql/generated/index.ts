@@ -784,12 +784,12 @@ export type MutationSignInUserArgs = {
 
 export type MutationSignUpUserArgs = {
   company_name: Scalars['String'];
-  country_code: Scalars['String'];
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
   password: Scalars['String'];
-  phone_number: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -801,12 +801,12 @@ export type MutationStartChatArgs = {
 export type MutationSubmitCroInterestArgs = {
   company_name: Scalars['String'];
   company_type: Scalars['String'];
-  country_code: Scalars['String'];
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   interest: Scalars['String'];
   last_name: Scalars['String'];
-  phone_number: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
   service: Scalars['String'];
 };
 
@@ -896,11 +896,11 @@ export type MutationUpdateQuoteArgs = {
 
 
 export type MutationUpdateUserInfoArgs = {
-  country_code: Scalars['String'];
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
-  phone_number: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2254,12 +2254,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
-  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
+  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'password'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
-  submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'country_code' | 'email' | 'first_name' | 'interest' | 'last_name' | 'phone_number' | 'service'>>;
+  submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   transferBiotechOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipArgs, 'biotech_id' | 'user_id'>>;
   transferVendorCompanyOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipArgs, 'user_id' | 'vendor_company_id'>>;
@@ -2270,7 +2270,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
   updateProjectRequestCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType, RequireFields<MutationUpdateProjectRequestCollaboratorsArgs, 'customer_ids' | 'project_request_id'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
-  updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'country_code' | 'email' | 'first_name' | 'last_name' | 'phone_number'>>;
+  updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
   updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
