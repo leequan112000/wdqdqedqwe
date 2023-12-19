@@ -919,32 +919,6 @@ const resolvers: Resolvers<Context> = {
         }
       }
     },
-    addPhoneNumber: async (_, args, context) => {
-      const { country_code, phone_number } = args;
-
-      const userId = context.req.user_id;
-
-      invariant(userId, "Missing user id");
-
-      const currentUser = await context.prisma.user.findFirst({
-        where: {
-          id: userId,
-        },
-      });
-      invariant(currentUser, "User not found.");
-
-      const updatedUser = await context.prisma.user.update({
-        data: {
-          phone_number,
-          country_code,
-        },
-        where: {
-          id: currentUser.id,
-        },
-      });
-
-      return updatedUser;
-    },
   },
 };
 
