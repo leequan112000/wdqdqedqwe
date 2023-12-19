@@ -35,6 +35,8 @@ test('forgotPassword should return prisma user object', async () => {
     reset_password_sent_at: null,
     reset_password_token: null,
     is_active: true,
+    phone_number: "5555551234",
+    country_code: "1",
   }
 
   mockCtx.prisma.user.update.mockResolvedValue(user);
