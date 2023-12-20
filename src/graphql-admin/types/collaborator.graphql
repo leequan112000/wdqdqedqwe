@@ -8,6 +8,8 @@ type Mutation {
     title: String
     department: String
     role: String
+    phone_number: String
+    country_code: String
   ): Boolean
   updateCustomerByAdmin(
     user_id: String!
@@ -16,6 +18,8 @@ type Mutation {
     job_title: String
     team: String
     role: String
+    phone_number: String
+    country_code: String
   ): Boolean
   transferBiotechOwnershipByAdmin(
     biotech_id: String!

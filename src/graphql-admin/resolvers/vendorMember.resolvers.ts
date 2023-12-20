@@ -58,6 +58,8 @@ const resolver: Resolvers<Context> = {
             last_name: args.last_name,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
+            country_code: args.country_code || null,
+            phone_number: args.phone_number || null,
           },
         });
 
