@@ -1,5 +1,5 @@
 import moment from 'moment';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { ProjectConnectionVendorStatus } from '../helper/constant';
 import { Biotech, ProjectConnection, ProjectRequest, User } from '@prisma/client';
 import { CreateVendorProjectRequestExpiringNoticeEmailJobParam } from '../queues/types';

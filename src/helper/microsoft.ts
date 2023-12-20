@@ -1,7 +1,7 @@
 import { Client } from '@microsoft/microsoft-graph-client';
 import ClientOAuth2 from 'client-oauth2';
 import { app_env } from '../environment';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { OauthProvider } from './constant';
 
 export const microsoftClient = new ClientOAuth2({

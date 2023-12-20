@@ -1,5 +1,5 @@
 import { NotificationType, QuoteNotificationActionContent } from '../helper/constant';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
 

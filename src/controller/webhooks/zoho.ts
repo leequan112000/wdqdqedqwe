@@ -3,7 +3,7 @@ import { deleteObject } from '../../helper/awsS3';
 import { ProjectAttachmentDocumentType } from '../../helper/constant';
 import { PROJECT_ATTACHMENT_DOCUMENT_TYPE } from '../../helper/constant';
 import storeUpload from '../../helper/storeUpload';
-import prisma from '../../prisma';
+import { prisma } from '../../prisma';
 import { Readable } from 'stream';
 
 interface MulterRequest extends Request {

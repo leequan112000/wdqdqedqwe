@@ -3,7 +3,7 @@ import { microsoftClient } from '../../helper/microsoft';
 import { OauthProvider } from '../../helper/constant';
 import { codeVerifier } from '../../helper/oauth';
 import { app_env } from '../../environment';
-import prisma from '../../prisma';
+import { prisma } from '../../prisma';
 
 export const microsoftCallback = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { app_env } from '../environment';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import currency from 'currency.js';
 import { bulkBiotechInvoicePaymentOverdueNoticeEmail, bulkBiotechInvoicePaymentReminderEmail } from '../mailer/biotechInvoice';
 import { createBiotechInvoicePaymentOverdueNotificationJob, createBiotechInvoicePaymentReminderNotificationJob } from '../notification/biotechInvoiceNotification';

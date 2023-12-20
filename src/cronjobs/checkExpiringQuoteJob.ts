@@ -1,6 +1,6 @@
 import moment from 'moment';
 import * as lodash from 'lodash';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { createSendUserExpiringQuoteNoticeEmailJob } from '../queues/email.queues';
 import { CreateSendUserExpiringQuoteNoticeEmailJobParam } from '../queues/types';
 import { QuoteStatus } from '../helper/constant';

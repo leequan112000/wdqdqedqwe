@@ -1,6 +1,6 @@
 import { NotificationType } from "../helper/constant";
 import { createQueue } from "../helper/queue";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { publishNewNotification } from "../helper/pubsub";
 
 export type NotificationJob = {
