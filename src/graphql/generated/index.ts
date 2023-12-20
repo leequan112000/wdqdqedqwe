@@ -1227,11 +1227,13 @@ export type ProjectRequestProjectConnectionFilter = {
 
 export type PubMeeting = {
   __typename?: 'PubMeeting';
+  end_time?: Maybe<Scalars['String']>;
   guest_info?: Maybe<PubMeetingGuestInfo>;
   id?: Maybe<Scalars['String']>;
   meeting_link?: Maybe<Scalars['String']>;
   organizer_company_name?: Maybe<Scalars['String']>;
   organizer_name?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
   start_time?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
 };
@@ -2577,11 +2579,13 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PubMeetingResolvers<ContextType = any, ParentType extends ResolversParentTypes['PubMeeting'] = ResolversParentTypes['PubMeeting']> = ResolversObject<{
+  end_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   guest_info?: Resolver<Maybe<ResolversTypes['PubMeetingGuestInfo']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

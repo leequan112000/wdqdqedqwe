@@ -2,10 +2,12 @@ type PubMeeting {
   id: String
   title: String
   start_time: String
+  end_time: String
   organizer_name: String
   organizer_company_name: String
   guest_info: PubMeetingGuestInfo
   meeting_link: String
+  project_title: String
 }
 
 type PubRVSP {

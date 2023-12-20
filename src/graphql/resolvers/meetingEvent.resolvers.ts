@@ -348,7 +348,6 @@ const resolvers: Resolvers<Context> = {
         attendees,
         description,
         project_connection_id,
-        is_sharable,
       } = args;
 
       const organizerUser = await context.prisma.user.findFirst({
@@ -420,7 +419,7 @@ const resolvers: Resolvers<Context> = {
             project_connection_id,
             platform_event_id: gEventId,
             organizer_id: organizerUser.id,
-            is_sharable: is_sharable || undefined,
+            is_sharable: true,
             meetingAttendeeConnections: {
               create: data,
             },

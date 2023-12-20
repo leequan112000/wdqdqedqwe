@@ -31,6 +31,11 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           organizer: true,
+          project_connection: {
+            include: {
+              project_request: true,
+            },
+          },
         },
       });
 
@@ -50,12 +55,14 @@ const resolvers: Resolvers<Context> = {
         id: meeting?.id,
         title: meeting?.title,
         start_time: meeting.start_time.toISOString(),
+        end_time: meeting.end_time.toISOString(),
         organizer_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
         guest_info: meetingGuest,
         meeting_link:
           meetingGuest && meetingGuest.status === MeetingGuestStatus.ACCEPTED
             ? meeting.meeting_link
             : null,
+        project_title: meeting.project_connection.project_request.title,
       };
     },
   },
