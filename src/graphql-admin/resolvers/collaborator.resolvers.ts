@@ -107,7 +107,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     updateVendorMemberByAdmin: async (_, args, context) => {
-      const { user_id, department, first_name, last_name, role, title } = args;
+      const { user_id, department, first_name, last_name, role, title, country_code, phone_number } = args;
       await context.prisma.$transaction(async (trx) => {
         await trx.user.update({
           where: {
@@ -116,6 +116,8 @@ const resolvers: Resolvers<Context> = {
           data: {
             first_name: ignoreEmptyString(first_name) ?? undefined,
             last_name: ignoreEmptyString(last_name) ?? undefined,
+            country_code: country_code || null,
+            phone_number: phone_number || null,
           },
         });
         const updatedVendorMember = await trx.vendorMember.update({
@@ -160,7 +162,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     updateCustomerByAdmin: async (_, args, context) => {
-      const { user_id, team, first_name, last_name, role, job_title } = args;
+      const { user_id, team, first_name, last_name, role, job_title, phone_number, country_code } = args;
       await context.prisma.$transaction(async (trx) => {
         await trx.user.update({
           where: {
@@ -169,6 +171,8 @@ const resolvers: Resolvers<Context> = {
           data: {
             first_name: ignoreEmptyString(first_name) ?? undefined,
             last_name: ignoreEmptyString(last_name) ?? undefined,
+            phone_number: phone_number || null,
+            country_code: country_code || null,
           },
         });
         const updatedCustomer = await trx.customer.update({

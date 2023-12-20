@@ -1,9 +1,13 @@
+import moment from "moment";
 import invariant from "../../helper/invariant";
-import { cancelGoogleEvent, patchGoogleEvent } from "../../helper/googleCalendar";
+import { microsoftGraphClient } from "../../helper/microsoft";
+import { cancelGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
 import { ServiceContext } from "../../types/context";
+import { MicrosoftCalendarEvent } from "../../types/microsoft";
+import { CalendarEvent } from "../../graphql/generated";
 
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
@@ -196,9 +200,72 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
   };
 }
 
+type GetMicrosoftCalendarEventsArgs = {
+  access_token: string;
+}
+
+const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, ctx: ServiceContext) => {
+  const client = microsoftGraphClient(args.access_token);
+
+  try {
+    const response: { value: MicrosoftCalendarEvent[] } = await client.api('/me/events').get();
+    return response.value.map((event) => ({
+      id: event.id,
+      title: event.subject,
+      description: event.bodyPreview,
+      start_time: moment.utc(event.start.dateTime).format(),
+      end_time: moment.utc(event.end.dateTime).format(),
+      timezone: event.start.timeZone,
+      all_day: event.isAllDay,
+      meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
+      guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
+      organizer: {
+        name: event.organizer.emailAddress.name,
+        email: event.organizer.emailAddress.address,
+      },
+      is_draft: event.isDraft,
+    } as CalendarEvent)) || [];
+  } catch (error) {
+    throw error;
+  }
+}
+
+type GetGoogleCalendarEventsArgs = {
+  access_token: string;
+  refresh_token: string;
+}
+
+const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs, ctx: ServiceContext) => {
+  const client = googleApiClient(args.access_token, args.refresh_token);
+
+  try {
+    const response = await listGoogleEvents(client);
+    return response?.map((event) => ({
+      id: event.id,
+      title: event.summary,
+      description: event.description,
+      start_time: event.start?.dateTime,
+      end_time: event.end?.dateTime,
+      timezone: event.start?.timeZone,
+      all_day: event.start?.date && !event.start.dateTime,
+      meeting_link: event.hangoutLink || event.htmlLink,
+      guests: event.attendees?.map(({ displayName, email }) => ({ name: displayName, email })),
+      organizer: {
+        name: event.organizer?.displayName,
+        email: event.organizer?.email,
+      },
+      is_draft: false,
+    } as CalendarEvent)) || [];
+  } catch (error) {
+    throw error;
+  }
+}
+
 const meetingEventService = {
   removeMeetingEvent,
   updateMeetingEvent,
+  getMicrosoftCalendarEvents,
+  getGoogleCalendarEvents,
 };
 
 export default meetingEventService;

@@ -283,3 +283,8 @@ export enum BlanketPurchaseOrderTransactionType {
   DEBIT = 'debit',
   CREDIT = 'credit',
 }
+
+export enum OauthProvider {
+  MICROSOFT = 'microsoft',
+  GOOGLE = 'google',
+}

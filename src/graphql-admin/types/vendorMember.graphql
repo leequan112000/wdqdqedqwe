@@ -21,5 +21,7 @@ type Mutation {
     email: String!
     vendor_company_id: String!
     role: String!
+    phone_number: String
+    country_code: String
   ): VendorMember
 }

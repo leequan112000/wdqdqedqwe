@@ -26,7 +26,7 @@ const resolver: Resolvers<Context> = {
   Mutation: {
     inviteCustomerByAdmin: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
-        const { first_name, last_name, email, biotech_id, role } = args;
+        const { first_name, last_name, email, biotech_id, role, country_code, phone_number } = args;
 
         const user = await trx.user.findFirst({
           where: {
@@ -61,6 +61,8 @@ const resolver: Resolvers<Context> = {
             last_name: last_name,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
+            country_code: country_code || null,
+            phone_number: phone_number || null,
           },
         });
 

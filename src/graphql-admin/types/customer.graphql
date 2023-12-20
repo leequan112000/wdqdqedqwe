@@ -20,5 +20,7 @@ type Mutation {
     email: String!
     biotech_id: String!
     role: String!
+    phone_number: String
+    country_code: String
   ): Customer
 }

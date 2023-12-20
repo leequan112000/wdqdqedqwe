@@ -24,6 +24,8 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
   is_active                 Boolean   @default(true)
+  phone_number              String?
+  country_code              String?
 
   customer                            Customer?
   vendor_member                       VendorMember?
@@ -38,6 +40,7 @@ model User {
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
+  oauth                               Oauth[]
 
   @@map("users")
 }
@@ -471,6 +474,8 @@ model InterestedCro {
   created_at   DateTime @default(now())
   first_name   String?
   last_name    String?
+  phone_number String?
+  country_code String?
 
   @@map("interested_cros")
 }
@@ -910,4 +915,16 @@ model BiotechInvoiceAttachment {
   uploader           User?           @relation(fields: [uploader_id], references: [id])
 
   @@map("biotech_invoice_attachments")
+}
+
+model Oauth {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider      String
+  access_token  String
+  refresh_token String
+  user_id       String? @db.Uuid
+  user          User?   @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, provider])
+  @@map("oauths")
 }
