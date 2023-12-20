@@ -101,6 +101,8 @@ export enum NotificationType {
   NEW_MEETING_NOTIFICATION = 'NewMeetingNotification',
   UPDATE_MEETING_NOTIFICATION = 'UpdateMeetingNotification',
   REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
+  ACCEPTED_MEETING_INVITATION_NOTIFICATION = 'AcceptedMeetingInvitationNotification',
+  DECLINED_MEETING_INVITATION_NOTIFICATION = 'DeclinedMeetingInvitationNotification',
   VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION = 'VendorProjectRequestExpiringNotification',
   VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
   BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION = 'BiotechInvoicePaymentVerifiedNotification',
@@ -282,6 +284,22 @@ export enum MessageType {
 export enum BlanketPurchaseOrderTransactionType {
   DEBIT = 'debit',
   CREDIT = 'credit',
+}
+
+export enum InvitationAnswer {
+  YES = 'yes',
+  NO = 'no',
+}
+
+export enum MeetingGuestStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+}
+
+export enum MeetingGuestType {
+  LINK = 'link',
+  INVITE = 'invite',
 }
 
 export enum OauthProvider {

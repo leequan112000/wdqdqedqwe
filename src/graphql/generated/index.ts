@@ -261,6 +261,18 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type ExternalGuest = {
+  __typename?: 'ExternalGuest';
+  email?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+};
+
+export type ExternalGuestForInput = {
+  email: Scalars['String'];
+  name?: InputMaybe<Scalars['String']>;
+};
+
 export type InviteCollaboratorInput = {
   email: Scalars['String'];
   first_name: Scalars['String'];
@@ -326,6 +338,7 @@ export type MeetingEvent = {
   __typename?: 'MeetingEvent';
   description?: Maybe<Scalars['String']>;
   end_time?: Maybe<Scalars['Date']>;
+  external_guests?: Maybe<Array<Maybe<ExternalGuest>>>;
   guests?: Maybe<Array<Maybe<User>>>;
   id?: Maybe<Scalars['String']>;
   meeting_link?: Maybe<Scalars['String']>;
@@ -391,7 +404,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   acceptQuote?: Maybe<Quote>;
+  addExternalGuests?: Maybe<Array<Maybe<ExternalGuest>>>;
   addProjectCollaborator?: Maybe<User>;
+  answerInvitation?: Maybe<SubmitAttendanceResp>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   createBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   createCda?: Maybe<Scalars['Boolean']>;
@@ -443,6 +458,7 @@ export type Mutation = {
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
   startChat?: Maybe<Scalars['Boolean']>;
+  submitAttendance?: Maybe<SubmitAttendanceResp>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   transferBiotechOwnership?: Maybe<User>;
@@ -452,6 +468,7 @@ export type Mutation = {
   updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
   updateMeetingEvent?: Maybe<MeetingEvent>;
+  updateMeetingEventSharable?: Maybe<MeetingEvent>;
   updateProjectRequestCollaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
@@ -478,9 +495,22 @@ export type MutationAcceptQuoteArgs = {
 };
 
 
+export type MutationAddExternalGuestsArgs = {
+  guests: Array<ExternalGuestForInput>;
+  meeting_id: Scalars['String'];
+};
+
+
 export type MutationAddProjectCollaboratorArgs = {
   project_connection_id: Scalars['String'];
   user_id: Scalars['String'];
+};
+
+
+export type MutationAnswerInvitationArgs = {
+  answer: Scalars['String'];
+  name?: InputMaybe<Scalars['String']>;
+  token: Scalars['String'];
 };
 
 
@@ -528,6 +558,7 @@ export type MutationCreateMeetingEventArgs = {
   attendees: Array<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   end_time: Scalars['String'];
+  is_sharable?: InputMaybe<Scalars['Boolean']>;
   project_connection_id: Scalars['String'];
   start_time: Scalars['String'];
   timezone: Scalars['String'];
@@ -791,6 +822,13 @@ export type MutationStartChatArgs = {
 };
 
 
+export type MutationSubmitAttendanceArgs = {
+  email: Scalars['String'];
+  name?: InputMaybe<Scalars['String']>;
+  token: Scalars['String'];
+};
+
+
 export type MutationSubmitCroInterestArgs = {
   company_name: Scalars['String'];
   company_type: Scalars['String'];
@@ -871,6 +909,12 @@ export type MutationUpdateMeetingEventArgs = {
   start_time: Scalars['String'];
   timezone: Scalars['String'];
   title: Scalars['String'];
+};
+
+
+export type MutationUpdateMeetingEventSharableArgs = {
+  is_sharable: Scalars['Boolean'];
+  meeting_event_id: Scalars['String'];
 };
 
 
@@ -1181,6 +1225,34 @@ export type ProjectRequestProjectConnectionFilter = {
   vendor_status?: InputMaybe<Scalars['String']>;
 };
 
+export type PubMeeting = {
+  __typename?: 'PubMeeting';
+  end_time?: Maybe<Scalars['String']>;
+  guest_info?: Maybe<PubMeetingGuestInfo>;
+  id?: Maybe<Scalars['String']>;
+  meeting_link?: Maybe<Scalars['String']>;
+  organizer_company_name?: Maybe<Scalars['String']>;
+  organizer_name?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
+  start_time?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
+export type PubMeetingGuestInfo = {
+  __typename?: 'PubMeetingGuestInfo';
+  email?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type PubRvsp = {
+  __typename?: 'PubRVSP';
+  guest_name?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  meeting_title?: Maybe<Scalars['String']>;
+};
+
 export type PurchaseOrder = {
   __typename?: 'PurchaseOrder';
   biotech?: Maybe<Biotech>;
@@ -1225,6 +1297,7 @@ export type Query = {
   projectDeclineTags?: Maybe<Array<Maybe<ProjectDeclineTag>>>;
   projectRequest?: Maybe<ProjectRequest>;
   projectRequests?: Maybe<Array<Maybe<ProjectRequest>>>;
+  pubMeeting?: Maybe<PubMeeting>;
   quote?: Maybe<Quote>;
   quoteReview?: Maybe<Review>;
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
@@ -1329,6 +1402,12 @@ export type QueryProjectRequestArgs = {
 
 export type QueryProjectRequestsArgs = {
   status?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryPubMeetingArgs = {
+  guest_token?: InputMaybe<Scalars['String']>;
+  token: Scalars['String'];
 };
 
 
@@ -1483,6 +1562,15 @@ export type StripeExternalAccountData = {
   object?: Maybe<Scalars['String']>;
   routing_number?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+};
+
+export type SubmitAttendanceResp = {
+  __typename?: 'SubmitAttendanceResp';
+  email?: Maybe<Scalars['String']>;
+  meeting_link?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  token?: Maybe<Scalars['String']>;
 };
 
 export type Subscription = {
@@ -1699,6 +1787,8 @@ export type ResolversTypes = ResolversObject<{
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
+  ExternalGuestForInput: ExternalGuestForInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -1732,6 +1822,9 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
+  PubMeeting: ResolverTypeWrapper<PubMeeting>;
+  PubMeetingGuestInfo: ResolverTypeWrapper<PubMeetingGuestInfo>;
+  PubRVSP: ResolverTypeWrapper<PubRvsp>;
   PurchaseOrder: ResolverTypeWrapper<PurchaseOrder>;
   Query: ResolverTypeWrapper<{}>;
   Quote: ResolverTypeWrapper<Quote>;
@@ -1748,6 +1841,7 @@ export type ResolversTypes = ResolversObject<{
   StripeAccountRequirements: ResolverTypeWrapper<StripeAccountRequirements>;
   StripeExternalAccount: ResolverTypeWrapper<StripeExternalAccount>;
   StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
+  SubmitAttendanceResp: ResolverTypeWrapper<SubmitAttendanceResp>;
   Subscription: ResolverTypeWrapper<{}>;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
@@ -1780,6 +1874,8 @@ export type ResolversParentTypes = ResolversObject<{
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
+  ExternalGuest: ExternalGuest;
+  ExternalGuestForInput: ExternalGuestForInput;
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -1813,6 +1909,9 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
+  PubMeeting: PubMeeting;
+  PubMeetingGuestInfo: PubMeetingGuestInfo;
+  PubRVSP: PubRvsp;
   PurchaseOrder: PurchaseOrder;
   Query: {};
   Quote: Quote;
@@ -1829,6 +1928,7 @@ export type ResolversParentTypes = ResolversObject<{
   StripeAccountRequirements: StripeAccountRequirements;
   StripeExternalAccount: StripeExternalAccount;
   StripeExternalAccountData: StripeExternalAccountData;
+  SubmitAttendanceResp: SubmitAttendanceResp;
   Subscription: {};
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: Scalars['Upload'];
@@ -2074,6 +2174,13 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type ExternalGuestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalGuest'] = ResolversParentTypes['ExternalGuest']> = ResolversObject<{
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
   commission_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2136,6 +2243,7 @@ export type MarkMilestoneCompleteResponseResolvers<ContextType = any, ParentType
 export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  external_guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalGuest']>>>, ParentType, ContextType>;
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2201,7 +2309,9 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
+  addExternalGuests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalGuest']>>>, ParentType, ContextType, RequireFields<MutationAddExternalGuestsArgs, 'guests' | 'meeting_id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
+  answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'token'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
   createBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationCreateBlanketPurchaseOrderArgs, 'amount' | 'name' | 'po_number'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2251,6 +2361,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
+  submitAttendance?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationSubmitAttendanceArgs, 'email' | 'token'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   transferBiotechOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipArgs, 'biotech_id' | 'user_id'>>;
@@ -2260,6 +2371,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
   updateMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventArgs, 'attendees' | 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone' | 'title'>>;
+  updateMeetingEventSharable?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventSharableArgs, 'is_sharable' | 'meeting_event_id'>>;
   updateProjectRequestCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType, RequireFields<MutationUpdateProjectRequestCollaboratorsArgs, 'customer_ids' | 'project_request_id'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;
@@ -2466,6 +2578,34 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PubMeetingResolvers<ContextType = any, ParentType extends ResolversParentTypes['PubMeeting'] = ResolversParentTypes['PubMeeting']> = ResolversObject<{
+  end_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  guest_info?: Resolver<Maybe<ResolversTypes['PubMeetingGuestInfo']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer_company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  start_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PubMeetingGuestInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PubMeetingGuestInfo'] = ResolversParentTypes['PubMeetingGuestInfo']> = ResolversObject<{
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PubRvspResolvers<ContextType = any, ParentType extends ResolversParentTypes['PubRVSP'] = ResolversParentTypes['PubRVSP']> = ResolversObject<{
+  guest_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  meeting_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PurchaseOrderResolvers<ContextType = any, ParentType extends ResolversParentTypes['PurchaseOrder'] = ResolversParentTypes['PurchaseOrder']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2509,6 +2649,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   projectDeclineTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectDeclineTag']>>>, ParentType, ContextType>;
   projectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, Partial<QueryProjectRequestArgs>>;
   projectRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequest']>>>, ParentType, ContextType, Partial<QueryProjectRequestsArgs>>;
+  pubMeeting?: Resolver<Maybe<ResolversTypes['PubMeeting']>, ParentType, ContextType, RequireFields<QueryPubMeetingArgs, 'token'>>;
   quote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, Partial<QueryQuoteArgs>>;
   quoteReview?: Resolver<Maybe<ResolversTypes['Review']>, ParentType, ContextType, RequireFields<QueryQuoteReviewArgs, 'quote_id'>>;
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
@@ -2632,6 +2773,15 @@ export type StripeExternalAccountDataResolvers<ContextType = any, ParentType ext
   object?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   routing_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SubmitAttendanceRespResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubmitAttendanceResp'] = ResolversParentTypes['SubmitAttendanceResp']> = ResolversObject<{
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2767,6 +2917,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  ExternalGuest?: ExternalGuestResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
@@ -2795,6 +2946,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
+  PubMeeting?: PubMeetingResolvers<ContextType>;
+  PubMeetingGuestInfo?: PubMeetingGuestInfoResolvers<ContextType>;
+  PubRVSP?: PubRvspResolvers<ContextType>;
   PurchaseOrder?: PurchaseOrderResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quote?: QuoteResolvers<ContextType>;
@@ -2809,6 +2963,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StripeAccountRequirements?: StripeAccountRequirementsResolvers<ContextType>;
   StripeExternalAccount?: StripeExternalAccountResolvers<ContextType>;
   StripeExternalAccountData?: StripeExternalAccountDataResolvers<ContextType>;
+  SubmitAttendanceResp?: SubmitAttendanceRespResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   UploadResult?: UploadResultResolvers<ContextType>;
