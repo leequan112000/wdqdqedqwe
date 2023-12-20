@@ -1,10 +1,12 @@
 import { Prisma, User } from "@prisma/client";
 import { find } from "lodash";
 import moment from "moment";
-import { createGoogleEvent } from "../../helper/googleCalendar";
+import { createGoogleEvent, googleClient } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { MeetingPlatform } from "../../helper/constant";
+import { MeetingPlatform, OauthProvider } from "../../helper/constant";
+import { microsoftClient, microsoftClientRefreshToken } from '../../helper/microsoft';
+import { codeChallenge } from '../../helper/oauth';
 import { createNewMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import invariant from "../../helper/invariant";
@@ -261,6 +263,79 @@ const resolvers: Resolvers<Context> = {
       });
 
       return meetingEvents;
+    },
+    microsoftCalendarAuthorizationUri: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const authorizationUri = microsoftClient.code.getUri({
+        scopes: ['Calendars.Read offline_access'],
+        state: user_id,
+        query: {
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        },
+      });
+
+      return authorizationUri;
+    },
+    microsoftCalendarEvents: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      invariant(oauth, new PublicError('User not authenticated!'));
+
+      try {
+        return await meetingEventService.getMicrosoftCalendarEvents({ access_token: oauth.access_token }, context);
+      } catch (error: any) {
+        if (error.statusCode === 401) {
+          const newToken = await microsoftClientRefreshToken(oauth.access_token, oauth.refresh_token, user_id);
+          return await meetingEventService.getMicrosoftCalendarEvents({ access_token: newToken.accessToken }, context);
+        }
+        throw new PublicError('Something went wrong connecting to your calendar.');
+      }
+    },
+    googleCalendarAuthorizationUri: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const authorizationUri = googleClient.code.getUri({
+        scopes: ['https://www.googleapis.com/auth/calendar'],
+        state: user_id,
+        query: {
+          access_type: 'offline',
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        },
+      });
+
+      return authorizationUri;
+    },
+    googleCalendarEvents: async (_, __, context) => {
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+
+      invariant(oauth, new PublicError('User not authenticated!'));
+
+      try {
+        return await meetingEventService.getGoogleCalendarEvents({ access_token: oauth.access_token, refresh_token: oauth.refresh_token }, context);
+      } catch (error: any) {
+        throw new PublicError('Something went wrong connecting to your calendar.');
+      }
     },
   },
   Mutation: {

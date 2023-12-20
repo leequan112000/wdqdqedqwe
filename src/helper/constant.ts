@@ -301,3 +301,8 @@ export enum MeetingGuestType {
   LINK = 'link',
   INVITE = 'invite',
 }
+
+export enum OauthProvider {
+  MICROSOFT = 'microsoft',
+  GOOGLE = 'google',
+}
