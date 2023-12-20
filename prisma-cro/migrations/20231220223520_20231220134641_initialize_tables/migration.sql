@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "vendor_companies" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "company_name" TEXT NOT NULL,
     "website_url" TEXT NOT NULL,
     "linkedin_url" TEXT NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE "vendor_companies" (
 
 -- CreateTable
 CREATE TABLE "traffic_info" (
-    "id" TEXT NOT NULL,
-    "company_id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "company_id" UUID NOT NULL,
     "last_updated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "display_date" TIMESTAMP(3) NOT NULL,
     "rank" INTEGER NOT NULL,
@@ -35,8 +35,8 @@ CREATE TABLE "traffic_info" (
 
 -- CreateTable
 CREATE TABLE "linkedin_info" (
-    "id" TEXT NOT NULL,
-    "company_id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "company_id" UUID NOT NULL,
     "last_updated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "company_size" TEXT NOT NULL,
     "industry" TEXT NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE "linkedin_info" (
 -- CreateTable
 CREATE TABLE "company_specialties" (
     "id" TEXT NOT NULL,
-    "linkedin_info_id" TEXT NOT NULL,
+    "linkedin_info_id" UUID NOT NULL,
     "specialty" TEXT NOT NULL,
 
     CONSTRAINT "company_specialties_pkey" PRIMARY KEY ("id")
@@ -69,7 +69,7 @@ CREATE TABLE "company_specialties" (
 -- CreateTable
 CREATE TABLE "featured_employees" (
     "id" TEXT NOT NULL,
-    "linkedin_info_id" TEXT NOT NULL,
+    "linkedin_info_id" UUID NOT NULL,
     "linkedin_url" TEXT NOT NULL,
 
     CONSTRAINT "featured_employees_pkey" PRIMARY KEY ("id")
@@ -77,8 +77,8 @@ CREATE TABLE "featured_employees" (
 
 -- CreateTable
 CREATE TABLE "funding_info" (
-    "id" TEXT NOT NULL,
-    "company_id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "company_id" UUID NOT NULL,
     "last_updated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "company_type" TEXT NOT NULL,
     "ipo_status" TEXT NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE "funding_info" (
 -- CreateTable
 CREATE TABLE "categories" (
     "id" TEXT NOT NULL,
-    "funding_info_id" TEXT NOT NULL,
+    "funding_info_id" UUID NOT NULL,
     "category" TEXT NOT NULL,
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
@@ -101,7 +101,7 @@ CREATE TABLE "categories" (
 -- CreateTable
 CREATE TABLE "press_references" (
     "id" TEXT NOT NULL,
-    "funding_info_id" TEXT NOT NULL,
+    "funding_info_id" UUID NOT NULL,
     "author" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "publisher" TEXT NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE "press_references" (
 -- CreateTable
 CREATE TABLE "funding_rounds" (
     "id" TEXT NOT NULL,
-    "funding_info_id" TEXT NOT NULL,
+    "funding_info_id" UUID NOT NULL,
     "is_equity" BOOLEAN NOT NULL,
     "investment_stage" TEXT NOT NULL,
     "short_description" TEXT NOT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE "funding_rounds" (
 -- CreateTable
 CREATE TABLE "founders" (
     "id" TEXT NOT NULL,
-    "funding_info_id" TEXT NOT NULL,
+    "funding_info_id" UUID NOT NULL,
     "full_name" TEXT NOT NULL,
     "primary_job_title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -141,8 +141,8 @@ CREATE TABLE "founders" (
 
 -- CreateTable
 CREATE TABLE "website_info" (
-    "id" TEXT NOT NULL,
-    "company_id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "company_id" UUID NOT NULL,
     "last_updated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "website_info_pkey" PRIMARY KEY ("id")

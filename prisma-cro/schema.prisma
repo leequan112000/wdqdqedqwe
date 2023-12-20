@@ -12,7 +12,7 @@ datasource db {
 }
 
 model vendor_companies {
-  id                  String          @id @default(uuid())
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   company_name        String
   website_url         String
   linkedin_url        String
@@ -27,8 +27,8 @@ model vendor_companies {
 }
 
 model traffic_info {
-  id               String    @id @default(uuid())
-  company_id       String
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id       String    @db.Uuid
   last_updated     DateTime  @default(now())
   display_date     DateTime
   rank             Int
@@ -47,8 +47,8 @@ model traffic_info {
 }
 
 model linkedin_info {
-  id                                    String                 @id @default(uuid())
-  company_id                            String
+  id                                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id                            String                 @db.Uuid
   last_updated                          DateTime               @default(now())
   company_size                          String
   industry                              String
@@ -73,21 +73,21 @@ model linkedin_info {
 
 model company_specialties {
   id                String         @id @default(uuid())
-  linkedin_info_id  String
+  linkedin_info_id  String         @db.Uuid
   specialty         String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
 }
 
 model featured_employees {
   id                String        @id @default(uuid())
-  linkedin_info_id  String
+  linkedin_info_id  String        @db.Uuid
   linkedin_url      String
   linkedin_info     linkedin_info @relation(fields: [linkedin_info_id], references: [id])
 }
 
 model funding_info {
-  id                     String            @id @default(uuid())
-  company_id             String
+  id                     String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id             String            @db.Uuid
   last_updated           DateTime          @default(now())
   company_type           String
   ipo_status             String
@@ -104,14 +104,14 @@ model funding_info {
 
 model categories {
   id              String       @id @default(uuid())
-  funding_info_id String
+  funding_info_id String       @db.Uuid
   category        String
   funding_info    funding_info @relation(fields: [funding_info_id], references: [id])
 }
 
 model press_references {
   id              String       @id @default(uuid())
-  funding_info_id String
+  funding_info_id String       @db.Uuid
   author          String
   title           String
   publisher       String
@@ -122,7 +122,7 @@ model press_references {
 
 model funding_rounds {
   id                 String       @id @default(uuid())
-  funding_info_id    String
+  funding_info_id    String       @db.Uuid
   is_equity          Boolean
   investment_stage   String
   short_description  String
@@ -134,7 +134,7 @@ model funding_rounds {
 
 model founders {
   id                        String       @id @default(uuid())
-  funding_info_id           String
+  funding_info_id           String       @db.Uuid
   full_name                 String
   primary_job_title         String
   description               String
@@ -145,8 +145,8 @@ model founders {
 }
 
 model website_info {
-  id           String            @id @default(uuid())
-  company_id   String
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id   String            @db.Uuid
   last_updated DateTime          @default(now())
 
   vendor_company  vendor_companies @relation(fields: [company_id], references: [id])

@@ -13005,7 +13005,7 @@ export namespace Prisma {
     AND?: vendor_companiesWhereInput | vendor_companiesWhereInput[]
     OR?: vendor_companiesWhereInput[]
     NOT?: vendor_companiesWhereInput | vendor_companiesWhereInput[]
-    id?: StringFilter<"vendor_companies"> | string
+    id?: UuidFilter<"vendor_companies"> | string
     company_name?: StringFilter<"vendor_companies"> | string
     website_url?: StringFilter<"vendor_companies"> | string
     linkedin_url?: StringFilter<"vendor_companies"> | string
@@ -13066,7 +13066,7 @@ export namespace Prisma {
     AND?: vendor_companiesScalarWhereWithAggregatesInput | vendor_companiesScalarWhereWithAggregatesInput[]
     OR?: vendor_companiesScalarWhereWithAggregatesInput[]
     NOT?: vendor_companiesScalarWhereWithAggregatesInput | vendor_companiesScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"vendor_companies"> | string
+    id?: UuidWithAggregatesFilter<"vendor_companies"> | string
     company_name?: StringWithAggregatesFilter<"vendor_companies"> | string
     website_url?: StringWithAggregatesFilter<"vendor_companies"> | string
     linkedin_url?: StringWithAggregatesFilter<"vendor_companies"> | string
@@ -13079,8 +13079,8 @@ export namespace Prisma {
     AND?: traffic_infoWhereInput | traffic_infoWhereInput[]
     OR?: traffic_infoWhereInput[]
     NOT?: traffic_infoWhereInput | traffic_infoWhereInput[]
-    id?: StringFilter<"traffic_info"> | string
-    company_id?: StringFilter<"traffic_info"> | string
+    id?: UuidFilter<"traffic_info"> | string
+    company_id?: UuidFilter<"traffic_info"> | string
     last_updated?: DateTimeFilter<"traffic_info"> | Date | string
     display_date?: DateTimeFilter<"traffic_info"> | Date | string
     rank?: IntFilter<"traffic_info"> | number
@@ -13123,7 +13123,7 @@ export namespace Prisma {
     AND?: traffic_infoWhereInput | traffic_infoWhereInput[]
     OR?: traffic_infoWhereInput[]
     NOT?: traffic_infoWhereInput | traffic_infoWhereInput[]
-    company_id?: StringFilter<"traffic_info"> | string
+    company_id?: UuidFilter<"traffic_info"> | string
     last_updated?: DateTimeFilter<"traffic_info"> | Date | string
     display_date?: DateTimeFilter<"traffic_info"> | Date | string
     rank?: IntFilter<"traffic_info"> | number
@@ -13169,8 +13169,8 @@ export namespace Prisma {
     AND?: traffic_infoScalarWhereWithAggregatesInput | traffic_infoScalarWhereWithAggregatesInput[]
     OR?: traffic_infoScalarWhereWithAggregatesInput[]
     NOT?: traffic_infoScalarWhereWithAggregatesInput | traffic_infoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"traffic_info"> | string
-    company_id?: StringWithAggregatesFilter<"traffic_info"> | string
+    id?: UuidWithAggregatesFilter<"traffic_info"> | string
+    company_id?: UuidWithAggregatesFilter<"traffic_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"traffic_info"> | Date | string
     display_date?: DateTimeWithAggregatesFilter<"traffic_info"> | Date | string
     rank?: IntWithAggregatesFilter<"traffic_info"> | number
@@ -13191,8 +13191,8 @@ export namespace Prisma {
     AND?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
     OR?: linkedin_infoWhereInput[]
     NOT?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
-    id?: StringFilter<"linkedin_info"> | string
-    company_id?: StringFilter<"linkedin_info"> | string
+    id?: UuidFilter<"linkedin_info"> | string
+    company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
     industry?: StringFilter<"linkedin_info"> | string
@@ -13243,7 +13243,7 @@ export namespace Prisma {
     AND?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
     OR?: linkedin_infoWhereInput[]
     NOT?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
-    company_id?: StringFilter<"linkedin_info"> | string
+    company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
     industry?: StringFilter<"linkedin_info"> | string
@@ -13295,8 +13295,8 @@ export namespace Prisma {
     AND?: linkedin_infoScalarWhereWithAggregatesInput | linkedin_infoScalarWhereWithAggregatesInput[]
     OR?: linkedin_infoScalarWhereWithAggregatesInput[]
     NOT?: linkedin_infoScalarWhereWithAggregatesInput | linkedin_infoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"linkedin_info"> | string
-    company_id?: StringWithAggregatesFilter<"linkedin_info"> | string
+    id?: UuidWithAggregatesFilter<"linkedin_info"> | string
+    company_id?: UuidWithAggregatesFilter<"linkedin_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"linkedin_info"> | Date | string
     company_size?: StringWithAggregatesFilter<"linkedin_info"> | string
     industry?: StringWithAggregatesFilter<"linkedin_info"> | string
@@ -13320,7 +13320,7 @@ export namespace Prisma {
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     id?: StringFilter<"company_specialties"> | string
-    linkedin_info_id?: StringFilter<"company_specialties"> | string
+    linkedin_info_id?: UuidFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }
@@ -13337,7 +13337,7 @@ export namespace Prisma {
     AND?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
-    linkedin_info_id?: StringFilter<"company_specialties"> | string
+    linkedin_info_id?: UuidFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }, "id">
@@ -13356,7 +13356,7 @@ export namespace Prisma {
     OR?: company_specialtiesScalarWhereWithAggregatesInput[]
     NOT?: company_specialtiesScalarWhereWithAggregatesInput | company_specialtiesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"company_specialties"> | string
-    linkedin_info_id?: StringWithAggregatesFilter<"company_specialties"> | string
+    linkedin_info_id?: UuidWithAggregatesFilter<"company_specialties"> | string
     specialty?: StringWithAggregatesFilter<"company_specialties"> | string
   }
 
@@ -13365,7 +13365,7 @@ export namespace Prisma {
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
     id?: StringFilter<"featured_employees"> | string
-    linkedin_info_id?: StringFilter<"featured_employees"> | string
+    linkedin_info_id?: UuidFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }
@@ -13382,7 +13382,7 @@ export namespace Prisma {
     AND?: featured_employeesWhereInput | featured_employeesWhereInput[]
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
-    linkedin_info_id?: StringFilter<"featured_employees"> | string
+    linkedin_info_id?: UuidFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }, "id">
@@ -13401,7 +13401,7 @@ export namespace Prisma {
     OR?: featured_employeesScalarWhereWithAggregatesInput[]
     NOT?: featured_employeesScalarWhereWithAggregatesInput | featured_employeesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"featured_employees"> | string
-    linkedin_info_id?: StringWithAggregatesFilter<"featured_employees"> | string
+    linkedin_info_id?: UuidWithAggregatesFilter<"featured_employees"> | string
     linkedin_url?: StringWithAggregatesFilter<"featured_employees"> | string
   }
 
@@ -13409,8 +13409,8 @@ export namespace Prisma {
     AND?: funding_infoWhereInput | funding_infoWhereInput[]
     OR?: funding_infoWhereInput[]
     NOT?: funding_infoWhereInput | funding_infoWhereInput[]
-    id?: StringFilter<"funding_info"> | string
-    company_id?: StringFilter<"funding_info"> | string
+    id?: UuidFilter<"funding_info"> | string
+    company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
@@ -13445,7 +13445,7 @@ export namespace Prisma {
     AND?: funding_infoWhereInput | funding_infoWhereInput[]
     OR?: funding_infoWhereInput[]
     NOT?: funding_infoWhereInput | funding_infoWhereInput[]
-    company_id?: StringFilter<"funding_info"> | string
+    company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
@@ -13479,8 +13479,8 @@ export namespace Prisma {
     AND?: funding_infoScalarWhereWithAggregatesInput | funding_infoScalarWhereWithAggregatesInput[]
     OR?: funding_infoScalarWhereWithAggregatesInput[]
     NOT?: funding_infoScalarWhereWithAggregatesInput | funding_infoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"funding_info"> | string
-    company_id?: StringWithAggregatesFilter<"funding_info"> | string
+    id?: UuidWithAggregatesFilter<"funding_info"> | string
+    company_id?: UuidWithAggregatesFilter<"funding_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"funding_info"> | Date | string
     company_type?: StringWithAggregatesFilter<"funding_info"> | string
     ipo_status?: StringWithAggregatesFilter<"funding_info"> | string
@@ -13494,7 +13494,7 @@ export namespace Prisma {
     OR?: categoriesWhereInput[]
     NOT?: categoriesWhereInput | categoriesWhereInput[]
     id?: StringFilter<"categories"> | string
-    funding_info_id?: StringFilter<"categories"> | string
+    funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
   }
@@ -13511,7 +13511,7 @@ export namespace Prisma {
     AND?: categoriesWhereInput | categoriesWhereInput[]
     OR?: categoriesWhereInput[]
     NOT?: categoriesWhereInput | categoriesWhereInput[]
-    funding_info_id?: StringFilter<"categories"> | string
+    funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
   }, "id">
@@ -13530,7 +13530,7 @@ export namespace Prisma {
     OR?: categoriesScalarWhereWithAggregatesInput[]
     NOT?: categoriesScalarWhereWithAggregatesInput | categoriesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"categories"> | string
-    funding_info_id?: StringWithAggregatesFilter<"categories"> | string
+    funding_info_id?: UuidWithAggregatesFilter<"categories"> | string
     category?: StringWithAggregatesFilter<"categories"> | string
   }
 
@@ -13539,7 +13539,7 @@ export namespace Prisma {
     OR?: press_referencesWhereInput[]
     NOT?: press_referencesWhereInput | press_referencesWhereInput[]
     id?: StringFilter<"press_references"> | string
-    funding_info_id?: StringFilter<"press_references"> | string
+    funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
     publisher?: StringFilter<"press_references"> | string
@@ -13564,7 +13564,7 @@ export namespace Prisma {
     AND?: press_referencesWhereInput | press_referencesWhereInput[]
     OR?: press_referencesWhereInput[]
     NOT?: press_referencesWhereInput | press_referencesWhereInput[]
-    funding_info_id?: StringFilter<"press_references"> | string
+    funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
     publisher?: StringFilter<"press_references"> | string
@@ -13591,7 +13591,7 @@ export namespace Prisma {
     OR?: press_referencesScalarWhereWithAggregatesInput[]
     NOT?: press_referencesScalarWhereWithAggregatesInput | press_referencesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"press_references"> | string
-    funding_info_id?: StringWithAggregatesFilter<"press_references"> | string
+    funding_info_id?: UuidWithAggregatesFilter<"press_references"> | string
     author?: StringWithAggregatesFilter<"press_references"> | string
     title?: StringWithAggregatesFilter<"press_references"> | string
     publisher?: StringWithAggregatesFilter<"press_references"> | string
@@ -13604,7 +13604,7 @@ export namespace Prisma {
     OR?: funding_roundsWhereInput[]
     NOT?: funding_roundsWhereInput | funding_roundsWhereInput[]
     id?: StringFilter<"funding_rounds"> | string
-    funding_info_id?: StringFilter<"funding_rounds"> | string
+    funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
@@ -13631,7 +13631,7 @@ export namespace Prisma {
     AND?: funding_roundsWhereInput | funding_roundsWhereInput[]
     OR?: funding_roundsWhereInput[]
     NOT?: funding_roundsWhereInput | funding_roundsWhereInput[]
-    funding_info_id?: StringFilter<"funding_rounds"> | string
+    funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
@@ -13662,7 +13662,7 @@ export namespace Prisma {
     OR?: funding_roundsScalarWhereWithAggregatesInput[]
     NOT?: funding_roundsScalarWhereWithAggregatesInput | funding_roundsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"funding_rounds"> | string
-    funding_info_id?: StringWithAggregatesFilter<"funding_rounds"> | string
+    funding_info_id?: UuidWithAggregatesFilter<"funding_rounds"> | string
     is_equity?: BoolWithAggregatesFilter<"funding_rounds"> | boolean
     investment_stage?: StringWithAggregatesFilter<"funding_rounds"> | string
     short_description?: StringWithAggregatesFilter<"funding_rounds"> | string
@@ -13676,7 +13676,7 @@ export namespace Prisma {
     OR?: foundersWhereInput[]
     NOT?: foundersWhereInput | foundersWhereInput[]
     id?: StringFilter<"founders"> | string
-    funding_info_id?: StringFilter<"founders"> | string
+    funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
     description?: StringFilter<"founders"> | string
@@ -13703,7 +13703,7 @@ export namespace Prisma {
     AND?: foundersWhereInput | foundersWhereInput[]
     OR?: foundersWhereInput[]
     NOT?: foundersWhereInput | foundersWhereInput[]
-    funding_info_id?: StringFilter<"founders"> | string
+    funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
     description?: StringFilter<"founders"> | string
@@ -13734,7 +13734,7 @@ export namespace Prisma {
     OR?: foundersScalarWhereWithAggregatesInput[]
     NOT?: foundersScalarWhereWithAggregatesInput | foundersScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"founders"> | string
-    funding_info_id?: StringWithAggregatesFilter<"founders"> | string
+    funding_info_id?: UuidWithAggregatesFilter<"founders"> | string
     full_name?: StringWithAggregatesFilter<"founders"> | string
     primary_job_title?: StringWithAggregatesFilter<"founders"> | string
     description?: StringWithAggregatesFilter<"founders"> | string
@@ -13747,8 +13747,8 @@ export namespace Prisma {
     AND?: website_infoWhereInput | website_infoWhereInput[]
     OR?: website_infoWhereInput[]
     NOT?: website_infoWhereInput | website_infoWhereInput[]
-    id?: StringFilter<"website_info"> | string
-    company_id?: StringFilter<"website_info"> | string
+    id?: UuidFilter<"website_info"> | string
+    company_id?: UuidFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
   }
@@ -13765,7 +13765,7 @@ export namespace Prisma {
     AND?: website_infoWhereInput | website_infoWhereInput[]
     OR?: website_infoWhereInput[]
     NOT?: website_infoWhereInput | website_infoWhereInput[]
-    company_id?: StringFilter<"website_info"> | string
+    company_id?: UuidFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
   }, "id">
@@ -13783,8 +13783,8 @@ export namespace Prisma {
     AND?: website_infoScalarWhereWithAggregatesInput | website_infoScalarWhereWithAggregatesInput[]
     OR?: website_infoScalarWhereWithAggregatesInput[]
     NOT?: website_infoScalarWhereWithAggregatesInput | website_infoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"website_info"> | string
-    company_id?: StringWithAggregatesFilter<"website_info"> | string
+    id?: UuidWithAggregatesFilter<"website_info"> | string
+    company_id?: UuidWithAggregatesFilter<"website_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"website_info"> | Date | string
   }
 
@@ -14637,6 +14637,18 @@ export namespace Prisma {
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UuidFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedUuidFilter<$PrismaModel> | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -14725,6 +14737,21 @@ export namespace Prisma {
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
+  }
+
+  export type UuidWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -15884,6 +15911,17 @@ export namespace Prisma {
     update?: XOR<XOR<vendor_companiesUpdateToOneWithWhereWithoutWebsite_infoInput, vendor_companiesUpdateWithoutWebsite_infoInput>, vendor_companiesUncheckedUpdateWithoutWebsite_infoInput>
   }
 
+  export type NestedUuidFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidFilter<$PrismaModel> | string
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -15903,6 +15941,31 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -15918,17 +15981,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -16185,8 +16237,8 @@ export namespace Prisma {
     AND?: traffic_infoScalarWhereInput | traffic_infoScalarWhereInput[]
     OR?: traffic_infoScalarWhereInput[]
     NOT?: traffic_infoScalarWhereInput | traffic_infoScalarWhereInput[]
-    id?: StringFilter<"traffic_info"> | string
-    company_id?: StringFilter<"traffic_info"> | string
+    id?: UuidFilter<"traffic_info"> | string
+    company_id?: UuidFilter<"traffic_info"> | string
     last_updated?: DateTimeFilter<"traffic_info"> | Date | string
     display_date?: DateTimeFilter<"traffic_info"> | Date | string
     rank?: IntFilter<"traffic_info"> | number
@@ -16223,8 +16275,8 @@ export namespace Prisma {
     AND?: linkedin_infoScalarWhereInput | linkedin_infoScalarWhereInput[]
     OR?: linkedin_infoScalarWhereInput[]
     NOT?: linkedin_infoScalarWhereInput | linkedin_infoScalarWhereInput[]
-    id?: StringFilter<"linkedin_info"> | string
-    company_id?: StringFilter<"linkedin_info"> | string
+    id?: UuidFilter<"linkedin_info"> | string
+    company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
     industry?: StringFilter<"linkedin_info"> | string
@@ -16263,8 +16315,8 @@ export namespace Prisma {
     AND?: funding_infoScalarWhereInput | funding_infoScalarWhereInput[]
     OR?: funding_infoScalarWhereInput[]
     NOT?: funding_infoScalarWhereInput | funding_infoScalarWhereInput[]
-    id?: StringFilter<"funding_info"> | string
-    company_id?: StringFilter<"funding_info"> | string
+    id?: UuidFilter<"funding_info"> | string
+    company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
@@ -16293,8 +16345,8 @@ export namespace Prisma {
     AND?: website_infoScalarWhereInput | website_infoScalarWhereInput[]
     OR?: website_infoScalarWhereInput[]
     NOT?: website_infoScalarWhereInput | website_infoScalarWhereInput[]
-    id?: StringFilter<"website_info"> | string
-    company_id?: StringFilter<"website_info"> | string
+    id?: UuidFilter<"website_info"> | string
+    company_id?: UuidFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
   }
 
@@ -16495,7 +16547,7 @@ export namespace Prisma {
     OR?: company_specialtiesScalarWhereInput[]
     NOT?: company_specialtiesScalarWhereInput | company_specialtiesScalarWhereInput[]
     id?: StringFilter<"company_specialties"> | string
-    linkedin_info_id?: StringFilter<"company_specialties"> | string
+    linkedin_info_id?: UuidFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
   }
 
@@ -16520,7 +16572,7 @@ export namespace Prisma {
     OR?: featured_employeesScalarWhereInput[]
     NOT?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
     id?: StringFilter<"featured_employees"> | string
-    linkedin_info_id?: StringFilter<"featured_employees"> | string
+    linkedin_info_id?: UuidFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
   }
 
@@ -16929,7 +16981,7 @@ export namespace Prisma {
     OR?: categoriesScalarWhereInput[]
     NOT?: categoriesScalarWhereInput | categoriesScalarWhereInput[]
     id?: StringFilter<"categories"> | string
-    funding_info_id?: StringFilter<"categories"> | string
+    funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
   }
 
@@ -16954,7 +17006,7 @@ export namespace Prisma {
     OR?: press_referencesScalarWhereInput[]
     NOT?: press_referencesScalarWhereInput | press_referencesScalarWhereInput[]
     id?: StringFilter<"press_references"> | string
-    funding_info_id?: StringFilter<"press_references"> | string
+    funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
     publisher?: StringFilter<"press_references"> | string
@@ -16983,7 +17035,7 @@ export namespace Prisma {
     OR?: funding_roundsScalarWhereInput[]
     NOT?: funding_roundsScalarWhereInput | funding_roundsScalarWhereInput[]
     id?: StringFilter<"funding_rounds"> | string
-    funding_info_id?: StringFilter<"funding_rounds"> | string
+    funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
@@ -17013,7 +17065,7 @@ export namespace Prisma {
     OR?: foundersScalarWhereInput[]
     NOT?: foundersScalarWhereInput | foundersScalarWhereInput[]
     id?: StringFilter<"founders"> | string
-    funding_info_id?: StringFilter<"founders"> | string
+    funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
     description?: StringFilter<"founders"> | string
