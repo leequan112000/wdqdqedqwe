@@ -71,6 +71,8 @@ model company_specialties {
   linkedin_info_id  String
   specialty         String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([id, linkedin_info_id])
 }
 
 model featured_employees {
@@ -78,6 +80,8 @@ model featured_employees {
   linkedin_info_id  String
   linkedin_url      String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([id, linkedin_info_id])
 }
 
 model locations {
@@ -85,6 +89,8 @@ model locations {
   linkedin_info_id  String
   location_address  String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([id, linkedin_info_id])
 }
 
 model funding_info {

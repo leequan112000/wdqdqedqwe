@@ -14270,13 +14270,14 @@ export namespace Prisma {
 
   export type company_specialtiesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_linkedin_info_id?: company_specialtiesIdLinkedin_info_idCompoundUniqueInput
     AND?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id">
+  }, "id" | "id_linkedin_info_id">
 
   export type company_specialtiesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14315,13 +14316,14 @@ export namespace Prisma {
 
   export type featured_employeesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_linkedin_info_id?: featured_employeesIdLinkedin_info_idCompoundUniqueInput
     AND?: featured_employeesWhereInput | featured_employeesWhereInput[]
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
     linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id">
+  }, "id" | "id_linkedin_info_id">
 
   export type featured_employeesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14360,13 +14362,14 @@ export namespace Prisma {
 
   export type locationsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_linkedin_info_id?: locationsIdLinkedin_info_idCompoundUniqueInput
     AND?: locationsWhereInput | locationsWhereInput[]
     OR?: locationsWhereInput[]
     NOT?: locationsWhereInput | locationsWhereInput[]
     linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id">
+  }, "id" | "id_linkedin_info_id">
 
   export type locationsOrderByWithAggregationInput = {
     id?: SortOrder
@@ -16041,6 +16044,11 @@ export namespace Prisma {
     isNot?: linkedin_infoWhereInput
   }
 
+  export type company_specialtiesIdLinkedin_info_idCompoundUniqueInput = {
+    id: string
+    linkedin_info_id: string
+  }
+
   export type company_specialtiesCountOrderByAggregateInput = {
     id?: SortOrder
     linkedin_info_id?: SortOrder
@@ -16059,6 +16067,11 @@ export namespace Prisma {
     specialty?: SortOrder
   }
 
+  export type featured_employeesIdLinkedin_info_idCompoundUniqueInput = {
+    id: string
+    linkedin_info_id: string
+  }
+
   export type featured_employeesCountOrderByAggregateInput = {
     id?: SortOrder
     linkedin_info_id?: SortOrder
@@ -16075,6 +16088,11 @@ export namespace Prisma {
     id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
+  }
+
+  export type locationsIdLinkedin_info_idCompoundUniqueInput = {
+    id: string
+    linkedin_info_id: string
   }
 
   export type locationsCountOrderByAggregateInput = {
