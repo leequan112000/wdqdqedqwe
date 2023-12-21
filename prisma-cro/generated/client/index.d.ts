@@ -14154,7 +14154,7 @@ export namespace Prisma {
     AND?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
     OR?: linkedin_infoWhereInput[]
     NOT?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
-    id?: UuidFilter<"linkedin_info"> | string
+    id?: StringFilter<"linkedin_info"> | string
     company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
@@ -14237,7 +14237,7 @@ export namespace Prisma {
     AND?: linkedin_infoScalarWhereWithAggregatesInput | linkedin_infoScalarWhereWithAggregatesInput[]
     OR?: linkedin_infoScalarWhereWithAggregatesInput[]
     NOT?: linkedin_infoScalarWhereWithAggregatesInput | linkedin_infoScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"linkedin_info"> | string
+    id?: StringWithAggregatesFilter<"linkedin_info"> | string
     company_id?: UuidWithAggregatesFilter<"linkedin_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"linkedin_info"> | Date | string
     company_size?: StringWithAggregatesFilter<"linkedin_info"> | string
@@ -14256,7 +14256,7 @@ export namespace Prisma {
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     id?: StringFilter<"company_specialties"> | string
-    linkedin_info_id?: UuidFilter<"company_specialties"> | string
+    linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }
@@ -14273,7 +14273,7 @@ export namespace Prisma {
     AND?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
-    linkedin_info_id?: UuidFilter<"company_specialties"> | string
+    linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }, "id">
@@ -14292,7 +14292,7 @@ export namespace Prisma {
     OR?: company_specialtiesScalarWhereWithAggregatesInput[]
     NOT?: company_specialtiesScalarWhereWithAggregatesInput | company_specialtiesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"company_specialties"> | string
-    linkedin_info_id?: UuidWithAggregatesFilter<"company_specialties"> | string
+    linkedin_info_id?: StringWithAggregatesFilter<"company_specialties"> | string
     specialty?: StringWithAggregatesFilter<"company_specialties"> | string
   }
 
@@ -14301,7 +14301,7 @@ export namespace Prisma {
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
     id?: StringFilter<"featured_employees"> | string
-    linkedin_info_id?: UuidFilter<"featured_employees"> | string
+    linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }
@@ -14318,7 +14318,7 @@ export namespace Prisma {
     AND?: featured_employeesWhereInput | featured_employeesWhereInput[]
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
-    linkedin_info_id?: UuidFilter<"featured_employees"> | string
+    linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }, "id">
@@ -14337,7 +14337,7 @@ export namespace Prisma {
     OR?: featured_employeesScalarWhereWithAggregatesInput[]
     NOT?: featured_employeesScalarWhereWithAggregatesInput | featured_employeesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"featured_employees"> | string
-    linkedin_info_id?: UuidWithAggregatesFilter<"featured_employees"> | string
+    linkedin_info_id?: StringWithAggregatesFilter<"featured_employees"> | string
     linkedin_url?: StringWithAggregatesFilter<"featured_employees"> | string
   }
 
@@ -14346,7 +14346,7 @@ export namespace Prisma {
     OR?: locationsWhereInput[]
     NOT?: locationsWhereInput | locationsWhereInput[]
     id?: StringFilter<"locations"> | string
-    linkedin_info_id?: UuidFilter<"locations"> | string
+    linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }
@@ -14363,7 +14363,7 @@ export namespace Prisma {
     AND?: locationsWhereInput | locationsWhereInput[]
     OR?: locationsWhereInput[]
     NOT?: locationsWhereInput | locationsWhereInput[]
-    linkedin_info_id?: UuidFilter<"locations"> | string
+    linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
   }, "id">
@@ -14382,7 +14382,7 @@ export namespace Prisma {
     OR?: locationsScalarWhereWithAggregatesInput[]
     NOT?: locationsScalarWhereWithAggregatesInput | locationsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"locations"> | string
-    linkedin_info_id?: UuidWithAggregatesFilter<"locations"> | string
+    linkedin_info_id?: StringWithAggregatesFilter<"locations"> | string
     location_address?: StringWithAggregatesFilter<"locations"> | string
   }
 
@@ -14993,7 +14993,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -15011,7 +15011,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoUncheckedCreateInput = {
-    id?: string
+    id: string
     company_id: string
     last_updated?: Date | string
     company_size: string
@@ -15065,7 +15065,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateManyInput = {
-    id?: string
+    id: string
     company_id: string
     last_updated?: Date | string
     company_size: string
@@ -15109,13 +15109,13 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateInput = {
-    id?: string
+    id: string
     specialty: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutCompany_specialties_collectionInput
   }
 
   export type company_specialtiesUncheckedCreateInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     specialty: string
   }
@@ -15133,7 +15133,7 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateManyInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     specialty: string
   }
@@ -15150,13 +15150,13 @@ export namespace Prisma {
   }
 
   export type featured_employeesCreateInput = {
-    id?: string
+    id: string
     linkedin_url: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutCompany_featured_employees_collectionInput
   }
 
   export type featured_employeesUncheckedCreateInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     linkedin_url: string
   }
@@ -15174,7 +15174,7 @@ export namespace Prisma {
   }
 
   export type featured_employeesCreateManyInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     linkedin_url: string
   }
@@ -15191,13 +15191,13 @@ export namespace Prisma {
   }
 
   export type locationsCreateInput = {
-    id?: string
+    id: string
     location_address: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutLocations_collectionInput
   }
 
   export type locationsUncheckedCreateInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     location_address: string
   }
@@ -15215,7 +15215,7 @@ export namespace Prisma {
   }
 
   export type locationsCreateManyInput = {
-    id?: string
+    id: string
     linkedin_info_id: string
     location_address: string
   }
@@ -17171,7 +17171,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateWithoutVendor_companyInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -17188,7 +17188,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoUncheckedCreateWithoutVendor_companyInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -17332,7 +17332,7 @@ export namespace Prisma {
     AND?: linkedin_infoScalarWhereInput | linkedin_infoScalarWhereInput[]
     OR?: linkedin_infoScalarWhereInput[]
     NOT?: linkedin_infoScalarWhereInput | linkedin_infoScalarWhereInput[]
-    id?: UuidFilter<"linkedin_info"> | string
+    id?: StringFilter<"linkedin_info"> | string
     company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
@@ -17502,12 +17502,12 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     specialty: string
   }
 
   export type company_specialtiesUncheckedCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     specialty: string
   }
 
@@ -17522,12 +17522,12 @@ export namespace Prisma {
   }
 
   export type featured_employeesCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     linkedin_url: string
   }
 
   export type featured_employeesUncheckedCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     linkedin_url: string
   }
 
@@ -17542,12 +17542,12 @@ export namespace Prisma {
   }
 
   export type locationsCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     location_address: string
   }
 
   export type locationsUncheckedCreateWithoutLinkedin_infoInput = {
-    id?: string
+    id: string
     location_address: string
   }
 
@@ -17619,7 +17619,7 @@ export namespace Prisma {
     OR?: company_specialtiesScalarWhereInput[]
     NOT?: company_specialtiesScalarWhereInput | company_specialtiesScalarWhereInput[]
     id?: StringFilter<"company_specialties"> | string
-    linkedin_info_id?: UuidFilter<"company_specialties"> | string
+    linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
   }
 
@@ -17644,7 +17644,7 @@ export namespace Prisma {
     OR?: featured_employeesScalarWhereInput[]
     NOT?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
     id?: StringFilter<"featured_employees"> | string
-    linkedin_info_id?: UuidFilter<"featured_employees"> | string
+    linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
   }
 
@@ -17669,12 +17669,12 @@ export namespace Prisma {
     OR?: locationsScalarWhereInput[]
     NOT?: locationsScalarWhereInput | locationsScalarWhereInput[]
     id?: StringFilter<"locations"> | string
-    linkedin_info_id?: UuidFilter<"locations"> | string
+    linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
   }
 
   export type linkedin_infoCreateWithoutCompany_specialties_collectionInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -17691,7 +17691,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoUncheckedCreateWithoutCompany_specialties_collectionInput = {
-    id?: string
+    id: string
     company_id: string
     last_updated?: Date | string
     company_size: string
@@ -17758,7 +17758,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateWithoutCompany_featured_employees_collectionInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -17775,7 +17775,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoUncheckedCreateWithoutCompany_featured_employees_collectionInput = {
-    id?: string
+    id: string
     company_id: string
     last_updated?: Date | string
     company_size: string
@@ -17842,7 +17842,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateWithoutLocations_collectionInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -17859,7 +17859,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoUncheckedCreateWithoutLocations_collectionInput = {
-    id?: string
+    id: string
     company_id: string
     last_updated?: Date | string
     company_size: string
@@ -18606,7 +18606,7 @@ export namespace Prisma {
   }
 
   export type linkedin_infoCreateManyVendor_companyInput = {
-    id?: string
+    id: string
     last_updated?: Date | string
     company_size: string
     industry: string
@@ -18794,17 +18794,17 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateManyLinkedin_infoInput = {
-    id?: string
+    id: string
     specialty: string
   }
 
   export type featured_employeesCreateManyLinkedin_infoInput = {
-    id?: string
+    id: string
     linkedin_url: string
   }
 
   export type locationsCreateManyLinkedin_infoInput = {
-    id?: string
+    id: string
     location_address: string
   }
 
