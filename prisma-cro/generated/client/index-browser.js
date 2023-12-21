@@ -197,12 +197,14 @@ exports.Prisma.Funding_infoScalarFieldEnum = {
 
 exports.Prisma.CategoriesScalarFieldEnum = {
   id: 'id',
+  category_id: 'category_id',
   funding_info_id: 'funding_info_id',
   category: 'category'
 };
 
 exports.Prisma.Press_referencesScalarFieldEnum = {
   id: 'id',
+  press_id: 'press_id',
   funding_info_id: 'funding_info_id',
   author: 'author',
   title: 'title',
@@ -213,6 +215,7 @@ exports.Prisma.Press_referencesScalarFieldEnum = {
 
 exports.Prisma.Funding_roundsScalarFieldEnum = {
   id: 'id',
+  round_id: 'round_id',
   funding_info_id: 'funding_info_id',
   is_equity: 'is_equity',
   investment_stage: 'investment_stage',
@@ -224,6 +227,7 @@ exports.Prisma.Funding_roundsScalarFieldEnum = {
 
 exports.Prisma.FoundersScalarFieldEnum = {
   id: 'id',
+  founder_id: 'founder_id',
   funding_info_id: 'funding_info_id',
   full_name: 'full_name',
   primary_job_title: 'primary_job_title',

@@ -9015,18 +9015,21 @@ export namespace Prisma {
 
   export type CategoriesMinAggregateOutputType = {
     id: string | null
+    category_id: string | null
     funding_info_id: string | null
     category: string | null
   }
 
   export type CategoriesMaxAggregateOutputType = {
     id: string | null
+    category_id: string | null
     funding_info_id: string | null
     category: string | null
   }
 
   export type CategoriesCountAggregateOutputType = {
     id: number
+    category_id: number
     funding_info_id: number
     category: number
     _all: number
@@ -9035,18 +9038,21 @@ export namespace Prisma {
 
   export type CategoriesMinAggregateInputType = {
     id?: true
+    category_id?: true
     funding_info_id?: true
     category?: true
   }
 
   export type CategoriesMaxAggregateInputType = {
     id?: true
+    category_id?: true
     funding_info_id?: true
     category?: true
   }
 
   export type CategoriesCountAggregateInputType = {
     id?: true
+    category_id?: true
     funding_info_id?: true
     category?: true
     _all?: true
@@ -9126,6 +9132,7 @@ export namespace Prisma {
 
   export type CategoriesGroupByOutputType = {
     id: string
+    category_id: string
     funding_info_id: string
     category: string
     _count: CategoriesCountAggregateOutputType | null
@@ -9149,6 +9156,7 @@ export namespace Prisma {
 
   export type categoriesSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    category_id?: boolean
     funding_info_id?: boolean
     category?: boolean
     funding_info?: boolean | funding_infoDefaultArgs<ExtArgs>
@@ -9156,6 +9164,7 @@ export namespace Prisma {
 
   export type categoriesSelectScalar = {
     id?: boolean
+    category_id?: boolean
     funding_info_id?: boolean
     category?: boolean
   }
@@ -9172,6 +9181,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      category_id: string
       funding_info_id: string
       category: string
     }, ExtArgs["result"]["categories"]>
@@ -9570,6 +9580,7 @@ export namespace Prisma {
    */ 
   interface categoriesFieldRefs {
     readonly id: FieldRef<"categories", 'String'>
+    readonly category_id: FieldRef<"categories", 'String'>
     readonly funding_info_id: FieldRef<"categories", 'String'>
     readonly category: FieldRef<"categories", 'String'>
   }
@@ -9911,6 +9922,7 @@ export namespace Prisma {
 
   export type Press_referencesMinAggregateOutputType = {
     id: string | null
+    press_id: string | null
     funding_info_id: string | null
     author: string | null
     title: string | null
@@ -9921,6 +9933,7 @@ export namespace Prisma {
 
   export type Press_referencesMaxAggregateOutputType = {
     id: string | null
+    press_id: string | null
     funding_info_id: string | null
     author: string | null
     title: string | null
@@ -9931,6 +9944,7 @@ export namespace Prisma {
 
   export type Press_referencesCountAggregateOutputType = {
     id: number
+    press_id: number
     funding_info_id: number
     author: number
     title: number
@@ -9943,6 +9957,7 @@ export namespace Prisma {
 
   export type Press_referencesMinAggregateInputType = {
     id?: true
+    press_id?: true
     funding_info_id?: true
     author?: true
     title?: true
@@ -9953,6 +9968,7 @@ export namespace Prisma {
 
   export type Press_referencesMaxAggregateInputType = {
     id?: true
+    press_id?: true
     funding_info_id?: true
     author?: true
     title?: true
@@ -9963,6 +9979,7 @@ export namespace Prisma {
 
   export type Press_referencesCountAggregateInputType = {
     id?: true
+    press_id?: true
     funding_info_id?: true
     author?: true
     title?: true
@@ -10046,6 +10063,7 @@ export namespace Prisma {
 
   export type Press_referencesGroupByOutputType = {
     id: string
+    press_id: string
     funding_info_id: string
     author: string
     title: string
@@ -10073,6 +10091,7 @@ export namespace Prisma {
 
   export type press_referencesSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    press_id?: boolean
     funding_info_id?: boolean
     author?: boolean
     title?: boolean
@@ -10084,6 +10103,7 @@ export namespace Prisma {
 
   export type press_referencesSelectScalar = {
     id?: boolean
+    press_id?: boolean
     funding_info_id?: boolean
     author?: boolean
     title?: boolean
@@ -10104,6 +10124,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      press_id: string
       funding_info_id: string
       author: string
       title: string
@@ -10506,6 +10527,7 @@ export namespace Prisma {
    */ 
   interface press_referencesFieldRefs {
     readonly id: FieldRef<"press_references", 'String'>
+    readonly press_id: FieldRef<"press_references", 'String'>
     readonly funding_info_id: FieldRef<"press_references", 'String'>
     readonly author: FieldRef<"press_references", 'String'>
     readonly title: FieldRef<"press_references", 'String'>
@@ -10861,6 +10883,7 @@ export namespace Prisma {
 
   export type Funding_roundsMinAggregateOutputType = {
     id: string | null
+    round_id: string | null
     funding_info_id: string | null
     is_equity: boolean | null
     investment_stage: string | null
@@ -10872,6 +10895,7 @@ export namespace Prisma {
 
   export type Funding_roundsMaxAggregateOutputType = {
     id: string | null
+    round_id: string | null
     funding_info_id: string | null
     is_equity: boolean | null
     investment_stage: string | null
@@ -10883,6 +10907,7 @@ export namespace Prisma {
 
   export type Funding_roundsCountAggregateOutputType = {
     id: number
+    round_id: number
     funding_info_id: number
     is_equity: number
     investment_stage: number
@@ -10904,6 +10929,7 @@ export namespace Prisma {
 
   export type Funding_roundsMinAggregateInputType = {
     id?: true
+    round_id?: true
     funding_info_id?: true
     is_equity?: true
     investment_stage?: true
@@ -10915,6 +10941,7 @@ export namespace Prisma {
 
   export type Funding_roundsMaxAggregateInputType = {
     id?: true
+    round_id?: true
     funding_info_id?: true
     is_equity?: true
     investment_stage?: true
@@ -10926,6 +10953,7 @@ export namespace Prisma {
 
   export type Funding_roundsCountAggregateInputType = {
     id?: true
+    round_id?: true
     funding_info_id?: true
     is_equity?: true
     investment_stage?: true
@@ -11024,6 +11052,7 @@ export namespace Prisma {
 
   export type Funding_roundsGroupByOutputType = {
     id: string
+    round_id: string
     funding_info_id: string
     is_equity: boolean
     investment_stage: string
@@ -11054,6 +11083,7 @@ export namespace Prisma {
 
   export type funding_roundsSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    round_id?: boolean
     funding_info_id?: boolean
     is_equity?: boolean
     investment_stage?: boolean
@@ -11066,6 +11096,7 @@ export namespace Prisma {
 
   export type funding_roundsSelectScalar = {
     id?: boolean
+    round_id?: boolean
     funding_info_id?: boolean
     is_equity?: boolean
     investment_stage?: boolean
@@ -11087,6 +11118,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      round_id: string
       funding_info_id: string
       is_equity: boolean
       investment_stage: string
@@ -11490,6 +11522,7 @@ export namespace Prisma {
    */ 
   interface funding_roundsFieldRefs {
     readonly id: FieldRef<"funding_rounds", 'String'>
+    readonly round_id: FieldRef<"funding_rounds", 'String'>
     readonly funding_info_id: FieldRef<"funding_rounds", 'String'>
     readonly is_equity: FieldRef<"funding_rounds", 'Boolean'>
     readonly investment_stage: FieldRef<"funding_rounds", 'String'>
@@ -11848,6 +11881,7 @@ export namespace Prisma {
 
   export type FoundersMinAggregateOutputType = {
     id: string | null
+    founder_id: string | null
     funding_info_id: string | null
     full_name: string | null
     primary_job_title: string | null
@@ -11859,6 +11893,7 @@ export namespace Prisma {
 
   export type FoundersMaxAggregateOutputType = {
     id: string | null
+    founder_id: string | null
     funding_info_id: string | null
     full_name: string | null
     primary_job_title: string | null
@@ -11870,6 +11905,7 @@ export namespace Prisma {
 
   export type FoundersCountAggregateOutputType = {
     id: number
+    founder_id: number
     funding_info_id: number
     full_name: number
     primary_job_title: number
@@ -11893,6 +11929,7 @@ export namespace Prisma {
 
   export type FoundersMinAggregateInputType = {
     id?: true
+    founder_id?: true
     funding_info_id?: true
     full_name?: true
     primary_job_title?: true
@@ -11904,6 +11941,7 @@ export namespace Prisma {
 
   export type FoundersMaxAggregateInputType = {
     id?: true
+    founder_id?: true
     funding_info_id?: true
     full_name?: true
     primary_job_title?: true
@@ -11915,6 +11953,7 @@ export namespace Prisma {
 
   export type FoundersCountAggregateInputType = {
     id?: true
+    founder_id?: true
     funding_info_id?: true
     full_name?: true
     primary_job_title?: true
@@ -12013,6 +12052,7 @@ export namespace Prisma {
 
   export type FoundersGroupByOutputType = {
     id: string
+    founder_id: string
     funding_info_id: string
     full_name: string
     primary_job_title: string
@@ -12043,6 +12083,7 @@ export namespace Prisma {
 
   export type foundersSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    founder_id?: boolean
     funding_info_id?: boolean
     full_name?: boolean
     primary_job_title?: boolean
@@ -12055,6 +12096,7 @@ export namespace Prisma {
 
   export type foundersSelectScalar = {
     id?: boolean
+    founder_id?: boolean
     funding_info_id?: boolean
     full_name?: boolean
     primary_job_title?: boolean
@@ -12076,6 +12118,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      founder_id: string
       funding_info_id: string
       full_name: string
       primary_job_title: string
@@ -12479,6 +12522,7 @@ export namespace Prisma {
    */ 
   interface foundersFieldRefs {
     readonly id: FieldRef<"founders", 'String'>
+    readonly founder_id: FieldRef<"founders", 'String'>
     readonly funding_info_id: FieldRef<"founders", 'String'>
     readonly full_name: FieldRef<"founders", 'String'>
     readonly primary_job_title: FieldRef<"founders", 'String'>
@@ -13820,6 +13864,7 @@ export namespace Prisma {
 
   export const CategoriesScalarFieldEnum: {
     id: 'id',
+    category_id: 'category_id',
     funding_info_id: 'funding_info_id',
     category: 'category'
   };
@@ -13829,6 +13874,7 @@ export namespace Prisma {
 
   export const Press_referencesScalarFieldEnum: {
     id: 'id',
+    press_id: 'press_id',
     funding_info_id: 'funding_info_id',
     author: 'author',
     title: 'title',
@@ -13842,6 +13888,7 @@ export namespace Prisma {
 
   export const Funding_roundsScalarFieldEnum: {
     id: 'id',
+    round_id: 'round_id',
     funding_info_id: 'funding_info_id',
     is_equity: 'is_equity',
     investment_stage: 'investment_stage',
@@ -13856,6 +13903,7 @@ export namespace Prisma {
 
   export const FoundersScalarFieldEnum: {
     id: 'id',
+    founder_id: 'founder_id',
     funding_info_id: 'funding_info_id',
     full_name: 'full_name',
     primary_job_title: 'primary_job_title',
@@ -14482,7 +14530,8 @@ export namespace Prisma {
     AND?: categoriesWhereInput | categoriesWhereInput[]
     OR?: categoriesWhereInput[]
     NOT?: categoriesWhereInput | categoriesWhereInput[]
-    id?: StringFilter<"categories"> | string
+    id?: UuidFilter<"categories"> | string
+    category_id?: StringFilter<"categories"> | string
     funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
@@ -14490,6 +14539,7 @@ export namespace Prisma {
 
   export type categoriesOrderByWithRelationInput = {
     id?: SortOrder
+    category_id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
     funding_info?: funding_infoOrderByWithRelationInput
@@ -14497,17 +14547,19 @@ export namespace Prisma {
 
   export type categoriesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_funding_info_id?: categoriesIdFunding_info_idCompoundUniqueInput
+    category_id_funding_info_id?: categoriesCategory_idFunding_info_idCompoundUniqueInput
     AND?: categoriesWhereInput | categoriesWhereInput[]
     OR?: categoriesWhereInput[]
     NOT?: categoriesWhereInput | categoriesWhereInput[]
+    category_id?: StringFilter<"categories"> | string
     funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id" | "id_funding_info_id">
+  }, "id" | "category_id_funding_info_id">
 
   export type categoriesOrderByWithAggregationInput = {
     id?: SortOrder
+    category_id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
     _count?: categoriesCountOrderByAggregateInput
@@ -14519,7 +14571,8 @@ export namespace Prisma {
     AND?: categoriesScalarWhereWithAggregatesInput | categoriesScalarWhereWithAggregatesInput[]
     OR?: categoriesScalarWhereWithAggregatesInput[]
     NOT?: categoriesScalarWhereWithAggregatesInput | categoriesScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"categories"> | string
+    id?: UuidWithAggregatesFilter<"categories"> | string
+    category_id?: StringWithAggregatesFilter<"categories"> | string
     funding_info_id?: UuidWithAggregatesFilter<"categories"> | string
     category?: StringWithAggregatesFilter<"categories"> | string
   }
@@ -14528,7 +14581,8 @@ export namespace Prisma {
     AND?: press_referencesWhereInput | press_referencesWhereInput[]
     OR?: press_referencesWhereInput[]
     NOT?: press_referencesWhereInput | press_referencesWhereInput[]
-    id?: StringFilter<"press_references"> | string
+    id?: UuidFilter<"press_references"> | string
+    press_id?: StringFilter<"press_references"> | string
     funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
@@ -14540,6 +14594,7 @@ export namespace Prisma {
 
   export type press_referencesOrderByWithRelationInput = {
     id?: SortOrder
+    press_id?: SortOrder
     funding_info_id?: SortOrder
     author?: SortOrder
     title?: SortOrder
@@ -14551,10 +14606,11 @@ export namespace Prisma {
 
   export type press_referencesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_funding_info_id?: press_referencesIdFunding_info_idCompoundUniqueInput
+    press_id_funding_info_id?: press_referencesPress_idFunding_info_idCompoundUniqueInput
     AND?: press_referencesWhereInput | press_referencesWhereInput[]
     OR?: press_referencesWhereInput[]
     NOT?: press_referencesWhereInput | press_referencesWhereInput[]
+    press_id?: StringFilter<"press_references"> | string
     funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
@@ -14562,10 +14618,11 @@ export namespace Prisma {
     url?: StringFilter<"press_references"> | string
     posted_on?: DateTimeFilter<"press_references"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id" | "id_funding_info_id">
+  }, "id" | "press_id_funding_info_id">
 
   export type press_referencesOrderByWithAggregationInput = {
     id?: SortOrder
+    press_id?: SortOrder
     funding_info_id?: SortOrder
     author?: SortOrder
     title?: SortOrder
@@ -14581,7 +14638,8 @@ export namespace Prisma {
     AND?: press_referencesScalarWhereWithAggregatesInput | press_referencesScalarWhereWithAggregatesInput[]
     OR?: press_referencesScalarWhereWithAggregatesInput[]
     NOT?: press_referencesScalarWhereWithAggregatesInput | press_referencesScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"press_references"> | string
+    id?: UuidWithAggregatesFilter<"press_references"> | string
+    press_id?: StringWithAggregatesFilter<"press_references"> | string
     funding_info_id?: UuidWithAggregatesFilter<"press_references"> | string
     author?: StringWithAggregatesFilter<"press_references"> | string
     title?: StringWithAggregatesFilter<"press_references"> | string
@@ -14594,7 +14652,8 @@ export namespace Prisma {
     AND?: funding_roundsWhereInput | funding_roundsWhereInput[]
     OR?: funding_roundsWhereInput[]
     NOT?: funding_roundsWhereInput | funding_roundsWhereInput[]
-    id?: StringFilter<"funding_rounds"> | string
+    id?: UuidFilter<"funding_rounds"> | string
+    round_id?: StringFilter<"funding_rounds"> | string
     funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
@@ -14607,6 +14666,7 @@ export namespace Prisma {
 
   export type funding_roundsOrderByWithRelationInput = {
     id?: SortOrder
+    round_id?: SortOrder
     funding_info_id?: SortOrder
     is_equity?: SortOrder
     investment_stage?: SortOrder
@@ -14619,10 +14679,11 @@ export namespace Prisma {
 
   export type funding_roundsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_funding_info_id?: funding_roundsIdFunding_info_idCompoundUniqueInput
+    round_id_funding_info_id?: funding_roundsRound_idFunding_info_idCompoundUniqueInput
     AND?: funding_roundsWhereInput | funding_roundsWhereInput[]
     OR?: funding_roundsWhereInput[]
     NOT?: funding_roundsWhereInput | funding_roundsWhereInput[]
+    round_id?: StringFilter<"funding_rounds"> | string
     funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
@@ -14631,10 +14692,11 @@ export namespace Prisma {
     money_raised?: IntFilter<"funding_rounds"> | number
     announced_on?: DateTimeFilter<"funding_rounds"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id" | "id_funding_info_id">
+  }, "id" | "round_id_funding_info_id">
 
   export type funding_roundsOrderByWithAggregationInput = {
     id?: SortOrder
+    round_id?: SortOrder
     funding_info_id?: SortOrder
     is_equity?: SortOrder
     investment_stage?: SortOrder
@@ -14653,7 +14715,8 @@ export namespace Prisma {
     AND?: funding_roundsScalarWhereWithAggregatesInput | funding_roundsScalarWhereWithAggregatesInput[]
     OR?: funding_roundsScalarWhereWithAggregatesInput[]
     NOT?: funding_roundsScalarWhereWithAggregatesInput | funding_roundsScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"funding_rounds"> | string
+    id?: UuidWithAggregatesFilter<"funding_rounds"> | string
+    round_id?: StringWithAggregatesFilter<"funding_rounds"> | string
     funding_info_id?: UuidWithAggregatesFilter<"funding_rounds"> | string
     is_equity?: BoolWithAggregatesFilter<"funding_rounds"> | boolean
     investment_stage?: StringWithAggregatesFilter<"funding_rounds"> | string
@@ -14667,7 +14730,8 @@ export namespace Prisma {
     AND?: foundersWhereInput | foundersWhereInput[]
     OR?: foundersWhereInput[]
     NOT?: foundersWhereInput | foundersWhereInput[]
-    id?: StringFilter<"founders"> | string
+    id?: UuidFilter<"founders"> | string
+    founder_id?: StringFilter<"founders"> | string
     funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
@@ -14680,6 +14744,7 @@ export namespace Prisma {
 
   export type foundersOrderByWithRelationInput = {
     id?: SortOrder
+    founder_id?: SortOrder
     funding_info_id?: SortOrder
     full_name?: SortOrder
     primary_job_title?: SortOrder
@@ -14692,10 +14757,11 @@ export namespace Prisma {
 
   export type foundersWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_funding_info_id?: foundersIdFunding_info_idCompoundUniqueInput
+    founder_id_funding_info_id?: foundersFounder_idFunding_info_idCompoundUniqueInput
     AND?: foundersWhereInput | foundersWhereInput[]
     OR?: foundersWhereInput[]
     NOT?: foundersWhereInput | foundersWhereInput[]
+    founder_id?: StringFilter<"founders"> | string
     funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
@@ -14704,10 +14770,11 @@ export namespace Prisma {
     num_founded_organizations?: IntFilter<"founders"> | number
     rank_person?: IntFilter<"founders"> | number
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id" | "id_funding_info_id">
+  }, "id" | "founder_id_funding_info_id">
 
   export type foundersOrderByWithAggregationInput = {
     id?: SortOrder
+    founder_id?: SortOrder
     funding_info_id?: SortOrder
     full_name?: SortOrder
     primary_job_title?: SortOrder
@@ -14726,7 +14793,8 @@ export namespace Prisma {
     AND?: foundersScalarWhereWithAggregatesInput | foundersScalarWhereWithAggregatesInput[]
     OR?: foundersScalarWhereWithAggregatesInput[]
     NOT?: foundersScalarWhereWithAggregatesInput | foundersScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"founders"> | string
+    id?: UuidWithAggregatesFilter<"founders"> | string
+    founder_id?: StringWithAggregatesFilter<"founders"> | string
     funding_info_id?: UuidWithAggregatesFilter<"founders"> | string
     full_name?: StringWithAggregatesFilter<"founders"> | string
     primary_job_title?: StringWithAggregatesFilter<"founders"> | string
@@ -15339,47 +15407,55 @@ export namespace Prisma {
 
   export type categoriesCreateInput = {
     id?: string
+    category_id: string
     category: string
     funding_info: funding_infoCreateNestedOneWithoutCategoriesInput
   }
 
   export type categoriesUncheckedCreateInput = {
     id?: string
+    category_id: string
     funding_info_id: string
     category: string
   }
 
   export type categoriesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     funding_info?: funding_infoUpdateOneRequiredWithoutCategoriesNestedInput
   }
 
   export type categoriesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type categoriesCreateManyInput = {
     id?: string
+    category_id: string
     funding_info_id: string
     category: string
   }
 
   export type categoriesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type categoriesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type press_referencesCreateInput = {
     id?: string
+    press_id: string
     author: string
     title: string
     publisher: string
@@ -15390,6 +15466,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedCreateInput = {
     id?: string
+    press_id: string
     funding_info_id: string
     author: string
     title: string
@@ -15400,6 +15477,7 @@ export namespace Prisma {
 
   export type press_referencesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     publisher?: StringFieldUpdateOperationsInput | string
@@ -15410,6 +15488,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -15420,6 +15499,7 @@ export namespace Prisma {
 
   export type press_referencesCreateManyInput = {
     id?: string
+    press_id: string
     funding_info_id: string
     author: string
     title: string
@@ -15430,6 +15510,7 @@ export namespace Prisma {
 
   export type press_referencesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     publisher?: StringFieldUpdateOperationsInput | string
@@ -15439,6 +15520,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -15449,6 +15531,7 @@ export namespace Prisma {
 
   export type funding_roundsCreateInput = {
     id?: string
+    round_id: string
     is_equity: boolean
     investment_stage: string
     short_description: string
@@ -15460,6 +15543,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedCreateInput = {
     id?: string
+    round_id: string
     funding_info_id: string
     is_equity: boolean
     investment_stage: string
@@ -15471,6 +15555,7 @@ export namespace Prisma {
 
   export type funding_roundsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
@@ -15482,6 +15567,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
@@ -15493,6 +15579,7 @@ export namespace Prisma {
 
   export type funding_roundsCreateManyInput = {
     id?: string
+    round_id: string
     funding_info_id: string
     is_equity: boolean
     investment_stage: string
@@ -15504,6 +15591,7 @@ export namespace Prisma {
 
   export type funding_roundsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
@@ -15514,6 +15602,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
@@ -15525,6 +15614,7 @@ export namespace Prisma {
 
   export type foundersCreateInput = {
     id?: string
+    founder_id: string
     full_name: string
     primary_job_title: string
     description: string
@@ -15536,6 +15626,7 @@ export namespace Prisma {
 
   export type foundersUncheckedCreateInput = {
     id?: string
+    founder_id: string
     funding_info_id: string
     full_name: string
     primary_job_title: string
@@ -15547,6 +15638,7 @@ export namespace Prisma {
 
   export type foundersUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -15558,6 +15650,7 @@ export namespace Prisma {
 
   export type foundersUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
@@ -15569,6 +15662,7 @@ export namespace Prisma {
 
   export type foundersCreateManyInput = {
     id?: string
+    founder_id: string
     funding_info_id: string
     full_name: string
     primary_job_title: string
@@ -15580,6 +15674,7 @@ export namespace Prisma {
 
   export type foundersUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -15590,6 +15685,7 @@ export namespace Prisma {
 
   export type foundersUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     funding_info_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
@@ -16204,36 +16300,40 @@ export namespace Prisma {
     isNot?: funding_infoWhereInput
   }
 
-  export type categoriesIdFunding_info_idCompoundUniqueInput = {
-    id: string
+  export type categoriesCategory_idFunding_info_idCompoundUniqueInput = {
+    category_id: string
     funding_info_id: string
   }
 
   export type categoriesCountOrderByAggregateInput = {
     id?: SortOrder
+    category_id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
   }
 
   export type categoriesMaxOrderByAggregateInput = {
     id?: SortOrder
+    category_id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
   }
 
   export type categoriesMinOrderByAggregateInput = {
     id?: SortOrder
+    category_id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
   }
 
-  export type press_referencesIdFunding_info_idCompoundUniqueInput = {
-    id: string
+  export type press_referencesPress_idFunding_info_idCompoundUniqueInput = {
+    press_id: string
     funding_info_id: string
   }
 
   export type press_referencesCountOrderByAggregateInput = {
     id?: SortOrder
+    press_id?: SortOrder
     funding_info_id?: SortOrder
     author?: SortOrder
     title?: SortOrder
@@ -16244,6 +16344,7 @@ export namespace Prisma {
 
   export type press_referencesMaxOrderByAggregateInput = {
     id?: SortOrder
+    press_id?: SortOrder
     funding_info_id?: SortOrder
     author?: SortOrder
     title?: SortOrder
@@ -16254,6 +16355,7 @@ export namespace Prisma {
 
   export type press_referencesMinOrderByAggregateInput = {
     id?: SortOrder
+    press_id?: SortOrder
     funding_info_id?: SortOrder
     author?: SortOrder
     title?: SortOrder
@@ -16262,13 +16364,14 @@ export namespace Prisma {
     posted_on?: SortOrder
   }
 
-  export type funding_roundsIdFunding_info_idCompoundUniqueInput = {
-    id: string
+  export type funding_roundsRound_idFunding_info_idCompoundUniqueInput = {
+    round_id: string
     funding_info_id: string
   }
 
   export type funding_roundsCountOrderByAggregateInput = {
     id?: SortOrder
+    round_id?: SortOrder
     funding_info_id?: SortOrder
     is_equity?: SortOrder
     investment_stage?: SortOrder
@@ -16284,6 +16387,7 @@ export namespace Prisma {
 
   export type funding_roundsMaxOrderByAggregateInput = {
     id?: SortOrder
+    round_id?: SortOrder
     funding_info_id?: SortOrder
     is_equity?: SortOrder
     investment_stage?: SortOrder
@@ -16295,6 +16399,7 @@ export namespace Prisma {
 
   export type funding_roundsMinOrderByAggregateInput = {
     id?: SortOrder
+    round_id?: SortOrder
     funding_info_id?: SortOrder
     is_equity?: SortOrder
     investment_stage?: SortOrder
@@ -16308,13 +16413,14 @@ export namespace Prisma {
     money_raised?: SortOrder
   }
 
-  export type foundersIdFunding_info_idCompoundUniqueInput = {
-    id: string
+  export type foundersFounder_idFunding_info_idCompoundUniqueInput = {
+    founder_id: string
     funding_info_id: string
   }
 
   export type foundersCountOrderByAggregateInput = {
     id?: SortOrder
+    founder_id?: SortOrder
     funding_info_id?: SortOrder
     full_name?: SortOrder
     primary_job_title?: SortOrder
@@ -16331,6 +16437,7 @@ export namespace Prisma {
 
   export type foundersMaxOrderByAggregateInput = {
     id?: SortOrder
+    founder_id?: SortOrder
     funding_info_id?: SortOrder
     full_name?: SortOrder
     primary_job_title?: SortOrder
@@ -16342,6 +16449,7 @@ export namespace Prisma {
 
   export type foundersMinOrderByAggregateInput = {
     id?: SortOrder
+    founder_id?: SortOrder
     funding_info_id?: SortOrder
     full_name?: SortOrder
     primary_job_title?: SortOrder
@@ -18000,11 +18108,13 @@ export namespace Prisma {
 
   export type categoriesCreateWithoutFunding_infoInput = {
     id?: string
+    category_id: string
     category: string
   }
 
   export type categoriesUncheckedCreateWithoutFunding_infoInput = {
     id?: string
+    category_id: string
     category: string
   }
 
@@ -18020,6 +18130,7 @@ export namespace Prisma {
 
   export type press_referencesCreateWithoutFunding_infoInput = {
     id?: string
+    press_id: string
     author: string
     title: string
     publisher: string
@@ -18029,6 +18140,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedCreateWithoutFunding_infoInput = {
     id?: string
+    press_id: string
     author: string
     title: string
     publisher: string
@@ -18048,6 +18160,7 @@ export namespace Prisma {
 
   export type funding_roundsCreateWithoutFunding_infoInput = {
     id?: string
+    round_id: string
     is_equity: boolean
     investment_stage: string
     short_description: string
@@ -18058,6 +18171,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedCreateWithoutFunding_infoInput = {
     id?: string
+    round_id: string
     is_equity: boolean
     investment_stage: string
     short_description: string
@@ -18078,6 +18192,7 @@ export namespace Prisma {
 
   export type foundersCreateWithoutFunding_infoInput = {
     id?: string
+    founder_id: string
     full_name: string
     primary_job_title: string
     description: string
@@ -18088,6 +18203,7 @@ export namespace Prisma {
 
   export type foundersUncheckedCreateWithoutFunding_infoInput = {
     id?: string
+    founder_id: string
     full_name: string
     primary_job_title: string
     description: string
@@ -18163,7 +18279,8 @@ export namespace Prisma {
     AND?: categoriesScalarWhereInput | categoriesScalarWhereInput[]
     OR?: categoriesScalarWhereInput[]
     NOT?: categoriesScalarWhereInput | categoriesScalarWhereInput[]
-    id?: StringFilter<"categories"> | string
+    id?: UuidFilter<"categories"> | string
+    category_id?: StringFilter<"categories"> | string
     funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
   }
@@ -18188,7 +18305,8 @@ export namespace Prisma {
     AND?: press_referencesScalarWhereInput | press_referencesScalarWhereInput[]
     OR?: press_referencesScalarWhereInput[]
     NOT?: press_referencesScalarWhereInput | press_referencesScalarWhereInput[]
-    id?: StringFilter<"press_references"> | string
+    id?: UuidFilter<"press_references"> | string
+    press_id?: StringFilter<"press_references"> | string
     funding_info_id?: UuidFilter<"press_references"> | string
     author?: StringFilter<"press_references"> | string
     title?: StringFilter<"press_references"> | string
@@ -18217,7 +18335,8 @@ export namespace Prisma {
     AND?: funding_roundsScalarWhereInput | funding_roundsScalarWhereInput[]
     OR?: funding_roundsScalarWhereInput[]
     NOT?: funding_roundsScalarWhereInput | funding_roundsScalarWhereInput[]
-    id?: StringFilter<"funding_rounds"> | string
+    id?: UuidFilter<"funding_rounds"> | string
+    round_id?: StringFilter<"funding_rounds"> | string
     funding_info_id?: UuidFilter<"funding_rounds"> | string
     is_equity?: BoolFilter<"funding_rounds"> | boolean
     investment_stage?: StringFilter<"funding_rounds"> | string
@@ -18247,7 +18366,8 @@ export namespace Prisma {
     AND?: foundersScalarWhereInput | foundersScalarWhereInput[]
     OR?: foundersScalarWhereInput[]
     NOT?: foundersScalarWhereInput | foundersScalarWhereInput[]
-    id?: StringFilter<"founders"> | string
+    id?: UuidFilter<"founders"> | string
+    founder_id?: StringFilter<"founders"> | string
     funding_info_id?: UuidFilter<"founders"> | string
     full_name?: StringFilter<"founders"> | string
     primary_job_title?: StringFilter<"founders"> | string
@@ -18897,11 +19017,13 @@ export namespace Prisma {
 
   export type categoriesCreateManyFunding_infoInput = {
     id?: string
+    category_id: string
     category: string
   }
 
   export type press_referencesCreateManyFunding_infoInput = {
     id?: string
+    press_id: string
     author: string
     title: string
     publisher: string
@@ -18911,6 +19033,7 @@ export namespace Prisma {
 
   export type funding_roundsCreateManyFunding_infoInput = {
     id?: string
+    round_id: string
     is_equity: boolean
     investment_stage: string
     short_description: string
@@ -18921,6 +19044,7 @@ export namespace Prisma {
 
   export type foundersCreateManyFunding_infoInput = {
     id?: string
+    founder_id: string
     full_name: string
     primary_job_title: string
     description: string
@@ -18931,21 +19055,25 @@ export namespace Prisma {
 
   export type categoriesUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type categoriesUncheckedUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type categoriesUncheckedUpdateManyWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    category_id?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
   }
 
   export type press_referencesUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     publisher?: StringFieldUpdateOperationsInput | string
@@ -18955,6 +19083,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     publisher?: StringFieldUpdateOperationsInput | string
@@ -18964,6 +19093,7 @@ export namespace Prisma {
 
   export type press_referencesUncheckedUpdateManyWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    press_id?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     publisher?: StringFieldUpdateOperationsInput | string
@@ -18973,6 +19103,7 @@ export namespace Prisma {
 
   export type funding_roundsUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
@@ -18983,6 +19114,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
@@ -18993,6 +19125,7 @@ export namespace Prisma {
 
   export type funding_roundsUncheckedUpdateManyWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    round_id?: StringFieldUpdateOperationsInput | string
     is_equity?: BoolFieldUpdateOperationsInput | boolean
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
@@ -19003,6 +19136,7 @@ export namespace Prisma {
 
   export type foundersUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -19013,6 +19147,7 @@ export namespace Prisma {
 
   export type foundersUncheckedUpdateWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -19023,6 +19158,7 @@ export namespace Prisma {
 
   export type foundersUncheckedUpdateManyWithoutFunding_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    founder_id?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     primary_job_title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string

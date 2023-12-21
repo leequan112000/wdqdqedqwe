@@ -112,16 +112,18 @@ model funding_info {
 }
 
 model categories {
-  id              String       @id @default(uuid())
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category_id     String
   funding_info_id String       @db.Uuid
   category        String
   funding_info    funding_info @relation(fields: [funding_info_id], references: [id])
 
-  @@unique([id, funding_info_id])
+  @@unique([category_id, funding_info_id])
 }
 
 model press_references {
-  id              String       @id @default(uuid())
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  press_id        String
   funding_info_id String       @db.Uuid
   author          String
   title           String
@@ -130,11 +132,12 @@ model press_references {
   posted_on       DateTime
   funding_info    funding_info @relation(fields: [funding_info_id], references: [id])
 
-  @@unique([id, funding_info_id])
+  @@unique([press_id, funding_info_id])
 }
 
 model funding_rounds {
-  id                 String       @id @default(uuid())
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  round_id           String
   funding_info_id    String       @db.Uuid
   is_equity          Boolean
   investment_stage   String
@@ -144,11 +147,12 @@ model funding_rounds {
   announced_on       DateTime
   funding_info       funding_info @relation(fields: [funding_info_id], references: [id])
 
-  @@unique([id, funding_info_id])
+  @@unique([round_id, funding_info_id])
 }
 
 model founders {
-  id                        String       @id @default(uuid())
+  id                        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  founder_id                String
   funding_info_id           String       @db.Uuid
   full_name                 String
   primary_job_title         String
@@ -158,7 +162,7 @@ model founders {
   rank_person               Int
   funding_info              funding_info @relation(fields: [funding_info_id], references: [id])
 
-  @@unique([id, funding_info_id])
+  @@unique([founder_id, funding_info_id])
 }
 
 model website_info {
