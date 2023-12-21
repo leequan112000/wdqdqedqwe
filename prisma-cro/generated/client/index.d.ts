@@ -14083,10 +14083,10 @@ export namespace Prisma {
 
   export type traffic_infoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    company_id?: string
     AND?: traffic_infoWhereInput | traffic_infoWhereInput[]
     OR?: traffic_infoWhereInput[]
     NOT?: traffic_infoWhereInput | traffic_infoWhereInput[]
-    company_id?: UuidFilter<"traffic_info"> | string
     last_updated?: DateTimeFilter<"traffic_info"> | Date | string
     display_date?: DateTimeFilter<"traffic_info"> | Date | string
     rank?: IntFilter<"traffic_info"> | number
@@ -14102,7 +14102,7 @@ export namespace Prisma {
     bounce_rate?: FloatFilter<"traffic_info"> | number
     categories?: StringFilter<"traffic_info"> | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
-  }, "id">
+  }, "id" | "company_id">
 
   export type traffic_infoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14193,10 +14193,10 @@ export namespace Prisma {
 
   export type linkedin_infoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    company_id?: string
     AND?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
     OR?: linkedin_infoWhereInput[]
     NOT?: linkedin_infoWhereInput | linkedin_infoWhereInput[]
-    company_id?: UuidFilter<"linkedin_info"> | string
     last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     company_size?: StringFilter<"linkedin_info"> | string
     industry?: StringFilter<"linkedin_info"> | string
@@ -14211,7 +14211,7 @@ export namespace Prisma {
     company_specialties_collection?: Company_specialtiesListRelationFilter
     company_featured_employees_collection?: Featured_employeesListRelationFilter
     locations_collection?: LocationsListRelationFilter
-  }, "id">
+  }, "id" | "company_id">
 
   export type linkedin_infoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14425,10 +14425,10 @@ export namespace Prisma {
 
   export type funding_infoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    company_id?: string
     AND?: funding_infoWhereInput | funding_infoWhereInput[]
     OR?: funding_infoWhereInput[]
     NOT?: funding_infoWhereInput | funding_infoWhereInput[]
-    company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
     company_img_url?: StringFilter<"funding_info"> | string
     company_type?: StringFilter<"funding_info"> | string
@@ -14441,7 +14441,7 @@ export namespace Prisma {
     press_references?: Press_referencesListRelationFilter
     raised_funding_rounds?: Funding_roundsListRelationFilter
     founders?: FoundersListRelationFilter
-  }, "id">
+  }, "id" | "company_id">
 
   export type funding_infoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14494,13 +14494,14 @@ export namespace Prisma {
 
   export type categoriesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_funding_info_id?: categoriesIdFunding_info_idCompoundUniqueInput
     AND?: categoriesWhereInput | categoriesWhereInput[]
     OR?: categoriesWhereInput[]
     NOT?: categoriesWhereInput | categoriesWhereInput[]
     funding_info_id?: UuidFilter<"categories"> | string
     category?: StringFilter<"categories"> | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id">
+  }, "id" | "id_funding_info_id">
 
   export type categoriesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14547,6 +14548,7 @@ export namespace Prisma {
 
   export type press_referencesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_funding_info_id?: press_referencesIdFunding_info_idCompoundUniqueInput
     AND?: press_referencesWhereInput | press_referencesWhereInput[]
     OR?: press_referencesWhereInput[]
     NOT?: press_referencesWhereInput | press_referencesWhereInput[]
@@ -14557,7 +14559,7 @@ export namespace Prisma {
     url?: StringFilter<"press_references"> | string
     posted_on?: DateTimeFilter<"press_references"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id">
+  }, "id" | "id_funding_info_id">
 
   export type press_referencesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14614,6 +14616,7 @@ export namespace Prisma {
 
   export type funding_roundsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_funding_info_id?: funding_roundsIdFunding_info_idCompoundUniqueInput
     AND?: funding_roundsWhereInput | funding_roundsWhereInput[]
     OR?: funding_roundsWhereInput[]
     NOT?: funding_roundsWhereInput | funding_roundsWhereInput[]
@@ -14625,7 +14628,7 @@ export namespace Prisma {
     money_raised?: IntFilter<"funding_rounds"> | number
     announced_on?: DateTimeFilter<"funding_rounds"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id">
+  }, "id" | "id_funding_info_id">
 
   export type funding_roundsOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14686,6 +14689,7 @@ export namespace Prisma {
 
   export type foundersWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    id_funding_info_id?: foundersIdFunding_info_idCompoundUniqueInput
     AND?: foundersWhereInput | foundersWhereInput[]
     OR?: foundersWhereInput[]
     NOT?: foundersWhereInput | foundersWhereInput[]
@@ -14697,7 +14701,7 @@ export namespace Prisma {
     num_founded_organizations?: IntFilter<"founders"> | number
     rank_person?: IntFilter<"founders"> | number
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
-  }, "id">
+  }, "id" | "id_funding_info_id">
 
   export type foundersOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14748,13 +14752,13 @@ export namespace Prisma {
 
   export type website_infoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    company_id?: string
     AND?: website_infoWhereInput | website_infoWhereInput[]
     OR?: website_infoWhereInput[]
     NOT?: website_infoWhereInput | website_infoWhereInput[]
-    company_id?: UuidFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
-  }, "id">
+  }, "id" | "company_id">
 
   export type website_infoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -16182,6 +16186,11 @@ export namespace Prisma {
     isNot?: funding_infoWhereInput
   }
 
+  export type categoriesIdFunding_info_idCompoundUniqueInput = {
+    id: string
+    funding_info_id: string
+  }
+
   export type categoriesCountOrderByAggregateInput = {
     id?: SortOrder
     funding_info_id?: SortOrder
@@ -16198,6 +16207,11 @@ export namespace Prisma {
     id?: SortOrder
     funding_info_id?: SortOrder
     category?: SortOrder
+  }
+
+  export type press_referencesIdFunding_info_idCompoundUniqueInput = {
+    id: string
+    funding_info_id: string
   }
 
   export type press_referencesCountOrderByAggregateInput = {
@@ -16228,6 +16242,11 @@ export namespace Prisma {
     publisher?: SortOrder
     url?: SortOrder
     posted_on?: SortOrder
+  }
+
+  export type funding_roundsIdFunding_info_idCompoundUniqueInput = {
+    id: string
+    funding_info_id: string
   }
 
   export type funding_roundsCountOrderByAggregateInput = {
@@ -16269,6 +16288,11 @@ export namespace Prisma {
 
   export type funding_roundsSumOrderByAggregateInput = {
     money_raised?: SortOrder
+  }
+
+  export type foundersIdFunding_info_idCompoundUniqueInput = {
+    id: string
+    funding_info_id: string
   }
 
   export type foundersCountOrderByAggregateInput = {
