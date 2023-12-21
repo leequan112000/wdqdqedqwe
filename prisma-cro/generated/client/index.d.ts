@@ -39,6 +39,11 @@ export type company_specialties = $Result.DefaultSelection<Prisma.$company_speci
  */
 export type featured_employees = $Result.DefaultSelection<Prisma.$featured_employeesPayload>
 /**
+ * Model locations
+ * 
+ */
+export type locations = $Result.DefaultSelection<Prisma.$locationsPayload>
+/**
  * Model funding_info
  * 
  */
@@ -240,6 +245,16 @@ export class PrismaClient<
     * ```
     */
   get featured_employees(): Prisma.featured_employeesDelegate<ExtArgs>;
+
+  /**
+   * `prisma.locations`: Exposes CRUD operations for the **locations** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Locations
+    * const locations = await prisma.locations.findMany()
+    * ```
+    */
+  get locations(): Prisma.locationsDelegate<ExtArgs>;
 
   /**
    * `prisma.funding_info`: Exposes CRUD operations for the **funding_info** model.
@@ -775,6 +790,7 @@ export namespace Prisma {
     linkedin_info: 'linkedin_info',
     company_specialties: 'company_specialties',
     featured_employees: 'featured_employees',
+    locations: 'locations',
     funding_info: 'funding_info',
     categories: 'categories',
     press_references: 'press_references',
@@ -797,7 +813,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     meta: {
-      modelProps: 'vendor_companies' | 'traffic_info' | 'linkedin_info' | 'company_specialties' | 'featured_employees' | 'funding_info' | 'categories' | 'press_references' | 'funding_rounds' | 'founders' | 'website_info'
+      modelProps: 'vendor_companies' | 'traffic_info' | 'linkedin_info' | 'company_specialties' | 'featured_employees' | 'locations' | 'funding_info' | 'categories' | 'press_references' | 'funding_rounds' | 'founders' | 'website_info'
       txIsolationLevel: Prisma.TransactionIsolationLevel
     },
     model: {
@@ -1128,6 +1144,72 @@ export namespace Prisma {
           count: {
             args: Prisma.featured_employeesCountArgs<ExtArgs>,
             result: $Utils.Optional<Featured_employeesCountAggregateOutputType> | number
+          }
+        }
+      }
+      locations: {
+        payload: Prisma.$locationsPayload<ExtArgs>
+        fields: Prisma.locationsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.locationsFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.locationsFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          findFirst: {
+            args: Prisma.locationsFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.locationsFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          findMany: {
+            args: Prisma.locationsFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>[]
+          }
+          create: {
+            args: Prisma.locationsCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          createMany: {
+            args: Prisma.locationsCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.locationsDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          update: {
+            args: Prisma.locationsUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          deleteMany: {
+            args: Prisma.locationsDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.locationsUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.locationsUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$locationsPayload>
+          }
+          aggregate: {
+            args: Prisma.LocationsAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateLocations>
+          }
+          groupBy: {
+            args: Prisma.locationsGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<LocationsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.locationsCountArgs<ExtArgs>,
+            result: $Utils.Optional<LocationsCountAggregateOutputType> | number
           }
         }
       }
@@ -1741,11 +1823,13 @@ export namespace Prisma {
   export type Linkedin_infoCountOutputType = {
     company_specialties_collection: number
     company_featured_employees_collection: number
+    locations_collection: number
   }
 
   export type Linkedin_infoCountOutputTypeSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     company_specialties_collection?: boolean | Linkedin_infoCountOutputTypeCountCompany_specialties_collectionArgs
     company_featured_employees_collection?: boolean | Linkedin_infoCountOutputTypeCountCompany_featured_employees_collectionArgs
+    locations_collection?: boolean | Linkedin_infoCountOutputTypeCountLocations_collectionArgs
   }
 
   // Custom InputTypes
@@ -1774,6 +1858,14 @@ export namespace Prisma {
    */
   export type Linkedin_infoCountOutputTypeCountCompany_featured_employees_collectionArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
     where?: featured_employeesWhereInput
+  }
+
+
+  /**
+   * Linkedin_infoCountOutputType without action
+   */
+  export type Linkedin_infoCountOutputTypeCountLocations_collectionArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: locationsWhereInput
   }
 
 
@@ -4033,12 +4125,6 @@ export namespace Prisma {
     description: string | null
     linkedin_followers: number | null
     founded: number | null
-    headquarters_city: string | null
-    headquarters_country: string | null
-    headquarters_state: string | null
-    headquarters_street1: string | null
-    headquarters_street2: string | null
-    headquarters_zip: string | null
     created: Date | null
     li_last_updated: Date | null
     type: string | null
@@ -4054,12 +4140,6 @@ export namespace Prisma {
     description: string | null
     linkedin_followers: number | null
     founded: number | null
-    headquarters_city: string | null
-    headquarters_country: string | null
-    headquarters_state: string | null
-    headquarters_street1: string | null
-    headquarters_street2: string | null
-    headquarters_zip: string | null
     created: Date | null
     li_last_updated: Date | null
     type: string | null
@@ -4075,12 +4155,6 @@ export namespace Prisma {
     description: number
     linkedin_followers: number
     founded: number
-    headquarters_city: number
-    headquarters_country: number
-    headquarters_state: number
-    headquarters_street1: number
-    headquarters_street2: number
-    headquarters_zip: number
     created: number
     li_last_updated: number
     type: number
@@ -4110,12 +4184,6 @@ export namespace Prisma {
     description?: true
     linkedin_followers?: true
     founded?: true
-    headquarters_city?: true
-    headquarters_country?: true
-    headquarters_state?: true
-    headquarters_street1?: true
-    headquarters_street2?: true
-    headquarters_zip?: true
     created?: true
     li_last_updated?: true
     type?: true
@@ -4131,12 +4199,6 @@ export namespace Prisma {
     description?: true
     linkedin_followers?: true
     founded?: true
-    headquarters_city?: true
-    headquarters_country?: true
-    headquarters_state?: true
-    headquarters_street1?: true
-    headquarters_street2?: true
-    headquarters_zip?: true
     created?: true
     li_last_updated?: true
     type?: true
@@ -4152,12 +4214,6 @@ export namespace Prisma {
     description?: true
     linkedin_followers?: true
     founded?: true
-    headquarters_city?: true
-    headquarters_country?: true
-    headquarters_state?: true
-    headquarters_street1?: true
-    headquarters_street2?: true
-    headquarters_zip?: true
     created?: true
     li_last_updated?: true
     type?: true
@@ -4260,12 +4316,6 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date
     li_last_updated: Date
     type: string
@@ -4300,12 +4350,6 @@ export namespace Prisma {
     description?: boolean
     linkedin_followers?: boolean
     founded?: boolean
-    headquarters_city?: boolean
-    headquarters_country?: boolean
-    headquarters_state?: boolean
-    headquarters_street1?: boolean
-    headquarters_street2?: boolean
-    headquarters_zip?: boolean
     created?: boolean
     li_last_updated?: boolean
     type?: boolean
@@ -4313,6 +4357,7 @@ export namespace Prisma {
     vendor_company?: boolean | vendor_companiesDefaultArgs<ExtArgs>
     company_specialties_collection?: boolean | linkedin_info$company_specialties_collectionArgs<ExtArgs>
     company_featured_employees_collection?: boolean | linkedin_info$company_featured_employees_collectionArgs<ExtArgs>
+    locations_collection?: boolean | linkedin_info$locations_collectionArgs<ExtArgs>
     _count?: boolean | Linkedin_infoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["linkedin_info"]>
 
@@ -4325,12 +4370,6 @@ export namespace Prisma {
     description?: boolean
     linkedin_followers?: boolean
     founded?: boolean
-    headquarters_city?: boolean
-    headquarters_country?: boolean
-    headquarters_state?: boolean
-    headquarters_street1?: boolean
-    headquarters_street2?: boolean
-    headquarters_zip?: boolean
     created?: boolean
     li_last_updated?: boolean
     type?: boolean
@@ -4341,6 +4380,7 @@ export namespace Prisma {
     vendor_company?: boolean | vendor_companiesDefaultArgs<ExtArgs>
     company_specialties_collection?: boolean | linkedin_info$company_specialties_collectionArgs<ExtArgs>
     company_featured_employees_collection?: boolean | linkedin_info$company_featured_employees_collectionArgs<ExtArgs>
+    locations_collection?: boolean | linkedin_info$locations_collectionArgs<ExtArgs>
     _count?: boolean | Linkedin_infoCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -4351,6 +4391,7 @@ export namespace Prisma {
       vendor_company: Prisma.$vendor_companiesPayload<ExtArgs>
       company_specialties_collection: Prisma.$company_specialtiesPayload<ExtArgs>[]
       company_featured_employees_collection: Prisma.$featured_employeesPayload<ExtArgs>[]
+      locations_collection: Prisma.$locationsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetResult<{
       id: string
@@ -4361,12 +4402,6 @@ export namespace Prisma {
       description: string
       linkedin_followers: number
       founded: number
-      headquarters_city: string
-      headquarters_country: string
-      headquarters_state: string
-      headquarters_street1: string
-      headquarters_street2: string
-      headquarters_zip: string
       created: Date
       li_last_updated: Date
       type: string
@@ -4742,6 +4777,8 @@ export namespace Prisma {
 
     company_featured_employees_collection<T extends linkedin_info$company_featured_employees_collectionArgs<ExtArgs> = {}>(args?: Subset<T, linkedin_info$company_featured_employees_collectionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$featured_employeesPayload<ExtArgs>, T, 'findMany'> | Null>;
 
+    locations_collection<T extends linkedin_info$locations_collectionArgs<ExtArgs> = {}>(args?: Subset<T, linkedin_info$locations_collectionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findMany'> | Null>;
+
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4778,12 +4815,6 @@ export namespace Prisma {
     readonly description: FieldRef<"linkedin_info", 'String'>
     readonly linkedin_followers: FieldRef<"linkedin_info", 'Int'>
     readonly founded: FieldRef<"linkedin_info", 'Int'>
-    readonly headquarters_city: FieldRef<"linkedin_info", 'String'>
-    readonly headquarters_country: FieldRef<"linkedin_info", 'String'>
-    readonly headquarters_state: FieldRef<"linkedin_info", 'String'>
-    readonly headquarters_street1: FieldRef<"linkedin_info", 'String'>
-    readonly headquarters_street2: FieldRef<"linkedin_info", 'String'>
-    readonly headquarters_zip: FieldRef<"linkedin_info", 'String'>
     readonly created: FieldRef<"linkedin_info", 'DateTime'>
     readonly li_last_updated: FieldRef<"linkedin_info", 'DateTime'>
     readonly type: FieldRef<"linkedin_info", 'String'>
@@ -5138,6 +5169,27 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: Featured_employeesScalarFieldEnum | Featured_employeesScalarFieldEnum[]
+  }
+
+
+  /**
+   * linkedin_info.locations_collection
+   */
+  export type linkedin_info$locations_collectionArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    where?: locationsWhereInput
+    orderBy?: locationsOrderByWithRelationInput | locationsOrderByWithRelationInput[]
+    cursor?: locationsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LocationsScalarFieldEnum | LocationsScalarFieldEnum[]
   }
 
 
@@ -6950,6 +7002,902 @@ export namespace Prisma {
 
 
   /**
+   * Model locations
+   */
+
+  export type AggregateLocations = {
+    _count: LocationsCountAggregateOutputType | null
+    _min: LocationsMinAggregateOutputType | null
+    _max: LocationsMaxAggregateOutputType | null
+  }
+
+  export type LocationsMinAggregateOutputType = {
+    id: string | null
+    linkedin_info_id: string | null
+    location_address: string | null
+  }
+
+  export type LocationsMaxAggregateOutputType = {
+    id: string | null
+    linkedin_info_id: string | null
+    location_address: string | null
+  }
+
+  export type LocationsCountAggregateOutputType = {
+    id: number
+    linkedin_info_id: number
+    location_address: number
+    _all: number
+  }
+
+
+  export type LocationsMinAggregateInputType = {
+    id?: true
+    linkedin_info_id?: true
+    location_address?: true
+  }
+
+  export type LocationsMaxAggregateInputType = {
+    id?: true
+    linkedin_info_id?: true
+    location_address?: true
+  }
+
+  export type LocationsCountAggregateInputType = {
+    id?: true
+    linkedin_info_id?: true
+    location_address?: true
+    _all?: true
+  }
+
+  export type LocationsAggregateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which locations to aggregate.
+     */
+    where?: locationsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of locations to fetch.
+     */
+    orderBy?: locationsOrderByWithRelationInput | locationsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: locationsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned locations
+    **/
+    _count?: true | LocationsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LocationsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LocationsMaxAggregateInputType
+  }
+
+  export type GetLocationsAggregateType<T extends LocationsAggregateArgs> = {
+        [P in keyof T & keyof AggregateLocations]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLocations[P]>
+      : GetScalarType<T[P], AggregateLocations[P]>
+  }
+
+
+
+
+  export type locationsGroupByArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    where?: locationsWhereInput
+    orderBy?: locationsOrderByWithAggregationInput | locationsOrderByWithAggregationInput[]
+    by: LocationsScalarFieldEnum[] | LocationsScalarFieldEnum
+    having?: locationsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LocationsCountAggregateInputType | true
+    _min?: LocationsMinAggregateInputType
+    _max?: LocationsMaxAggregateInputType
+  }
+
+  export type LocationsGroupByOutputType = {
+    id: string
+    linkedin_info_id: string
+    location_address: string
+    _count: LocationsCountAggregateOutputType | null
+    _min: LocationsMinAggregateOutputType | null
+    _max: LocationsMaxAggregateOutputType | null
+  }
+
+  type GetLocationsGroupByPayload<T extends locationsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LocationsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LocationsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LocationsGroupByOutputType[P]>
+            : GetScalarType<T[P], LocationsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type locationsSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    linkedin_info_id?: boolean
+    location_address?: boolean
+    linkedin_info?: boolean | linkedin_infoDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["locations"]>
+
+  export type locationsSelectScalar = {
+    id?: boolean
+    linkedin_info_id?: boolean
+    location_address?: boolean
+  }
+
+  export type locationsInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    linkedin_info?: boolean | linkedin_infoDefaultArgs<ExtArgs>
+  }
+
+
+  export type $locationsPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    name: "locations"
+    objects: {
+      linkedin_info: Prisma.$linkedin_infoPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetResult<{
+      id: string
+      linkedin_info_id: string
+      location_address: string
+    }, ExtArgs["result"]["locations"]>
+    composites: {}
+  }
+
+
+  type locationsGetPayload<S extends boolean | null | undefined | locationsDefaultArgs> = $Result.GetResult<Prisma.$locationsPayload, S>
+
+  type locationsCountArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = 
+    Omit<locationsFindManyArgs, 'select' | 'include'> & {
+      select?: LocationsCountAggregateInputType | true
+    }
+
+  export interface locationsDelegate<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['locations'], meta: { name: 'locations' } }
+    /**
+     * Find zero or one Locations that matches the filter.
+     * @param {locationsFindUniqueArgs} args - Arguments to find a Locations
+     * @example
+     * // Get one Locations
+     * const locations = await prisma.locations.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUnique<T extends locationsFindUniqueArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsFindUniqueArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
+
+    /**
+     * Find one Locations that matches the filter or throw an error  with `error.code='P2025'` 
+     *     if no matches were found.
+     * @param {locationsFindUniqueOrThrowArgs} args - Arguments to find a Locations
+     * @example
+     * // Get one Locations
+     * const locations = await prisma.locations.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findUniqueOrThrow<T extends locationsFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
+
+    /**
+     * Find the first Locations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsFindFirstArgs} args - Arguments to find a Locations
+     * @example
+     * // Get one Locations
+     * const locations = await prisma.locations.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirst<T extends locationsFindFirstArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsFindFirstArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
+
+    /**
+     * Find the first Locations that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsFindFirstOrThrowArgs} args - Arguments to find a Locations
+     * @example
+     * // Get one Locations
+     * const locations = await prisma.locations.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+    **/
+    findFirstOrThrow<T extends locationsFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
+
+    /**
+     * Find zero or more Locations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsFindManyArgs=} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Locations
+     * const locations = await prisma.locations.findMany()
+     * 
+     * // Get first 10 Locations
+     * const locations = await prisma.locations.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const locationsWithIdOnly = await prisma.locations.findMany({ select: { id: true } })
+     * 
+    **/
+    findMany<T extends locationsFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'findMany'>>
+
+    /**
+     * Create a Locations.
+     * @param {locationsCreateArgs} args - Arguments to create a Locations.
+     * @example
+     * // Create one Locations
+     * const Locations = await prisma.locations.create({
+     *   data: {
+     *     // ... data to create a Locations
+     *   }
+     * })
+     * 
+    **/
+    create<T extends locationsCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsCreateArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'create'>, never, ExtArgs>
+
+    /**
+     * Create many Locations.
+     *     @param {locationsCreateManyArgs} args - Arguments to create many Locations.
+     *     @example
+     *     // Create many Locations
+     *     const locations = await prisma.locations.createMany({
+     *       data: {
+     *         // ... provide data here
+     *       }
+     *     })
+     *     
+    **/
+    createMany<T extends locationsCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Locations.
+     * @param {locationsDeleteArgs} args - Arguments to delete one Locations.
+     * @example
+     * // Delete one Locations
+     * const Locations = await prisma.locations.delete({
+     *   where: {
+     *     // ... filter to delete one Locations
+     *   }
+     * })
+     * 
+    **/
+    delete<T extends locationsDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsDeleteArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
+
+    /**
+     * Update one Locations.
+     * @param {locationsUpdateArgs} args - Arguments to update one Locations.
+     * @example
+     * // Update one Locations
+     * const locations = await prisma.locations.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    update<T extends locationsUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsUpdateArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'update'>, never, ExtArgs>
+
+    /**
+     * Delete zero or more Locations.
+     * @param {locationsDeleteManyArgs} args - Arguments to filter Locations to delete.
+     * @example
+     * // Delete a few Locations
+     * const { count } = await prisma.locations.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+    **/
+    deleteMany<T extends locationsDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, locationsDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Locations
+     * const locations = await prisma.locations.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+    **/
+    updateMany<T extends locationsUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Locations.
+     * @param {locationsUpsertArgs} args - Arguments to update or create a Locations.
+     * @example
+     * // Update or create a Locations
+     * const locations = await prisma.locations.upsert({
+     *   create: {
+     *     // ... data to create a Locations
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Locations we want to update
+     *   }
+     * })
+    **/
+    upsert<T extends locationsUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, locationsUpsertArgs<ExtArgs>>
+    ): Prisma__locationsClient<$Result.GetResult<Prisma.$locationsPayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
+
+    /**
+     * Count the number of Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsCountArgs} args - Arguments to filter Locations to count.
+     * @example
+     * // Count the number of Locations
+     * const count = await prisma.locations.count({
+     *   where: {
+     *     // ... the filter for the Locations we want to count
+     *   }
+     * })
+    **/
+    count<T extends locationsCountArgs>(
+      args?: Subset<T, locationsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LocationsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LocationsAggregateArgs>(args: Subset<T, LocationsAggregateArgs>): Prisma.PrismaPromise<GetLocationsAggregateType<T>>
+
+    /**
+     * Group by Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {locationsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends locationsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: locationsGroupByArgs['orderBy'] }
+        : { orderBy?: locationsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, locationsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLocationsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the locations model
+   */
+  readonly fields: locationsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for locations.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__locationsClient<T, Null = never, ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+
+    linkedin_info<T extends linkedin_infoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, linkedin_infoDefaultArgs<ExtArgs>>): Prisma__linkedin_infoClient<$Result.GetResult<Prisma.$linkedin_infoPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
+
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+
+
+  /**
+   * Fields of the locations model
+   */ 
+  interface locationsFieldRefs {
+    readonly id: FieldRef<"locations", 'String'>
+    readonly linkedin_info_id: FieldRef<"locations", 'String'>
+    readonly location_address: FieldRef<"locations", 'String'>
+  }
+    
+
+  // Custom InputTypes
+
+  /**
+   * locations findUnique
+   */
+  export type locationsFindUniqueArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter, which locations to fetch.
+     */
+    where: locationsWhereUniqueInput
+  }
+
+
+  /**
+   * locations findUniqueOrThrow
+   */
+  export type locationsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter, which locations to fetch.
+     */
+    where: locationsWhereUniqueInput
+  }
+
+
+  /**
+   * locations findFirst
+   */
+  export type locationsFindFirstArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter, which locations to fetch.
+     */
+    where?: locationsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of locations to fetch.
+     */
+    orderBy?: locationsOrderByWithRelationInput | locationsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for locations.
+     */
+    cursor?: locationsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of locations.
+     */
+    distinct?: LocationsScalarFieldEnum | LocationsScalarFieldEnum[]
+  }
+
+
+  /**
+   * locations findFirstOrThrow
+   */
+  export type locationsFindFirstOrThrowArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter, which locations to fetch.
+     */
+    where?: locationsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of locations to fetch.
+     */
+    orderBy?: locationsOrderByWithRelationInput | locationsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for locations.
+     */
+    cursor?: locationsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of locations.
+     */
+    distinct?: LocationsScalarFieldEnum | LocationsScalarFieldEnum[]
+  }
+
+
+  /**
+   * locations findMany
+   */
+  export type locationsFindManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter, which locations to fetch.
+     */
+    where?: locationsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of locations to fetch.
+     */
+    orderBy?: locationsOrderByWithRelationInput | locationsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing locations.
+     */
+    cursor?: locationsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` locations.
+     */
+    skip?: number
+    distinct?: LocationsScalarFieldEnum | LocationsScalarFieldEnum[]
+  }
+
+
+  /**
+   * locations create
+   */
+  export type locationsCreateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * The data needed to create a locations.
+     */
+    data: XOR<locationsCreateInput, locationsUncheckedCreateInput>
+  }
+
+
+  /**
+   * locations createMany
+   */
+  export type locationsCreateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many locations.
+     */
+    data: locationsCreateManyInput | locationsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+
+  /**
+   * locations update
+   */
+  export type locationsUpdateArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * The data needed to update a locations.
+     */
+    data: XOR<locationsUpdateInput, locationsUncheckedUpdateInput>
+    /**
+     * Choose, which locations to update.
+     */
+    where: locationsWhereUniqueInput
+  }
+
+
+  /**
+   * locations updateMany
+   */
+  export type locationsUpdateManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update locations.
+     */
+    data: XOR<locationsUpdateManyMutationInput, locationsUncheckedUpdateManyInput>
+    /**
+     * Filter which locations to update
+     */
+    where?: locationsWhereInput
+  }
+
+
+  /**
+   * locations upsert
+   */
+  export type locationsUpsertArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * The filter to search for the locations to update in case it exists.
+     */
+    where: locationsWhereUniqueInput
+    /**
+     * In case the locations found by the `where` argument doesn't exist, create a new locations with this data.
+     */
+    create: XOR<locationsCreateInput, locationsUncheckedCreateInput>
+    /**
+     * In case the locations was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<locationsUpdateInput, locationsUncheckedUpdateInput>
+  }
+
+
+  /**
+   * locations delete
+   */
+  export type locationsDeleteArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+    /**
+     * Filter which locations to delete.
+     */
+    where: locationsWhereUniqueInput
+  }
+
+
+  /**
+   * locations deleteMany
+   */
+  export type locationsDeleteManyArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which locations to delete
+     */
+    where?: locationsWhereInput
+  }
+
+
+  /**
+   * locations without action
+   */
+  export type locationsDefaultArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the locations
+     */
+    select?: locationsSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well.
+     */
+    include?: locationsInclude<ExtArgs> | null
+  }
+
+
+
+  /**
    * Model funding_info
    */
 
@@ -6975,6 +7923,7 @@ export namespace Prisma {
     id: string | null
     company_id: string | null
     last_updated: Date | null
+    company_img_url: string | null
     company_type: string | null
     ipo_status: string | null
     revenue_range: string | null
@@ -6986,6 +7935,7 @@ export namespace Prisma {
     id: string | null
     company_id: string | null
     last_updated: Date | null
+    company_img_url: string | null
     company_type: string | null
     ipo_status: string | null
     revenue_range: string | null
@@ -6997,6 +7947,7 @@ export namespace Prisma {
     id: number
     company_id: number
     last_updated: number
+    company_img_url: number
     company_type: number
     ipo_status: number
     revenue_range: number
@@ -7020,6 +7971,7 @@ export namespace Prisma {
     id?: true
     company_id?: true
     last_updated?: true
+    company_img_url?: true
     company_type?: true
     ipo_status?: true
     revenue_range?: true
@@ -7031,6 +7983,7 @@ export namespace Prisma {
     id?: true
     company_id?: true
     last_updated?: true
+    company_img_url?: true
     company_type?: true
     ipo_status?: true
     revenue_range?: true
@@ -7042,6 +7995,7 @@ export namespace Prisma {
     id?: true
     company_id?: true
     last_updated?: true
+    company_img_url?: true
     company_type?: true
     ipo_status?: true
     revenue_range?: true
@@ -7140,6 +8094,7 @@ export namespace Prisma {
     id: string
     company_id: string
     last_updated: Date
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -7170,6 +8125,7 @@ export namespace Prisma {
     id?: boolean
     company_id?: boolean
     last_updated?: boolean
+    company_img_url?: boolean
     company_type?: boolean
     ipo_status?: boolean
     revenue_range?: boolean
@@ -7187,6 +8143,7 @@ export namespace Prisma {
     id?: boolean
     company_id?: boolean
     last_updated?: boolean
+    company_img_url?: boolean
     company_type?: boolean
     ipo_status?: boolean
     revenue_range?: boolean
@@ -7217,6 +8174,7 @@ export namespace Prisma {
       id: string
       company_id: string
       last_updated: Date
+      company_img_url: string
       company_type: string
       ipo_status: string
       revenue_range: string
@@ -7628,6 +8586,7 @@ export namespace Prisma {
     readonly id: FieldRef<"funding_info", 'String'>
     readonly company_id: FieldRef<"funding_info", 'String'>
     readonly last_updated: FieldRef<"funding_info", 'DateTime'>
+    readonly company_img_url: FieldRef<"funding_info", 'String'>
     readonly company_type: FieldRef<"funding_info", 'String'>
     readonly ipo_status: FieldRef<"funding_info", 'String'>
     readonly revenue_range: FieldRef<"funding_info", 'String'>
@@ -12808,12 +13767,6 @@ export namespace Prisma {
     description: 'description',
     linkedin_followers: 'linkedin_followers',
     founded: 'founded',
-    headquarters_city: 'headquarters_city',
-    headquarters_country: 'headquarters_country',
-    headquarters_state: 'headquarters_state',
-    headquarters_street1: 'headquarters_street1',
-    headquarters_street2: 'headquarters_street2',
-    headquarters_zip: 'headquarters_zip',
     created: 'created',
     li_last_updated: 'li_last_updated',
     type: 'type',
@@ -12841,10 +13794,20 @@ export namespace Prisma {
   export type Featured_employeesScalarFieldEnum = (typeof Featured_employeesScalarFieldEnum)[keyof typeof Featured_employeesScalarFieldEnum]
 
 
+  export const LocationsScalarFieldEnum: {
+    id: 'id',
+    linkedin_info_id: 'linkedin_info_id',
+    location_address: 'location_address'
+  };
+
+  export type LocationsScalarFieldEnum = (typeof LocationsScalarFieldEnum)[keyof typeof LocationsScalarFieldEnum]
+
+
   export const Funding_infoScalarFieldEnum: {
     id: 'id',
     company_id: 'company_id',
     last_updated: 'last_updated',
+    company_img_url: 'company_img_url',
     company_type: 'company_type',
     ipo_status: 'ipo_status',
     revenue_range: 'revenue_range',
@@ -13199,12 +14162,6 @@ export namespace Prisma {
     description?: StringFilter<"linkedin_info"> | string
     linkedin_followers?: IntFilter<"linkedin_info"> | number
     founded?: IntFilter<"linkedin_info"> | number
-    headquarters_city?: StringFilter<"linkedin_info"> | string
-    headquarters_country?: StringFilter<"linkedin_info"> | string
-    headquarters_state?: StringFilter<"linkedin_info"> | string
-    headquarters_street1?: StringFilter<"linkedin_info"> | string
-    headquarters_street2?: StringFilter<"linkedin_info"> | string
-    headquarters_zip?: StringFilter<"linkedin_info"> | string
     created?: DateTimeFilter<"linkedin_info"> | Date | string
     li_last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     type?: StringFilter<"linkedin_info"> | string
@@ -13212,6 +14169,7 @@ export namespace Prisma {
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
     company_specialties_collection?: Company_specialtiesListRelationFilter
     company_featured_employees_collection?: Featured_employeesListRelationFilter
+    locations_collection?: LocationsListRelationFilter
   }
 
   export type linkedin_infoOrderByWithRelationInput = {
@@ -13223,12 +14181,6 @@ export namespace Prisma {
     description?: SortOrder
     linkedin_followers?: SortOrder
     founded?: SortOrder
-    headquarters_city?: SortOrder
-    headquarters_country?: SortOrder
-    headquarters_state?: SortOrder
-    headquarters_street1?: SortOrder
-    headquarters_street2?: SortOrder
-    headquarters_zip?: SortOrder
     created?: SortOrder
     li_last_updated?: SortOrder
     type?: SortOrder
@@ -13236,6 +14188,7 @@ export namespace Prisma {
     vendor_company?: vendor_companiesOrderByWithRelationInput
     company_specialties_collection?: company_specialtiesOrderByRelationAggregateInput
     company_featured_employees_collection?: featured_employeesOrderByRelationAggregateInput
+    locations_collection?: locationsOrderByRelationAggregateInput
   }
 
   export type linkedin_infoWhereUniqueInput = Prisma.AtLeast<{
@@ -13250,12 +14203,6 @@ export namespace Prisma {
     description?: StringFilter<"linkedin_info"> | string
     linkedin_followers?: IntFilter<"linkedin_info"> | number
     founded?: IntFilter<"linkedin_info"> | number
-    headquarters_city?: StringFilter<"linkedin_info"> | string
-    headquarters_country?: StringFilter<"linkedin_info"> | string
-    headquarters_state?: StringFilter<"linkedin_info"> | string
-    headquarters_street1?: StringFilter<"linkedin_info"> | string
-    headquarters_street2?: StringFilter<"linkedin_info"> | string
-    headquarters_zip?: StringFilter<"linkedin_info"> | string
     created?: DateTimeFilter<"linkedin_info"> | Date | string
     li_last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     type?: StringFilter<"linkedin_info"> | string
@@ -13263,6 +14210,7 @@ export namespace Prisma {
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
     company_specialties_collection?: Company_specialtiesListRelationFilter
     company_featured_employees_collection?: Featured_employeesListRelationFilter
+    locations_collection?: LocationsListRelationFilter
   }, "id">
 
   export type linkedin_infoOrderByWithAggregationInput = {
@@ -13274,12 +14222,6 @@ export namespace Prisma {
     description?: SortOrder
     linkedin_followers?: SortOrder
     founded?: SortOrder
-    headquarters_city?: SortOrder
-    headquarters_country?: SortOrder
-    headquarters_state?: SortOrder
-    headquarters_street1?: SortOrder
-    headquarters_street2?: SortOrder
-    headquarters_zip?: SortOrder
     created?: SortOrder
     li_last_updated?: SortOrder
     type?: SortOrder
@@ -13303,12 +14245,6 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"linkedin_info"> | string
     linkedin_followers?: IntWithAggregatesFilter<"linkedin_info"> | number
     founded?: IntWithAggregatesFilter<"linkedin_info"> | number
-    headquarters_city?: StringWithAggregatesFilter<"linkedin_info"> | string
-    headquarters_country?: StringWithAggregatesFilter<"linkedin_info"> | string
-    headquarters_state?: StringWithAggregatesFilter<"linkedin_info"> | string
-    headquarters_street1?: StringWithAggregatesFilter<"linkedin_info"> | string
-    headquarters_street2?: StringWithAggregatesFilter<"linkedin_info"> | string
-    headquarters_zip?: StringWithAggregatesFilter<"linkedin_info"> | string
     created?: DateTimeWithAggregatesFilter<"linkedin_info"> | Date | string
     li_last_updated?: DateTimeWithAggregatesFilter<"linkedin_info"> | Date | string
     type?: StringWithAggregatesFilter<"linkedin_info"> | string
@@ -13405,6 +14341,51 @@ export namespace Prisma {
     linkedin_url?: StringWithAggregatesFilter<"featured_employees"> | string
   }
 
+  export type locationsWhereInput = {
+    AND?: locationsWhereInput | locationsWhereInput[]
+    OR?: locationsWhereInput[]
+    NOT?: locationsWhereInput | locationsWhereInput[]
+    id?: StringFilter<"locations"> | string
+    linkedin_info_id?: UuidFilter<"locations"> | string
+    location_address?: StringFilter<"locations"> | string
+    linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
+  }
+
+  export type locationsOrderByWithRelationInput = {
+    id?: SortOrder
+    linkedin_info_id?: SortOrder
+    location_address?: SortOrder
+    linkedin_info?: linkedin_infoOrderByWithRelationInput
+  }
+
+  export type locationsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: locationsWhereInput | locationsWhereInput[]
+    OR?: locationsWhereInput[]
+    NOT?: locationsWhereInput | locationsWhereInput[]
+    linkedin_info_id?: UuidFilter<"locations"> | string
+    location_address?: StringFilter<"locations"> | string
+    linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
+  }, "id">
+
+  export type locationsOrderByWithAggregationInput = {
+    id?: SortOrder
+    linkedin_info_id?: SortOrder
+    location_address?: SortOrder
+    _count?: locationsCountOrderByAggregateInput
+    _max?: locationsMaxOrderByAggregateInput
+    _min?: locationsMinOrderByAggregateInput
+  }
+
+  export type locationsScalarWhereWithAggregatesInput = {
+    AND?: locationsScalarWhereWithAggregatesInput | locationsScalarWhereWithAggregatesInput[]
+    OR?: locationsScalarWhereWithAggregatesInput[]
+    NOT?: locationsScalarWhereWithAggregatesInput | locationsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"locations"> | string
+    linkedin_info_id?: UuidWithAggregatesFilter<"locations"> | string
+    location_address?: StringWithAggregatesFilter<"locations"> | string
+  }
+
   export type funding_infoWhereInput = {
     AND?: funding_infoWhereInput | funding_infoWhereInput[]
     OR?: funding_infoWhereInput[]
@@ -13412,6 +14393,7 @@ export namespace Prisma {
     id?: UuidFilter<"funding_info"> | string
     company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
+    company_img_url?: StringFilter<"funding_info"> | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
     revenue_range?: StringFilter<"funding_info"> | string
@@ -13428,6 +14410,7 @@ export namespace Prisma {
     id?: SortOrder
     company_id?: SortOrder
     last_updated?: SortOrder
+    company_img_url?: SortOrder
     company_type?: SortOrder
     ipo_status?: SortOrder
     revenue_range?: SortOrder
@@ -13447,6 +14430,7 @@ export namespace Prisma {
     NOT?: funding_infoWhereInput | funding_infoWhereInput[]
     company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
+    company_img_url?: StringFilter<"funding_info"> | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
     revenue_range?: StringFilter<"funding_info"> | string
@@ -13463,6 +14447,7 @@ export namespace Prisma {
     id?: SortOrder
     company_id?: SortOrder
     last_updated?: SortOrder
+    company_img_url?: SortOrder
     company_type?: SortOrder
     ipo_status?: SortOrder
     revenue_range?: SortOrder
@@ -13482,6 +14467,7 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"funding_info"> | string
     company_id?: UuidWithAggregatesFilter<"funding_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"funding_info"> | Date | string
+    company_img_url?: StringWithAggregatesFilter<"funding_info"> | string
     company_type?: StringWithAggregatesFilter<"funding_info"> | string
     ipo_status?: StringWithAggregatesFilter<"funding_info"> | string
     revenue_range?: StringWithAggregatesFilter<"funding_info"> | string
@@ -14014,12 +15000,6 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
@@ -14027,6 +15007,7 @@ export namespace Prisma {
     vendor_company: vendor_companiesCreateNestedOneWithoutLinkedin_infoInput
     company_specialties_collection?: company_specialtiesCreateNestedManyWithoutLinkedin_infoInput
     company_featured_employees_collection?: featured_employeesCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoUncheckedCreateInput = {
@@ -14038,18 +15019,13 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     company_specialties_collection?: company_specialtiesUncheckedCreateNestedManyWithoutLinkedin_infoInput
     company_featured_employees_collection?: featured_employeesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsUncheckedCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoUpdateInput = {
@@ -14060,12 +15036,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
@@ -14073,6 +15043,7 @@ export namespace Prisma {
     vendor_company?: vendor_companiesUpdateOneRequiredWithoutLinkedin_infoNestedInput
     company_specialties_collection?: company_specialtiesUpdateManyWithoutLinkedin_infoNestedInput
     company_featured_employees_collection?: featured_employeesUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoUncheckedUpdateInput = {
@@ -14084,18 +15055,13 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     company_specialties_collection?: company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
     company_featured_employees_collection?: featured_employeesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUncheckedUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoCreateManyInput = {
@@ -14107,12 +15073,6 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
@@ -14127,12 +15087,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
@@ -14148,12 +15102,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
@@ -14242,9 +15190,51 @@ export namespace Prisma {
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
+  export type locationsCreateInput = {
+    id?: string
+    location_address: string
+    linkedin_info: linkedin_infoCreateNestedOneWithoutLocations_collectionInput
+  }
+
+  export type locationsUncheckedCreateInput = {
+    id?: string
+    linkedin_info_id: string
+    location_address: string
+  }
+
+  export type locationsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+    linkedin_info?: linkedin_infoUpdateOneRequiredWithoutLocations_collectionNestedInput
+  }
+
+  export type locationsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkedin_info_id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type locationsCreateManyInput = {
+    id?: string
+    linkedin_info_id: string
+    location_address: string
+  }
+
+  export type locationsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type locationsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkedin_info_id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+  }
+
   export type funding_infoCreateInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -14261,6 +15251,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -14275,6 +15266,7 @@ export namespace Prisma {
   export type funding_infoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -14291,6 +15283,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -14306,6 +15299,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -14316,6 +15310,7 @@ export namespace Prisma {
   export type funding_infoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -14327,6 +15322,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -14961,11 +15957,21 @@ export namespace Prisma {
     none?: featured_employeesWhereInput
   }
 
+  export type LocationsListRelationFilter = {
+    every?: locationsWhereInput
+    some?: locationsWhereInput
+    none?: locationsWhereInput
+  }
+
   export type company_specialtiesOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type featured_employeesOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type locationsOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -14978,12 +15984,6 @@ export namespace Prisma {
     description?: SortOrder
     linkedin_followers?: SortOrder
     founded?: SortOrder
-    headquarters_city?: SortOrder
-    headquarters_country?: SortOrder
-    headquarters_state?: SortOrder
-    headquarters_street1?: SortOrder
-    headquarters_street2?: SortOrder
-    headquarters_zip?: SortOrder
     created?: SortOrder
     li_last_updated?: SortOrder
     type?: SortOrder
@@ -15005,12 +16005,6 @@ export namespace Prisma {
     description?: SortOrder
     linkedin_followers?: SortOrder
     founded?: SortOrder
-    headquarters_city?: SortOrder
-    headquarters_country?: SortOrder
-    headquarters_state?: SortOrder
-    headquarters_street1?: SortOrder
-    headquarters_street2?: SortOrder
-    headquarters_zip?: SortOrder
     created?: SortOrder
     li_last_updated?: SortOrder
     type?: SortOrder
@@ -15026,12 +16020,6 @@ export namespace Prisma {
     description?: SortOrder
     linkedin_followers?: SortOrder
     founded?: SortOrder
-    headquarters_city?: SortOrder
-    headquarters_country?: SortOrder
-    headquarters_state?: SortOrder
-    headquarters_street1?: SortOrder
-    headquarters_street2?: SortOrder
-    headquarters_zip?: SortOrder
     created?: SortOrder
     li_last_updated?: SortOrder
     type?: SortOrder
@@ -15085,6 +16073,24 @@ export namespace Prisma {
     linkedin_url?: SortOrder
   }
 
+  export type locationsCountOrderByAggregateInput = {
+    id?: SortOrder
+    linkedin_info_id?: SortOrder
+    location_address?: SortOrder
+  }
+
+  export type locationsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    linkedin_info_id?: SortOrder
+    location_address?: SortOrder
+  }
+
+  export type locationsMinOrderByAggregateInput = {
+    id?: SortOrder
+    linkedin_info_id?: SortOrder
+    location_address?: SortOrder
+  }
+
   export type CategoriesListRelationFilter = {
     every?: categoriesWhereInput
     some?: categoriesWhereInput
@@ -15129,6 +16135,7 @@ export namespace Prisma {
     id?: SortOrder
     company_id?: SortOrder
     last_updated?: SortOrder
+    company_img_url?: SortOrder
     company_type?: SortOrder
     ipo_status?: SortOrder
     revenue_range?: SortOrder
@@ -15145,6 +16152,7 @@ export namespace Prisma {
     id?: SortOrder
     company_id?: SortOrder
     last_updated?: SortOrder
+    company_img_url?: SortOrder
     company_type?: SortOrder
     ipo_status?: SortOrder
     revenue_range?: SortOrder
@@ -15156,6 +16164,7 @@ export namespace Prisma {
     id?: SortOrder
     company_id?: SortOrder
     last_updated?: SortOrder
+    company_img_url?: SortOrder
     company_type?: SortOrder
     ipo_status?: SortOrder
     revenue_range?: SortOrder
@@ -15553,6 +16562,13 @@ export namespace Prisma {
     connect?: featured_employeesWhereUniqueInput | featured_employeesWhereUniqueInput[]
   }
 
+  export type locationsCreateNestedManyWithoutLinkedin_infoInput = {
+    create?: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput> | locationsCreateWithoutLinkedin_infoInput[] | locationsUncheckedCreateWithoutLinkedin_infoInput[]
+    connectOrCreate?: locationsCreateOrConnectWithoutLinkedin_infoInput | locationsCreateOrConnectWithoutLinkedin_infoInput[]
+    createMany?: locationsCreateManyLinkedin_infoInputEnvelope
+    connect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+  }
+
   export type company_specialtiesUncheckedCreateNestedManyWithoutLinkedin_infoInput = {
     create?: XOR<company_specialtiesCreateWithoutLinkedin_infoInput, company_specialtiesUncheckedCreateWithoutLinkedin_infoInput> | company_specialtiesCreateWithoutLinkedin_infoInput[] | company_specialtiesUncheckedCreateWithoutLinkedin_infoInput[]
     connectOrCreate?: company_specialtiesCreateOrConnectWithoutLinkedin_infoInput | company_specialtiesCreateOrConnectWithoutLinkedin_infoInput[]
@@ -15565,6 +16581,13 @@ export namespace Prisma {
     connectOrCreate?: featured_employeesCreateOrConnectWithoutLinkedin_infoInput | featured_employeesCreateOrConnectWithoutLinkedin_infoInput[]
     createMany?: featured_employeesCreateManyLinkedin_infoInputEnvelope
     connect?: featured_employeesWhereUniqueInput | featured_employeesWhereUniqueInput[]
+  }
+
+  export type locationsUncheckedCreateNestedManyWithoutLinkedin_infoInput = {
+    create?: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput> | locationsCreateWithoutLinkedin_infoInput[] | locationsUncheckedCreateWithoutLinkedin_infoInput[]
+    connectOrCreate?: locationsCreateOrConnectWithoutLinkedin_infoInput | locationsCreateOrConnectWithoutLinkedin_infoInput[]
+    createMany?: locationsCreateManyLinkedin_infoInputEnvelope
+    connect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
   }
 
   export type vendor_companiesUpdateOneRequiredWithoutLinkedin_infoNestedInput = {
@@ -15603,6 +16626,20 @@ export namespace Prisma {
     deleteMany?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
   }
 
+  export type locationsUpdateManyWithoutLinkedin_infoNestedInput = {
+    create?: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput> | locationsCreateWithoutLinkedin_infoInput[] | locationsUncheckedCreateWithoutLinkedin_infoInput[]
+    connectOrCreate?: locationsCreateOrConnectWithoutLinkedin_infoInput | locationsCreateOrConnectWithoutLinkedin_infoInput[]
+    upsert?: locationsUpsertWithWhereUniqueWithoutLinkedin_infoInput | locationsUpsertWithWhereUniqueWithoutLinkedin_infoInput[]
+    createMany?: locationsCreateManyLinkedin_infoInputEnvelope
+    set?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    disconnect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    delete?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    connect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    update?: locationsUpdateWithWhereUniqueWithoutLinkedin_infoInput | locationsUpdateWithWhereUniqueWithoutLinkedin_infoInput[]
+    updateMany?: locationsUpdateManyWithWhereWithoutLinkedin_infoInput | locationsUpdateManyWithWhereWithoutLinkedin_infoInput[]
+    deleteMany?: locationsScalarWhereInput | locationsScalarWhereInput[]
+  }
+
   export type company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoNestedInput = {
     create?: XOR<company_specialtiesCreateWithoutLinkedin_infoInput, company_specialtiesUncheckedCreateWithoutLinkedin_infoInput> | company_specialtiesCreateWithoutLinkedin_infoInput[] | company_specialtiesUncheckedCreateWithoutLinkedin_infoInput[]
     connectOrCreate?: company_specialtiesCreateOrConnectWithoutLinkedin_infoInput | company_specialtiesCreateOrConnectWithoutLinkedin_infoInput[]
@@ -15631,6 +16668,20 @@ export namespace Prisma {
     deleteMany?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
   }
 
+  export type locationsUncheckedUpdateManyWithoutLinkedin_infoNestedInput = {
+    create?: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput> | locationsCreateWithoutLinkedin_infoInput[] | locationsUncheckedCreateWithoutLinkedin_infoInput[]
+    connectOrCreate?: locationsCreateOrConnectWithoutLinkedin_infoInput | locationsCreateOrConnectWithoutLinkedin_infoInput[]
+    upsert?: locationsUpsertWithWhereUniqueWithoutLinkedin_infoInput | locationsUpsertWithWhereUniqueWithoutLinkedin_infoInput[]
+    createMany?: locationsCreateManyLinkedin_infoInputEnvelope
+    set?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    disconnect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    delete?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    connect?: locationsWhereUniqueInput | locationsWhereUniqueInput[]
+    update?: locationsUpdateWithWhereUniqueWithoutLinkedin_infoInput | locationsUpdateWithWhereUniqueWithoutLinkedin_infoInput[]
+    updateMany?: locationsUpdateManyWithWhereWithoutLinkedin_infoInput | locationsUpdateManyWithWhereWithoutLinkedin_infoInput[]
+    deleteMany?: locationsScalarWhereInput | locationsScalarWhereInput[]
+  }
+
   export type linkedin_infoCreateNestedOneWithoutCompany_specialties_collectionInput = {
     create?: XOR<linkedin_infoCreateWithoutCompany_specialties_collectionInput, linkedin_infoUncheckedCreateWithoutCompany_specialties_collectionInput>
     connectOrCreate?: linkedin_infoCreateOrConnectWithoutCompany_specialties_collectionInput
@@ -15657,6 +16708,20 @@ export namespace Prisma {
     upsert?: linkedin_infoUpsertWithoutCompany_featured_employees_collectionInput
     connect?: linkedin_infoWhereUniqueInput
     update?: XOR<XOR<linkedin_infoUpdateToOneWithWhereWithoutCompany_featured_employees_collectionInput, linkedin_infoUpdateWithoutCompany_featured_employees_collectionInput>, linkedin_infoUncheckedUpdateWithoutCompany_featured_employees_collectionInput>
+  }
+
+  export type linkedin_infoCreateNestedOneWithoutLocations_collectionInput = {
+    create?: XOR<linkedin_infoCreateWithoutLocations_collectionInput, linkedin_infoUncheckedCreateWithoutLocations_collectionInput>
+    connectOrCreate?: linkedin_infoCreateOrConnectWithoutLocations_collectionInput
+    connect?: linkedin_infoWhereUniqueInput
+  }
+
+  export type linkedin_infoUpdateOneRequiredWithoutLocations_collectionNestedInput = {
+    create?: XOR<linkedin_infoCreateWithoutLocations_collectionInput, linkedin_infoUncheckedCreateWithoutLocations_collectionInput>
+    connectOrCreate?: linkedin_infoCreateOrConnectWithoutLocations_collectionInput
+    upsert?: linkedin_infoUpsertWithoutLocations_collectionInput
+    connect?: linkedin_infoWhereUniqueInput
+    update?: XOR<XOR<linkedin_infoUpdateToOneWithWhereWithoutLocations_collectionInput, linkedin_infoUpdateWithoutLocations_collectionInput>, linkedin_infoUncheckedUpdateWithoutLocations_collectionInput>
   }
 
   export type vendor_companiesCreateNestedOneWithoutFunding_infoInput = {
@@ -16113,18 +17178,13 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     company_specialties_collection?: company_specialtiesCreateNestedManyWithoutLinkedin_infoInput
     company_featured_employees_collection?: featured_employeesCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoUncheckedCreateWithoutVendor_companyInput = {
@@ -16135,18 +17195,13 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     company_specialties_collection?: company_specialtiesUncheckedCreateNestedManyWithoutLinkedin_infoInput
     company_featured_employees_collection?: featured_employeesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsUncheckedCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoCreateOrConnectWithoutVendor_companyInput = {
@@ -16162,6 +17217,7 @@ export namespace Prisma {
   export type funding_infoCreateWithoutVendor_companyInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -16176,6 +17232,7 @@ export namespace Prisma {
   export type funding_infoUncheckedCreateWithoutVendor_companyInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -16283,12 +17340,6 @@ export namespace Prisma {
     description?: StringFilter<"linkedin_info"> | string
     linkedin_followers?: IntFilter<"linkedin_info"> | number
     founded?: IntFilter<"linkedin_info"> | number
-    headquarters_city?: StringFilter<"linkedin_info"> | string
-    headquarters_country?: StringFilter<"linkedin_info"> | string
-    headquarters_state?: StringFilter<"linkedin_info"> | string
-    headquarters_street1?: StringFilter<"linkedin_info"> | string
-    headquarters_street2?: StringFilter<"linkedin_info"> | string
-    headquarters_zip?: StringFilter<"linkedin_info"> | string
     created?: DateTimeFilter<"linkedin_info"> | Date | string
     li_last_updated?: DateTimeFilter<"linkedin_info"> | Date | string
     type?: StringFilter<"linkedin_info"> | string
@@ -16318,6 +17369,7 @@ export namespace Prisma {
     id?: UuidFilter<"funding_info"> | string
     company_id?: UuidFilter<"funding_info"> | string
     last_updated?: DateTimeFilter<"funding_info"> | Date | string
+    company_img_url?: StringFilter<"funding_info"> | string
     company_type?: StringFilter<"funding_info"> | string
     ipo_status?: StringFilter<"funding_info"> | string
     revenue_range?: StringFilter<"funding_info"> | string
@@ -16489,6 +17541,26 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type locationsCreateWithoutLinkedin_infoInput = {
+    id?: string
+    location_address: string
+  }
+
+  export type locationsUncheckedCreateWithoutLinkedin_infoInput = {
+    id?: string
+    location_address: string
+  }
+
+  export type locationsCreateOrConnectWithoutLinkedin_infoInput = {
+    where: locationsWhereUniqueInput
+    create: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput>
+  }
+
+  export type locationsCreateManyLinkedin_infoInputEnvelope = {
+    data: locationsCreateManyLinkedin_infoInput | locationsCreateManyLinkedin_infoInput[]
+    skipDuplicates?: boolean
+  }
+
   export type vendor_companiesUpsertWithoutLinkedin_infoInput = {
     update: XOR<vendor_companiesUpdateWithoutLinkedin_infoInput, vendor_companiesUncheckedUpdateWithoutLinkedin_infoInput>
     create: XOR<vendor_companiesCreateWithoutLinkedin_infoInput, vendor_companiesUncheckedCreateWithoutLinkedin_infoInput>
@@ -16576,6 +17648,31 @@ export namespace Prisma {
     linkedin_url?: StringFilter<"featured_employees"> | string
   }
 
+  export type locationsUpsertWithWhereUniqueWithoutLinkedin_infoInput = {
+    where: locationsWhereUniqueInput
+    update: XOR<locationsUpdateWithoutLinkedin_infoInput, locationsUncheckedUpdateWithoutLinkedin_infoInput>
+    create: XOR<locationsCreateWithoutLinkedin_infoInput, locationsUncheckedCreateWithoutLinkedin_infoInput>
+  }
+
+  export type locationsUpdateWithWhereUniqueWithoutLinkedin_infoInput = {
+    where: locationsWhereUniqueInput
+    data: XOR<locationsUpdateWithoutLinkedin_infoInput, locationsUncheckedUpdateWithoutLinkedin_infoInput>
+  }
+
+  export type locationsUpdateManyWithWhereWithoutLinkedin_infoInput = {
+    where: locationsScalarWhereInput
+    data: XOR<locationsUpdateManyMutationInput, locationsUncheckedUpdateManyWithoutLinkedin_infoInput>
+  }
+
+  export type locationsScalarWhereInput = {
+    AND?: locationsScalarWhereInput | locationsScalarWhereInput[]
+    OR?: locationsScalarWhereInput[]
+    NOT?: locationsScalarWhereInput | locationsScalarWhereInput[]
+    id?: StringFilter<"locations"> | string
+    linkedin_info_id?: UuidFilter<"locations"> | string
+    location_address?: StringFilter<"locations"> | string
+  }
+
   export type linkedin_infoCreateWithoutCompany_specialties_collectionInput = {
     id?: string
     last_updated?: Date | string
@@ -16584,18 +17681,13 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     vendor_company: vendor_companiesCreateNestedOneWithoutLinkedin_infoInput
     company_featured_employees_collection?: featured_employeesCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoUncheckedCreateWithoutCompany_specialties_collectionInput = {
@@ -16607,17 +17699,12 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     company_featured_employees_collection?: featured_employeesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsUncheckedCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoCreateOrConnectWithoutCompany_specialties_collectionInput = {
@@ -16644,18 +17731,13 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     vendor_company?: vendor_companiesUpdateOneRequiredWithoutLinkedin_infoNestedInput
     company_featured_employees_collection?: featured_employeesUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoUncheckedUpdateWithoutCompany_specialties_collectionInput = {
@@ -16667,17 +17749,12 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     company_featured_employees_collection?: featured_employeesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUncheckedUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoCreateWithoutCompany_featured_employees_collectionInput = {
@@ -16688,18 +17765,13 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     vendor_company: vendor_companiesCreateNestedOneWithoutLinkedin_infoInput
     company_specialties_collection?: company_specialtiesCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoUncheckedCreateWithoutCompany_featured_employees_collectionInput = {
@@ -16711,17 +17783,12 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
     employees_count: number
     company_specialties_collection?: company_specialtiesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+    locations_collection?: locationsUncheckedCreateNestedManyWithoutLinkedin_infoInput
   }
 
   export type linkedin_infoCreateOrConnectWithoutCompany_featured_employees_collectionInput = {
@@ -16748,18 +17815,13 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     vendor_company?: vendor_companiesUpdateOneRequiredWithoutLinkedin_infoNestedInput
     company_specialties_collection?: company_specialtiesUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoUncheckedUpdateWithoutCompany_featured_employees_collectionInput = {
@@ -16771,17 +17833,96 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     company_specialties_collection?: company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+  }
+
+  export type linkedin_infoCreateWithoutLocations_collectionInput = {
+    id?: string
+    last_updated?: Date | string
+    company_size: string
+    industry: string
+    description: string
+    linkedin_followers: number
+    founded: number
+    created: Date | string
+    li_last_updated: Date | string
+    type: string
+    employees_count: number
+    vendor_company: vendor_companiesCreateNestedOneWithoutLinkedin_infoInput
+    company_specialties_collection?: company_specialtiesCreateNestedManyWithoutLinkedin_infoInput
+    company_featured_employees_collection?: featured_employeesCreateNestedManyWithoutLinkedin_infoInput
+  }
+
+  export type linkedin_infoUncheckedCreateWithoutLocations_collectionInput = {
+    id?: string
+    company_id: string
+    last_updated?: Date | string
+    company_size: string
+    industry: string
+    description: string
+    linkedin_followers: number
+    founded: number
+    created: Date | string
+    li_last_updated: Date | string
+    type: string
+    employees_count: number
+    company_specialties_collection?: company_specialtiesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+    company_featured_employees_collection?: featured_employeesUncheckedCreateNestedManyWithoutLinkedin_infoInput
+  }
+
+  export type linkedin_infoCreateOrConnectWithoutLocations_collectionInput = {
+    where: linkedin_infoWhereUniqueInput
+    create: XOR<linkedin_infoCreateWithoutLocations_collectionInput, linkedin_infoUncheckedCreateWithoutLocations_collectionInput>
+  }
+
+  export type linkedin_infoUpsertWithoutLocations_collectionInput = {
+    update: XOR<linkedin_infoUpdateWithoutLocations_collectionInput, linkedin_infoUncheckedUpdateWithoutLocations_collectionInput>
+    create: XOR<linkedin_infoCreateWithoutLocations_collectionInput, linkedin_infoUncheckedCreateWithoutLocations_collectionInput>
+    where?: linkedin_infoWhereInput
+  }
+
+  export type linkedin_infoUpdateToOneWithWhereWithoutLocations_collectionInput = {
+    where?: linkedin_infoWhereInput
+    data: XOR<linkedin_infoUpdateWithoutLocations_collectionInput, linkedin_infoUncheckedUpdateWithoutLocations_collectionInput>
+  }
+
+  export type linkedin_infoUpdateWithoutLocations_collectionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_size?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    linkedin_followers?: IntFieldUpdateOperationsInput | number
+    founded?: IntFieldUpdateOperationsInput | number
+    created?: DateTimeFieldUpdateOperationsInput | Date | string
+    li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    employees_count?: IntFieldUpdateOperationsInput | number
+    vendor_company?: vendor_companiesUpdateOneRequiredWithoutLinkedin_infoNestedInput
+    company_specialties_collection?: company_specialtiesUpdateManyWithoutLinkedin_infoNestedInput
+    company_featured_employees_collection?: featured_employeesUpdateManyWithoutLinkedin_infoNestedInput
+  }
+
+  export type linkedin_infoUncheckedUpdateWithoutLocations_collectionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    company_id?: StringFieldUpdateOperationsInput | string
+    last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_size?: StringFieldUpdateOperationsInput | string
+    industry?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    linkedin_followers?: IntFieldUpdateOperationsInput | number
+    founded?: IntFieldUpdateOperationsInput | number
+    created?: DateTimeFieldUpdateOperationsInput | Date | string
+    li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: StringFieldUpdateOperationsInput | string
+    employees_count?: IntFieldUpdateOperationsInput | number
+    company_specialties_collection?: company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+    company_featured_employees_collection?: featured_employeesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type vendor_companiesCreateWithoutFunding_infoInput = {
@@ -17077,6 +18218,7 @@ export namespace Prisma {
   export type funding_infoCreateWithoutCategoriesInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17092,6 +18234,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17121,6 +18264,7 @@ export namespace Prisma {
   export type funding_infoUpdateWithoutCategoriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17136,6 +18280,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17149,6 +18294,7 @@ export namespace Prisma {
   export type funding_infoCreateWithoutPress_referencesInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17164,6 +18310,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17193,6 +18340,7 @@ export namespace Prisma {
   export type funding_infoUpdateWithoutPress_referencesInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17208,6 +18356,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17221,6 +18370,7 @@ export namespace Prisma {
   export type funding_infoCreateWithoutRaised_funding_roundsInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17236,6 +18386,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17265,6 +18416,7 @@ export namespace Prisma {
   export type funding_infoUpdateWithoutRaised_funding_roundsInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17280,6 +18432,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17293,6 +18446,7 @@ export namespace Prisma {
   export type funding_infoCreateWithoutFoundersInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17308,6 +18462,7 @@ export namespace Prisma {
     id?: string
     company_id: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17337,6 +18492,7 @@ export namespace Prisma {
   export type funding_infoUpdateWithoutFoundersInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17352,6 +18508,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17456,12 +18613,6 @@ export namespace Prisma {
     description: string
     linkedin_followers: number
     founded: number
-    headquarters_city: string
-    headquarters_country: string
-    headquarters_state: string
-    headquarters_street1: string
-    headquarters_street2: string
-    headquarters_zip: string
     created: Date | string
     li_last_updated: Date | string
     type: string
@@ -17471,6 +18622,7 @@ export namespace Prisma {
   export type funding_infoCreateManyVendor_companyInput = {
     id?: string
     last_updated?: Date | string
+    company_img_url: string
     company_type: string
     ipo_status: string
     revenue_range: string
@@ -17545,18 +18697,13 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     company_specialties_collection?: company_specialtiesUpdateManyWithoutLinkedin_infoNestedInput
     company_featured_employees_collection?: featured_employeesUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoUncheckedUpdateWithoutVendor_companyInput = {
@@ -17567,18 +18714,13 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
     employees_count?: IntFieldUpdateOperationsInput | number
     company_specialties_collection?: company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
     company_featured_employees_collection?: featured_employeesUncheckedUpdateManyWithoutLinkedin_infoNestedInput
+    locations_collection?: locationsUncheckedUpdateManyWithoutLinkedin_infoNestedInput
   }
 
   export type linkedin_infoUncheckedUpdateManyWithoutVendor_companyInput = {
@@ -17589,12 +18731,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     linkedin_followers?: IntFieldUpdateOperationsInput | number
     founded?: IntFieldUpdateOperationsInput | number
-    headquarters_city?: StringFieldUpdateOperationsInput | string
-    headquarters_country?: StringFieldUpdateOperationsInput | string
-    headquarters_state?: StringFieldUpdateOperationsInput | string
-    headquarters_street1?: StringFieldUpdateOperationsInput | string
-    headquarters_street2?: StringFieldUpdateOperationsInput | string
-    headquarters_zip?: StringFieldUpdateOperationsInput | string
     created?: DateTimeFieldUpdateOperationsInput | Date | string
     li_last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     type?: StringFieldUpdateOperationsInput | string
@@ -17604,6 +18740,7 @@ export namespace Prisma {
   export type funding_infoUpdateWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17618,6 +18755,7 @@ export namespace Prisma {
   export type funding_infoUncheckedUpdateWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17632,6 +18770,7 @@ export namespace Prisma {
   export type funding_infoUncheckedUpdateManyWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
+    company_img_url?: StringFieldUpdateOperationsInput | string
     company_type?: StringFieldUpdateOperationsInput | string
     ipo_status?: StringFieldUpdateOperationsInput | string
     revenue_range?: StringFieldUpdateOperationsInput | string
@@ -17664,6 +18803,11 @@ export namespace Prisma {
     linkedin_url: string
   }
 
+  export type locationsCreateManyLinkedin_infoInput = {
+    id?: string
+    location_address: string
+  }
+
   export type company_specialtiesUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
@@ -17692,6 +18836,21 @@ export namespace Prisma {
   export type featured_employeesUncheckedUpdateManyWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type locationsUpdateWithoutLinkedin_infoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type locationsUncheckedUpdateWithoutLinkedin_infoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type locationsUncheckedUpdateManyWithoutLinkedin_infoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    location_address?: StringFieldUpdateOperationsInput | string
   }
 
   export type categoriesCreateManyFunding_infoInput = {
@@ -17855,6 +19014,10 @@ export namespace Prisma {
      * @deprecated Use featured_employeesDefaultArgs instead
      */
     export type featured_employeesArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = featured_employeesDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use locationsDefaultArgs instead
+     */
+    export type locationsArgs<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = locationsDefaultArgs<ExtArgs>
     /**
      * @deprecated Use funding_infoDefaultArgs instead
      */

@@ -159,12 +159,6 @@ exports.Prisma.Linkedin_infoScalarFieldEnum = {
   description: 'description',
   linkedin_followers: 'linkedin_followers',
   founded: 'founded',
-  headquarters_city: 'headquarters_city',
-  headquarters_country: 'headquarters_country',
-  headquarters_state: 'headquarters_state',
-  headquarters_street1: 'headquarters_street1',
-  headquarters_street2: 'headquarters_street2',
-  headquarters_zip: 'headquarters_zip',
   created: 'created',
   li_last_updated: 'li_last_updated',
   type: 'type',
@@ -183,10 +177,17 @@ exports.Prisma.Featured_employeesScalarFieldEnum = {
   linkedin_url: 'linkedin_url'
 };
 
+exports.Prisma.LocationsScalarFieldEnum = {
+  id: 'id',
+  linkedin_info_id: 'linkedin_info_id',
+  location_address: 'location_address'
+};
+
 exports.Prisma.Funding_infoScalarFieldEnum = {
   id: 'id',
   company_id: 'company_id',
   last_updated: 'last_updated',
+  company_img_url: 'company_img_url',
   company_type: 'company_type',
   ipo_status: 'ipo_status',
   revenue_range: 'revenue_range',
@@ -255,6 +256,7 @@ exports.Prisma.ModelName = {
   linkedin_info: 'linkedin_info',
   company_specialties: 'company_specialties',
   featured_employees: 'featured_employees',
+  locations: 'locations',
   funding_info: 'funding_info',
   categories: 'categories',
   press_references: 'press_references',
