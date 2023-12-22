@@ -87,13 +87,12 @@ const resolvers: Resolvers<Context> = {
             },
           },
         });
-        return meetingEvent?.project_connection?.project_request
-          ? {
-            ...meetingEvent?.project_connection?.project_request,
-            max_budget:
-              meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
-              0,
-          } : initial;
+        return meetingEvent?.project_connection?.project_request ? {
+          ...meetingEvent?.project_connection?.project_request,
+          max_budget:
+            meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
+            0,
+        } : initial;
       }
       return parent.project_request || initial;
     },
