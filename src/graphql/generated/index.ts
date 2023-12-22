@@ -336,13 +336,19 @@ export type MarkMilestoneCompleteResponse = {
 
 export type MeetingEvent = {
   __typename?: 'MeetingEvent';
+  attending_company_participants?: Maybe<Array<Maybe<MeetingParticipant>>>;
   description?: Maybe<Scalars['String']>;
   end_time?: Maybe<Scalars['Date']>;
-  external_guests?: Maybe<Array<Maybe<ExternalGuest>>>;
+  external_guests?: Maybe<Array<Maybe<MeetingParticipant>>>;
+  /** @deprecated Use `participants`. */
   guests?: Maybe<Array<Maybe<User>>>;
-  id?: Maybe<Scalars['String']>;
+  id: Scalars['String'];
   meeting_link?: Maybe<Scalars['String']>;
+  opposite_company?: Maybe<Scalars['String']>;
   organizer?: Maybe<User>;
+  organizer_company?: Maybe<Scalars['String']>;
+  organizer_company_participants?: Maybe<Array<Maybe<MeetingParticipant>>>;
+  organizer_id?: Maybe<Scalars['String']>;
   phone?: Maybe<Scalars['String']>;
   phone_country?: Maybe<Scalars['String']>;
   phone_link?: Maybe<Scalars['String']>;
@@ -352,6 +358,13 @@ export type MeetingEvent = {
   start_time?: Maybe<Scalars['Date']>;
   timezone?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
+};
+
+export type MeetingParticipant = {
+  __typename?: 'MeetingParticipant';
+  email?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
 };
 
 export type Message = {
@@ -1626,6 +1639,8 @@ export type User = {
   has_setup_profile?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   is_active?: Maybe<Scalars['Boolean']>;
+  is_connected_google?: Maybe<Scalars['Boolean']>;
+  is_connected_microsoft?: Maybe<Scalars['Boolean']>;
   last_name?: Maybe<Scalars['String']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   phone_number?: Maybe<Scalars['String']>;
@@ -1807,6 +1822,7 @@ export type ResolversTypes = ResolversObject<{
   LabSpecializationConnection: ResolverTypeWrapper<LabSpecializationConnection>;
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
+  MeetingParticipant: ResolverTypeWrapper<MeetingParticipant>;
   Message: ResolverTypeWrapper<Message>;
   MessageEdge: ResolverTypeWrapper<MessageEdge>;
   MessagesConnection: ResolverTypeWrapper<MessagesConnection>;
@@ -1894,6 +1910,7 @@ export type ResolversParentTypes = ResolversObject<{
   LabSpecializationConnection: LabSpecializationConnection;
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
+  MeetingParticipant: MeetingParticipant;
   Message: Message;
   MessageEdge: MessageEdge;
   MessagesConnection: MessagesConnection;
@@ -2249,13 +2266,18 @@ export type MarkMilestoneCompleteResponseResolvers<ContextType = any, ParentType
 }>;
 
 export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
+  attending_company_participants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  external_guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalGuest']>>>, ParentType, ContextType>;
+  external_guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType>;
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  opposite_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  organizer_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  organizer_company_participants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType>;
+  organizer_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2265,6 +2287,13 @@ export type MeetingEventResolvers<ContextType = any, ParentType extends Resolver
   start_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MeetingParticipantResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingParticipant'] = ResolversParentTypes['MeetingParticipant']> = ResolversObject<{
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2827,6 +2856,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   has_setup_profile?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  is_connected_google?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  is_connected_microsoft?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
   phone_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2934,6 +2965,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LabSpecializationConnection?: LabSpecializationConnectionResolvers<ContextType>;
   MarkMilestoneCompleteResponse?: MarkMilestoneCompleteResponseResolvers<ContextType>;
   MeetingEvent?: MeetingEventResolvers<ContextType>;
+  MeetingParticipant?: MeetingParticipantResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageEdge?: MessageEdgeResolvers<ContextType>;
   MessagesConnection?: MessagesConnectionResolvers<ContextType>;
