@@ -5,8 +5,11 @@ import { createGoogleEvent, googleClient } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import { MeetingPlatform, OauthProvider } from "../../helper/constant";
-import { microsoftClient, microsoftClientRefreshToken } from '../../helper/microsoft';
-import { codeChallenge } from '../../helper/oauth';
+import {
+  microsoftClient,
+  microsoftClientRefreshToken,
+} from "../../helper/microsoft";
+import { codeChallenge } from "../../helper/oauth";
 import { createNewMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import invariant from "../../helper/invariant";
@@ -59,7 +62,7 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.user.findFirst({
         where: {
-          id: meetingEvent?.organizer?.id,
+          id: meetingEvent?.organizer_id,
         },
       });
     },
@@ -96,6 +99,112 @@ const resolvers: Resolvers<Context> = {
       }
       return parent.project_request || initial;
     },
+    organizer_company_participants: async (parent, args, context) => {
+      let organizerId = parent.organizer_id;
+      if (!organizerId) {
+        const meetingEvent = await context.prisma.meetingEvent.findFirst({
+          where: {
+            id: parent.id,
+          },
+        });
+        invariant(meetingEvent, "Meeting not found.");
+        organizerId = meetingEvent?.organizer_id;
+      }
+      const organizer = await context.prisma.user.findFirst({
+        where: {
+          id: organizerId,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      const organizerIsBiotech = !!organizer?.customer;
+      const organizerIsVendor = !!organizer?.vendor_member;
+
+      invariant(organizer, "Organizer not found.");
+      const connections =
+        await context.prisma.meetingAttendeeConnection.findMany({
+          where: {
+            meeting_event_id: parent.id,
+          },
+          include: {
+            user: {
+              include: {
+                customer: true,
+                vendor_member: true,
+              },
+            },
+          },
+        });
+
+      const allParticipantUsers = connections.map((c) => c.user);
+
+      return allParticipantUsers
+        .filter((u) => {
+          if (organizerIsBiotech && !!u.customer) return true;
+          if (organizerIsVendor && !!u.vendor_member) return true;
+          return false;
+        })
+        .map((u) => ({
+          name: `${u.first_name} ${u.last_name}`,
+          email: u.email,
+        }));
+    },
+    attending_company_participants: async (parent, args, context) => {
+      let organizerId = parent.organizer_id;
+      if (!organizerId) {
+        const meetingEvent = await context.prisma.meetingEvent.findFirst({
+          where: {
+            id: parent.id,
+          },
+        });
+        invariant(meetingEvent, "Meeting not found.");
+        organizerId = meetingEvent?.organizer_id;
+      }
+      const organizer = await context.prisma.user.findFirst({
+        where: {
+          id: organizerId,
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+      const organizerIsBiotech = !!organizer?.customer;
+      const organizerIsVendor = !!organizer?.vendor_member;
+
+      invariant(organizer, "Organizer not found.");
+      const connections =
+        await context.prisma.meetingAttendeeConnection.findMany({
+          where: {
+            meeting_event_id: parent.id,
+          },
+          include: {
+            user: {
+              include: {
+                customer: true,
+                vendor_member: true,
+              },
+            },
+          },
+        });
+
+      const allParticipantUsers = connections.map((c) => c.user);
+
+      return allParticipantUsers
+        .filter((u) => {
+          if (organizerIsBiotech && !!u.vendor_member) return true;
+          if (organizerIsVendor && !!u.customer) return true;
+          return false;
+        })
+        .map((u) => ({
+          name: `${u.first_name} ${u.last_name}`,
+          // do not include email because attending company email is hidden
+        }));
+    },
     external_guests: async (parent, args, context) => {
       const { id } = parent;
       invariant(id, "Missing id");
@@ -105,7 +214,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      return meetingGuests;
+      return meetingGuests.map((g) => ({
+        email: g.email,
+        name: g.name,
+        status: g.status,
+      }));
     },
   },
   Query: {
@@ -276,14 +389,14 @@ const resolvers: Resolvers<Context> = {
     },
     microsoftCalendarAuthorizationUri: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
+      invariant(user_id, "User ID not found.");
 
       const authorizationUri = microsoftClient.code.getUri({
-        scopes: ['Calendars.Read offline_access'],
+        scopes: ["Calendars.Read offline_access"],
         state: user_id,
         query: {
           code_challenge: codeChallenge,
-          code_challenge_method: 'S256',
+          code_challenge_method: "S256",
         },
       });
 
@@ -291,7 +404,7 @@ const resolvers: Resolvers<Context> = {
     },
     microsoftCalendarEvents: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
+      invariant(user_id, "User ID not found.");
 
       const oauth = await context.prisma.oauth.findFirst({
         where: {
@@ -300,7 +413,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(oauth, new PublicError('User not authenticated!'));
+      invariant(oauth, new PublicError("User not authenticated!"));
 
       const oneMonthAgo = moment().subtract(1, 'months').toISOString();
       try {
@@ -316,20 +429,22 @@ const resolvers: Resolvers<Context> = {
             start_date_iso: oneMonthAgo,
           });
         }
-        throw new PublicError('Something went wrong connecting to your calendar.');
+        throw new PublicError(
+          "Something went wrong connecting to your calendar."
+        );
       }
     },
     googleCalendarAuthorizationUri: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
+      invariant(user_id, "User ID not found.");
 
       const authorizationUri = googleClient.code.getUri({
-        scopes: ['https://www.googleapis.com/auth/calendar'],
+        scopes: ["https://www.googleapis.com/auth/calendar"],
         state: user_id,
         query: {
-          access_type: 'offline',
+          access_type: "offline",
           code_challenge: codeChallenge,
-          code_challenge_method: 'S256',
+          code_challenge_method: "S256",
         },
       });
 
@@ -337,7 +452,7 @@ const resolvers: Resolvers<Context> = {
     },
     googleCalendarEvents: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
+      invariant(user_id, "User ID not found.");
 
       const oauth = await context.prisma.oauth.findFirst({
         where: {
@@ -346,7 +461,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(oauth, new PublicError('User not authenticated!'));
+      invariant(oauth, new PublicError("User not authenticated!"));
 
       try {
         const oneMonthAgo = moment().subtract(1, 'months').toISOString();
@@ -357,7 +472,9 @@ const resolvers: Resolvers<Context> = {
           start_date_iso: oneMonthAgo,
         });
       } catch (error: any) {
-        throw new PublicError('Something went wrong connecting to your calendar.');
+        throw new PublicError(
+          "Something went wrong connecting to your calendar."
+        );
       }
     },
   },
