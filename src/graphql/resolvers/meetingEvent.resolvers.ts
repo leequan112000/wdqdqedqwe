@@ -87,14 +87,12 @@ const resolvers: Resolvers<Context> = {
             },
           },
         });
-        return meetingEvent?.project_connection?.project_request
-          ? {
-              ...meetingEvent?.project_connection?.project_request,
-              max_budget:
-                meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
-                0,
-            }
-          : initial;
+        return meetingEvent?.project_connection?.project_request ? {
+          ...meetingEvent?.project_connection?.project_request,
+          max_budget:
+            meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
+            0,
+        } : initial;
       }
       return parent.project_request || initial;
     },
@@ -264,6 +262,18 @@ const resolvers: Resolvers<Context> = {
 
       return meetingEvents;
     },
+    availableTimeSlots: async (_, args, context) => {
+      const { date, attendee_user_ids, duration_in_min } = args;
+      const { user_id } = context.req;
+      invariant(user_id, 'User ID not found.');
+
+      return meetingEventService.getAvailableTimeSlots({
+        date,
+        user_id,
+        duration_in_min,
+        attendee_user_ids: attendee_user_ids as string[]
+      }, context);
+    },
     microsoftCalendarAuthorizationUri: async (_, __, context) => {
       const { user_id } = context.req;
       invariant(user_id, 'User ID not found.');
@@ -292,12 +302,19 @@ const resolvers: Resolvers<Context> = {
 
       invariant(oauth, new PublicError('User not authenticated!'));
 
+      const oneMonthAgo = moment().subtract(1, 'months').toISOString();
       try {
-        return await meetingEventService.getMicrosoftCalendarEvents({ access_token: oauth.access_token }, context);
+        return await meetingEventService.getMicrosoftCalendarEvents({
+          access_token: oauth.access_token,
+          start_date_iso: oneMonthAgo,
+        });
       } catch (error: any) {
         if (error.statusCode === 401) {
           const newToken = await microsoftClientRefreshToken(oauth.access_token, oauth.refresh_token, user_id);
-          return await meetingEventService.getMicrosoftCalendarEvents({ access_token: newToken.accessToken }, context);
+          return await meetingEventService.getMicrosoftCalendarEvents({
+            access_token: newToken.accessToken,
+            start_date_iso: oneMonthAgo,
+          });
         }
         throw new PublicError('Something went wrong connecting to your calendar.');
       }
@@ -332,7 +349,13 @@ const resolvers: Resolvers<Context> = {
       invariant(oauth, new PublicError('User not authenticated!'));
 
       try {
-        return await meetingEventService.getGoogleCalendarEvents({ access_token: oauth.access_token, refresh_token: oauth.refresh_token }, context);
+        const oneMonthAgo = moment().subtract(1, 'months').toISOString();
+        return await meetingEventService.getGoogleCalendarEvents({
+          access_token: oauth.access_token,
+          refresh_token: oauth.refresh_token,
+          single_events: false,
+          start_date_iso: oneMonthAgo,
+        });
       } catch (error: any) {
         throw new PublicError('Something went wrong connecting to your calendar.');
       }

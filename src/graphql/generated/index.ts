@@ -1267,6 +1267,7 @@ export type PurchaseOrder = {
 
 export type Query = {
   __typename?: 'Query';
+  availableTimeSlots?: Maybe<Array<Maybe<Scalars['Date']>>>;
   bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
@@ -1312,6 +1313,13 @@ export type Query = {
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
+};
+
+
+export type QueryAvailableTimeSlotsArgs = {
+  attendee_user_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  date: Scalars['Date'];
+  duration_in_min: Scalars['Int'];
 };
 
 
@@ -2619,6 +2627,7 @@ export type PurchaseOrderResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  availableTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['Date']>>>, ParentType, ContextType, RequireFields<QueryAvailableTimeSlotsArgs, 'date' | 'duration_in_min'>>;
   bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;

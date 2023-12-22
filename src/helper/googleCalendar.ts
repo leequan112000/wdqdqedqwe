@@ -1,4 +1,3 @@
-import moment from 'moment';
 import ClientOAuth2 from 'client-oauth2';
 import { OAuth2Client as GoogleOAuth2Client } from 'google-auth-library';
 import { calendar } from '@googleapis/calendar';
@@ -58,12 +57,13 @@ type GEvent = {
   attendees?: Array<{ email: string; comment?: string }>;
 }
 
-export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client) => {
+export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client, singleEvents: boolean, startDateIso: string, endDateIso?: string) => {
   try {
-    const oneMonthAgo = moment().subtract(1, 'months').toISOString();
     const response = await calendar({ version: 'v3', auth: googleApiClient }).events.list({
       calendarId: 'primary',
-      timeMin: oneMonthAgo,
+      timeMin: startDateIso,
+      ...(endDateIso ? { timeMax: endDateIso, } : {}),
+      singleEvents,
     });
 
     const events = response.data.items;
