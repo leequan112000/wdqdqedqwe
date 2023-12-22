@@ -1,7 +1,9 @@
 import moment from "moment";
 import invariant from "../../helper/invariant";
-import { microsoftGraphClient } from "../../helper/microsoft";
+import { microsoftClientRefreshToken, microsoftGraphClient } from "../../helper/microsoft";
 import { cancelGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
+import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
+import { OauthProvider } from "../../helper/constant";
 import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
@@ -202,13 +204,24 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
 
 type GetMicrosoftCalendarEventsArgs = {
   access_token: string;
+  start_date_iso: string;
+  end_date_iso?: string;
 }
 
-const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, ctx: ServiceContext) => {
-  const client = microsoftGraphClient(args.access_token);
+const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs) => {
+  const { access_token, start_date_iso, end_date_iso } = args;
+  const client = microsoftGraphClient(access_token);
 
   try {
-    const response: { value: MicrosoftCalendarEvent[] } = await client.api('/me/events').get();
+    // Doc: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
+    const startDateFilterStr = `start/dateTime ge '${start_date_iso}'`;
+    const endDateFilterStr = end_date_iso ? ` and start/dateTime le '${end_date_iso}'` : ''
+
+    const response: { value: MicrosoftCalendarEvent[] } = await client
+      .api("/me/calendar/events")
+      .filter(`${startDateFilterStr}${endDateFilterStr}`)
+      .get();
+
     return response.value.map((event) => ({
       id: event.id,
       title: event.subject,
@@ -233,13 +246,17 @@ const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs, 
 type GetGoogleCalendarEventsArgs = {
   access_token: string;
   refresh_token: string;
+  single_events: boolean;
+  start_date_iso: string;
+  end_date_iso?: string;
 }
 
-const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs, ctx: ServiceContext) => {
-  const client = googleApiClient(args.access_token, args.refresh_token);
+const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs) => {
+  const { access_token, refresh_token, single_events, start_date_iso, end_date_iso } = args;
+  const client = googleApiClient(access_token, refresh_token);
 
   try {
-    const response = await listGoogleEvents(client);
+    const response = await listGoogleEvents(client, single_events, start_date_iso, end_date_iso);
     return response?.map((event) => ({
       id: event.id,
       title: event.summary,
@@ -261,11 +278,97 @@ const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs, ctx: S
   }
 }
 
+const getCalendarEventsForUser = async (
+  user_id: string,
+  start_date_iso: string,
+  end_date_iso: string,
+  ctx: ServiceContext
+): Promise<CalendarEvent[]> => {
+  let events: CalendarEvent[] = [];
+  const oauthGoogle = await ctx.prisma.oauth.findFirst({
+    where: {
+      user_id,
+      provider: OauthProvider.GOOGLE,
+    },
+  });
+
+  if (oauthGoogle) {
+    const googleEvents = await getGoogleCalendarEvents({
+      access_token: oauthGoogle.access_token,
+      refresh_token: oauthGoogle.refresh_token,
+      single_events: true,
+      start_date_iso,
+      end_date_iso,
+    });
+    events = events.concat(googleEvents);
+  }
+
+  const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+    where: {
+      user_id,
+      provider: OauthProvider.MICROSOFT,
+    },
+  });
+
+  if (oauthMicrosoft) {
+    try {
+      const microsoftEvents = await getMicrosoftCalendarEvents({
+        access_token: oauthMicrosoft.access_token,
+        start_date_iso,
+        end_date_iso,
+      });
+      events = events.concat(microsoftEvents);
+    } catch (error: any) {
+      if (error.statusCode === 401) {
+        const newToken = await microsoftClientRefreshToken(oauthMicrosoft.access_token, oauthMicrosoft.refresh_token, user_id);
+        const microsoftEvents = await getMicrosoftCalendarEvents({
+          access_token: newToken.accessToken,
+          start_date_iso,
+          end_date_iso,
+        });
+        events = events.concat(microsoftEvents);
+      }
+    }
+  }
+
+  return events;
+}
+
+type GetAvailableTimeSlotsArgs = {
+  date: Date;
+  user_id: string;
+  duration_in_min: number;
+  attendee_user_ids: string[];
+}
+
+const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: ServiceContext) => {
+  const { date, user_id, duration_in_min, attendee_user_ids } = args;
+  try {
+    const startDateIso = moment(date).subtract(1, 'day').toISOString();
+    const endDateIso = moment(date).add(1, 'day').toISOString();
+    const calendarEventsPromises = [...attendee_user_ids, user_id].map(uid => getCalendarEventsForUser(uid, startDateIso, endDateIso, ctx));
+    const allUsersEvents = await Promise.all(calendarEventsPromises);
+
+    let freeSlotsGroupByUser = [];
+    for (const userEvents of allUsersEvents) {
+      const busySlots = processCalendarEvents(userEvents);
+      const freeSlots = findFreeSlots(busySlots, date, duration_in_min);
+      freeSlotsGroupByUser.push(freeSlots);
+    }
+
+    const commonFreeSlotsForAllUser = findCommonFreeSlotsForAllUser(freeSlotsGroupByUser);
+    return commonFreeSlotsForAllUser;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const meetingEventService = {
   removeMeetingEvent,
   updateMeetingEvent,
   getMicrosoftCalendarEvents,
   getGoogleCalendarEvents,
+  getAvailableTimeSlots,
 };
 
 export default meetingEventService;
