@@ -55,6 +55,11 @@ type Query {
   microsoftCalendarEvents: [CalendarEvent]
   googleCalendarAuthorizationUri: String
   googleCalendarEvents: [CalendarEvent]
+  availableTimeSlots(
+    date: Date!,
+    duration_in_min: Int!,
+    attendee_user_ids: [String]
+  ): [Date]
 }
 
 type Mutation {
