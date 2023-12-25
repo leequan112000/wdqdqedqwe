@@ -142,7 +142,7 @@ const resolvers: Resolvers<Context> = {
         ? `${app_env.APP_URL}/app/meeting-events`
         : `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`;
 
-      meetingResponseConfirmationEmail(
+      acceptedMeetingRSVPNotificationForGuestEmail(
         {
           button_url: guestButtonUrl,
           meeting_title: meeting.title,
