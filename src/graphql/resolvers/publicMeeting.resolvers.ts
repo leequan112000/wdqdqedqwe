@@ -1,4 +1,5 @@
 import { MeetingGuest } from "@prisma/client";
+import moment from "moment";
 import { app_env } from "../../environment";
 import invariant from "../../helper/invariant";
 import {
@@ -51,6 +52,9 @@ const resolvers: Resolvers<Context> = {
         });
       }
 
+      const now = moment();
+      const isEnded = now.isAfter(moment(meeting.end_time));
+
       return {
         id: meeting?.id,
         title: meeting?.title,
@@ -59,10 +63,13 @@ const resolvers: Resolvers<Context> = {
         organizer_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
         guest_info: meetingGuest,
         meeting_link:
-          meetingGuest && meetingGuest.status === MeetingGuestStatus.ACCEPTED
+          !isEnded &&
+          meetingGuest &&
+          meetingGuest.status === MeetingGuestStatus.ACCEPTED
             ? meeting.meeting_link
             : null,
         project_title: meeting.project_connection.project_request.title,
+        is_ended: isEnded,
       };
     },
   },
@@ -86,6 +93,11 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(meeting, new PublicError("Invalid token"));
+
+      const now = moment();
+      const isEnded = now.isAfter(moment(meeting.end_time));
+
+      invariant(!isEnded, new PublicError("The meeting is already ended"));
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
@@ -179,6 +191,11 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(meetingGuest, new PublicError("Invalid response."));
+
+      const now = moment();
+      const isEnded = now.isAfter(moment(meetingGuest.meeting_event.end_time));
+
+      invariant(!isEnded, new PublicError("The meeting is already ended"));
 
       const updatedMeetingGuest = await context.prisma.meetingGuest.update({
         where: {
