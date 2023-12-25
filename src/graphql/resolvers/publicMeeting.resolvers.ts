@@ -4,8 +4,9 @@ import { app_env } from "../../environment";
 import invariant from "../../helper/invariant";
 import {
   acceptedMeetingRSVPUpdateNotificationEmail,
+  declinedMeetingRSVPNotificationForGuestEmail,
   declinedMeetingRSVPUpdateNotificationEmail,
-  meetingResponseConfirmationEmail,
+  acceptedMeetingRSVPNotificationForGuestEmail,
 } from "../../mailer/guestMeeting";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
@@ -220,7 +221,7 @@ const resolvers: Resolvers<Context> = {
       const guestName = name || "guest";
       // Send response confirmation email
       if (answer === InvitationAnswer.YES) {
-        meetingResponseConfirmationEmail(
+        acceptedMeetingRSVPNotificationForGuestEmail(
           {
             button_url: `${app_env.APP_URL}/meeting/attendance/${meetingGuest.id}`,
             meeting_title: meetingGuest.meeting_event.title,
@@ -251,6 +252,17 @@ const resolvers: Resolvers<Context> = {
         });
       }
       if (answer === InvitationAnswer.NO) {
+        declinedMeetingRSVPNotificationForGuestEmail(
+          {
+            meeting_title: meetingGuest.meeting_event.title,
+            guest_name: name || "guest",
+            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            project_title:
+              meetingGuest.meeting_event.project_connection.project_request
+                .title,
+          },
+          updatedMeetingGuest.email
+        );
         declinedMeetingRSVPUpdateNotificationEmail(
           {
             button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting

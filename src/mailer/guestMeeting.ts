@@ -2,26 +2,27 @@ import { createSendMailJob } from "../queues/sendMail.queues";
 import {
   meetingInvitationTemplate,
   acceptedMeetingRSVPNotificationForHostTemplate,
-  meetingResponseConfirmationNotificationTemplate,
+  acceptedMeetingRSVPNotificationForGuestTemplate,
   declinedMeetingRSVPNotificationForHostTemplate,
   meetingInvitationForCromaticUserWithinProjectTemplate,
+  declinedMeetingRSVPNotificationForGuestTemplate,
 } from "./templates";
 
-type MeetingResponseConfirmationEmailData = {
+type AcceptedMeetingRSVPNotificationForGuestData = {
   button_url: string;
   meeting_title: string;
   guest_name: string;
   project_title: string;
 };
 
-export const meetingResponseConfirmationEmail = (
-  emailData: MeetingResponseConfirmationEmailData,
+export const acceptedMeetingRSVPNotificationForGuestEmail = (
+  emailData: AcceptedMeetingRSVPNotificationForGuestData,
   receiverEmail: string
 ) => {
   createSendMailJob({
     emailData,
     receiverEmail,
-    templateId: meetingResponseConfirmationNotificationTemplate,
+    templateId: acceptedMeetingRSVPNotificationForGuestTemplate,
   });
 };
 
@@ -98,5 +99,23 @@ export const meetingInvitationForCromaticUserWithinProjectEmail = (
     emailData,
     receiverEmail,
     templateId: meetingInvitationForCromaticUserWithinProjectTemplate,
+  });
+};
+
+type DeclinedMeetingRSVPNotificationForGuestEmailData = {
+  meeting_title: string;
+  host_name: string;
+  guest_name: string;
+  project_title: string;
+};
+
+export const declinedMeetingRSVPNotificationForGuestEmail = (
+  emailData: DeclinedMeetingRSVPNotificationForGuestEmailData,
+  receiverEmail: string
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: declinedMeetingRSVPNotificationForGuestTemplate,
   });
 };
