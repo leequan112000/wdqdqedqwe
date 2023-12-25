@@ -1243,6 +1243,7 @@ export type PubMeeting = {
   end_time?: Maybe<Scalars['String']>;
   guest_info?: Maybe<PubMeetingGuestInfo>;
   id?: Maybe<Scalars['String']>;
+  is_ended?: Maybe<Scalars['Boolean']>;
   meeting_link?: Maybe<Scalars['String']>;
   organizer_company_name?: Maybe<Scalars['String']>;
   organizer_name?: Maybe<Scalars['String']>;
@@ -2619,6 +2620,7 @@ export type PubMeetingResolvers<ContextType = any, ParentType extends ResolversP
   end_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   guest_info?: Resolver<Maybe<ResolversTypes['PubMeetingGuestInfo']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_ended?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

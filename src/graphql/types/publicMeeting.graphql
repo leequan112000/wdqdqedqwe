@@ -8,6 +8,7 @@ type PubMeeting {
   guest_info: PubMeetingGuestInfo
   meeting_link: String
   project_title: String
+  is_ended: Boolean
 }
 
 type PubRVSP {

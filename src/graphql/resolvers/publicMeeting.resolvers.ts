@@ -1,10 +1,12 @@
 import { MeetingGuest } from "@prisma/client";
+import moment from "moment";
 import { app_env } from "../../environment";
 import invariant from "../../helper/invariant";
 import {
   acceptedMeetingRSVPUpdateNotificationEmail,
+  declinedMeetingRSVPNotificationForGuestEmail,
   declinedMeetingRSVPUpdateNotificationEmail,
-  meetingResponseConfirmationEmail,
+  acceptedMeetingRSVPNotificationForGuestEmail,
 } from "../../mailer/guestMeeting";
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
@@ -51,6 +53,9 @@ const resolvers: Resolvers<Context> = {
         });
       }
 
+      const now = moment();
+      const isEnded = now.isAfter(moment(meeting.end_time));
+
       return {
         id: meeting?.id,
         title: meeting?.title,
@@ -59,10 +64,13 @@ const resolvers: Resolvers<Context> = {
         organizer_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
         guest_info: meetingGuest,
         meeting_link:
-          meetingGuest && meetingGuest.status === MeetingGuestStatus.ACCEPTED
+          !isEnded &&
+          meetingGuest &&
+          meetingGuest.status === MeetingGuestStatus.ACCEPTED
             ? meeting.meeting_link
             : null,
         project_title: meeting.project_connection.project_request.title,
+        is_ended: isEnded,
       };
     },
   },
@@ -86,6 +94,11 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(meeting, new PublicError("Invalid token"));
+
+      const now = moment();
+      const isEnded = now.isAfter(moment(meeting.end_time));
+
+      invariant(!isEnded, new PublicError("The meeting is already ended"));
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
@@ -180,6 +193,11 @@ const resolvers: Resolvers<Context> = {
 
       invariant(meetingGuest, new PublicError("Invalid response."));
 
+      const now = moment();
+      const isEnded = now.isAfter(moment(meetingGuest.meeting_event.end_time));
+
+      invariant(!isEnded, new PublicError("The meeting is already ended"));
+
       const updatedMeetingGuest = await context.prisma.meetingGuest.update({
         where: {
           id: token,
@@ -203,7 +221,7 @@ const resolvers: Resolvers<Context> = {
       const guestName = name || "guest";
       // Send response confirmation email
       if (answer === InvitationAnswer.YES) {
-        meetingResponseConfirmationEmail(
+        acceptedMeetingRSVPNotificationForGuestEmail(
           {
             button_url: `${app_env.APP_URL}/meeting/attendance/${meetingGuest.id}`,
             meeting_title: meetingGuest.meeting_event.title,
@@ -234,6 +252,17 @@ const resolvers: Resolvers<Context> = {
         });
       }
       if (answer === InvitationAnswer.NO) {
+        declinedMeetingRSVPNotificationForGuestEmail(
+          {
+            meeting_title: meetingGuest.meeting_event.title,
+            guest_name: name || "guest",
+            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            project_title:
+              meetingGuest.meeting_event.project_connection.project_request
+                .title,
+          },
+          updatedMeetingGuest.email
+        );
         declinedMeetingRSVPUpdateNotificationEmail(
           {
             button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting
