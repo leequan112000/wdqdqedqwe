@@ -5,6 +5,7 @@ type MeetingEvent {
   start_time: Date
   end_time: Date
   timezone: String
+  platform: String
   meeting_link: String
   phone_link: String
   phone_country: String
@@ -78,6 +79,8 @@ type Mutation {
     title: String!
     description: String
     start_time: String!
+    meeting_link: String
+    platform: String!
     end_time: String!
     timezone: String!
     attendees: [String!]!
