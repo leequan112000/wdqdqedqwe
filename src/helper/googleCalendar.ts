@@ -73,10 +73,9 @@ export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client, sing
   }
 }
 
-export const createGoogleEvent = async (gEvent: GEvent) => {
-  return await calendar('v3').events.insert({
-    calendarId: process.env.GOOGLE_CALENDAR_ID!,
-    auth: client,
+export const createGoogleEvent = async (googleApiClient: GoogleOAuth2Client, gEvent: GEvent) => {
+  return await calendar({ version: 'v3', auth: googleApiClient}).events.insert({
+    calendarId: 'primary',
     requestBody: {
       ...gEvent,
       conferenceData: {

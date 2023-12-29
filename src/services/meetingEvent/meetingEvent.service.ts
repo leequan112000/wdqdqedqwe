@@ -58,39 +58,49 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
 
   switch (platform) {
     case MeetingPlatform.GOOGLE_MEET: {
-      const attendeeArr = [
-        ...attendees.map((a) => ({ email: a })),
-        { email: organizer_user.email! },
-      ];
-
-      const response = await createGoogleEvent({
-        summary: title,
-        description,
-        attendees: attendeeArr,
-        end: {
-          dateTime: end_time,
-          timeZone: timezone,
-        },
-        start: {
-          dateTime: start_time,
-          timeZone: timezone,
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: organizer_user.id,
+          provider: OauthProvider.GOOGLE,
         },
       });
-      const { conferenceData, hangoutLink, id: gEventId } = response.data;
-      invariant(
-        conferenceData && hangoutLink,
-        new PublicError("Missing hangout link.")
-      );
 
-      const entryPoints = conferenceData.entryPoints;
-      const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
-      const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+      if (oauthGoogle) {
+        const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
+        const attendeeArr = [
+          ...attendees.map((a) => ({ email: a })),
+          { email: organizer_user.email! },
+        ];
 
-      meeting_link = hangoutLink;
-      phone_pin = phoneEntryPoint.pin as string;
-      phone = gPhone as string;
-      phone_country = countryCode;
-      platform_event_id = gEventId as string;
+        const response = await createGoogleEvent(client, {
+          summary: title,
+          description,
+          attendees: attendeeArr,
+          end: {
+            dateTime: end_time,
+            timeZone: timezone,
+          },
+          start: {
+            dateTime: start_time,
+            timeZone: timezone,
+          },
+        });
+        const { conferenceData, hangoutLink, id: gEventId } = response.data;
+        invariant(
+          conferenceData && hangoutLink,
+          new PublicError("Missing hangout link.")
+        );
+
+        const entryPoints = conferenceData.entryPoints;
+        const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
+        const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+
+        meeting_link = hangoutLink;
+        phone_pin = phoneEntryPoint.pin as string;
+        phone = gPhone as string;
+        phone_country = countryCode;
+        platform_event_id = gEventId as string;
+      }
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
