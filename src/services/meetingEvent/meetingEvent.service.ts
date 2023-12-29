@@ -1,15 +1,211 @@
 import moment from "moment";
+import { User } from "@prisma/client";
 import invariant from "../../helper/invariant";
-import { microsoftClientRefreshToken, microsoftGraphClient } from "../../helper/microsoft";
-import { cancelGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
+import { createMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient } from "../../helper/microsoft";
+import { cancelGoogleEvent, createGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
-import { OauthProvider } from "../../helper/constant";
-import { createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
+import { MeetingPlatform, OauthProvider } from "../../helper/constant";
+import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
 import { ServiceContext } from "../../types/context";
 import { MicrosoftCalendarEvent } from "../../types/microsoft";
 import { CalendarEvent } from "../../graphql/generated";
+import { PublicError } from "../../graphql/errors/PublicError";
+
+type CreateMeetingEventArgs = {
+  title: string;
+  meeting_link?: string | null;
+  platform: string;
+  end_time: string;
+  start_time: string;
+  attendees: string[];
+  timezone: string;
+  description?: string | null;
+  project_connection_id: string;
+  organizer_user: User;
+}
+
+const createMeetingAttendeeConnections = async (attendees: string[], organizer_user: User, ctx: ServiceContext) => {
+  const attendeeUsers = await ctx.prisma.user.findMany({
+    where: { email: { in: attendees } },
+  });
+
+  return [...attendeeUsers, organizer_user].map(u => ({ user_id: u.id }));
+};
+
+const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceContext) => {
+  const {
+    title,
+    meeting_link: customMeetingLink,
+    platform,
+    end_time,
+    start_time,
+    timezone,
+    attendees,
+    description,
+    project_connection_id,
+    organizer_user,
+  } = args;
+
+  let meeting_link = '';
+  let phone_pin = '';
+  let phone = '';
+  let phone_country = '';
+  let platform_event_id = '';
+
+  const attendeeConnections = await createMeetingAttendeeConnections(attendees, organizer_user, ctx);
+
+  switch (platform) {
+    case MeetingPlatform.GOOGLE_MEET: {
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: organizer_user.id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+
+      if (oauthGoogle) {
+        const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
+        const attendeeArr = [
+          ...attendees.map((a) => ({ email: a })),
+          { email: organizer_user.email! },
+        ];
+
+        const response = await createGoogleEvent(client, {
+          summary: title,
+          description,
+          attendees: attendeeArr,
+          end: {
+            dateTime: end_time,
+            timeZone: timezone,
+          },
+          start: {
+            dateTime: start_time,
+            timeZone: timezone,
+          },
+        });
+        const { conferenceData, hangoutLink, id: gEventId } = response.data;
+        invariant(
+          conferenceData && hangoutLink,
+          new PublicError("Missing hangout link.")
+        );
+
+        const entryPoints = conferenceData.entryPoints;
+        const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
+        const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+
+        meeting_link = hangoutLink;
+        phone_pin = phoneEntryPoint.pin as string;
+        phone = gPhone as string;
+        phone_country = countryCode;
+        platform_event_id = gEventId as string;
+      }
+      break;
+    }
+    case MeetingPlatform.MICROSOFT_TEAMS: {
+      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: organizer_user.id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      if (oauthMicrosoft) {
+        const client = microsoftGraphClient(oauthMicrosoft.access_token);
+        const response = await createMicrosoftEvent(client, {
+          subject: title,
+          body: {
+            content: description,
+          },
+          isOnlineMeeting: true,
+          onlineMeetingProvider: "teamsForBusiness",
+          attendees: [
+            ...attendees.map((a) => {
+              return {
+                emailAddress: { address: a }
+              }
+            }),
+            {
+              emailAddress: { address: organizer_user.email! }
+            },
+          ],
+          allowNewTimeProposals: true,
+          start: {
+            dateTime: start_time,
+            timeZone: timezone,
+          },
+          end: {
+            dateTime: end_time,
+            timeZone: timezone,
+          },
+        });
+
+        const { id: mEventId, onlineMeeting, webLink } = response;
+        invariant(
+          (onlineMeeting && onlineMeeting.joinUrl) || webLink,
+          new PublicError("Missing meeting link.")
+        );
+
+        meeting_link = onlineMeeting?.joinUrl || webLink as string;
+        platform_event_id = mEventId as string;
+        break;
+      } else {
+        throw new PublicError("User not connected to Microsoft Teams");
+      }
+    }
+    case MeetingPlatform.CUSTOM:
+    default: {
+      invariant(customMeetingLink, new PublicError("Missing meeting link."));
+      meeting_link = customMeetingLink;
+      break;
+    }
+  }
+
+  const newMeetingEvent = await ctx.prisma.meetingEvent.create({
+    data: {
+      title,
+      description,
+      end_time,
+      start_time,
+      platform,
+      timezone,
+      meeting_link,
+      phone_pin,
+      phone,
+      phone_country,
+      project_connection_id,
+      platform_event_id,
+      organizer_id: organizer_user.id,
+      is_sharable: true,
+      meetingAttendeeConnections: {
+        create: attendeeConnections,
+      },
+    },
+    include: {
+      project_connection: {
+        include: {
+          project_request: true,
+        },
+      },
+    },
+  });
+
+  const notificationJob = {
+    data: attendeeConnections.map((a) =>
+      createNewMeetingNotificationJob({
+        meeting_event_id: newMeetingEvent.id,
+        organizer_full_name: `${organizer_user.first_name} ${organizer_user.last_name}`,
+        project_title:
+          newMeetingEvent.project_connection.project_request.title,
+        recipient_id: a.user_id,
+      })
+    ),
+  };
+  createNotificationQueueJob(notificationJob);
+
+  return newMeetingEvent;
+}
 
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
@@ -352,7 +548,14 @@ const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: Servi
     let freeSlotsGroupByUser = [];
     for (const userEvents of allUsersEvents) {
       const busySlots = processCalendarEvents(userEvents);
-      const freeSlots = findFreeSlots(busySlots, date, duration_in_min);
+      let freeSlots = findFreeSlots(busySlots, date, duration_in_min);
+
+      // Check if the date is today. If so, filter out past time slots
+      if (moment(date).isSame(moment(), 'day')) {
+        const currentTime = moment();
+        freeSlots = freeSlots.filter(slot => moment(slot).isAfter(currentTime));
+      }
+
       freeSlotsGroupByUser.push(freeSlots);
     }
 
@@ -364,6 +567,7 @@ const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: Servi
 }
 
 const meetingEventService = {
+  createMeetingEvent,
   removeMeetingEvent,
   updateMeetingEvent,
   getMicrosoftCalendarEvents,

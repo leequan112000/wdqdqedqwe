@@ -153,6 +153,10 @@ export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = 
 
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
+  MICROSOFT_TEAMS = 'microsoft-teams',
+  WEBEX = 'webex',
+  ZOOM = 'zoom',
+  CUSTOM = 'custom',
 }
 
 export enum BiotechAccountType {

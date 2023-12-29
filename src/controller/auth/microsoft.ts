@@ -4,6 +4,7 @@ import { OauthProvider } from '../../helper/constant';
 import { codeVerifier } from '../../helper/oauth';
 import { app_env } from '../../environment';
 import prisma from '../../prisma';
+import Sentry from '../../sentry';
 
 export const microsoftCallback = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -56,6 +57,7 @@ export const microsoftCallback = async (req: Request, res: Response): Promise<vo
     res.redirect(`${app_env.APP_URL}/app/meeting-events`);
     return;
   } catch (error) {
+    Sentry.captureException(error);
     res.redirect(`${app_env.APP_URL}/app/meeting-events?error=AuthenticationFailed`);
     return;
   }

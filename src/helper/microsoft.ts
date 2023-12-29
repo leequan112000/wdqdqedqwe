@@ -1,3 +1,4 @@
+import * as MicrosoftGraph from "@microsoft/microsoft-graph-types"
 import { Client } from '@microsoft/microsoft-graph-client';
 import ClientOAuth2 from 'client-oauth2';
 import { app_env } from '../environment';
@@ -49,4 +50,10 @@ export const microsoftClientRefreshToken = async (
   });
 
   return newToken;
+}
+
+export const createMicrosoftEvent = async (client: Client, eventDetails: MicrosoftGraph.Event): Promise<MicrosoftGraph.Event> => {
+  return await client
+    .api("/me/events")
+    .post(eventDetails);
 }

@@ -392,7 +392,7 @@ const resolvers: Resolvers<Context> = {
       invariant(user_id, "User ID not found.");
 
       const authorizationUri = microsoftClient.code.getUri({
-        scopes: ["Calendars.Read offline_access"],
+        scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access"],
         state: user_id,
         query: {
           code_challenge: codeChallenge,
@@ -480,16 +480,6 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createMeetingEvent: async (parent, args, context) => {
-      const {
-        title,
-        end_time,
-        start_time,
-        timezone,
-        attendees,
-        description,
-        project_connection_id,
-      } = args;
-
       const organizerUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -498,98 +488,12 @@ const resolvers: Resolvers<Context> = {
 
       invariant(organizerUser, "Current user not found.");
 
-      let attendeeUsers: User[] = [];
-
-      const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
-        // Create Google event.
-        const attendeeArr = [
-          ...attendees.map((a) => ({ email: a })),
-          { email: organizerUser.email },
-        ];
-        const resp = await createGoogleEvent({
-          summary: title,
-          description,
-          attendees: attendeeArr,
-          end: {
-            dateTime: end_time,
-            timeZone: timezone,
-          },
-          start: {
-            dateTime: start_time,
-            timeZone: timezone,
-          },
-        });
-        const { conferenceData, hangoutLink, id: gEventId } = resp.data;
-        invariant(
-          conferenceData && hangoutLink,
-          "Missing conferenceData and hangout link."
-        );
-        const entryPoints = conferenceData.entryPoints;
-        const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
-        const [countryCode, phone] = phoneEntryPoint.label!.split(" ");
-
-        // Find attendees. This NOT INCLUDE the organizer.
-        attendeeUsers = await trx.user.findMany({
-          where: {
-            email: {
-              in: attendees,
-            },
-          },
-        });
-
-        // Create meeting attendee connections.
-        // Note that organizerUser is inserted here.
-        const data = [...attendeeUsers, organizerUser].map((u) => ({
-          user_id: u.id,
-        }));
-
-        // Create meeting event record.
-        const newMeetingEvent = await trx.meetingEvent.create({
-          data: {
-            title,
-            description,
-            end_time,
-            start_time,
-            platform: MeetingPlatform.GOOGLE_MEET,
-            timezone,
-            meeting_link: hangoutLink,
-            phone_pin: phoneEntryPoint.pin,
-            phone: phone,
-            phone_country: countryCode,
-            project_connection_id,
-            platform_event_id: gEventId,
-            organizer_id: organizerUser.id,
-            is_sharable: true,
-            meetingAttendeeConnections: {
-              create: data,
-            },
-          },
-          include: {
-            project_connection: {
-              include: {
-                project_request: true,
-              },
-            },
-          },
-        });
-
-        return newMeetingEvent;
+      return await context.prisma.$transaction(async (trx) => {
+        return await meetingEventService.createMeetingEvent({
+          ...args,
+          organizer_user: organizerUser,
+        }, { prisma: trx });
       });
-
-      const notificationJob = {
-        data: attendeeUsers.map((u) =>
-          createNewMeetingNotificationJob({
-            meeting_event_id: newMeetingEvent.id,
-            organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-            project_title:
-              newMeetingEvent.project_connection.project_request.title,
-            recipient_id: u.id,
-          })
-        ),
-      };
-      createNotificationQueueJob(notificationJob);
-
-      return newMeetingEvent;
     },
     updateMeetingEvent: async (parent, args, context) => {
       const {
