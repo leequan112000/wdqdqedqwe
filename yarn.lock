@@ -2297,6 +2297,11 @@
     "@babel/runtime" "^7.12.5"
     tslib "^2.2.0"
 
+"@microsoft/microsoft-graph-types@^2.40.0":
+  version "2.40.0"
+  resolved "https://registry.yarnpkg.com/@microsoft/microsoft-graph-types/-/microsoft-graph-types-2.40.0.tgz#65f51600ab45ace97d7b1368c47f9e0f835fddca"
+  integrity sha512-1fcPVrB/NkbNcGNfCy+Cgnvwxt6/sbIEEFgZHFBJ670zYLegENYJF8qMo7x3LqBjWX2/Eneq5BVVRCLTmlJN+g==
+
 "@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.2":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@msgpackr-extract/msgpackr-extract-darwin-arm64/-/msgpackr-extract-darwin-arm64-3.0.2.tgz#44d752c1a2dc113f15f781b7cc4f53a307e3fa38"
