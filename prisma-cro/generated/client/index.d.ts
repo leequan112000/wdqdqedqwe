@@ -1953,6 +1953,7 @@ export namespace Prisma {
     company_name: string | null
     website_url: string | null
     linkedin_url: string | null
+    crunchbase_url: string | null
     type: string | null
     is_active: boolean | null
     is_cromatic_vendor: boolean | null
@@ -1963,6 +1964,7 @@ export namespace Prisma {
     company_name: string | null
     website_url: string | null
     linkedin_url: string | null
+    crunchbase_url: string | null
     type: string | null
     is_active: boolean | null
     is_cromatic_vendor: boolean | null
@@ -1973,6 +1975,7 @@ export namespace Prisma {
     company_name: number
     website_url: number
     linkedin_url: number
+    crunchbase_url: number
     type: number
     is_active: number
     is_cromatic_vendor: number
@@ -1985,6 +1988,7 @@ export namespace Prisma {
     company_name?: true
     website_url?: true
     linkedin_url?: true
+    crunchbase_url?: true
     type?: true
     is_active?: true
     is_cromatic_vendor?: true
@@ -1995,6 +1999,7 @@ export namespace Prisma {
     company_name?: true
     website_url?: true
     linkedin_url?: true
+    crunchbase_url?: true
     type?: true
     is_active?: true
     is_cromatic_vendor?: true
@@ -2005,6 +2010,7 @@ export namespace Prisma {
     company_name?: true
     website_url?: true
     linkedin_url?: true
+    crunchbase_url?: true
     type?: true
     is_active?: true
     is_cromatic_vendor?: true
@@ -2088,6 +2094,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -2115,6 +2122,7 @@ export namespace Prisma {
     company_name?: boolean
     website_url?: boolean
     linkedin_url?: boolean
+    crunchbase_url?: boolean
     type?: boolean
     is_active?: boolean
     is_cromatic_vendor?: boolean
@@ -2130,6 +2138,7 @@ export namespace Prisma {
     company_name?: boolean
     website_url?: boolean
     linkedin_url?: boolean
+    crunchbase_url?: boolean
     type?: boolean
     is_active?: boolean
     is_cromatic_vendor?: boolean
@@ -2157,6 +2166,7 @@ export namespace Prisma {
       company_name: string
       website_url: string
       linkedin_url: string
+      crunchbase_url: string
       type: string
       is_active: boolean
       is_cromatic_vendor: boolean
@@ -2565,6 +2575,7 @@ export namespace Prisma {
     readonly company_name: FieldRef<"vendor_companies", 'String'>
     readonly website_url: FieldRef<"vendor_companies", 'String'>
     readonly linkedin_url: FieldRef<"vendor_companies", 'String'>
+    readonly crunchbase_url: FieldRef<"vendor_companies", 'String'>
     readonly type: FieldRef<"vendor_companies", 'String'>
     readonly is_active: FieldRef<"vendor_companies", 'Boolean'>
     readonly is_cromatic_vendor: FieldRef<"vendor_companies", 'Boolean'>
@@ -5221,18 +5232,21 @@ export namespace Prisma {
 
   export type Company_specialtiesMinAggregateOutputType = {
     id: string | null
+    specialty_id: string | null
     linkedin_info_id: string | null
     specialty: string | null
   }
 
   export type Company_specialtiesMaxAggregateOutputType = {
     id: string | null
+    specialty_id: string | null
     linkedin_info_id: string | null
     specialty: string | null
   }
 
   export type Company_specialtiesCountAggregateOutputType = {
     id: number
+    specialty_id: number
     linkedin_info_id: number
     specialty: number
     _all: number
@@ -5241,18 +5255,21 @@ export namespace Prisma {
 
   export type Company_specialtiesMinAggregateInputType = {
     id?: true
+    specialty_id?: true
     linkedin_info_id?: true
     specialty?: true
   }
 
   export type Company_specialtiesMaxAggregateInputType = {
     id?: true
+    specialty_id?: true
     linkedin_info_id?: true
     specialty?: true
   }
 
   export type Company_specialtiesCountAggregateInputType = {
     id?: true
+    specialty_id?: true
     linkedin_info_id?: true
     specialty?: true
     _all?: true
@@ -5332,6 +5349,7 @@ export namespace Prisma {
 
   export type Company_specialtiesGroupByOutputType = {
     id: string
+    specialty_id: string
     linkedin_info_id: string
     specialty: string
     _count: Company_specialtiesCountAggregateOutputType | null
@@ -5355,6 +5373,7 @@ export namespace Prisma {
 
   export type company_specialtiesSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    specialty_id?: boolean
     linkedin_info_id?: boolean
     specialty?: boolean
     linkedin_info?: boolean | linkedin_infoDefaultArgs<ExtArgs>
@@ -5362,6 +5381,7 @@ export namespace Prisma {
 
   export type company_specialtiesSelectScalar = {
     id?: boolean
+    specialty_id?: boolean
     linkedin_info_id?: boolean
     specialty?: boolean
   }
@@ -5378,6 +5398,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      specialty_id: string
       linkedin_info_id: string
       specialty: string
     }, ExtArgs["result"]["company_specialties"]>
@@ -5776,6 +5797,7 @@ export namespace Prisma {
    */ 
   interface company_specialtiesFieldRefs {
     readonly id: FieldRef<"company_specialties", 'String'>
+    readonly specialty_id: FieldRef<"company_specialties", 'String'>
     readonly linkedin_info_id: FieldRef<"company_specialties", 'String'>
     readonly specialty: FieldRef<"company_specialties", 'String'>
   }
@@ -6117,18 +6139,21 @@ export namespace Prisma {
 
   export type Featured_employeesMinAggregateOutputType = {
     id: string | null
+    employee_id: string | null
     linkedin_info_id: string | null
     linkedin_url: string | null
   }
 
   export type Featured_employeesMaxAggregateOutputType = {
     id: string | null
+    employee_id: string | null
     linkedin_info_id: string | null
     linkedin_url: string | null
   }
 
   export type Featured_employeesCountAggregateOutputType = {
     id: number
+    employee_id: number
     linkedin_info_id: number
     linkedin_url: number
     _all: number
@@ -6137,18 +6162,21 @@ export namespace Prisma {
 
   export type Featured_employeesMinAggregateInputType = {
     id?: true
+    employee_id?: true
     linkedin_info_id?: true
     linkedin_url?: true
   }
 
   export type Featured_employeesMaxAggregateInputType = {
     id?: true
+    employee_id?: true
     linkedin_info_id?: true
     linkedin_url?: true
   }
 
   export type Featured_employeesCountAggregateInputType = {
     id?: true
+    employee_id?: true
     linkedin_info_id?: true
     linkedin_url?: true
     _all?: true
@@ -6228,6 +6256,7 @@ export namespace Prisma {
 
   export type Featured_employeesGroupByOutputType = {
     id: string
+    employee_id: string
     linkedin_info_id: string
     linkedin_url: string
     _count: Featured_employeesCountAggregateOutputType | null
@@ -6251,6 +6280,7 @@ export namespace Prisma {
 
   export type featured_employeesSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    employee_id?: boolean
     linkedin_info_id?: boolean
     linkedin_url?: boolean
     linkedin_info?: boolean | linkedin_infoDefaultArgs<ExtArgs>
@@ -6258,6 +6288,7 @@ export namespace Prisma {
 
   export type featured_employeesSelectScalar = {
     id?: boolean
+    employee_id?: boolean
     linkedin_info_id?: boolean
     linkedin_url?: boolean
   }
@@ -6274,6 +6305,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      employee_id: string
       linkedin_info_id: string
       linkedin_url: string
     }, ExtArgs["result"]["featured_employees"]>
@@ -6672,6 +6704,7 @@ export namespace Prisma {
    */ 
   interface featured_employeesFieldRefs {
     readonly id: FieldRef<"featured_employees", 'String'>
+    readonly employee_id: FieldRef<"featured_employees", 'String'>
     readonly linkedin_info_id: FieldRef<"featured_employees", 'String'>
     readonly linkedin_url: FieldRef<"featured_employees", 'String'>
   }
@@ -7013,18 +7046,21 @@ export namespace Prisma {
 
   export type LocationsMinAggregateOutputType = {
     id: string | null
+    location_id: string | null
     linkedin_info_id: string | null
     location_address: string | null
   }
 
   export type LocationsMaxAggregateOutputType = {
     id: string | null
+    location_id: string | null
     linkedin_info_id: string | null
     location_address: string | null
   }
 
   export type LocationsCountAggregateOutputType = {
     id: number
+    location_id: number
     linkedin_info_id: number
     location_address: number
     _all: number
@@ -7033,18 +7069,21 @@ export namespace Prisma {
 
   export type LocationsMinAggregateInputType = {
     id?: true
+    location_id?: true
     linkedin_info_id?: true
     location_address?: true
   }
 
   export type LocationsMaxAggregateInputType = {
     id?: true
+    location_id?: true
     linkedin_info_id?: true
     location_address?: true
   }
 
   export type LocationsCountAggregateInputType = {
     id?: true
+    location_id?: true
     linkedin_info_id?: true
     location_address?: true
     _all?: true
@@ -7124,6 +7163,7 @@ export namespace Prisma {
 
   export type LocationsGroupByOutputType = {
     id: string
+    location_id: string
     linkedin_info_id: string
     location_address: string
     _count: LocationsCountAggregateOutputType | null
@@ -7147,6 +7187,7 @@ export namespace Prisma {
 
   export type locationsSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    location_id?: boolean
     linkedin_info_id?: boolean
     location_address?: boolean
     linkedin_info?: boolean | linkedin_infoDefaultArgs<ExtArgs>
@@ -7154,6 +7195,7 @@ export namespace Prisma {
 
   export type locationsSelectScalar = {
     id?: boolean
+    location_id?: boolean
     linkedin_info_id?: boolean
     location_address?: boolean
   }
@@ -7170,6 +7212,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetResult<{
       id: string
+      location_id: string
       linkedin_info_id: string
       location_address: string
     }, ExtArgs["result"]["locations"]>
@@ -7568,6 +7611,7 @@ export namespace Prisma {
    */ 
   interface locationsFieldRefs {
     readonly id: FieldRef<"locations", 'String'>
+    readonly location_id: FieldRef<"locations", 'String'>
     readonly linkedin_info_id: FieldRef<"locations", 'String'>
     readonly location_address: FieldRef<"locations", 'String'>
   }
@@ -10878,7 +10922,7 @@ export namespace Prisma {
   }
 
   export type Funding_roundsSumAggregateOutputType = {
-    money_raised: number | null
+    money_raised: bigint | null
   }
 
   export type Funding_roundsMinAggregateOutputType = {
@@ -10889,7 +10933,7 @@ export namespace Prisma {
     investment_stage: string | null
     short_description: string | null
     currency: string | null
-    money_raised: number | null
+    money_raised: bigint | null
     announced_on: Date | null
   }
 
@@ -10901,7 +10945,7 @@ export namespace Prisma {
     investment_stage: string | null
     short_description: string | null
     currency: string | null
-    money_raised: number | null
+    money_raised: bigint | null
     announced_on: Date | null
   }
 
@@ -11058,7 +11102,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint
     announced_on: Date
     _count: Funding_roundsCountAggregateOutputType | null
     _avg: Funding_roundsAvgAggregateOutputType | null
@@ -11124,7 +11168,7 @@ export namespace Prisma {
       investment_stage: string
       short_description: string
       currency: string
-      money_raised: number
+      money_raised: bigint
       announced_on: Date
     }, ExtArgs["result"]["funding_rounds"]>
     composites: {}
@@ -11528,7 +11572,7 @@ export namespace Prisma {
     readonly investment_stage: FieldRef<"funding_rounds", 'String'>
     readonly short_description: FieldRef<"funding_rounds", 'String'>
     readonly currency: FieldRef<"funding_rounds", 'String'>
-    readonly money_raised: FieldRef<"funding_rounds", 'Int'>
+    readonly money_raised: FieldRef<"funding_rounds", 'BigInt'>
     readonly announced_on: FieldRef<"funding_rounds", 'DateTime'>
   }
     
@@ -13772,6 +13816,7 @@ export namespace Prisma {
     company_name: 'company_name',
     website_url: 'website_url',
     linkedin_url: 'linkedin_url',
+    crunchbase_url: 'crunchbase_url',
     type: 'type',
     is_active: 'is_active',
     is_cromatic_vendor: 'is_cromatic_vendor'
@@ -13822,6 +13867,7 @@ export namespace Prisma {
 
   export const Company_specialtiesScalarFieldEnum: {
     id: 'id',
+    specialty_id: 'specialty_id',
     linkedin_info_id: 'linkedin_info_id',
     specialty: 'specialty'
   };
@@ -13831,6 +13877,7 @@ export namespace Prisma {
 
   export const Featured_employeesScalarFieldEnum: {
     id: 'id',
+    employee_id: 'employee_id',
     linkedin_info_id: 'linkedin_info_id',
     linkedin_url: 'linkedin_url'
   };
@@ -13840,6 +13887,7 @@ export namespace Prisma {
 
   export const LocationsScalarFieldEnum: {
     id: 'id',
+    location_id: 'location_id',
     linkedin_info_id: 'linkedin_info_id',
     location_address: 'location_address'
   };
@@ -14007,6 +14055,20 @@ export namespace Prisma {
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
+
+
+  /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt[]'
+   */
+  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
   /**
    * Deep Input Types
    */
@@ -14020,6 +14082,7 @@ export namespace Prisma {
     company_name?: StringFilter<"vendor_companies"> | string
     website_url?: StringFilter<"vendor_companies"> | string
     linkedin_url?: StringFilter<"vendor_companies"> | string
+    crunchbase_url?: StringFilter<"vendor_companies"> | string
     type?: StringFilter<"vendor_companies"> | string
     is_active?: BoolFilter<"vendor_companies"> | boolean
     is_cromatic_vendor?: BoolFilter<"vendor_companies"> | boolean
@@ -14034,6 +14097,7 @@ export namespace Prisma {
     company_name?: SortOrder
     website_url?: SortOrder
     linkedin_url?: SortOrder
+    crunchbase_url?: SortOrder
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
@@ -14051,6 +14115,7 @@ export namespace Prisma {
     company_name?: StringFilter<"vendor_companies"> | string
     website_url?: StringFilter<"vendor_companies"> | string
     linkedin_url?: StringFilter<"vendor_companies"> | string
+    crunchbase_url?: StringFilter<"vendor_companies"> | string
     type?: StringFilter<"vendor_companies"> | string
     is_active?: BoolFilter<"vendor_companies"> | boolean
     is_cromatic_vendor?: BoolFilter<"vendor_companies"> | boolean
@@ -14065,6 +14130,7 @@ export namespace Prisma {
     company_name?: SortOrder
     website_url?: SortOrder
     linkedin_url?: SortOrder
+    crunchbase_url?: SortOrder
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
@@ -14081,6 +14147,7 @@ export namespace Prisma {
     company_name?: StringWithAggregatesFilter<"vendor_companies"> | string
     website_url?: StringWithAggregatesFilter<"vendor_companies"> | string
     linkedin_url?: StringWithAggregatesFilter<"vendor_companies"> | string
+    crunchbase_url?: StringWithAggregatesFilter<"vendor_companies"> | string
     type?: StringWithAggregatesFilter<"vendor_companies"> | string
     is_active?: BoolWithAggregatesFilter<"vendor_companies"> | boolean
     is_cromatic_vendor?: BoolWithAggregatesFilter<"vendor_companies"> | boolean
@@ -14303,7 +14370,8 @@ export namespace Prisma {
     AND?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
-    id?: StringFilter<"company_specialties"> | string
+    id?: UuidFilter<"company_specialties"> | string
+    specialty_id?: StringFilter<"company_specialties"> | string
     linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
@@ -14311,6 +14379,7 @@ export namespace Prisma {
 
   export type company_specialtiesOrderByWithRelationInput = {
     id?: SortOrder
+    specialty_id?: SortOrder
     linkedin_info_id?: SortOrder
     specialty?: SortOrder
     linkedin_info?: linkedin_infoOrderByWithRelationInput
@@ -14318,17 +14387,19 @@ export namespace Prisma {
 
   export type company_specialtiesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_linkedin_info_id?: company_specialtiesIdLinkedin_info_idCompoundUniqueInput
+    specialty_id_linkedin_info_id?: company_specialtiesSpecialty_idLinkedin_info_idCompoundUniqueInput
     AND?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
     OR?: company_specialtiesWhereInput[]
     NOT?: company_specialtiesWhereInput | company_specialtiesWhereInput[]
+    specialty_id?: StringFilter<"company_specialties"> | string
     linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id" | "id_linkedin_info_id">
+  }, "id" | "specialty_id_linkedin_info_id">
 
   export type company_specialtiesOrderByWithAggregationInput = {
     id?: SortOrder
+    specialty_id?: SortOrder
     linkedin_info_id?: SortOrder
     specialty?: SortOrder
     _count?: company_specialtiesCountOrderByAggregateInput
@@ -14340,7 +14411,8 @@ export namespace Prisma {
     AND?: company_specialtiesScalarWhereWithAggregatesInput | company_specialtiesScalarWhereWithAggregatesInput[]
     OR?: company_specialtiesScalarWhereWithAggregatesInput[]
     NOT?: company_specialtiesScalarWhereWithAggregatesInput | company_specialtiesScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"company_specialties"> | string
+    id?: UuidWithAggregatesFilter<"company_specialties"> | string
+    specialty_id?: StringWithAggregatesFilter<"company_specialties"> | string
     linkedin_info_id?: StringWithAggregatesFilter<"company_specialties"> | string
     specialty?: StringWithAggregatesFilter<"company_specialties"> | string
   }
@@ -14349,7 +14421,8 @@ export namespace Prisma {
     AND?: featured_employeesWhereInput | featured_employeesWhereInput[]
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
-    id?: StringFilter<"featured_employees"> | string
+    id?: UuidFilter<"featured_employees"> | string
+    employee_id?: StringFilter<"featured_employees"> | string
     linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
@@ -14357,6 +14430,7 @@ export namespace Prisma {
 
   export type featured_employeesOrderByWithRelationInput = {
     id?: SortOrder
+    employee_id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
     linkedin_info?: linkedin_infoOrderByWithRelationInput
@@ -14364,17 +14438,19 @@ export namespace Prisma {
 
   export type featured_employeesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_linkedin_info_id?: featured_employeesIdLinkedin_info_idCompoundUniqueInput
+    employee_id_linkedin_info_id?: featured_employeesEmployee_idLinkedin_info_idCompoundUniqueInput
     AND?: featured_employeesWhereInput | featured_employeesWhereInput[]
     OR?: featured_employeesWhereInput[]
     NOT?: featured_employeesWhereInput | featured_employeesWhereInput[]
+    employee_id?: StringFilter<"featured_employees"> | string
     linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id" | "id_linkedin_info_id">
+  }, "id" | "employee_id_linkedin_info_id">
 
   export type featured_employeesOrderByWithAggregationInput = {
     id?: SortOrder
+    employee_id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
     _count?: featured_employeesCountOrderByAggregateInput
@@ -14386,7 +14462,8 @@ export namespace Prisma {
     AND?: featured_employeesScalarWhereWithAggregatesInput | featured_employeesScalarWhereWithAggregatesInput[]
     OR?: featured_employeesScalarWhereWithAggregatesInput[]
     NOT?: featured_employeesScalarWhereWithAggregatesInput | featured_employeesScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"featured_employees"> | string
+    id?: UuidWithAggregatesFilter<"featured_employees"> | string
+    employee_id?: StringWithAggregatesFilter<"featured_employees"> | string
     linkedin_info_id?: StringWithAggregatesFilter<"featured_employees"> | string
     linkedin_url?: StringWithAggregatesFilter<"featured_employees"> | string
   }
@@ -14395,7 +14472,8 @@ export namespace Prisma {
     AND?: locationsWhereInput | locationsWhereInput[]
     OR?: locationsWhereInput[]
     NOT?: locationsWhereInput | locationsWhereInput[]
-    id?: StringFilter<"locations"> | string
+    id?: UuidFilter<"locations"> | string
+    location_id?: StringFilter<"locations"> | string
     linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
@@ -14403,6 +14481,7 @@ export namespace Prisma {
 
   export type locationsOrderByWithRelationInput = {
     id?: SortOrder
+    location_id?: SortOrder
     linkedin_info_id?: SortOrder
     location_address?: SortOrder
     linkedin_info?: linkedin_infoOrderByWithRelationInput
@@ -14410,17 +14489,19 @@ export namespace Prisma {
 
   export type locationsWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    id_linkedin_info_id?: locationsIdLinkedin_info_idCompoundUniqueInput
+    location_id_linkedin_info_id?: locationsLocation_idLinkedin_info_idCompoundUniqueInput
     AND?: locationsWhereInput | locationsWhereInput[]
     OR?: locationsWhereInput[]
     NOT?: locationsWhereInput | locationsWhereInput[]
+    location_id?: StringFilter<"locations"> | string
     linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
     linkedin_info?: XOR<Linkedin_infoRelationFilter, linkedin_infoWhereInput>
-  }, "id" | "id_linkedin_info_id">
+  }, "id" | "location_id_linkedin_info_id">
 
   export type locationsOrderByWithAggregationInput = {
     id?: SortOrder
+    location_id?: SortOrder
     linkedin_info_id?: SortOrder
     location_address?: SortOrder
     _count?: locationsCountOrderByAggregateInput
@@ -14432,7 +14513,8 @@ export namespace Prisma {
     AND?: locationsScalarWhereWithAggregatesInput | locationsScalarWhereWithAggregatesInput[]
     OR?: locationsScalarWhereWithAggregatesInput[]
     NOT?: locationsScalarWhereWithAggregatesInput | locationsScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"locations"> | string
+    id?: UuidWithAggregatesFilter<"locations"> | string
+    location_id?: StringWithAggregatesFilter<"locations"> | string
     linkedin_info_id?: StringWithAggregatesFilter<"locations"> | string
     location_address?: StringWithAggregatesFilter<"locations"> | string
   }
@@ -14477,6 +14559,7 @@ export namespace Prisma {
   export type funding_infoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     company_id?: string
+    id_company_id?: funding_infoIdCompany_idCompoundUniqueInput
     AND?: funding_infoWhereInput | funding_infoWhereInput[]
     OR?: funding_infoWhereInput[]
     NOT?: funding_infoWhereInput | funding_infoWhereInput[]
@@ -14492,7 +14575,7 @@ export namespace Prisma {
     press_references?: Press_referencesListRelationFilter
     raised_funding_rounds?: Funding_roundsListRelationFilter
     founders?: FoundersListRelationFilter
-  }, "id" | "company_id">
+  }, "id" | "company_id" | "id_company_id">
 
   export type funding_infoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -14659,7 +14742,7 @@ export namespace Prisma {
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
     currency?: StringFilter<"funding_rounds"> | string
-    money_raised?: IntFilter<"funding_rounds"> | number
+    money_raised?: BigIntFilter<"funding_rounds"> | bigint | number
     announced_on?: DateTimeFilter<"funding_rounds"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
   }
@@ -14689,7 +14772,7 @@ export namespace Prisma {
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
     currency?: StringFilter<"funding_rounds"> | string
-    money_raised?: IntFilter<"funding_rounds"> | number
+    money_raised?: BigIntFilter<"funding_rounds"> | bigint | number
     announced_on?: DateTimeFilter<"funding_rounds"> | Date | string
     funding_info?: XOR<Funding_infoRelationFilter, funding_infoWhereInput>
   }, "id" | "round_id_funding_info_id">
@@ -14722,7 +14805,7 @@ export namespace Prisma {
     investment_stage?: StringWithAggregatesFilter<"funding_rounds"> | string
     short_description?: StringWithAggregatesFilter<"funding_rounds"> | string
     currency?: StringWithAggregatesFilter<"funding_rounds"> | string
-    money_raised?: IntWithAggregatesFilter<"funding_rounds"> | number
+    money_raised?: BigIntWithAggregatesFilter<"funding_rounds"> | bigint | number
     announced_on?: DateTimeWithAggregatesFilter<"funding_rounds"> | Date | string
   }
 
@@ -14854,6 +14937,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -14868,6 +14952,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -14882,6 +14967,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -14896,6 +14982,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -14910,6 +14997,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -14920,6 +15008,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -14930,6 +15019,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -15184,124 +15274,145 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateInput = {
-    id: string
+    id?: string
+    specialty_id: string
     specialty: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutCompany_specialties_collectionInput
   }
 
   export type company_specialtiesUncheckedCreateInput = {
-    id: string
+    id?: string
+    specialty_id: string
     linkedin_info_id: string
     specialty: string
   }
 
   export type company_specialtiesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
     linkedin_info?: linkedin_infoUpdateOneRequiredWithoutCompany_specialties_collectionNestedInput
   }
 
   export type company_specialtiesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type company_specialtiesCreateManyInput = {
-    id: string
+    id?: string
+    specialty_id: string
     linkedin_info_id: string
     specialty: string
   }
 
   export type company_specialtiesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type company_specialtiesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesCreateInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_url: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutCompany_featured_employees_collectionInput
   }
 
   export type featured_employeesUncheckedCreateInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_info_id: string
     linkedin_url: string
   }
 
   export type featured_employeesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
     linkedin_info?: linkedin_infoUpdateOneRequiredWithoutCompany_featured_employees_collectionNestedInput
   }
 
   export type featured_employeesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesCreateManyInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_info_id: string
     linkedin_url: string
   }
 
   export type featured_employeesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsCreateInput = {
-    id: string
+    id?: string
+    location_id: string
     location_address: string
     linkedin_info: linkedin_infoCreateNestedOneWithoutLocations_collectionInput
   }
 
   export type locationsUncheckedCreateInput = {
-    id: string
+    id?: string
+    location_id: string
     linkedin_info_id: string
     location_address: string
   }
 
   export type locationsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
     linkedin_info?: linkedin_infoUpdateOneRequiredWithoutLocations_collectionNestedInput
   }
 
   export type locationsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsCreateManyInput = {
-    id: string
+    id?: string
+    location_id: string
     linkedin_info_id: string
     location_address: string
   }
 
   export type locationsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     linkedin_info_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
@@ -15536,7 +15647,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
     funding_info: funding_infoCreateNestedOneWithoutRaised_funding_roundsInput
   }
@@ -15549,7 +15660,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
   }
 
@@ -15560,7 +15671,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
     funding_info?: funding_infoUpdateOneRequiredWithoutRaised_funding_roundsNestedInput
   }
@@ -15573,7 +15684,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -15585,7 +15696,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
   }
 
@@ -15596,7 +15707,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -15608,7 +15719,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -15813,6 +15924,7 @@ export namespace Prisma {
     company_name?: SortOrder
     website_url?: SortOrder
     linkedin_url?: SortOrder
+    crunchbase_url?: SortOrder
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
@@ -15823,6 +15935,7 @@ export namespace Prisma {
     company_name?: SortOrder
     website_url?: SortOrder
     linkedin_url?: SortOrder
+    crunchbase_url?: SortOrder
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
@@ -15833,6 +15946,7 @@ export namespace Prisma {
     company_name?: SortOrder
     website_url?: SortOrder
     linkedin_url?: SortOrder
+    crunchbase_url?: SortOrder
     type?: SortOrder
     is_active?: SortOrder
     is_cromatic_vendor?: SortOrder
@@ -16140,71 +16254,80 @@ export namespace Prisma {
     isNot?: linkedin_infoWhereInput
   }
 
-  export type company_specialtiesIdLinkedin_info_idCompoundUniqueInput = {
-    id: string
+  export type company_specialtiesSpecialty_idLinkedin_info_idCompoundUniqueInput = {
+    specialty_id: string
     linkedin_info_id: string
   }
 
   export type company_specialtiesCountOrderByAggregateInput = {
     id?: SortOrder
+    specialty_id?: SortOrder
     linkedin_info_id?: SortOrder
     specialty?: SortOrder
   }
 
   export type company_specialtiesMaxOrderByAggregateInput = {
     id?: SortOrder
+    specialty_id?: SortOrder
     linkedin_info_id?: SortOrder
     specialty?: SortOrder
   }
 
   export type company_specialtiesMinOrderByAggregateInput = {
     id?: SortOrder
+    specialty_id?: SortOrder
     linkedin_info_id?: SortOrder
     specialty?: SortOrder
   }
 
-  export type featured_employeesIdLinkedin_info_idCompoundUniqueInput = {
-    id: string
+  export type featured_employeesEmployee_idLinkedin_info_idCompoundUniqueInput = {
+    employee_id: string
     linkedin_info_id: string
   }
 
   export type featured_employeesCountOrderByAggregateInput = {
     id?: SortOrder
+    employee_id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
   }
 
   export type featured_employeesMaxOrderByAggregateInput = {
     id?: SortOrder
+    employee_id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
   }
 
   export type featured_employeesMinOrderByAggregateInput = {
     id?: SortOrder
+    employee_id?: SortOrder
     linkedin_info_id?: SortOrder
     linkedin_url?: SortOrder
   }
 
-  export type locationsIdLinkedin_info_idCompoundUniqueInput = {
-    id: string
+  export type locationsLocation_idLinkedin_info_idCompoundUniqueInput = {
+    location_id: string
     linkedin_info_id: string
   }
 
   export type locationsCountOrderByAggregateInput = {
     id?: SortOrder
+    location_id?: SortOrder
     linkedin_info_id?: SortOrder
     location_address?: SortOrder
   }
 
   export type locationsMaxOrderByAggregateInput = {
     id?: SortOrder
+    location_id?: SortOrder
     linkedin_info_id?: SortOrder
     location_address?: SortOrder
   }
 
   export type locationsMinOrderByAggregateInput = {
     id?: SortOrder
+    location_id?: SortOrder
     linkedin_info_id?: SortOrder
     location_address?: SortOrder
   }
@@ -16247,6 +16370,11 @@ export namespace Prisma {
 
   export type foundersOrderByRelationAggregateInput = {
     _count?: SortOrder
+  }
+
+  export type funding_infoIdCompany_idCompoundUniqueInput = {
+    id: string
+    company_id: string
   }
 
   export type funding_infoCountOrderByAggregateInput = {
@@ -16364,6 +16492,17 @@ export namespace Prisma {
     posted_on?: SortOrder
   }
 
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
   export type funding_roundsRound_idFunding_info_idCompoundUniqueInput = {
     round_id: string
     funding_info_id: string
@@ -16411,6 +16550,22 @@ export namespace Prisma {
 
   export type funding_roundsSumOrderByAggregateInput = {
     money_raised?: SortOrder
+  }
+
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
   export type foundersFounder_idFunding_info_idCompoundUniqueInput = {
@@ -17090,6 +17245,14 @@ export namespace Prisma {
     connect?: funding_infoWhereUniqueInput
   }
 
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
+  }
+
   export type funding_infoUpdateOneRequiredWithoutRaised_funding_roundsNestedInput = {
     create?: XOR<funding_infoCreateWithoutRaised_funding_roundsInput, funding_infoUncheckedCreateWithoutRaised_funding_roundsInput>
     connectOrCreate?: funding_infoCreateOrConnectWithoutRaised_funding_roundsInput
@@ -17272,6 +17435,33 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
   export type traffic_infoCreateWithoutVendor_companyInput = {
@@ -17557,6 +17747,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -17570,6 +17761,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -17599,6 +17791,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -17612,6 +17805,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -17625,6 +17819,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -17638,6 +17833,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -17652,12 +17848,14 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    specialty_id: string
     specialty: string
   }
 
   export type company_specialtiesUncheckedCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    specialty_id: string
     specialty: string
   }
 
@@ -17672,12 +17870,14 @@ export namespace Prisma {
   }
 
   export type featured_employeesCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_url: string
   }
 
   export type featured_employeesUncheckedCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_url: string
   }
 
@@ -17692,12 +17892,14 @@ export namespace Prisma {
   }
 
   export type locationsCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    location_id: string
     location_address: string
   }
 
   export type locationsUncheckedCreateWithoutLinkedin_infoInput = {
-    id: string
+    id?: string
+    location_id: string
     location_address: string
   }
 
@@ -17727,6 +17929,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -17740,6 +17943,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -17768,7 +17972,8 @@ export namespace Prisma {
     AND?: company_specialtiesScalarWhereInput | company_specialtiesScalarWhereInput[]
     OR?: company_specialtiesScalarWhereInput[]
     NOT?: company_specialtiesScalarWhereInput | company_specialtiesScalarWhereInput[]
-    id?: StringFilter<"company_specialties"> | string
+    id?: UuidFilter<"company_specialties"> | string
+    specialty_id?: StringFilter<"company_specialties"> | string
     linkedin_info_id?: StringFilter<"company_specialties"> | string
     specialty?: StringFilter<"company_specialties"> | string
   }
@@ -17793,7 +17998,8 @@ export namespace Prisma {
     AND?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
     OR?: featured_employeesScalarWhereInput[]
     NOT?: featured_employeesScalarWhereInput | featured_employeesScalarWhereInput[]
-    id?: StringFilter<"featured_employees"> | string
+    id?: UuidFilter<"featured_employees"> | string
+    employee_id?: StringFilter<"featured_employees"> | string
     linkedin_info_id?: StringFilter<"featured_employees"> | string
     linkedin_url?: StringFilter<"featured_employees"> | string
   }
@@ -17818,7 +18024,8 @@ export namespace Prisma {
     AND?: locationsScalarWhereInput | locationsScalarWhereInput[]
     OR?: locationsScalarWhereInput[]
     NOT?: locationsScalarWhereInput | locationsScalarWhereInput[]
-    id?: StringFilter<"locations"> | string
+    id?: UuidFilter<"locations"> | string
+    location_id?: StringFilter<"locations"> | string
     linkedin_info_id?: StringFilter<"locations"> | string
     location_address?: StringFilter<"locations"> | string
   }
@@ -18080,6 +18287,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -18093,6 +18301,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -18165,7 +18374,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
   }
 
@@ -18176,7 +18385,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
   }
 
@@ -18238,6 +18447,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -18251,6 +18461,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -18342,7 +18553,7 @@ export namespace Prisma {
     investment_stage?: StringFilter<"funding_rounds"> | string
     short_description?: StringFilter<"funding_rounds"> | string
     currency?: StringFilter<"funding_rounds"> | string
-    money_raised?: IntFilter<"funding_rounds"> | number
+    money_raised?: BigIntFilter<"funding_rounds"> | bigint | number
     announced_on?: DateTimeFilter<"funding_rounds"> | Date | string
   }
 
@@ -18686,6 +18897,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -18699,6 +18911,7 @@ export namespace Prisma {
     company_name: string
     website_url: string
     linkedin_url: string
+    crunchbase_url: string
     type: string
     is_active: boolean
     is_cromatic_vendor: boolean
@@ -18728,6 +18941,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -18741,6 +18955,7 @@ export namespace Prisma {
     company_name?: StringFieldUpdateOperationsInput | string
     website_url?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
+    crunchbase_url?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
     is_active?: BoolFieldUpdateOperationsInput | boolean
     is_cromatic_vendor?: BoolFieldUpdateOperationsInput | boolean
@@ -18956,62 +19171,74 @@ export namespace Prisma {
   }
 
   export type company_specialtiesCreateManyLinkedin_infoInput = {
-    id: string
+    id?: string
+    specialty_id: string
     specialty: string
   }
 
   export type featured_employeesCreateManyLinkedin_infoInput = {
-    id: string
+    id?: string
+    employee_id: string
     linkedin_url: string
   }
 
   export type locationsCreateManyLinkedin_infoInput = {
-    id: string
+    id?: string
+    location_id: string
     location_address: string
   }
 
   export type company_specialtiesUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type company_specialtiesUncheckedUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type company_specialtiesUncheckedUpdateManyWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialty_id?: StringFieldUpdateOperationsInput | string
     specialty?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesUncheckedUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type featured_employeesUncheckedUpdateManyWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    employee_id?: StringFieldUpdateOperationsInput | string
     linkedin_url?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsUncheckedUpdateWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
 
   export type locationsUncheckedUpdateManyWithoutLinkedin_infoInput = {
     id?: StringFieldUpdateOperationsInput | string
+    location_id?: StringFieldUpdateOperationsInput | string
     location_address?: StringFieldUpdateOperationsInput | string
   }
 
@@ -19038,7 +19265,7 @@ export namespace Prisma {
     investment_stage: string
     short_description: string
     currency: string
-    money_raised: number
+    money_raised: bigint | number
     announced_on: Date | string
   }
 
@@ -19108,7 +19335,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -19119,7 +19346,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -19130,7 +19357,7 @@ export namespace Prisma {
     investment_stage?: StringFieldUpdateOperationsInput | string
     short_description?: StringFieldUpdateOperationsInput | string
     currency?: StringFieldUpdateOperationsInput | string
-    money_raised?: IntFieldUpdateOperationsInput | number
+    money_raised?: BigIntFieldUpdateOperationsInput | bigint | number
     announced_on?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

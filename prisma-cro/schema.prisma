@@ -16,6 +16,7 @@ model vendor_companies {
   company_name        String
   website_url         String
   linkedin_url        String
+  crunchbase_url      String
   type                String
   is_active           Boolean
   is_cromatic_vendor  Boolean
@@ -67,30 +68,33 @@ model linkedin_info {
 }
 
 model company_specialties {
-  id                String         @id
+  id                String         @id        @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  specialty_id      String
   linkedin_info_id  String
   specialty         String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
 
-  @@unique([id, linkedin_info_id])
+  @@unique([specialty_id, linkedin_info_id])
 }
 
 model featured_employees {
-  id                String         @id
+  id                String         @id        @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id       String
   linkedin_info_id  String
   linkedin_url      String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
 
-  @@unique([id, linkedin_info_id])
+  @@unique([employee_id, linkedin_info_id])
 }
 
 model locations {
-  id                String         @id
+  id                String         @id        @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  location_id       String
   linkedin_info_id  String
   location_address  String
   linkedin_info     linkedin_info  @relation(fields: [linkedin_info_id], references: [id])
 
-  @@unique([id, linkedin_info_id])
+  @@unique([location_id, linkedin_info_id])
 }
 
 model funding_info {
@@ -109,6 +113,8 @@ model funding_info {
   press_references       press_references[]
   raised_funding_rounds  funding_rounds[]
   founders               founders[]
+
+  @@unique([id, company_id])
 }
 
 model categories {
@@ -143,7 +149,7 @@ model funding_rounds {
   investment_stage   String
   short_description  String
   currency           String
-  money_raised       Int
+  money_raised       BigInt
   announced_on       DateTime
   funding_info       funding_info @relation(fields: [funding_info_id], references: [id])
 

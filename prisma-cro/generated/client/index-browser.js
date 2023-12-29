@@ -126,6 +126,7 @@ exports.Prisma.Vendor_companiesScalarFieldEnum = {
   company_name: 'company_name',
   website_url: 'website_url',
   linkedin_url: 'linkedin_url',
+  crunchbase_url: 'crunchbase_url',
   type: 'type',
   is_active: 'is_active',
   is_cromatic_vendor: 'is_cromatic_vendor'
@@ -167,18 +168,21 @@ exports.Prisma.Linkedin_infoScalarFieldEnum = {
 
 exports.Prisma.Company_specialtiesScalarFieldEnum = {
   id: 'id',
+  specialty_id: 'specialty_id',
   linkedin_info_id: 'linkedin_info_id',
   specialty: 'specialty'
 };
 
 exports.Prisma.Featured_employeesScalarFieldEnum = {
   id: 'id',
+  employee_id: 'employee_id',
   linkedin_info_id: 'linkedin_info_id',
   linkedin_url: 'linkedin_url'
 };
 
 exports.Prisma.LocationsScalarFieldEnum = {
   id: 'id',
+  location_id: 'location_id',
   linkedin_info_id: 'linkedin_info_id',
   location_address: 'location_address'
 };
