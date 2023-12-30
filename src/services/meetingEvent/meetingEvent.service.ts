@@ -12,6 +12,9 @@ import { ServiceContext } from "../../types/context";
 import { MicrosoftCalendarEvent } from "../../types/microsoft";
 import { CalendarEvent } from "../../graphql/generated";
 import { PublicError } from "../../graphql/errors/PublicError";
+import { checkIfUserInProjectConnection } from "../projectConnection/projectConnection.service";
+import { meetingInvitationForCromaticUserWithinProjectEmail, meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
+import { app_env } from "../../environment";
 
 type CreateMeetingEventArgs = {
   title: string;
@@ -566,6 +569,116 @@ const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: Servi
   }
 }
 
+type AddExternalGuestToMeetingArgs = {
+  meeting_event_id: string;
+  email: string;
+  name?: string | null;
+}
+
+const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ctx: ServiceContext) => {
+  const { email, name, meeting_event_id } = args;
+
+  const meeting = await ctx.prisma.meetingEvent.findFirst({
+    where: {
+      id: meeting_event_id,
+    },
+    include: {
+      organizer: {
+        include: {
+          customer: {
+            include: {
+              biotech: true,
+            },
+          },
+          vendor_member: {
+            include: {
+              vendor_company: true,
+            },
+          },
+        },
+      },
+      project_connection: {
+        include: {
+          project_request: true,
+        },
+      },
+    },
+  });
+
+  invariant(meeting, 'Meeting event not found.');
+
+  const companyName =
+    meeting.organizer.customer?.biotech?.name ||
+    meeting.organizer.vendor_member?.vendor_company?.name;
+
+  // Check if email is an existing Cromatic user
+  const existingUser = await ctx.prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  let isPartOfProject = false;
+  // If yes, check if user part of project connection.
+  if (existingUser) {
+    isPartOfProject = await checkIfUserInProjectConnection(
+      {
+        project_connection_id: meeting.project_connection_id,
+        user_id: existingUser.id,
+      },
+      ctx
+    );
+  }
+
+  // Take name of existing user from our DB
+  const guestName = existingUser
+    ? `${existingUser.first_name} ${existingUser.last_name}`
+    : name;
+
+  const guest = await ctx.prisma.meetingGuest.upsert({
+    where: {
+      email_meeting_event_id: {
+        email,
+        meeting_event_id,
+      },
+    },
+    create: {
+      email: email,
+      name: guestName || null,
+      type: "invite",
+      status: "pending",
+      meeting_event_id,
+    },
+    update: {},
+  });
+
+  if (isPartOfProject) {
+    meetingInvitationForCromaticUserWithinProjectEmail(
+      {
+        button_url: `${app_env.APP_URL}/app/meeting-events`,
+        company_name: companyName!,
+        guest_name: name || "guest",
+        meeting_title: meeting.title,
+        project_title: meeting.project_connection.project_request.title,
+      },
+      email,
+    );
+  } else {
+    meetingInvitationForGuestEmail(
+      {
+        button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${guest.id}`,
+        company_name: companyName!,
+        guest_name: name || "guest",
+        meeting_title: meeting.title,
+        project_title: meeting.project_connection.project_request.title,
+      },
+      email,
+    );
+  }
+
+  return guest;
+}
+
 const meetingEventService = {
   createMeetingEvent,
   removeMeetingEvent,
@@ -573,6 +686,7 @@ const meetingEventService = {
   getMicrosoftCalendarEvents,
   getGoogleCalendarEvents,
   getAvailableTimeSlots,
+  addExternalGuestToMeeting,
 };
 
 export default meetingEventService;

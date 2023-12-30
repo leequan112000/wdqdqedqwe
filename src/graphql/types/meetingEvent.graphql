@@ -17,7 +17,7 @@ type MeetingEvent {
   project_request: ProjectRequest
   project_connection_id: String
   organizer_company: String
-  opposite_company: String
+  attending_company: String
   organizer_company_participants: [MeetingParticipant]
   attending_company_participants: [MeetingParticipant]
   external_guests: [MeetingParticipant]
@@ -38,6 +38,12 @@ type ExternalGuest {
 input ExternalGuestForInput {
   email: String!
   name: String
+}
+
+input MeetingParticipantForInput {
+  email: String!
+  name: String
+  id: String
 }
 
 type CalendarUser {
@@ -72,6 +78,7 @@ type Query {
     duration_in_min: Int!,
     attendee_user_ids: [String]
   ): [Date]
+  moreAttendeesToAdd(meeting_event_id: String!): [User]
 }
 
 type Mutation {
@@ -98,5 +105,5 @@ type Mutation {
   ): MeetingEvent
   updateMeetingEventSharable(meeting_event_id: String!, is_sharable: Boolean!): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
-  addExternalGuests(guests: [ExternalGuestForInput!]!, meeting_id: String!): [ExternalGuest]
+  addMoreParticipants(participants: [MeetingParticipantForInput!]!, meeting_event_id: String!): [MeetingParticipant]
 }

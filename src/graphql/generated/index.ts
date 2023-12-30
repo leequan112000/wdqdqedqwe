@@ -336,6 +336,7 @@ export type MarkMilestoneCompleteResponse = {
 
 export type MeetingEvent = {
   __typename?: 'MeetingEvent';
+  attending_company?: Maybe<Scalars['String']>;
   attending_company_participants?: Maybe<Array<Maybe<MeetingParticipant>>>;
   description?: Maybe<Scalars['String']>;
   end_time?: Maybe<Scalars['Date']>;
@@ -344,7 +345,6 @@ export type MeetingEvent = {
   guests?: Maybe<Array<Maybe<User>>>;
   id: Scalars['String'];
   meeting_link?: Maybe<Scalars['String']>;
-  opposite_company?: Maybe<Scalars['String']>;
   organizer?: Maybe<User>;
   organizer_company?: Maybe<Scalars['String']>;
   organizer_company_participants?: Maybe<Array<Maybe<MeetingParticipant>>>;
@@ -366,6 +366,12 @@ export type MeetingParticipant = {
   email?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+};
+
+export type MeetingParticipantForInput = {
+  email: Scalars['String'];
+  id?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Message = {
@@ -418,7 +424,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptProjectConnection?: Maybe<ProjectConnection>;
   acceptQuote?: Maybe<Quote>;
-  addExternalGuests?: Maybe<Array<Maybe<ExternalGuest>>>;
+  addMoreParticipants?: Maybe<Array<Maybe<MeetingParticipant>>>;
   addProjectCollaborator?: Maybe<User>;
   answerInvitation?: Maybe<SubmitAttendanceResp>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
@@ -509,9 +515,9 @@ export type MutationAcceptQuoteArgs = {
 };
 
 
-export type MutationAddExternalGuestsArgs = {
-  guests: Array<ExternalGuestForInput>;
-  meeting_id: Scalars['String'];
+export type MutationAddMoreParticipantsArgs = {
+  meeting_event_id: Scalars['String'];
+  participants: Array<MeetingParticipantForInput>;
 };
 
 
@@ -1306,6 +1312,7 @@ export type Query = {
   microsoftCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
   milestone?: Maybe<Milestone>;
   milestoneCheckoutUrl?: Maybe<Scalars['String']>;
+  moreAttendeesToAdd?: Maybe<Array<Maybe<User>>>;
   news?: Maybe<Array<Maybe<News>>>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   notificationsConnection?: Maybe<NotificationConnection>;
@@ -1396,6 +1403,11 @@ export type QueryMilestoneCheckoutUrlArgs = {
   cancel_url: Scalars['String'];
   id: Scalars['String'];
   success_url: Scalars['String'];
+};
+
+
+export type QueryMoreAttendeesToAddArgs = {
+  meeting_event_id: Scalars['String'];
 };
 
 
@@ -1827,6 +1839,7 @@ export type ResolversTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   MeetingParticipant: ResolverTypeWrapper<MeetingParticipant>;
+  MeetingParticipantForInput: MeetingParticipantForInput;
   Message: ResolverTypeWrapper<Message>;
   MessageEdge: ResolverTypeWrapper<MessageEdge>;
   MessagesConnection: ResolverTypeWrapper<MessagesConnection>;
@@ -1915,6 +1928,7 @@ export type ResolversParentTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   MeetingParticipant: MeetingParticipant;
+  MeetingParticipantForInput: MeetingParticipantForInput;
   Message: Message;
   MessageEdge: MessageEdge;
   MessagesConnection: MessagesConnection;
@@ -2270,6 +2284,7 @@ export type MarkMilestoneCompleteResponseResolvers<ContextType = any, ParentType
 }>;
 
 export type MeetingEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeetingEvent'] = ResolversParentTypes['MeetingEvent']> = ResolversObject<{
+  attending_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attending_company_participants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   end_time?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2277,7 +2292,6 @@ export type MeetingEventResolvers<ContextType = any, ParentType extends Resolver
   guests?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  opposite_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   organizer_company?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_company_participants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType>;
@@ -2351,7 +2365,7 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
-  addExternalGuests?: Resolver<Maybe<Array<Maybe<ResolversTypes['ExternalGuest']>>>, ParentType, ContextType, RequireFields<MutationAddExternalGuestsArgs, 'guests' | 'meeting_id'>>;
+  addMoreParticipants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType, RequireFields<MutationAddMoreParticipantsArgs, 'meeting_event_id' | 'participants'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'token'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
@@ -2684,6 +2698,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   microsoftCalendarEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarEvent']>>>, ParentType, ContextType>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
+  moreAttendeesToAdd?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMoreAttendeesToAddArgs, 'meeting_event_id'>>;
   news?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
