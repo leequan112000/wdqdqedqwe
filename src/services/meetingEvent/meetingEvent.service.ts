@@ -4,7 +4,7 @@ import invariant from "../../helper/invariant";
 import { createMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient } from "../../helper/microsoft";
 import { cancelGoogleEvent, createGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
-import { MeetingPlatform, OauthProvider } from "../../helper/constant";
+import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
 import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import { find, intersectionBy } from "lodash";
@@ -22,16 +22,17 @@ type CreateMeetingEventArgs = {
   platform: string;
   end_time: string;
   start_time: string;
-  attendees: string[];
+  cromatic_participants: Array<{ id: string; email: string; }>;
+  external_participants: Array<{ email: string; name?: string | null; }>;
   timezone: string;
   description?: string | null;
   project_connection_id: string;
   organizer_user: User;
 }
 
-const createMeetingAttendeeConnections = async (attendees: string[], organizer_user: User, ctx: ServiceContext) => {
+const createMeetingAttendeeConnections = async (attendeeEmails: string[], organizer_user: User, ctx: ServiceContext) => {
   const attendeeUsers = await ctx.prisma.user.findMany({
-    where: { email: { in: attendees } },
+    where: { email: { in: attendeeEmails } },
   });
 
   return [...attendeeUsers, organizer_user].map(u => ({ user_id: u.id }));
@@ -45,7 +46,8 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     end_time,
     start_time,
     timezone,
-    attendees,
+    cromatic_participants,
+    external_participants,
     description,
     project_connection_id,
     organizer_user,
@@ -57,8 +59,12 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   let phone_country = '';
   let platform_event_id = '';
 
-  const attendeeConnections = await createMeetingAttendeeConnections(attendees, organizer_user, ctx);
 
+  const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
+
+  const attendeeConnections = await createMeetingAttendeeConnections(cromaticParticipantEmails, organizer_user, ctx);
+
+  // Create event on third party application
   switch (platform) {
     case MeetingPlatform.GOOGLE_MEET: {
       const oauthGoogle = await ctx.prisma.oauth.findFirst({
@@ -71,8 +77,9 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       if (oauthGoogle) {
         const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
         const attendeeArr = [
-          ...attendees.map((a) => ({ email: a })),
-          { email: organizer_user.email! },
+          ...cromatic_participants.map((a) => ({ email: a.email })),
+          ...external_participants.map((a) => ({ email: a.email })),
+          { email: organizer_user.email },
         ];
 
         const response = await createGoogleEvent(client, {
@@ -124,14 +131,9 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
           isOnlineMeeting: true,
           onlineMeetingProvider: "teamsForBusiness",
           attendees: [
-            ...attendees.map((a) => {
-              return {
-                emailAddress: { address: a }
-              }
-            }),
-            {
-              emailAddress: { address: organizer_user.email! }
-            },
+            ...cromatic_participants.map((a) => ({ emailAddress: { address: a.email }} )),
+            ...external_participants.map((a) => ({ emailAddress: { address: a.email }} )),
+            { emailAddress: { address: organizer_user.email! } },
           ],
           allowNewTimeProposals: true,
           start: {
@@ -184,6 +186,14 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       meetingAttendeeConnections: {
         create: attendeeConnections,
       },
+      meeting_guests: {
+        create: external_participants.map((p) => ({
+          email: p.email,
+          type: MeetingGuestType.INVITE,
+          status: MeetingGuestStatus.PENDING,
+          name: p.name || null,
+        })),
+      },
     },
     include: {
       project_connection: {
@@ -193,6 +203,19 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       },
     },
   });
+
+  const addExternalParticipantTasks = external_participants.map(async (p) => {
+    return await addExternalGuestToMeeting(
+      {
+        email: p.email,
+        name: p.name,
+        meeting_event_id: newMeetingEvent.id,
+      },
+      ctx
+    )
+  })
+
+  const meetingGuests = await Promise.all(addExternalParticipantTasks);
 
   const notificationJob = {
     data: attendeeConnections.map((a) =>
@@ -207,7 +230,10 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   };
   createNotificationQueueJob(notificationJob);
 
-  return newMeetingEvent;
+  return {
+    ...newMeetingEvent,
+    external_guests: meetingGuests,
+  };
 }
 
 type RemoveMeetingEventArgs = {

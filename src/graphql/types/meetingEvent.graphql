@@ -35,15 +35,14 @@ type ExternalGuest {
   status: String
 }
 
-input ExternalGuestForInput {
+input ExternalParticipantInput {
   email: String!
   name: String
 }
 
-input MeetingParticipantForInput {
+input CromaticParticipantInput {
   email: String!
-  name: String
-  id: String
+  id: String!
 }
 
 type CalendarUser {
@@ -90,7 +89,8 @@ type Mutation {
     platform: String!
     end_time: String!
     timezone: String!
-    attendees: [String!]!
+    external_participants: [ExternalParticipantInput!]!
+    cromatic_participants: [CromaticParticipantInput!]!
     project_connection_id: String!
     is_sharable: Boolean
   ): MeetingEvent
@@ -105,5 +105,9 @@ type Mutation {
   ): MeetingEvent
   updateMeetingEventSharable(meeting_event_id: String!, is_sharable: Boolean!): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
-  addMoreParticipants(participants: [MeetingParticipantForInput!]!, meeting_event_id: String!): [MeetingParticipant]
+  addMoreParticipants(
+    external_participants: [ExternalParticipantInput!]!
+    cromatic_participants: [CromaticParticipantInput!]!
+    meeting_event_id: String!
+  ): [MeetingParticipant]
 }

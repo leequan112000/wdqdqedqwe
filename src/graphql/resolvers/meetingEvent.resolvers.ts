@@ -705,15 +705,11 @@ const resolvers: Resolvers<Context> = {
       return meetingEvent;
     },
     addMoreParticipants: async (_, args, context) => {
-      const { participants, meeting_event_id } = args;
+      const { cromatic_participants, external_participants, meeting_event_id } =
+        args;
 
-      const internalParticipants = participants.filter((p) => !!p?.id);
-      const externalParticipants = participants.filter(
-        (p) => p.id === undefined || p.id === null
-      );
-
-      await context.prisma.$transaction(async (trx) => {
-        const addExternalParticipantTasks = externalParticipants.map(
+      return await context.prisma.$transaction(async (trx) => {
+        const addExternalParticipantTasks = external_participants.map(
           async (p) => {
             const { email, name } = p;
             return await meetingEventService.addExternalGuestToMeeting(
@@ -731,36 +727,43 @@ const resolvers: Resolvers<Context> = {
 
         await Promise.all(addExternalParticipantTasks);
 
-        const addInternalParticipantTasks = internalParticipants.map(
+        const addInternalParticipantTasks = cromatic_participants.map(
           async (p) => {
             const userId = p.id!;
 
             // TODO: send email and notifications
 
+            const user = await trx.user.findFirst({
+              where: {
+                id: userId,
+              },
+            });
             await trx.meetingAttendeeConnection.create({
               data: {
                 user_id: userId,
                 meeting_event_id,
               },
             });
+
+            return user;
           }
         );
 
-        await Promise.all(addInternalParticipantTasks);
-      });
+        const cromaticUsers = await Promise.all(addInternalParticipantTasks);
 
-      return [
-        ...internalParticipants.map((p) => ({
-          email: p.email,
-          name: p.name,
-          status: MeetingGuestStatus.ACCEPTED,
-        })),
-        ...externalParticipants.map((p) => ({
-          email: p.email,
-          name: p.name,
-          status: MeetingGuestStatus.PENDING,
-        })),
-      ];
+        return [
+          ...cromaticUsers.map((p) => ({
+            email: p!.email,
+            name: `${p!.first_name} ${p!.last_name}`,
+            status: MeetingGuestStatus.ACCEPTED,
+          })),
+          ...external_participants.map((p) => ({
+            email: p.email,
+            name: p.name,
+            status: MeetingGuestStatus.PENDING,
+          })),
+        ];
+      });
     },
   },
 };

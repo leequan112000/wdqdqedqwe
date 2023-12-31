@@ -234,6 +234,11 @@ export type CreateMilestoneInput = {
   title: Scalars['String'];
 };
 
+export type CromaticParticipantInput = {
+  email: Scalars['String'];
+  id: Scalars['String'];
+};
+
 export type Customer = {
   __typename?: 'Customer';
   biotech?: Maybe<Biotech>;
@@ -268,7 +273,7 @@ export type ExternalGuest = {
   status?: Maybe<Scalars['String']>;
 };
 
-export type ExternalGuestForInput = {
+export type ExternalParticipantInput = {
   email: Scalars['String'];
   name?: InputMaybe<Scalars['String']>;
 };
@@ -366,12 +371,6 @@ export type MeetingParticipant = {
   email?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
-};
-
-export type MeetingParticipantForInput = {
-  email: Scalars['String'];
-  id?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Message = {
@@ -516,8 +515,9 @@ export type MutationAcceptQuoteArgs = {
 
 
 export type MutationAddMoreParticipantsArgs = {
+  cromatic_participants: Array<CromaticParticipantInput>;
+  external_participants: Array<ExternalParticipantInput>;
   meeting_event_id: Scalars['String'];
-  participants: Array<MeetingParticipantForInput>;
 };
 
 
@@ -575,9 +575,10 @@ export type MutationCreateLabSpecializationArgs = {
 
 
 export type MutationCreateMeetingEventArgs = {
-  attendees: Array<Scalars['String']>;
+  cromatic_participants: Array<CromaticParticipantInput>;
   description?: InputMaybe<Scalars['String']>;
   end_time: Scalars['String'];
+  external_participants: Array<ExternalParticipantInput>;
   is_sharable?: InputMaybe<Scalars['Boolean']>;
   meeting_link?: InputMaybe<Scalars['String']>;
   platform: Scalars['String'];
@@ -1823,11 +1824,12 @@ export type ResolversTypes = ResolversObject<{
   CompanyAttachment: ResolverTypeWrapper<CompanyAttachment>;
   CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
   CreateMilestoneInput: CreateMilestoneInput;
+  CromaticParticipantInput: CromaticParticipantInput;
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
-  ExternalGuestForInput: ExternalGuestForInput;
+  ExternalParticipantInput: ExternalParticipantInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -1839,7 +1841,6 @@ export type ResolversTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: ResolverTypeWrapper<MarkMilestoneCompleteResponse>;
   MeetingEvent: ResolverTypeWrapper<MeetingEvent>;
   MeetingParticipant: ResolverTypeWrapper<MeetingParticipant>;
-  MeetingParticipantForInput: MeetingParticipantForInput;
   Message: ResolverTypeWrapper<Message>;
   MessageEdge: ResolverTypeWrapper<MessageEdge>;
   MessagesConnection: ResolverTypeWrapper<MessagesConnection>;
@@ -1912,11 +1913,12 @@ export type ResolversParentTypes = ResolversObject<{
   CompanyAttachment: CompanyAttachment;
   CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
   CreateMilestoneInput: CreateMilestoneInput;
+  CromaticParticipantInput: CromaticParticipantInput;
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
   ExternalGuest: ExternalGuest;
-  ExternalGuestForInput: ExternalGuestForInput;
+  ExternalParticipantInput: ExternalParticipantInput;
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -1928,7 +1930,6 @@ export type ResolversParentTypes = ResolversObject<{
   MarkMilestoneCompleteResponse: MarkMilestoneCompleteResponse;
   MeetingEvent: MeetingEvent;
   MeetingParticipant: MeetingParticipant;
-  MeetingParticipantForInput: MeetingParticipantForInput;
   Message: Message;
   MessageEdge: MessageEdge;
   MessagesConnection: MessagesConnection;
@@ -2365,7 +2366,7 @@ export type MilestoneResolvers<ContextType = any, ParentType extends ResolversPa
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   acceptProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationAcceptProjectConnectionArgs, 'id'>>;
   acceptQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationAcceptQuoteArgs, 'id'>>;
-  addMoreParticipants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType, RequireFields<MutationAddMoreParticipantsArgs, 'meeting_event_id' | 'participants'>>;
+  addMoreParticipants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType, RequireFields<MutationAddMoreParticipantsArgs, 'cromatic_participants' | 'external_participants' | 'meeting_event_id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'token'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
@@ -2375,7 +2376,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createChat?: Resolver<Maybe<ResolversTypes['Chat']>, ParentType, ContextType, RequireFields<MutationCreateChatArgs, 'project_connection_id'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'company_name' | 'user_id'>>;
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
-  createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'attendees' | 'end_time' | 'platform' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
+  createMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationCreateMeetingEventArgs, 'cromatic_participants' | 'end_time' | 'external_participants' | 'platform' | 'project_connection_id' | 'start_time' | 'timezone' | 'title'>>;
   createProjectDeclineFeedback?: Resolver<Maybe<ResolversTypes['ProjectDeclineFeedback']>, ParentType, ContextType, RequireFields<MutationCreateProjectDeclineFeedbackArgs, 'project_connection_id' | 'project_decline_tag_ids'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
