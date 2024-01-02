@@ -438,13 +438,19 @@ const resolvers: Resolvers<Context> = {
         );
       }
     },
-    googleCalendarAuthorizationUri: async (_, __, context) => {
+    googleCalendarAuthorizationUri: async (_, args, context) => {
+      const { redirect_url } = args;
       const { user_id } = context.req;
       invariant(user_id, "User ID not found.");
 
+      const state = encryptOauthState({
+        user_id,
+        redirect_url: redirect_url || '',
+      });
+
       const authorizationUri = googleClient.code.getUri({
         scopes: ["https://www.googleapis.com/auth/calendar"],
-        state: user_id,
+        state,
         query: {
           access_type: "offline",
           code_challenge: codeChallenge,

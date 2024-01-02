@@ -65,7 +65,7 @@ type Query {
   upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
   microsoftCalendarAuthorizationUri(redirect_url: String): String
   microsoftCalendarEvents: [CalendarEvent]
-  googleCalendarAuthorizationUri: String
+  googleCalendarAuthorizationUri(redirect_url: String): String
   googleCalendarEvents: [CalendarEvent]
   availableTimeSlots(
     date: Date!,
