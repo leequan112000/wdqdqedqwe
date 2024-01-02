@@ -63,7 +63,7 @@ type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
   meetingEvents(status: String): [MeetingEvent]
   upcomingMeetingEvents(project_connection_id: String): [MeetingEvent]
-  microsoftCalendarAuthorizationUri: String
+  microsoftCalendarAuthorizationUri(redirect_url: String): String
   microsoftCalendarEvents: [CalendarEvent]
   googleCalendarAuthorizationUri: String
   googleCalendarEvents: [CalendarEvent]

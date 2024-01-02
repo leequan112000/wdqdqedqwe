@@ -1387,6 +1387,11 @@ export type QueryMeetingFormAttendeesArgs = {
 };
 
 
+export type QueryMicrosoftCalendarAuthorizationUriArgs = {
+  redirect_url?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryMilestoneArgs = {
   id: Scalars['String'];
 };
@@ -2680,7 +2685,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
   meetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryMeetingEventsArgs>>;
   meetingFormAttendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryMeetingFormAttendeesArgs, 'project_connection_id'>>;
-  microsoftCalendarAuthorizationUri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  microsoftCalendarAuthorizationUri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryMicrosoftCalendarAuthorizationUriArgs>>;
   microsoftCalendarEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarEvent']>>>, ParentType, ContextType>;
   milestone?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<QueryMilestoneArgs, 'id'>>;
   milestoneCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryMilestoneCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;

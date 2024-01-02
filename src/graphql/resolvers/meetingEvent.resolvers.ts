@@ -9,9 +9,7 @@ import {
   microsoftClient,
   microsoftClientRefreshToken,
 } from "../../helper/microsoft";
-import { codeChallenge } from "../../helper/oauth";
-import { createNewMeetingNotificationJob } from "../../notification/meetingNotification";
-import { createNotificationQueueJob } from "../../queues/notification.queues";
+import { codeChallenge, encryptOauthState } from "../../helper/oauth";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 import {
@@ -387,13 +385,19 @@ const resolvers: Resolvers<Context> = {
         attendee_user_ids: attendee_user_ids as string[]
       }, context);
     },
-    microsoftCalendarAuthorizationUri: async (_, __, context) => {
+    microsoftCalendarAuthorizationUri: async (_, args, context) => {
+      const { redirect_url } = args;
       const { user_id } = context.req;
       invariant(user_id, "User ID not found.");
 
+      const state = encryptOauthState({
+        user_id,
+        redirect_url: redirect_url || '',
+      });
+
       const authorizationUri = microsoftClient.code.getUri({
         scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access"],
-        state: user_id,
+        state,
         query: {
           code_challenge: codeChallenge,
           code_challenge_method: "S256",
