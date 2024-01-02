@@ -8,7 +8,7 @@ import {
   microsoftClient,
   microsoftClientRefreshToken,
 } from "../../helper/microsoft";
-import { codeChallenge } from "../../helper/oauth";
+import { codeChallenge, encryptOauthState } from "../../helper/oauth";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 import { PublicError } from "../errors/PublicError";
@@ -468,13 +468,19 @@ const resolvers: Resolvers<Context> = {
         context
       );
     },
-    microsoftCalendarAuthorizationUri: async (_, __, context) => {
+    microsoftCalendarAuthorizationUri: async (_, args, context) => {
+      const { redirect_url } = args;
       const { user_id } = context.req;
       invariant(user_id, "User ID not found.");
 
+      const state = encryptOauthState({
+        user_id,
+        redirect_url: redirect_url || '',
+      });
+
       const authorizationUri = microsoftClient.code.getUri({
         scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access"],
-        state: user_id,
+        state,
         query: {
           code_challenge: codeChallenge,
           code_challenge_method: "S256",
@@ -519,13 +525,19 @@ const resolvers: Resolvers<Context> = {
         );
       }
     },
-    googleCalendarAuthorizationUri: async (_, __, context) => {
+    googleCalendarAuthorizationUri: async (_, args, context) => {
+      const { redirect_url } = args;
       const { user_id } = context.req;
       invariant(user_id, "User ID not found.");
 
+      const state = encryptOauthState({
+        user_id,
+        redirect_url: redirect_url || '',
+      });
+
       const authorizationUri = googleClient.code.getUri({
         scopes: ["https://www.googleapis.com/auth/calendar"],
-        state: user_id,
+        state,
         query: {
           access_type: "offline",
           code_challenge: codeChallenge,
