@@ -13,6 +13,7 @@ type AcceptedMeetingRSVPNotificationForGuestData = {
   meeting_title: string;
   guest_name: string;
   project_title: string;
+  host_name: string;
 };
 
 export const acceptedMeetingRSVPNotificationForGuestEmail = (

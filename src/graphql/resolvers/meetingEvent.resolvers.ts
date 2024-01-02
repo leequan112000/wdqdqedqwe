@@ -1,10 +1,9 @@
-import { Prisma, User } from "@prisma/client";
-import { find } from "lodash";
+import { Prisma } from "@prisma/client";
 import moment from "moment";
-import { createGoogleEvent, googleClient } from "../../helper/googleCalendar";
+import { googleClient } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { MeetingPlatform, OauthProvider } from "../../helper/constant";
+import { MeetingGuestStatus, OauthProvider } from "../../helper/constant";
 import {
   microsoftClient,
   microsoftClientRefreshToken,
@@ -12,13 +11,7 @@ import {
 import { codeChallenge, encryptOauthState } from "../../helper/oauth";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
-import {
-  meetingInvitationForCromaticUserWithinProjectEmail,
-  meetingInvitationForGuestEmail,
-} from "../../mailer/guestMeeting";
-import { app_env } from "../../environment";
 import { PublicError } from "../errors/PublicError";
-import { checkIfUserInProjectConnection } from "../../services/projectConnection/projectConnection.service";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -88,12 +81,14 @@ const resolvers: Resolvers<Context> = {
             },
           },
         });
-        return meetingEvent?.project_connection?.project_request ? {
-          ...meetingEvent?.project_connection?.project_request,
-          max_budget:
-            meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
-            0,
-        } : initial;
+        return meetingEvent?.project_connection?.project_request
+          ? {
+              ...meetingEvent?.project_connection?.project_request,
+              max_budget:
+                meetingEvent?.project_connection?.project_request.max_budget?.toNumber() ||
+                0,
+            }
+          : initial;
       }
       return parent.project_request || initial;
     },
@@ -217,6 +212,91 @@ const resolvers: Resolvers<Context> = {
         name: g.name,
         status: g.status,
       }));
+    },
+    organizer_company: async (parent, args, context) => {
+      const { organizer_id } = parent;
+
+      invariant(organizer_id, "Organizer id is missing");
+
+      const organizer = await context.prisma.user.findFirst({
+        where: {
+          id: organizer_id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true,
+            },
+          },
+          vendor_member: {
+            include: {
+              vendor_company: true,
+            },
+          },
+        },
+      });
+
+      invariant(organizer, "Organizer not found");
+
+      if (organizer.customer) {
+        return organizer.customer.biotech.name;
+      }
+      if (organizer.vendor_member?.vendor_company) {
+        return organizer.vendor_member.vendor_company.name;
+      }
+      return null;
+    },
+    attending_company: async (parent, args, context) => {
+      const { organizer_id, project_connection_id } = parent;
+
+      invariant(organizer_id, "Missing organizer id.");
+
+      const organizer = await context.prisma.user.findFirst({
+        where: {
+          id: organizer_id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: true,
+            },
+          },
+          vendor_member: {
+            include: {
+              vendor_company: true,
+            },
+          },
+        },
+      });
+
+      invariant(project_connection_id, "Missing project connection id.");
+
+      const projectConnection =
+        await context.prisma.projectConnection.findFirst({
+          where: {
+            id: project_connection_id,
+          },
+          include: {
+            vendor_company: true,
+            project_request: {
+              include: {
+                biotech: true,
+              },
+            },
+          },
+        });
+
+      invariant(projectConnection, "Project connection not found.");
+
+      if (!!organizer?.customer) {
+        return projectConnection.vendor_company.name;
+      }
+
+      if (!!organizer?.vendor_member) {
+        return projectConnection.project_request.biotech.name;
+      }
+
+      return null;
     },
   },
   Query: {
@@ -376,14 +456,17 @@ const resolvers: Resolvers<Context> = {
     availableTimeSlots: async (_, args, context) => {
       const { date, attendee_user_ids, duration_in_min } = args;
       const { user_id } = context.req;
-      invariant(user_id, 'User ID not found.');
+      invariant(user_id, "User ID not found.");
 
-      return meetingEventService.getAvailableTimeSlots({
-        date,
-        user_id,
-        duration_in_min,
-        attendee_user_ids: attendee_user_ids as string[]
-      }, context);
+      return meetingEventService.getAvailableTimeSlots(
+        {
+          date,
+          user_id,
+          duration_in_min,
+          attendee_user_ids: attendee_user_ids as string[],
+        },
+        context
+      );
     },
     microsoftCalendarAuthorizationUri: async (_, args, context) => {
       const { redirect_url } = args;
@@ -419,7 +502,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(oauth, new PublicError("User not authenticated!"));
 
-      const oneMonthAgo = moment().subtract(1, 'months').toISOString();
+      const oneMonthAgo = moment().subtract(1, "months").toISOString();
       try {
         return await meetingEventService.getMicrosoftCalendarEvents({
           access_token: oauth.access_token,
@@ -427,7 +510,11 @@ const resolvers: Resolvers<Context> = {
         });
       } catch (error: any) {
         if (error.statusCode === 401) {
-          const newToken = await microsoftClientRefreshToken(oauth.access_token, oauth.refresh_token, user_id);
+          const newToken = await microsoftClientRefreshToken(
+            oauth.access_token,
+            oauth.refresh_token,
+            user_id
+          );
           return await meetingEventService.getMicrosoftCalendarEvents({
             access_token: newToken.accessToken,
             start_date_iso: oneMonthAgo,
@@ -474,7 +561,7 @@ const resolvers: Resolvers<Context> = {
       invariant(oauth, new PublicError("User not authenticated!"));
 
       try {
-        const oneMonthAgo = moment().subtract(1, 'months').toISOString();
+        const oneMonthAgo = moment().subtract(1, "months").toISOString();
         return await meetingEventService.getGoogleCalendarEvents({
           access_token: oauth.access_token,
           refresh_token: oauth.refresh_token,
@@ -486,6 +573,68 @@ const resolvers: Resolvers<Context> = {
           "Something went wrong connecting to your calendar."
         );
       }
+    },
+    moreAttendeesToAdd: async (_, args, context) => {
+      const attendeeConnections =
+        await context.prisma.meetingAttendeeConnection.findMany({
+          where: {
+            meeting_event_id: args.meeting_event_id,
+          },
+        });
+
+      const invitedUserIds = attendeeConnections.map((c) => c.user_id);
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: args.meeting_event_id,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found");
+
+      const customerConnections =
+        await context.prisma.customerConnection.findMany({
+          where: {
+            project_connection_id: meetingEvent.project_connection_id,
+            customer: {
+              user_id: {
+                not: context.req.user_id,
+                notIn: invitedUserIds,
+              },
+            },
+          },
+          include: {
+            customer: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+      const vendorMemberConnections =
+        await context.prisma.vendorMemberConnection.findMany({
+          where: {
+            project_connection_id: meetingEvent.project_connection_id,
+            vendor_member: {
+              user_id: {
+                not: context.req.user_id,
+                notIn: invitedUserIds,
+              },
+            },
+          },
+          include: {
+            vendor_member: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+
+      return [
+        ...customerConnections.map((c) => c.customer.user),
+        ...vendorMemberConnections.map((v) => v.vendor_member.user),
+      ];
     },
   },
   Mutation: {
@@ -499,10 +648,13 @@ const resolvers: Resolvers<Context> = {
       invariant(organizerUser, "Current user not found.");
 
       return await context.prisma.$transaction(async (trx) => {
-        return await meetingEventService.createMeetingEvent({
-          ...args,
-          organizer_user: organizerUser,
-        }, { prisma: trx });
+        return await meetingEventService.createMeetingEvent(
+          {
+            ...args,
+            organizer_user: organizerUser,
+          },
+          { prisma: trx }
+        );
       });
     },
     updateMeetingEvent: async (parent, args, context) => {
@@ -551,122 +703,6 @@ const resolvers: Resolvers<Context> = {
 
       return deletedMeetingEvent;
     },
-    addExternalGuests: async (parent, args, context) => {
-      const { guests, meeting_id } = args;
-
-      const meeting = await context.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_id,
-        },
-        include: {
-          organizer: {
-            include: {
-              customer: {
-                include: {
-                  biotech: true,
-                },
-              },
-              vendor_member: {
-                include: {
-                  vendor_company: true,
-                },
-              },
-            },
-          },
-          project_connection: {
-            include: {
-              project_request: true,
-            },
-          },
-        },
-      });
-
-      invariant(meeting, new PublicError("Invalid token."));
-
-      const results = await context.prisma.$transaction(async (trx) => {
-        const tasks = (guests || []).map(async (g) => {
-          const existingUser = await trx.user.findFirst({
-            where: {
-              email: g.email,
-            },
-          });
-
-          let isPartOfProject = false;
-          if (existingUser) {
-            isPartOfProject = await checkIfUserInProjectConnection(
-              {
-                project_connection_id: meeting.project_connection_id,
-                user_id: existingUser.id,
-              },
-              {
-                prisma: trx,
-              }
-            );
-          }
-
-          // Take name of existing user from our DB
-          const guestName = existingUser
-            ? `${existingUser.first_name} ${existingUser.last_name}`
-            : g.name;
-
-          const updatedGuest = await trx.meetingGuest.upsert({
-            where: {
-              email_meeting_event_id: {
-                email: g.email,
-                meeting_event_id: meeting_id,
-              },
-            },
-            create: {
-              email: g.email,
-              name: guestName || null,
-              type: "invite",
-              status: "pending",
-              meeting_event_id: meeting_id,
-            },
-            update: {},
-          });
-
-          return {
-            ...updatedGuest,
-            is_part_of_project: isPartOfProject,
-          };
-        });
-
-        return Promise.all(tasks);
-      });
-
-      const companyName =
-        meeting.organizer.customer?.biotech?.name ||
-        meeting.organizer.vendor_member?.vendor_company?.name;
-
-      results.map((r) => {
-        if (r.is_part_of_project) {
-          meetingInvitationForCromaticUserWithinProjectEmail(
-            {
-              button_url: `${app_env.APP_URL}/app/meeting-events`,
-              company_name: companyName!,
-              guest_name: r.name || "guest",
-              meeting_title: meeting.title,
-              project_title: meeting.project_connection.project_request.title,
-            },
-            r.email
-          );
-        } else {
-          meetingInvitationForGuestEmail(
-            {
-              button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${r.id}`,
-              company_name: companyName!,
-              guest_name: r.name || "guest",
-              meeting_title: meeting.title,
-              project_title: meeting.project_connection.project_request.title,
-            },
-            r.email
-          );
-        }
-      });
-
-      return results;
-    },
     updateMeetingEventSharable: async (parent, args, context) => {
       const { is_sharable, meeting_event_id } = args;
       const meetingEvent = await context.prisma.meetingEvent.update({
@@ -679,6 +715,67 @@ const resolvers: Resolvers<Context> = {
       });
 
       return meetingEvent;
+    },
+    addMoreParticipants: async (_, args, context) => {
+      const { cromatic_participants, external_participants, meeting_event_id } =
+        args;
+
+      return await context.prisma.$transaction(async (trx) => {
+        const addExternalParticipantTasks = external_participants.map(
+          async (p) => {
+            const { email, name } = p;
+            return await meetingEventService.addExternalGuestToMeeting(
+              {
+                email,
+                name,
+                meeting_event_id,
+              },
+              {
+                prisma: trx,
+              }
+            );
+          }
+        );
+
+        await Promise.all(addExternalParticipantTasks);
+
+        const addInternalParticipantTasks = cromatic_participants.map(
+          async (p) => {
+            const userId = p.id!;
+
+            // TODO: send email and notifications
+
+            const user = await trx.user.findFirst({
+              where: {
+                id: userId,
+              },
+            });
+            await trx.meetingAttendeeConnection.create({
+              data: {
+                user_id: userId,
+                meeting_event_id,
+              },
+            });
+
+            return user;
+          }
+        );
+
+        const cromaticUsers = await Promise.all(addInternalParticipantTasks);
+
+        return [
+          ...cromaticUsers.map((p) => ({
+            email: p!.email,
+            name: `${p!.first_name} ${p!.last_name}`,
+            status: MeetingGuestStatus.ACCEPTED,
+          })),
+          ...external_participants.map((p) => ({
+            email: p.email,
+            name: p.name,
+            status: MeetingGuestStatus.PENDING,
+          })),
+        ];
+      });
     },
   },
 };
