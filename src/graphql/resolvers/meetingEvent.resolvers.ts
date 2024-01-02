@@ -12,6 +12,8 @@ import { codeChallenge, encryptOauthState } from "../../helper/oauth";
 import invariant from "../../helper/invariant";
 import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 import { PublicError } from "../errors/PublicError";
+import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
+import { app_env } from "../../environment";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -776,6 +778,62 @@ const resolvers: Resolvers<Context> = {
           })),
         ];
       });
+    },
+    sendGuestReminder: async (_, args, context) => {
+      const { email, meeting_event_id } = args;
+
+      const meetingGuest = await context.prisma.meetingGuest.findFirst({
+        where: {
+          email,
+          meeting_event_id,
+        },
+        include: {
+          meeting_event: {
+            include: {
+              project_connection: {
+                include: {
+                  project_request: true,
+                },
+              },
+              organizer: {
+                include: {
+                  customer: {
+                    include: {
+                      biotech: true,
+                    },
+                  },
+                  vendor_member: {
+                    include: {
+                      vendor_company: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      invariant(meetingGuest, "Guest not found.");
+
+      const meeting = meetingGuest.meeting_event;
+
+      const companyName =
+        meeting.organizer.customer?.biotech.name ||
+        meeting.organizer.vendor_member?.vendor_company?.name;
+
+      meetingInvitationForGuestEmail(
+        {
+          button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`,
+          company_name: companyName!,
+          guest_name: meetingGuest.name || "guest",
+          meeting_title: meeting.title,
+          project_title: meeting.project_connection.project_request.title,
+        },
+        email
+      );
+
+      return true;
     },
   },
 };

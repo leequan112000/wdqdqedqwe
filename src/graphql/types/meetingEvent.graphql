@@ -110,4 +110,5 @@ type Mutation {
     cromatic_participants: [CromaticParticipantInput!]!
     meeting_event_id: String!
   ): [MeetingParticipant]
+  sendGuestReminder(email: String!, meeting_event_id: String!): Boolean
 }
