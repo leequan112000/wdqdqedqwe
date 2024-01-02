@@ -148,6 +148,7 @@ const resolvers: Resolvers<Context> = {
           meeting_title: meeting.title,
           guest_name: name || "guest",
           project_title: meeting.project_connection.project_request.title,
+          host_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
         },
         email
       );
@@ -229,6 +230,7 @@ const resolvers: Resolvers<Context> = {
             project_title:
               meetingGuest.meeting_event.project_connection.project_request
                 .title,
+            host_name: `${organizer.first_name} ${organizer.last_name}`,
           },
           updatedMeetingGuest.email
         );
