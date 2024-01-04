@@ -136,3 +136,15 @@ export const cancelGoogleEvent = async (eventId: string) => {
     sendUpdates: 'none',
   })
 }
+
+export const disconnectGoogleOauth2 = async (googleApiClient: GoogleOAuth2Client, accessToken: string) => {
+  try {
+    return await googleApiClient.revokeToken(accessToken);
+  } catch (error: any) {
+    if (error.status === 400) {
+      const response = await googleApiClient.refreshAccessToken();
+      return await googleApiClient.revokeToken(response.credentials.access_token as string);
+    }
+    throw error;
+  }
+}

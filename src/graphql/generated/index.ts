@@ -441,6 +441,7 @@ export type Mutation = {
   deactivateCollaborator?: Maybe<User>;
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
+  disconnectOauth2?: Maybe<Scalars['Boolean']>;
   draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
@@ -645,6 +646,11 @@ export type MutationDeclineQuoteArgs = {
 
 export type MutationDeclinedProjectConnectionArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationDisconnectOauth2Args = {
+  provider: Scalars['String'];
 };
 
 
@@ -2394,6 +2400,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
+  disconnectOauth2?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisconnectOauth2Args, 'provider'>>;
   draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
