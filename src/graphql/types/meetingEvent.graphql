@@ -26,6 +26,7 @@ type MeetingEvent {
 type MeetingParticipant {
   email: String
   name: String
+  user_id: String
   status: String
 }
 
@@ -111,4 +112,6 @@ type Mutation {
     meeting_event_id: String!
   ): [MeetingParticipant]
   sendGuestReminder(email: String!, meeting_event_id: String!): Boolean
+  removeParticipant(user_id: String!, meeting_event_id: String!): Boolean
+  removeGuest(email: String!, meeting_event_id: String!): Boolean
 }

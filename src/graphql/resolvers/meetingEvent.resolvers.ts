@@ -1,6 +1,10 @@
 import { Prisma } from "@prisma/client";
 import moment from "moment";
-import { googleClient, patchGoogleEvent } from "../../helper/googleCalendar";
+import {
+  googleApiClient,
+  googleClient,
+  patchGoogleEvent,
+} from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import {
@@ -152,6 +156,7 @@ const resolvers: Resolvers<Context> = {
         .map((u) => ({
           name: `${u.first_name} ${u.last_name}`,
           email: u.email,
+          user_id: u.id,
         }));
     },
     attending_company_participants: async (parent, args, context) => {
@@ -204,6 +209,7 @@ const resolvers: Resolvers<Context> = {
         })
         .map((u) => ({
           name: `${u.first_name} ${u.last_name}`,
+          user_id: u.id,
           // do not include email because attending company email is hidden
         }));
     },
@@ -807,10 +813,15 @@ const resolvers: Resolvers<Context> = {
             const oauthGoogle = await trx.oauth.findFirst({
               where: {
                 user_id: currentUserId,
+                provider: OauthProvider.GOOGLE,
               },
             });
             invariant(oauthGoogle, new PublicError("Missing token."));
 
+            const client = googleApiClient(
+              oauthGoogle.access_token,
+              oauthGoogle.refresh_token
+            );
             const attendeesArr = [
               ...existingAttendees.map((a) => ({ email: a.email })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
@@ -819,6 +830,7 @@ const resolvers: Resolvers<Context> = {
             ];
 
             await patchGoogleEvent(
+              client,
               meetingEvent.platform_event_id!,
               { attendees: attendeesArr },
               true
@@ -829,6 +841,7 @@ const resolvers: Resolvers<Context> = {
             const oauthMicrosoft = await trx.oauth.findFirst({
               where: {
                 user_id: currentUserId,
+                provider: OauthProvider.MICROSOFT,
               },
             });
 
@@ -923,6 +936,210 @@ const resolvers: Resolvers<Context> = {
         },
         email
       );
+
+      return true;
+    },
+    removeParticipant: async (_, args, context) => {
+      const { user_id, meeting_event_id } = args;
+      const currentUserId = context.req.user_id;
+
+      invariant(currentUserId, "Current user id is missing.");
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+        include: {
+          meeting_guests: true,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found.");
+
+      invariant(
+        meetingEvent.organizer_id === currentUserId,
+        "Current user is not organizer."
+      );
+
+      await context.prisma.$transaction(async (trx) => {
+        await trx.meetingAttendeeConnection.deleteMany({
+          where: {
+            meeting_event_id,
+            user: {
+            id: user_id,
+            },
+          },
+        });
+
+        const existingAttendeeConnections =
+          await trx.meetingAttendeeConnection.findMany({
+            where: {
+              meeting_event_id,
+            },
+            include: {
+              user: true,
+            },
+          });
+
+        const existingAttendees = existingAttendeeConnections.map(
+          (conn) => conn.user
+        );
+
+        const existingExternalGuests = meetingEvent.meeting_guests;
+
+        switch (meetingEvent.platform) {
+          case MeetingPlatform.GOOGLE_MEET: {
+            const oauthGoogle = await trx.oauth.findFirst({
+              where: {
+                user_id: currentUserId,
+                provider: OauthProvider.GOOGLE,
+              },
+            });
+            invariant(oauthGoogle, new PublicError("Missing token."));
+            const client = googleApiClient(
+              oauthGoogle.access_token,
+              oauthGoogle.refresh_token
+            );
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({ email: a.email })),
+              ...existingExternalGuests.map((a) => ({ email: a.email })),
+            ];
+
+            await patchGoogleEvent(
+              client,
+              meetingEvent.platform_event_id!,
+              { attendees: attendeesArr },
+              true
+            );
+            break;
+          }
+          case MeetingPlatform.MICROSOFT_TEAMS: {
+            const oauthMicrosoft = await trx.oauth.findFirst({
+              where: {
+                user_id: currentUserId,
+                provider: OauthProvider.MICROSOFT,
+              },
+            });
+
+            invariant(oauthMicrosoft, new PublicError("Missing token."));
+            const client = microsoftGraphClient(oauthMicrosoft.access_token);
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+              ...existingExternalGuests.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+            ];
+            await patchMicrosoftEvent(client, {
+              attendees: attendeesArr,
+            });
+            break;
+          }
+          default:
+        }
+      });
+
+      return true;
+    },
+    removeGuest: async (_, args, context) => {
+      const { email, meeting_event_id } = args;
+      const currentUserId = context.req.user_id;
+
+      invariant(currentUserId, "Current user id is missing.");
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found.");
+
+      invariant(
+        meetingEvent.organizer_id === currentUserId,
+        "Current user is not organizer."
+      );
+
+      await context.prisma.$transaction(async (trx) => {
+        await trx.meetingGuest.deleteMany({
+          where: {
+            meeting_event_id,
+          },
+        });
+
+        const existingAttendeeConnections =
+          await trx.meetingAttendeeConnection.findMany({
+            where: {
+              meeting_event_id,
+            },
+            include: {
+              user: true,
+            },
+          });
+
+        const existingAttendees = existingAttendeeConnections.map(
+          (conn) => conn.user
+        );
+
+        const existingExternalGuests = await trx.meetingGuest.findMany({
+          where: {
+            meeting_event_id,
+          },
+        });
+
+        switch (meetingEvent.platform) {
+          case MeetingPlatform.GOOGLE_MEET: {
+            const oauthGoogle = await trx.oauth.findFirst({
+              where: {
+                user_id: currentUserId,
+                provider: OauthProvider.GOOGLE,
+              },
+            });
+            invariant(oauthGoogle, new PublicError("Missing token."));
+            const client = googleApiClient(
+              oauthGoogle.access_token,
+              oauthGoogle.refresh_token
+            );
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({ email: a.email })),
+              ...existingExternalGuests.map((a) => ({ email: a.email })),
+            ];
+
+            await patchGoogleEvent(
+              client,
+              meetingEvent.platform_event_id!,
+              { attendees: attendeesArr },
+              true
+            );
+            break;
+          }
+          case MeetingPlatform.MICROSOFT_TEAMS: {
+            const oauthMicrosoft = await trx.oauth.findFirst({
+              where: {
+                user_id: currentUserId,
+                provider: OauthProvider.MICROSOFT,
+              },
+            });
+
+            invariant(oauthMicrosoft, new PublicError("Missing token."));
+            const client = microsoftGraphClient(oauthMicrosoft.access_token);
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+              ...existingExternalGuests.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+            ];
+            await patchMicrosoftEvent(client, {
+              attendees: attendeesArr,
+            });
+            break;
+          }
+          default:
+        }
+      });
 
       return true;
     },
