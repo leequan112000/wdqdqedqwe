@@ -1285,6 +1285,7 @@ export type PubMeeting = {
   meeting_link?: Maybe<Scalars['String']>;
   organizer_company_name?: Maybe<Scalars['String']>;
   organizer_name?: Maybe<Scalars['String']>;
+  platform?: Maybe<Scalars['String']>;
   project_title?: Maybe<Scalars['String']>;
   start_time?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
@@ -2686,6 +2687,7 @@ export type PubMeetingResolvers<ContextType = any, ParentType extends ResolversP
   meeting_link?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizer_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

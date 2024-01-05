@@ -71,6 +71,7 @@ const resolvers: Resolvers<Context> = {
             : null,
         project_title: meeting.project_connection.project_request.title,
         is_ended: isEnded,
+        platform: meeting.platform,
       };
     },
   },
