@@ -1,7 +1,7 @@
 import moment from "moment";
 import { User } from "@prisma/client";
 import invariant from "../../helper/invariant";
-import { createMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient } from "../../helper/microsoft";
+import { createMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
 import { cancelGoogleEvent, createGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
 import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
@@ -346,33 +346,105 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
     data,
   });
 
-  // Patch Google event
-  const existingAttendees = oldMeetingEvent.meetingAttendeeConnections.map((mac) => mac.user);
-  const attendeeArr = [...attendee_emails.map((a) => ({ email: a }))];
-  const existingAttendeesThatRemain = intersectionBy(existingAttendees, attendeeArr, 'email');
-  // Remove deselected guests
-  let resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
-    attendees: existingAttendeesThatRemain,
-  }, false);
-  // Update the rest of the user, info, and send an email update
-  resp = await patchGoogleEvent(oldMeetingEvent.platform_event_id!, {
-    summary: title,
-    description,
-    attendees: attendeeArr,
-    end: {
-      dateTime: end_time,
-      timeZone: timezone,
-    },
-    start: {
-      dateTime: start_time,
-      timeZone: timezone,
-    },
-  }, true)
-  const { conferenceData, hangoutLink } = resp.data;
-  invariant(conferenceData && hangoutLink, 'Missing conferenceData and hangout link.');
-  const entryPoints = conferenceData.entryPoints
-  const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
-  const [countryCode, phone] = phoneEntryPoint.label!.split(' ');
+  let meeting_link: string | undefined = undefined;
+  let phone_pin: string | undefined = undefined;
+  let phone: string | undefined = undefined;
+  let phone_country: string | undefined = undefined;
+  let platform_event_id: string | undefined = undefined;
+
+  switch (oldMeetingEvent.platform) {
+    case MeetingPlatform.GOOGLE_MEET: {
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: oldMeetingEvent.organizer_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+      if (oauthGoogle) {
+        const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
+          // Patch Google event
+        const existingAttendees = oldMeetingEvent.meetingAttendeeConnections.map((mac) => mac.user);
+        const attendeeArr = [...attendee_emails.map((a) => ({ email: a }))];
+        const existingAttendeesThatRemain = intersectionBy(existingAttendees, attendeeArr, 'email');
+        // Remove deselected guests
+        let resp = await patchGoogleEvent(
+          client,
+          oldMeetingEvent.platform_event_id!,
+          {
+            attendees: existingAttendeesThatRemain,
+          },
+          false,
+        );
+        // Update the rest of the user, info, and send an email update
+        resp = await patchGoogleEvent(
+          client,
+          oldMeetingEvent.platform_event_id!,
+          {
+            summary: title,
+            description,
+            attendees: attendeeArr,
+            end: {
+              dateTime: end_time,
+              timeZone: timezone,
+            },
+            start: {
+              dateTime: start_time,
+              timeZone: timezone,
+            },
+          },
+          true,
+        );
+
+        const { conferenceData, hangoutLink, id: gEventid } = resp.data;
+        invariant(conferenceData && hangoutLink, 'Missing conferenceData and hangout link.');
+        const entryPoints = conferenceData.entryPoints
+        const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
+        meeting_link = hangoutLink;
+        phone_pin = phoneEntryPoint.pin!;
+        [phone_country, phone] = phoneEntryPoint.label!.split(' ');
+        platform_event_id = gEventid || undefined;
+      }
+      break;
+    }
+    case MeetingPlatform.MICROSOFT_TEAMS: {
+      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: oldMeetingEvent.organizer_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+      invariant(oauthMicrosoft, 'Invalid Microsoft oauth.');
+
+      const existingAttendees = oldMeetingEvent.meetingAttendeeConnections.map((mac) => mac.user);
+      const attendeeArr = [...attendee_emails.map((a) => ({ email: a }))];
+      const existingAttendeesThatRemain = intersectionBy(existingAttendees, attendeeArr, 'email');
+
+      const client = microsoftGraphClient(oauthMicrosoft.access_token);
+      const response = await patchMicrosoftEvent(client, {
+        subject: title,
+        body: {
+          content: description,
+        },
+        attendees: existingAttendeesThatRemain.map((a) => ({ emailAddress: { address: a.email } })),
+        start: {
+          dateTime: start_time,
+          timeZone: timezone,
+        },
+        end: {
+          dateTime: end_time,
+          timeZone: timezone,
+        },
+      });
+
+      const { id: mEventId, onlineMeeting, webLink } = response;
+      meeting_link = onlineMeeting?.joinUrl || webLink as string;
+      platform_event_id = mEventId;
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 
   // Update meeting event record.
   const updatedMeetingEvent = await ctx.prisma.meetingEvent.update({
@@ -382,10 +454,11 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
       end_time,
       start_time,
       timezone,
-      meeting_link: hangoutLink,
-      phone_pin: phoneEntryPoint.pin,
-      phone: phone,
-      phone_country: countryCode,
+      meeting_link,
+      phone_pin,
+      phone,
+      phone_country,
+      platform_event_id,
     },
     where: {
       id: meeting_event_id,

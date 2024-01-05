@@ -371,6 +371,7 @@ export type MeetingParticipant = {
   email?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  user_id?: Maybe<Scalars['String']>;
 };
 
 export type Message = {
@@ -463,13 +464,16 @@ export type Mutation = {
   removeAttachment?: Maybe<ProjectAttachment>;
   removeBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   removeCompanyAttachment?: Maybe<CompanyAttachment>;
+  removeGuest?: Maybe<Scalars['Boolean']>;
   removeMeetingEvent?: Maybe<MeetingEvent>;
+  removeParticipant?: Maybe<Scalars['Boolean']>;
   removeProjectCollaborator?: Maybe<User>;
   removeProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
   resendExpiredQuote?: Maybe<Quote>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
+  sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
   signInUser: AuthResponse;
@@ -780,8 +784,20 @@ export type MutationRemoveCompanyAttachmentArgs = {
 };
 
 
+export type MutationRemoveGuestArgs = {
+  email: Scalars['String'];
+  meeting_event_id: Scalars['String'];
+};
+
+
 export type MutationRemoveMeetingEventArgs = {
   meeting_event_id: Scalars['String'];
+};
+
+
+export type MutationRemoveParticipantArgs = {
+  meeting_event_id: Scalars['String'];
+  user_id: Scalars['String'];
 };
 
 
@@ -815,6 +831,12 @@ export type MutationResendVendorMemberInviteByBiotechArgs = {
 export type MutationResetPasswordArgs = {
   new_password?: InputMaybe<Scalars['String']>;
   reset_token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSendGuestReminderArgs = {
+  email: Scalars['String'];
+  meeting_event_id: Scalars['String'];
 };
 
 
@@ -2330,6 +2352,7 @@ export type MeetingParticipantResolvers<ContextType = any, ParentType extends Re
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2420,13 +2443,16 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeAttachment?: Resolver<Maybe<ResolversTypes['ProjectAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveAttachmentArgs, 'id'>>;
   removeBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationRemoveBlanketPurchaseOrderArgs, 'id'>>;
   removeCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachment']>, ParentType, ContextType, RequireFields<MutationRemoveCompanyAttachmentArgs, 'id'>>;
+  removeGuest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRemoveGuestArgs, 'email' | 'meeting_event_id'>>;
   removeMeetingEvent?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationRemoveMeetingEventArgs, 'meeting_event_id'>>;
+  removeParticipant?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRemoveParticipantArgs, 'meeting_event_id' | 'user_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   removeProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationRemoveProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
   resendExpiredQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationResendExpiredQuoteArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
+  sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;

@@ -98,31 +98,34 @@ export const createGoogleEvent = async (googleApiClient: GoogleOAuth2Client, gEv
   });
 }
 
-export const patchGoogleEvent = async (eventId: string, gEvent: GEvent, sendUpdates = false) => {
-  return await calendar('v3').events.patch({
-    calendarId: process.env.GOOGLE_CALENDAR_ID!,
-    eventId,
-    auth: client,
-    requestBody: {
-      ...gEvent,
-      conferenceData: {
-        createRequest: {
-          requestId: uuidv4(),
-          conferenceSolutionKey: {
-            type: 'hangoutsMeet',
+export const patchGoogleEvent = async (googleApiClient: GoogleOAuth2Client, eventId: string, gEvent: GEvent, sendUpdates = false) => {
+  try {
+    return await calendar({ version: 'v3', auth: googleApiClient }).events.patch({
+      calendarId: 'primary',
+      eventId,
+      requestBody: {
+        ...gEvent,
+        conferenceData: {
+          createRequest: {
+            requestId: uuidv4(),
+            conferenceSolutionKey: {
+              type: 'hangoutsMeet',
+            },
           },
+          entryPoints: [
+            { entryPointType: 'video' },
+          ],
         },
-        entryPoints: [
-          { entryPointType: 'video' },
-        ],
+        guestsCanSeeOtherGuests: false,
+        guestsCanModify: false,
+        guestsCanInviteOthers: false,
       },
-      guestsCanSeeOtherGuests: false,
-      guestsCanModify: false,
-      guestsCanInviteOthers: false,
-    },
-    sendUpdates: sendUpdates ? 'all' : 'none',
-    conferenceDataVersion: 1,
-  });
+      sendUpdates: sendUpdates ? 'all' : 'none',
+      conferenceDataVersion: 1,
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 export const cancelGoogleEvent = async (eventId: string) => {
