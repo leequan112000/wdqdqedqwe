@@ -1,8 +1,8 @@
 import moment from "moment";
 import { User } from "@prisma/client";
 import invariant from "../../helper/invariant";
-import { createMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
-import { cancelGoogleEvent, createGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
+import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
+import { createGoogleEvent, deleteGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
 import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
 import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
@@ -238,10 +238,11 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
 
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
+  current_user_id: string;
 }
 
 const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceContext) => {
-  const { meeting_event_id } = args;
+  const { meeting_event_id, current_user_id } = args;
   const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
     where: {
       id: meeting_event_id,
@@ -278,8 +279,42 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
 
   invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
 
-  // Cancel Google event and inform the guests.
-  await cancelGoogleEvent(deletedMeetingEvent.platform_event_id);
+
+  switch (meetingEvent.platform) {
+    case MeetingPlatform.GOOGLE_MEET: {
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: current_user_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+      invariant(oauthGoogle, new PublicError("Missing token."));
+
+      const client = googleApiClient(
+        oauthGoogle.access_token,
+        oauthGoogle.refresh_token
+      );
+
+      await deleteGoogleEvent(client, meetingEvent.platform_event_id!);
+      break;
+    }
+    case MeetingPlatform.MICROSOFT_TEAMS: {
+      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: current_user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      const client = microsoftGraphClient(oauthMicrosoft.access_token);
+      await deleteMicrosoftEvent(client, {
+        id: meetingEvent.platform_event_id!,
+      });
+      break;
+    }
+    default:
+  }
 
   const notificationJob = {
     data: meetingEvent.meetingAttendeeConnections

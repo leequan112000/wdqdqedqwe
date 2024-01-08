@@ -24,7 +24,6 @@ import meetingEventService from "../../services/meetingEvent/meetingEvent.servic
 import { PublicError } from "../errors/PublicError";
 import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
-import { intersectionBy } from "lodash";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -672,45 +671,24 @@ const resolvers: Resolvers<Context> = {
         );
       });
     },
-    updateMeetingEvent: async (parent, args, context) => {
-      const {
-        meeting_event_id,
-        attendees,
-        end_time,
-        start_time,
-        timezone,
-        title,
-        description,
-      } = args;
-
-      const updatedMeetingEvent = await context.prisma.$transaction(
-        async (trx) => {
-          return meetingEventService.updateMeetingEvent(
-            {
-              attendee_emails: attendees,
-              end_time,
-              meeting_event_id,
-              start_time,
-              timezone,
-              title,
-              description,
-            },
-            {
-              prisma: trx,
-            }
-          );
-        }
-      );
-
-      return updatedMeetingEvent;
-    },
     removeMeetingEvent: async (parent, args, context) => {
       const { meeting_event_id } = args;
+      const currentUserId = context.req.user_id;
+
+      invariant(currentUserId, 'Missing current user id.')
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found.");
 
       const deletedMeetingEvent = await context.prisma.$transaction(
         async (trx) => {
           return await meetingEventService.removeMeetingEvent(
-            { meeting_event_id },
+            { meeting_event_id, current_user_id: currentUserId },
             { prisma: trx }
           );
         }
@@ -863,6 +841,7 @@ const resolvers: Resolvers<Context> = {
             ];
             await patchMicrosoftEvent(client, {
               attendees: attendeesArr,
+              id: meetingEvent.platform_event_id!,
             });
             break;
           }
@@ -966,7 +945,7 @@ const resolvers: Resolvers<Context> = {
           where: {
             meeting_event_id,
             user: {
-            id: user_id,
+              id: user_id,
             },
           },
         });
@@ -1033,6 +1012,7 @@ const resolvers: Resolvers<Context> = {
             ];
             await patchMicrosoftEvent(client, {
               attendees: attendeesArr,
+              id: meetingEvent.platform_event_id!,
             });
             break;
           }
@@ -1134,6 +1114,7 @@ const resolvers: Resolvers<Context> = {
             ];
             await patchMicrosoftEvent(client, {
               attendees: attendeesArr,
+              id: meetingEvent.platform_event_id!,
             });
             break;
           }
@@ -1142,6 +1123,158 @@ const resolvers: Resolvers<Context> = {
       });
 
       return true;
+    },
+    updateMeetingDateTime: async (_, args, context) => {
+      const { end_time, meeting_event_id, start_time, timezone } = args;
+      const currentUserId = context.req.user_id;
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found.");
+
+      const updatedMeetingEvent = await context.prisma.meetingEvent.update({
+        where: {
+          id: meeting_event_id,
+        },
+        data: {
+          start_time,
+          end_time,
+        },
+      });
+
+      switch (meetingEvent.platform) {
+        case MeetingPlatform.GOOGLE_MEET: {
+          const oauthGoogle = await context.prisma.oauth.findFirst({
+            where: {
+              user_id: currentUserId,
+              provider: OauthProvider.GOOGLE,
+            },
+          });
+          invariant(oauthGoogle, new PublicError("Missing token."));
+
+          const client = googleApiClient(
+            oauthGoogle.access_token,
+            oauthGoogle.refresh_token
+          );
+
+          await patchGoogleEvent(
+            client,
+            meetingEvent.platform_event_id!,
+            {
+              start: {
+                dateTime: start_time,
+                timeZone: timezone,
+              },
+              end: {
+                dateTime: end_time,
+                timeZone: timezone,
+              },
+            },
+            true
+          );
+          break;
+        }
+        case MeetingPlatform.MICROSOFT_TEAMS: {
+          const oauthMicrosoft = await context.prisma.oauth.findFirst({
+            where: {
+              user_id: currentUserId,
+              provider: OauthProvider.MICROSOFT,
+            },
+          });
+
+          invariant(oauthMicrosoft, new PublicError("Missing token."));
+          const client = microsoftGraphClient(oauthMicrosoft.access_token);
+          await patchMicrosoftEvent(client, {
+            start: {
+              dateTime: start_time,
+              timeZone: timezone,
+            },
+            end: {
+              dateTime: end_time,
+              timeZone: timezone,
+            },
+            id: meetingEvent.platform_event_id!,
+          });
+          break;
+        }
+        default:
+      }
+
+      return updatedMeetingEvent;
+    },
+    updateMeetingDetails: async (_, args, context) => {
+      const { meeting_event_id, description, title } = args;
+      const currentUserId = context.req.user_id;
+
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+      });
+
+      invariant(meetingEvent, "Meeting event not found.");
+
+      const updatedMeetingEvent = await context.prisma.meetingEvent.update({
+        where: {
+          id: meeting_event_id,
+        },
+        data: {
+          title: title || undefined,
+          description: description || undefined,
+        },
+      });
+
+      switch (meetingEvent.platform) {
+        case MeetingPlatform.GOOGLE_MEET: {
+          const oauthGoogle = await context.prisma.oauth.findFirst({
+            where: {
+              user_id: currentUserId,
+              provider: OauthProvider.GOOGLE,
+            },
+          });
+          invariant(oauthGoogle, new PublicError("Missing token."));
+
+          const client = googleApiClient(
+            oauthGoogle.access_token,
+            oauthGoogle.refresh_token
+          );
+
+          await patchGoogleEvent(
+            client,
+            meetingEvent.platform_event_id!,
+            {
+              ...(title ? { summary: title } : {}),
+              ...(description ? { description } : {}),
+            },
+            true
+          );
+          break;
+        }
+        case MeetingPlatform.MICROSOFT_TEAMS: {
+          const oauthMicrosoft = await context.prisma.oauth.findFirst({
+            where: {
+              user_id: currentUserId,
+              provider: OauthProvider.MICROSOFT,
+            },
+          });
+
+          invariant(oauthMicrosoft, new PublicError("Missing token."));
+          const client = microsoftGraphClient(oauthMicrosoft.access_token);
+          await patchMicrosoftEvent(client, {
+            ...(title ? { subject: title } : {}),
+            ...(description ? { description } : {}),
+            id: meetingEvent.platform_event_id!,
+          });
+          break;
+        }
+        default:
+      }
+
+      return updatedMeetingEvent;
     },
   },
 };
