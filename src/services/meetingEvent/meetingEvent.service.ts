@@ -1,5 +1,6 @@
 import moment from "moment";
 import { User } from "@prisma/client";
+import { GaxiosError } from 'googleapis-common';
 import invariant from "../../helper/invariant";
 import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
 import { createGoogleEvent, deleteGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
@@ -38,54 +39,46 @@ const createMeetingAttendeeConnections = async (attendeeEmails: string[], organi
   return [...attendeeUsers, organizer_user].map(u => ({ user_id: u.id }));
 };
 
-const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceContext) => {
+type CreateMeetingEventOnCalendarAppArgs = {
+  platform: string;
+  organizer_user_id: string;
+  all_participants_emails: Array<string>;
+  start_time: string;
+  end_time: string;
+  timezone: string;
+  title: string;
+  description?: string;
+}
+
+const createMeetingEventOnCalendarApp = async (
+  args: CreateMeetingEventOnCalendarAppArgs,
+  ctx: ServiceContext,
+) => {
   const {
-    title,
-    meeting_link: customMeetingLink,
-    platform,
-    end_time,
-    start_time,
-    timezone,
-    cromatic_participants,
-    external_participants,
-    description,
-    project_connection_id,
-    organizer_user,
-  } = args;
+    organizer_user_id, platform, all_participants_emails,
+    description, end_time, start_time, timezone, title  } = args;
+  let meeting_link = null;
+  let phone_pin = null;
+  let phone = null;
+  let phone_country = null;
+  let platform_event_id = null;
 
-  let meeting_link = '';
-  let phone_pin = '';
-  let phone = '';
-  let phone_country = '';
-  let platform_event_id = '';
-
-
-  const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
-
-  const attendeeConnections = await createMeetingAttendeeConnections(cromaticParticipantEmails, organizer_user, ctx);
-
-  // Create event on third party application
   switch (platform) {
     case MeetingPlatform.GOOGLE_MEET: {
       const oauthGoogle = await ctx.prisma.oauth.findFirst({
         where: {
-          user_id: organizer_user.id,
+          user_id: organizer_user_id,
           provider: OauthProvider.GOOGLE,
         },
       });
 
       if (oauthGoogle) {
         const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
-        const attendeeArr = [
-          ...cromatic_participants.map((a) => ({ email: a.email })),
-          ...external_participants.map((a) => ({ email: a.email })),
-          { email: organizer_user.email },
-        ];
 
         const response = await createGoogleEvent(client, {
           summary: title,
           description,
-          attendees: attendeeArr,
+          attendees: all_participants_emails.map((email) => ({ email })),
           end: {
             dateTime: end_time,
             timeZone: timezone,
@@ -116,7 +109,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     case MeetingPlatform.MICROSOFT_TEAMS: {
       const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
         where: {
-          user_id: organizer_user.id,
+          user_id: organizer_user_id,
           provider: OauthProvider.MICROSOFT,
         },
       });
@@ -130,11 +123,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
           },
           isOnlineMeeting: true,
           onlineMeetingProvider: "teamsForBusiness",
-          attendees: [
-            ...cromatic_participants.map((a) => ({ emailAddress: { address: a.email }} )),
-            ...external_participants.map((a) => ({ emailAddress: { address: a.email }} )),
-            { emailAddress: { address: organizer_user.email! } },
-          ],
+          attendees: all_participants_emails.map((email) => ({ emailAddress: { address: email }} )),
           allowNewTimeProposals: true,
           start: {
             dateTime: start_time,
@@ -159,12 +148,78 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
         throw new PublicError("User not connected to Microsoft Teams");
       }
     }
-    case MeetingPlatform.CUSTOM:
     default: {
-      invariant(customMeetingLink, new PublicError("Missing meeting link."));
-      meeting_link = customMeetingLink;
+      // Skip
       break;
     }
+  }
+
+  invariant(meeting_link, 'Failed to create meeting link.');
+
+  return {
+    meeting_link,
+    phone_pin,
+    phone,
+    phone_country,
+    platform_event_id,
+  }
+}
+
+const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceContext) => {
+  const {
+    title,
+    meeting_link: customMeetingLink,
+    platform,
+    end_time,
+    start_time,
+    timezone,
+    cromatic_participants,
+    external_participants,
+    description,
+    project_connection_id,
+    organizer_user,
+  } = args;
+
+  let meeting_link = null;
+  let phone_pin = null;
+  let phone = null;
+  let phone_country = null;
+  let platform_event_id = null;
+
+
+  const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
+  const externalParticipantEmails = external_participants.map((a) => a.email);
+
+  const attendeeConnections = await createMeetingAttendeeConnections(cromaticParticipantEmails, organizer_user, ctx);
+
+  // Create event on third party application
+  if (platform === MeetingPlatform.CUSTOM) {
+    invariant(customMeetingLink, "Missing custom meeting link.");
+    meeting_link = customMeetingLink;
+  } else {
+    const newMeetingEventOnCalendarApp = await createMeetingEventOnCalendarApp(
+      {
+        all_participants_emails: [
+          ...cromaticParticipantEmails,
+          ...externalParticipantEmails,
+          organizer_user.email,
+        ],
+        organizer_user_id: organizer_user.id,
+        title,
+        description: description || undefined,
+        end_time,
+        start_time,
+        platform,
+        timezone,
+      },
+      ctx
+    );
+
+    meeting_link = newMeetingEventOnCalendarApp.meeting_link;
+    phone_pin = newMeetingEventOnCalendarApp.phone_pin;
+    phone = newMeetingEventOnCalendarApp.phone;
+    phone_country = newMeetingEventOnCalendarApp.phone_country;
+    platform_event_id = newMeetingEventOnCalendarApp.platform_event_id;
   }
 
   const newMeetingEvent = await ctx.prisma.meetingEvent.create({
@@ -236,6 +291,68 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   };
 }
 
+type RemoveMeetingEventOnCalendarAppArgs = {
+  current_user_id: string;
+  platform: string;
+  platform_event_id: string;
+}
+
+// Only remove event on the calendar / video calling application.
+const removeMeetingEventOnCalendarApp = async (
+  args: RemoveMeetingEventOnCalendarAppArgs,
+  ctx: ServiceContext
+) => {
+  const { current_user_id, platform, platform_event_id } = args;
+  switch (platform) {
+    case MeetingPlatform.GOOGLE_MEET: {
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: current_user_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+      invariant(oauthGoogle, new PublicError("Missing token."));
+
+      const client = googleApiClient(
+        oauthGoogle.access_token,
+        oauthGoogle.refresh_token
+      );
+
+      try {
+        await deleteGoogleEvent(client, platform_event_id!);
+      } catch (error) {
+        const errorData = (error as GaxiosError)?.response?.data;
+        if (
+          errorData.error.code === 410 &&
+          errorData.error.message === "Resource has been deleted"
+        ) {
+          // Pass
+          // If resource has been deleted, consider safe to proceed.
+        } else {
+          throw error;
+        }
+      }
+      break;
+    }
+    case MeetingPlatform.MICROSOFT_TEAMS: {
+      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: current_user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      const client = microsoftGraphClient(oauthMicrosoft.access_token);
+      await deleteMicrosoftEvent(client, {
+        id: platform_event_id,
+      });
+      break;
+    }
+    default:
+  }
+};
+
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
   current_user_id: string;
@@ -279,42 +396,14 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
 
   invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
 
-
-  switch (meetingEvent.platform) {
-    case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
-        where: {
-          user_id: current_user_id,
-          provider: OauthProvider.GOOGLE,
-        },
-      });
-      invariant(oauthGoogle, new PublicError("Missing token."));
-
-      const client = googleApiClient(
-        oauthGoogle.access_token,
-        oauthGoogle.refresh_token
-      );
-
-      await deleteGoogleEvent(client, meetingEvent.platform_event_id!);
-      break;
-    }
-    case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
-        where: {
-          user_id: current_user_id,
-          provider: OauthProvider.MICROSOFT,
-        },
-      });
-
-      invariant(oauthMicrosoft, new PublicError("Missing token."));
-      const client = microsoftGraphClient(oauthMicrosoft.access_token);
-      await deleteMicrosoftEvent(client, {
-        id: meetingEvent.platform_event_id!,
-      });
-      break;
-    }
-    default:
-  }
+  await removeMeetingEventOnCalendarApp(
+    {
+      current_user_id,
+      platform: meetingEvent.platform,
+      platform_event_id: meetingEvent.platform_event_id!
+    },
+    ctx,
+  );
 
   const notificationJob = {
     data: meetingEvent.meetingAttendeeConnections
@@ -814,7 +903,9 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
 }
 
 const meetingEventService = {
+  createMeetingEventOnCalendarApp,
   createMeetingEvent,
+  removeMeetingEventOnCalendarApp,
   removeMeetingEvent,
   updateMeetingEvent,
   getMicrosoftCalendarEvents,

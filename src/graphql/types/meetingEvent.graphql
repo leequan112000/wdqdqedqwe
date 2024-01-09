@@ -107,6 +107,7 @@ type Mutation {
     title: String
     description: String
   ): MeetingEvent
+  updateMeetingPlatform(meeting_event_id: String!, platform: String!, meeting_link: String): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
   addMoreParticipants(
     external_participants: [ExternalParticipantInput!]!

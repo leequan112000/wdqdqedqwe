@@ -28,13 +28,19 @@ import { app_env } from "../../environment";
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
     phone_link: (parent) => {
-      return `tel:${parent.phone_country}-${parent.phone}`;
+      if (parent.phone_country && parent.phone)
+        return `tel:${parent.phone_country}-${parent.phone}`;
+      return null;
     },
     phone_pin: (parent) => {
-      return parent.phone_pin?.replace(/\d{3}(?=\d)/g, "$& ") + "#" || null;
+      if (parent.phone_pin)
+        return parent.phone_pin?.replace(/\d{3}(?=\d)/g, "$& ") + "#" || null;
+      return null;
     },
     phone: (parent) => {
-      return `${parent.phone_country} ${parent.phone}`;
+      if (parent.phone_country && parent.phone)
+        return `${parent.phone_country} ${parent.phone}`;
+      return null;
     },
     guests: async (parent, args, context) => {
       if (!parent.guests && parent.id) {
@@ -675,7 +681,7 @@ const resolvers: Resolvers<Context> = {
       const { meeting_event_id } = args;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, 'Missing current user id.')
+      invariant(currentUserId, "Missing current user id.");
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -1275,6 +1281,105 @@ const resolvers: Resolvers<Context> = {
       }
 
       return updatedMeetingEvent;
+    },
+    updateMeetingPlatform: async (_, args, context) => {
+      const {
+        meeting_event_id,
+        platform: newPlatform,
+        meeting_link: newMeetingLink,
+      } = args;
+      const currentUserId = context.req.user_id;
+
+      invariant(currentUserId, "Missing current user id.");
+
+      const currentUser = await context.prisma.user.findFirst({
+        where: {
+          id: currentUserId,
+        },
+      });
+
+      invariant(currentUser, "Missing current user.");
+
+      const previousMeetingEvent = await context.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+        include: {
+          meetingAttendeeConnections: {
+            include: {
+              user: true,
+            },
+          },
+          meeting_guests: true,
+        },
+      });
+
+
+      invariant(previousMeetingEvent, "Meeting event not found.");
+
+      if (previousMeetingEvent.platform === newPlatform) {
+        return previousMeetingEvent;
+      }
+
+      const existingCromaticParticipantsEmails =
+        previousMeetingEvent.meetingAttendeeConnections.map(
+          (u) => u.user.email
+        );
+
+      const existingExternalParticipantsEmails =
+        previousMeetingEvent.meeting_guests.map((g) => g.email);
+
+      const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
+        if (newPlatform === MeetingPlatform.CUSTOM) {
+          invariant(newMeetingLink, "Missing new meeting link");
+          return await trx.meetingEvent.update({
+            where: {
+              id: previousMeetingEvent.id,
+            },
+            data: {
+              meeting_link: newMeetingLink,
+              platform: newPlatform,
+              phone: null,
+              phone_pin: null,
+              phone_country: null,
+              platform_event_id: null,
+            },
+          });
+        } else {
+          const newMeetingEventOnCalendarApp =
+            await meetingEventService.createMeetingEventOnCalendarApp(
+              {
+                end_time: previousMeetingEvent.end_time.toISOString(),
+                start_time: previousMeetingEvent.start_time.toISOString(),
+                platform: newPlatform,
+                timezone: previousMeetingEvent.timezone,
+                title: previousMeetingEvent.title,
+                description: previousMeetingEvent.description || undefined,
+                organizer_user_id: currentUserId,
+                all_participants_emails: [
+                  ...existingCromaticParticipantsEmails,
+                  ...existingExternalParticipantsEmails,
+                ],
+              },
+              { prisma: trx }
+            );
+
+          return await trx.meetingEvent.update({
+            where: {
+              id: previousMeetingEvent.id,
+            },
+            data: {
+              meeting_link: newMeetingEventOnCalendarApp.meeting_link,
+              platform: newPlatform,
+              phone: newMeetingEventOnCalendarApp.phone,
+              phone_pin: newMeetingEventOnCalendarApp.phone_pin,
+              phone_country: newMeetingEventOnCalendarApp.phone_country,
+            },
+          });
+        }
+      });
+
+      return newMeetingEvent;
     },
   },
 };
