@@ -115,7 +115,8 @@ const createMeetingEventOnCalendarApp = async (
       });
 
       if (oauthMicrosoft) {
-        const client = microsoftGraphClient(oauthMicrosoft.access_token);
+        const newToken = await microsoftClientRefreshToken(oauthMicrosoft.access_token, oauthMicrosoft.refresh_token, oauthMicrosoft.user_id!);
+        const client = microsoftGraphClient(newToken.accessToken);
         const response = await createMicrosoftEvent(client, {
           subject: title,
           body: {
@@ -323,8 +324,8 @@ const removeMeetingEventOnCalendarApp = async (
       } catch (error) {
         const errorData = (error as GaxiosError)?.response?.data;
         if (
-          errorData.error.code === 410 &&
-          errorData.error.message === "Resource has been deleted"
+          errorData?.error?.code === 410 &&
+          errorData?.error?.message === "Resource has been deleted"
         ) {
           // Pass
           // If resource has been deleted, consider safe to proceed.
@@ -343,6 +344,7 @@ const removeMeetingEventOnCalendarApp = async (
       });
 
       invariant(oauthMicrosoft, new PublicError("Missing token."));
+      await microsoftClientRefreshToken(oauthMicrosoft.access_token, oauthMicrosoft.refresh_token, oauthMicrosoft.user_id!);
       const client = microsoftGraphClient(oauthMicrosoft.access_token);
       await deleteMicrosoftEvent(client, {
         id: platform_event_id,

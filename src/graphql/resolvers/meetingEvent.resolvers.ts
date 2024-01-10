@@ -1314,7 +1314,6 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-
       invariant(previousMeetingEvent, "Meeting event not found.");
 
       if (previousMeetingEvent.platform === newPlatform) {
@@ -1332,7 +1331,7 @@ const resolvers: Resolvers<Context> = {
       const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
         if (newPlatform === MeetingPlatform.CUSTOM) {
           invariant(newMeetingLink, "Missing new meeting link");
-          return await trx.meetingEvent.update({
+          const updatedMeetingEvent = await trx.meetingEvent.update({
             where: {
               id: previousMeetingEvent.id,
             },
@@ -1345,6 +1344,15 @@ const resolvers: Resolvers<Context> = {
               platform_event_id: null,
             },
           });
+          await meetingEventService.removeMeetingEventOnCalendarApp(
+            {
+              current_user_id: currentUserId,
+              platform: previousMeetingEvent.platform,
+              platform_event_id: previousMeetingEvent.platform_event_id!,
+            },
+            { prisma: trx }
+          );
+          return updatedMeetingEvent;
         } else {
           const newMeetingEventOnCalendarApp =
             await meetingEventService.createMeetingEventOnCalendarApp(
@@ -1363,8 +1371,7 @@ const resolvers: Resolvers<Context> = {
               },
               { prisma: trx }
             );
-
-          return await trx.meetingEvent.update({
+          const updatedMeetingEvent = await trx.meetingEvent.update({
             where: {
               id: previousMeetingEvent.id,
             },
@@ -1374,8 +1381,18 @@ const resolvers: Resolvers<Context> = {
               phone: newMeetingEventOnCalendarApp.phone,
               phone_pin: newMeetingEventOnCalendarApp.phone_pin,
               phone_country: newMeetingEventOnCalendarApp.phone_country,
+              platform_event_id: newMeetingEventOnCalendarApp.platform_event_id,
             },
           });
+          await meetingEventService.removeMeetingEventOnCalendarApp(
+            {
+              current_user_id: currentUserId,
+              platform: previousMeetingEvent.platform,
+              platform_event_id: previousMeetingEvent.platform_event_id!,
+            },
+            { prisma: trx }
+          );
+          return updatedMeetingEvent;
         }
       });
 
