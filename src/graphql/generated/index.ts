@@ -23,6 +23,24 @@ export type AuthResponse = {
   refresh_token: Scalars['String'];
 };
 
+export type Availability = {
+  __typename?: 'Availability';
+  id: Scalars['String'];
+  rules: Array<AvailabilityRule>;
+  timezone?: Maybe<Scalars['String']>;
+};
+
+export type AvailabilityRule = {
+  __typename?: 'AvailabilityRule';
+  day: Scalars['String'];
+  intervals: Array<RuleInterval>;
+};
+
+export type AvailabilityRuleInput = {
+  day: Scalars['String'];
+  intervals: Array<RuleIntervalInput>;
+};
+
 export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
@@ -473,6 +491,7 @@ export type Mutation = {
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
+  saveAvailabilityRules?: Maybe<Availability>;
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
@@ -831,6 +850,11 @@ export type MutationResendVendorMemberInviteByBiotechArgs = {
 export type MutationResetPasswordArgs = {
   new_password?: InputMaybe<Scalars['String']>;
   reset_token?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSaveAvailabilityRulesArgs = {
+  input: SaveAvailabilityRulesInput;
 };
 
 
@@ -1319,6 +1343,7 @@ export type PurchaseOrder = {
 
 export type Query = {
   __typename?: 'Query';
+  availability?: Maybe<Availability>;
   availableTimeSlots?: Maybe<Array<Maybe<Scalars['Date']>>>;
   bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
@@ -1590,6 +1615,22 @@ export type ReviewQuestionSet = {
   name?: Maybe<Scalars['String']>;
 };
 
+export type RuleInterval = {
+  __typename?: 'RuleInterval';
+  from: Scalars['String'];
+  to: Scalars['String'];
+};
+
+export type RuleIntervalInput = {
+  from: Scalars['String'];
+  to: Scalars['String'];
+};
+
+export type SaveAvailabilityRulesInput = {
+  rules: Array<AvailabilityRuleInput>;
+  timezone: Scalars['String'];
+};
+
 export type StripeAccountCapabilities = {
   __typename?: 'StripeAccountCapabilities';
   tax_reporting_us_1099_k?: Maybe<Scalars['String']>;
@@ -1846,6 +1887,9 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   AuthResponse: ResolverTypeWrapper<AuthResponse>;
+  Availability: ResolverTypeWrapper<Availability>;
+  AvailabilityRule: ResolverTypeWrapper<AvailabilityRule>;
+  AvailabilityRuleInput: AvailabilityRuleInput;
   Biotech: ResolverTypeWrapper<Biotech>;
   BiotechInviteVendor: ResolverTypeWrapper<BiotechInviteVendor>;
   BiotechInvoice: ResolverTypeWrapper<BiotechInvoice>;
@@ -1914,6 +1958,9 @@ export type ResolversTypes = ResolversObject<{
   ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
   ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
   ReviewQuestionSet: ResolverTypeWrapper<ReviewQuestionSet>;
+  RuleInterval: ResolverTypeWrapper<RuleInterval>;
+  RuleIntervalInput: RuleIntervalInput;
+  SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -1935,6 +1982,9 @@ export type ResolversTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   AuthResponse: AuthResponse;
+  Availability: Availability;
+  AvailabilityRule: AvailabilityRule;
+  AvailabilityRuleInput: AvailabilityRuleInput;
   Biotech: Biotech;
   BiotechInviteVendor: BiotechInviteVendor;
   BiotechInvoice: BiotechInvoice;
@@ -2003,6 +2053,9 @@ export type ResolversParentTypes = ResolversObject<{
   ReviewQuestion: ReviewQuestion;
   ReviewQuestionOption: ReviewQuestionOption;
   ReviewQuestionSet: ReviewQuestionSet;
+  RuleInterval: RuleInterval;
+  RuleIntervalInput: RuleIntervalInput;
+  SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -2024,6 +2077,19 @@ export type ResolversParentTypes = ResolversObject<{
 export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
   access_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refresh_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AvailabilityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Availability'] = ResolversParentTypes['Availability']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['AvailabilityRule']>, ParentType, ContextType>;
+  timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AvailabilityRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['AvailabilityRule'] = ResolversParentTypes['AvailabilityRule']> = ResolversObject<{
+  day?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  intervals?: Resolver<Array<ResolversTypes['RuleInterval']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2452,6 +2518,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
+  saveAvailabilityRules?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType, RequireFields<MutationSaveAvailabilityRulesArgs, 'input'>>;
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
@@ -2720,6 +2787,7 @@ export type PurchaseOrderResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  availability?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType>;
   availableTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['Date']>>>, ParentType, ContextType, RequireFields<QueryAvailableTimeSlotsArgs, 'date' | 'duration_in_min'>>;
   bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
@@ -2826,6 +2894,12 @@ export type ReviewQuestionOptionResolvers<ContextType = any, ParentType extends 
 export type ReviewQuestionSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReviewQuestionSet'] = ResolversParentTypes['ReviewQuestionSet']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RuleIntervalResolvers<ContextType = any, ParentType extends ResolversParentTypes['RuleInterval'] = ResolversParentTypes['RuleInterval']> = ResolversObject<{
+  from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3005,6 +3079,8 @@ export type VendorMemberConnectionResolvers<ContextType = any, ParentType extend
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   AuthResponse?: AuthResponseResolvers<ContextType>;
+  Availability?: AvailabilityResolvers<ContextType>;
+  AvailabilityRule?: AvailabilityRuleResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
   BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
   BiotechInvoice?: BiotechInvoiceResolvers<ContextType>;
@@ -3063,6 +3139,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
+  RuleInterval?: RuleIntervalResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;

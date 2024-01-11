@@ -41,6 +41,7 @@ model User {
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
+  Availability                        Availability[]
 
   @@map("users")
 }
@@ -944,4 +945,16 @@ model Oauth {
 
   @@unique([user_id, provider])
   @@map("oauths")
+}
+
+model Availability {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String @db.Uuid
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  day_of_week String
+  start_time  String
+  end_time    String
+  timezone    String
+
+  @@map("availabilities")
 }
