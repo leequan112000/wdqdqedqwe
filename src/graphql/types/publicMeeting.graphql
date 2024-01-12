@@ -9,6 +9,7 @@ type PubMeeting {
   meeting_link: String
   project_title: String
   is_ended: Boolean
+  platform: String
 }
 
 type PubRVSP {

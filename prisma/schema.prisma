@@ -459,7 +459,7 @@ model MeetingEvent {
 model MeetingAttendeeConnection {
   id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   meeting_event_id String       @db.Uuid
-  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
   user_id          String       @db.Uuid
   user             User         @relation(fields: [user_id], references: [id])
 
@@ -924,7 +924,7 @@ model MeetingGuest {
   name             String?
   email            String
   meeting_event_id String       @db.Uuid
-  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
   status           String       @default("pending")
   type             String
   created_at       DateTime     @default(now())
