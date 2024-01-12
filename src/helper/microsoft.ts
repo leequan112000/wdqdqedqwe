@@ -60,6 +60,12 @@ export const createMicrosoftEvent = async (client: Client, eventDetails: Microso
 
 export const patchMicrosoftEvent = async (client: Client, eventDetails: MicrosoftGraph.Event): Promise<MicrosoftGraph.Event> => {
   return await client
-    .api('/me/events')
+    .api(`/me/events/${eventDetails.id}`)
     .patch(eventDetails);
+}
+
+export const deleteMicrosoftEvent = async (client: Client, eventDetails: MicrosoftGraph.Event) => {
+  return await client
+    .api(`/me/events/${eventDetails.id}`)
+    .delete();
 }

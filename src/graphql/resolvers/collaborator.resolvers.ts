@@ -549,7 +549,10 @@ const resolvers: Resolvers<Context> = {
           },
         });
         const removeMeetingTasks = organizedMeetingEvents.map(async (event) => {
-          return await meetingEventService.removeMeetingEvent({ meeting_event_id: event.id }, { prisma: trx });
+          return await meetingEventService.removeMeetingEvent(
+            { meeting_event_id: event.id, current_user_id: currentUserId },
+            { prisma: trx },
+          );
         });
 
         const removedMeetingEvents = await Promise.all(removeMeetingTasks);

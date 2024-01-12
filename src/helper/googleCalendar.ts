@@ -140,6 +140,14 @@ export const cancelGoogleEvent = async (eventId: string) => {
   })
 }
 
+export const deleteGoogleEvent = async (googleApiClient: GoogleOAuth2Client, eventId: string) => {
+  return await calendar({ version: 'v3', auth: googleApiClient }).events.delete({
+    calendarId: 'primary',
+    eventId,
+    sendUpdates: 'all',
+  });
+}
+
 export const disconnectGoogleOauth2 = async (googleApiClient: GoogleOAuth2Client, accessToken: string) => {
   try {
     return await googleApiClient.revokeToken(accessToken);
