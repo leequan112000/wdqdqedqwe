@@ -6,6 +6,8 @@ type TimeSlot = {
   end: Date;
 };
 
+type Availability = { day_of_week: string; start_time: string; end_time: string };
+
 export const processCalendarEvents = (events: CalendarEvent[]): TimeSlot[] => {
   let busySlots: TimeSlot[] = [];
 
@@ -27,31 +29,57 @@ export const processCalendarEvents = (events: CalendarEvent[]): TimeSlot[] => {
   return busySlots;
 }
 
-export const generateAllSlotsForDay = (date: Date): TimeSlot[] => {
+export const generateAllSlotsForDay = (
+  date: Date,
+  availability: Availability[]
+): TimeSlot[] => {
+  const targetDate = moment(date);
   let slots: TimeSlot[] = [];
-  let start = moment(date).hours(9).minutes(0).seconds(0).milliseconds(0); // Starts at 9am
-  let end = start.clone().add(30, 'minutes');
-  let endOfWorkDay = moment(date).hours(17).minutes(0).seconds(0).milliseconds(0); // Ends at 5pm
 
-  while (start.isBefore(endOfWorkDay)) {
-    slots.push({ start: start.toDate(), end: end.toDate() });
+  availability
+    .filter((a) => a.day_of_week === targetDate.format("dddd"))
+    .forEach((a) => {
+      let start = moment(
+        `${targetDate.format("MM-DD-YYYY")} ${a.start_time}`,
+        "MM-DD-YYYY h:mma"
+      );
+      if (start.get("minute") < 30) {
+        start.minute(0);
+      } else {
+        start.minute(30);
+      }
+      let end = start.clone().add(30, "minutes");
+      let endOfAvailableDay = moment(
+        `${targetDate.format("MM-DD-YYYY")} ${a.end_time}`,
+        "MM-DD-YYYY h:mma"
+      );
+      while (start.isBefore(endOfAvailableDay)) {
+        slots.push({ start: start.toDate(), end: end.toDate() });
 
-    start.add(30, 'minutes');
-    end.add(30, 'minutes');
-  }
+        start.add(30, "minutes");
+        end.add(30, "minutes");
+      }
+    });
 
   return slots;
-}
+};
 
-export const findFreeSlots = (busySlots: TimeSlot[], date: Date, duration_in_min: number): Date[] => {
-  let allSlots = generateAllSlotsForDay(date);
+export const findFreeSlots = (
+  busySlots: TimeSlot[],
+  availability: Availability[],
+  date: Date,
+  duration_in_min: number
+): Date[] => {
+  let allSlots = generateAllSlotsForDay(date, availability);
   let freeSlots: TimeSlot[] = [];
   let availableStartTimes: Date[] = [];
 
   // Identifying free slots
   for (const slot of allSlots) {
-    let isBusy = busySlots.some(busySlot =>
-      moment(busySlot.start).isBefore(slot.end) && moment(busySlot.end).isAfter(slot.start)
+    let isBusy = busySlots.some(
+      (busySlot) =>
+        moment(busySlot.start).isBefore(slot.end) &&
+        moment(busySlot.end).isAfter(slot.start)
     );
 
     if (!isBusy) {
@@ -62,7 +90,10 @@ export const findFreeSlots = (busySlots: TimeSlot[], date: Date, duration_in_min
   // Filtering slots based on the required duration
   for (let i = 0; i < freeSlots.length; i++) {
     let currentSlot = freeSlots[i];
-    let endTimeForDuration = moment(currentSlot.start).add(duration_in_min, 'minutes');
+    let endTimeForDuration = moment(currentSlot.start).add(
+      duration_in_min,
+      "minutes"
+    );
 
     // Check if the duration fits in the consecutive free slots
     let fitsDuration = true;
@@ -70,7 +101,10 @@ export const findFreeSlots = (busySlots: TimeSlot[], date: Date, duration_in_min
       if (endTimeForDuration.isSameOrBefore(freeSlots[j].end)) {
         break;
       }
-      if (j + 1 < freeSlots.length && moment(freeSlots[j].end).isBefore(freeSlots[j + 1].start)) {
+      if (
+        j + 1 < freeSlots.length &&
+        moment(freeSlots[j].end).isBefore(freeSlots[j + 1].start)
+      ) {
         fitsDuration = false;
         break;
       }
@@ -82,7 +116,7 @@ export const findFreeSlots = (busySlots: TimeSlot[], date: Date, duration_in_min
   }
 
   return availableStartTimes;
-}
+};
 
 export const intersectSlots = (slots1: Date[], slots2: Date[]): Date[] => {
   let intersection: Date[] = [];
