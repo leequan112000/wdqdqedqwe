@@ -1412,6 +1412,7 @@ export type QueryAvailableTimeSlotsArgs = {
   attendee_user_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   date: Scalars['Date'];
   duration_in_min: Scalars['Int'];
+  meeting_event_id?: InputMaybe<Scalars['String']>;
 };
 
 

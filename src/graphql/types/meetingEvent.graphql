@@ -74,9 +74,10 @@ type Query {
   googleCalendarAuthorizationUri(redirect_url: String): String
   googleCalendarEvents: [CalendarEvent]
   availableTimeSlots(
-    date: Date!,
-    duration_in_min: Int!,
+    date: Date!
+    duration_in_min: Int!
     attendee_user_ids: [String]
+    meeting_event_id: String # Optional: To include the selected timeslot in the available time slots when editing meeting.
   ): [Date]
   moreAttendeesToAdd(meeting_event_id: String!): [User]
 }

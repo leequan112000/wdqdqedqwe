@@ -474,7 +474,7 @@ const resolvers: Resolvers<Context> = {
       return meetingEvents;
     },
     availableTimeSlots: async (_, args, context) => {
-      const { date, attendee_user_ids, duration_in_min } = args;
+      const { date, attendee_user_ids, duration_in_min, meeting_event_id } = args;
       const { user_id } = context.req;
       invariant(user_id, "User ID not found.");
 
@@ -484,6 +484,7 @@ const resolvers: Resolvers<Context> = {
           user_id,
           duration_in_min,
           attendee_user_ids: attendee_user_ids as string[],
+          meeting_event_id: meeting_event_id || undefined,
         },
         context
       );

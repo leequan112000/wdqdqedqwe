@@ -763,11 +763,30 @@ type GetAvailableTimeSlotsArgs = {
   user_id: string;
   duration_in_min: number;
   attendee_user_ids: string[];
+  meeting_event_id?: string;
 }
 
 const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: ServiceContext) => {
-  const { date, user_id, duration_in_min, attendee_user_ids } = args;
+  const { date, user_id, duration_in_min, attendee_user_ids, meeting_event_id } = args;
   try {
+    let selectedSlot:
+      | {
+          start: Date;
+          end: Date;
+        }
+      | undefined;
+    if (meeting_event_id) {
+      const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
+        where: {
+          id: meeting_event_id,
+        },
+      });
+      invariant(meetingEvent, "Meeting not found.");
+      selectedSlot = {
+        start: meetingEvent.start_time,
+        end: meetingEvent.end_time,
+      };
+    }
     const startDateIso = moment(date).subtract(1, "day").toISOString();
     const endDateIso = moment(date).add(1, "day").toISOString();
     const getUserDataTasks = [...attendee_user_ids, user_id].map(async (uid) => {

@@ -68,7 +68,8 @@ export const findFreeSlots = (
   busySlots: TimeSlot[],
   availability: Availability[],
   date: Date,
-  duration_in_min: number
+  duration_in_min: number,
+  selectedSlot?: { start: Date; end: Date; },
 ): Date[] => {
   let allSlots = generateAllSlotsForDay(date, availability);
   let freeSlots: TimeSlot[] = [];
@@ -81,8 +82,11 @@ export const findFreeSlots = (
         moment(busySlot.start).isBefore(slot.end) &&
         moment(busySlot.end).isAfter(slot.start)
     );
+    let isSelected = selectedSlot
+      && moment(selectedSlot.start).isSame(slot.start)
+      && moment(selectedSlot.end).isSame(slot.end);
 
-    if (!isBusy) {
+    if (!isBusy || isSelected) {
       freeSlots.push(slot);
     }
   }
