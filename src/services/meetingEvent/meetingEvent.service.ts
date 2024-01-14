@@ -807,7 +807,7 @@ const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: Servi
     let freeSlotsGroupByUser = [];
     for (const userData of allUserData) {
       const busySlots = processCalendarEvents(userData.calendarEvents);
-      let freeSlots = findFreeSlots(busySlots, userData.availability, date, duration_in_min);
+      let freeSlots = findFreeSlots(busySlots, userData.availability, date, duration_in_min, selectedSlot);
 
       // Check if the date is today. If so, filter out past time slots
       if (moment(date).isSame(moment(), 'day')) {
