@@ -310,3 +310,28 @@ export enum OauthProvider {
   MICROSOFT = 'microsoft',
   GOOGLE = 'google',
 }
+
+export enum AvailabilityDay {
+  SUNDAY = 'Sunday',
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+}
+
+/**
+ * IMPORTANT
+ * The indexes are strictly following the frontend form field sequence.
+ * Only change the index if the sequence changed.
+ */
+export const AvailabilityDayIndexObj = {
+  [AvailabilityDay.SUNDAY]: 0,
+  [AvailabilityDay.MONDAY]: 1,
+  [AvailabilityDay.TUESDAY]: 2,
+  [AvailabilityDay.WEDNESDAY]: 3,
+  [AvailabilityDay.THURSDAY]: 4,
+  [AvailabilityDay.FRIDAY]: 5,
+  [AvailabilityDay.SATURDAY]: 6,
+};
