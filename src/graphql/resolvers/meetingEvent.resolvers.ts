@@ -444,9 +444,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currentUser, "Current user not found.");
 
-      const UPCOMING_DAYS = 1;
       const checkStartTime = moment();
-      const checkEndTime = moment().add(UPCOMING_DAYS, "d").endOf("d");
 
       const meetingEvents = await context.prisma.meetingEvent.findMany({
         where: {
@@ -462,7 +460,6 @@ const resolvers: Resolvers<Context> = {
           ],
           start_time: {
             gte: checkStartTime.toDate(),
-            lte: checkEndTime.toDate(),
           },
           project_connection_id: project_connection_id || undefined,
         },
