@@ -8,7 +8,6 @@ import {
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import {
-  AvailabilityDay,
   MeetingGuestStatus,
   MeetingPlatform,
   OauthProvider,
@@ -25,6 +24,14 @@ import meetingEventService from "../../services/meetingEvent/meetingEvent.servic
 import { PublicError } from "../errors/PublicError";
 import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
+import {
+  dedupGroupedAvailability,
+  filterAvailableSlotsByDuration,
+  generateCalendarEventBusySlots,
+  generateCommonAvailableSlots,
+  generateDates,
+  groupAvailabilityByDayOfWeek,
+} from "../../helper/availableTimeSlots";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -472,72 +479,6 @@ const resolvers: Resolvers<Context> = {
       return meetingEvents;
     },
     availableDateTimeSlots: async (_, args, context) => {
-      function findIntersectingIntervals(
-        arr: Array<{ start_time: Date; end_time: Date }>
-      ) {
-        arr.sort((a, b) => {
-          if (
-            moment(a.start_time, "h:mma").isBefore(
-              moment(b.start_time, "h:mma")
-            )
-          )
-            return -1;
-          if (
-            moment(a.start_time, "h:mma").isAfter(moment(b.start_time, "h:mma"))
-          )
-            return 1;
-          return 0;
-        });
-
-        const result: typeof arr = [];
-
-        if (arr.length === 1) {
-          result.push(arr[0]);
-        } else {
-          let intersect: { start_time: Date; end_time: Date } | undefined =
-            undefined;
-          for (let i = 0; i < arr.length - 1; i++) {
-            const interval1: { start_time: Date; end_time: Date } =
-              intersect || arr[i];
-            const interval2 = arr[i + 1];
-
-            const start1 = moment(interval1.start_time, "h:mma");
-            const end1 = moment(interval1.end_time, "h:mma");
-            const start2 = moment(interval2.start_time, "h:mma");
-            const end2 = moment(interval2.end_time, "h:mma");
-            if (end1.isSameOrAfter(start2) && end2.isSameOrAfter(start1)) {
-              const intersectStart = moment.max(start1, start2);
-              const intersectEnd = moment.min(end1, end2);
-
-              intersect = {
-                start_time: intersectStart.toDate(),
-                end_time: intersectEnd.toDate(),
-              };
-            } else if (intersect) {
-              result.push(intersect);
-              intersect = undefined;
-            } else {
-              result.push(interval1);
-            }
-
-            /**
-             * If comparing last 2 items, is either they are intersecting or not.
-             * If intersecting, keep the intersection.
-             * If not, keep both interval.
-             */
-            if (i === arr.length - 2) {
-              if (intersect) {
-                result.push(intersect);
-              } else {
-                result.push(interval2);
-              }
-            }
-          }
-        }
-
-        return result;
-      }
-
       const {
         duration_in_min,
         from,
@@ -571,130 +512,37 @@ const resolvers: Resolvers<Context> = {
       });
       invariant(availabilities.length >= 0, "Availability not found.");
 
+      const startDate = moment.tz(from, "YYYY-MM-DD", timezone);
+      const endDate = moment.tz(to, "YYYY-MM-DD", timezone);
+
       // Group time by day of week
-      const availabilityGroupByDayOfWeek = availabilities.reduce<{
-        [x: string]: { start_time: Date; end_time: Date }[];
-      }>((acc, cur) => {
-        const draft = acc;
-        if (draft[cur.day_of_week] === undefined) {
-          draft[cur.day_of_week] = [
-            {
-              start_time: moment
-                .tz(cur.start_time, "h:mma", cur.timezone)
-                .toDate(),
-              end_time: moment.tz(cur.end_time, "h:mma", cur.timezone).toDate(),
-            },
-          ];
-        } else {
-          draft[cur.day_of_week].push({
-            start_time: moment
-              .tz(cur.start_time, "h:mma", cur.timezone)
-              .toDate(),
-            end_time: moment.tz(cur.end_time, "h:mma", cur.timezone).toDate(),
-          });
-        }
-        return draft;
-      }, {});
+      const groupedAvailability = groupAvailabilityByDayOfWeek(availabilities);
 
       // Find intersecting available time.
       // These are the time when all participants are available.
-      let intersectingIntervals: typeof availabilityGroupByDayOfWeek = {};
-      Object.keys(availabilityGroupByDayOfWeek).forEach((day) => {
-        const times = availabilityGroupByDayOfWeek[day];
-
-        const results = findIntersectingIntervals(times);
-        intersectingIntervals[day] = results;
-      });
+      const groupedIntersectingAvailability =
+        dedupGroupedAvailability(groupedAvailability);
 
       // Generate all date given start and end date
-      const startDate = moment.tz(from, "YYYY-MM-DD", timezone);
-      const endDate = moment.tz(to, "YYYY-MM-DD", timezone);
-      const dateArr: string[] = [];
-      let currentDate = startDate.clone();
-      while (currentDate.isSameOrBefore(endDate)) {
-        dateArr.push(currentDate.format("YYYY-MM-DD"));
-        currentDate.add(1, "days");
-      }
+      const dateArr: string[] = generateDates(
+        startDate.toDate(),
+        endDate.toDate()
+      );
 
       /**
        * Find available time slots for each day of week.
        * Not affected by calender event
        */
-      const allCommonAvailableSlots = Object.values(AvailabilityDay).reduce<{
-        [x: string]: { start_time: Date; end_time: Date }[];
-      }>((acc, cur) => {
-        const dayIntervals = intersectingIntervals[cur];
-        if (dayIntervals === undefined) {
-          return { ...acc, [cur]: [] };
-        }
-        // Generate free slot
-        const freeSlots = dayIntervals.reduce<
-          { start_time: Date; end_time: Date }[]
-        >((slotsAcc, interval) => {
-          let slots = [];
-          let start = moment(interval.start_time);
-          if (start.get("minute") < 30) {
-            start.minute(0);
-          } else {
-            start.minute(30);
-          }
-          let end = start.clone().add(30, "minutes");
-          let endOfAvailableDay = moment(interval.end_time);
-          while (start.isBefore(endOfAvailableDay)) {
-            slots.push({
-              start_time: start.toDate(),
-              end_time: end.toDate(),
-            });
-
-            start.add(30, "minutes");
-            end.add(30, "minutes");
-          }
-
-          return [...slotsAcc, ...slots];
-        }, []);
-
-        const draft = { ...acc, [cur]: freeSlots };
-        return draft;
-      }, {});
+      const allCommonAvailableSlots = generateCommonAvailableSlots(
+        groupedIntersectingAvailability
+      );
 
       // Filter slots based on the meeting duration
-      const availableSlotsAfterDurationFilter = Object.values(
-        AvailabilityDay
-      ).reduce<{
-        [x: string]: { start_time: Date; end_time: Date }[];
-      }>((acc, cur) => {
-        const slots = allCommonAvailableSlots[cur];
-        if (slots === undefined) {
-          return { ...acc, [cur]: [] };
-        }
+      const availableSlotsAfterDurationFilter = filterAvailableSlotsByDuration(
+        allCommonAvailableSlots,
+        duration_in_min
+      );
 
-        const filteredSlots: { start_time: Date; end_time: Date }[] = [];
-
-        for (let i = 0; i < slots.length; i++) {
-          let currentSlot = slots[i];
-          let endTimeForDuration = moment(currentSlot.start_time).add(
-            duration_in_min,
-            "minutes"
-          );
-
-          // Check if the duration fits in the consecutive free slots
-          let fitsDuration = false;
-          for (let j = i; j < slots.length; j++) {
-            if (endTimeForDuration.isSameOrBefore(slots[j].end_time)) {
-              fitsDuration = true;
-              break;
-            }
-          }
-
-          if (fitsDuration) {
-            filteredSlots.push(currentSlot);
-          }
-        }
-        const draft = { ...acc, [cur]: filteredSlots };
-        return draft;
-      }, {});
-
-      // TODO: Filter slots based on Calendar event
       const getCalendarEventTasks = allParticipantUserIds.map(async (id) => {
         const calendarEvents =
           await meetingEventService.getCalendarEventsForUser(
@@ -713,39 +561,10 @@ const resolvers: Resolvers<Context> = {
         };
       });
       const calendarEventDataArr = await Promise.all(getCalendarEventTasks);
-      const calendarEventBusySlots = calendarEventDataArr.reduce<
-        { start_time: Date; end_time: Date }[]
-      >((acc, eventData) => {
-        const { calendarEvents } = eventData;
-        const busySlots: { start_time: Date; end_time: Date }[] = [];
-        calendarEvents.forEach((event) => {
-          const current = event.timezone
-            ? moment.tz(event.start_time, event.timezone)
-            : moment.tz(event.start_time);
+      const calendarEventBusySlots =
+        generateCalendarEventBusySlots(calendarEventDataArr);
 
-          const eventEndTime = event.timezone
-            ? moment.tz(event.end_time, event.timezone)
-            : moment.tz(event.end_time);
-
-          while (current.isBefore(eventEndTime)) {
-            let end = current.clone().add(30, "minutes");
-
-            if (end.isAfter(eventEndTime)) {
-              end = moment(eventEndTime);
-            }
-
-            busySlots.push({
-              start_time: current.toDate(),
-              end_time: end.toDate(),
-            });
-            current.add(30, "minutes");
-          }
-        });
-
-        return [...acc, ...busySlots];
-      }, []);
-
-      const promises = dateArr.map(async (d) => {
+      const dateWithAvailableTimeSlots = dateArr.map((d) => {
         const date = moment(d, "YYYY-MM-DD");
 
         // Skip date if no availability on that day
@@ -809,8 +628,6 @@ const resolvers: Resolvers<Context> = {
           time_slots: finalTimeSlots.map((s) => s.start_time),
         };
       });
-
-      const dateWithAvailableTimeSlots = await Promise.all(promises);
 
       return dateWithAvailableTimeSlots;
     },
