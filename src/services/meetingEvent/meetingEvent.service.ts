@@ -1,10 +1,10 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import { User } from "@prisma/client";
 import { GaxiosError } from 'googleapis-common';
 import invariant from "../../helper/invariant";
 import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
 import { createGoogleEvent, deleteGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
-import { findCommonFreeSlotsForAllUser, findFreeSlots, processCalendarEvents } from "../../helper/timeSlot";
+
 import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
 import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
@@ -702,12 +702,17 @@ const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs) => {
   }
 }
 
+type GetCalendarEventsForUserArgs = {
+  user_id: string;
+  start_date_iso: string;
+  end_date_iso: string;
+}
+
 const getCalendarEventsForUser = async (
-  user_id: string,
-  start_date_iso: string,
-  end_date_iso: string,
+  args: GetCalendarEventsForUserArgs,
   ctx: ServiceContext
 ): Promise<CalendarEvent[]> => {
+  const { end_date_iso, start_date_iso, user_id } = args;
   let events: CalendarEvent[] = [];
   const oauthGoogle = await ctx.prisma.oauth.findFirst({
     where: {
@@ -756,73 +761,6 @@ const getCalendarEventsForUser = async (
   }
 
   return events;
-}
-
-type GetAvailableTimeSlotsArgs = {
-  date: Date;
-  user_id: string;
-  duration_in_min: number;
-  attendee_user_ids: string[];
-  meeting_event_id?: string;
-}
-
-const getAvailableTimeSlots = async (args: GetAvailableTimeSlotsArgs, ctx: ServiceContext) => {
-  const { date, user_id, duration_in_min, attendee_user_ids, meeting_event_id } = args;
-  try {
-    let selectedSlot:
-      | {
-          start: Date;
-          end: Date;
-        }
-      | undefined;
-    if (meeting_event_id) {
-      const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_event_id,
-        },
-      });
-      invariant(meetingEvent, "Meeting not found.");
-      selectedSlot = {
-        start: meetingEvent.start_time,
-        end: meetingEvent.end_time,
-      };
-    }
-    const startDateIso = moment(date).subtract(1, "day").toISOString();
-    const endDateIso = moment(date).add(1, "day").toISOString();
-    const getUserDataTasks = [...attendee_user_ids, user_id].map(async (uid) => {
-      const calendarEvents = await getCalendarEventsForUser(uid, startDateIso, endDateIso, ctx)
-      const availability = await ctx.prisma.availability.findMany({
-        where: {
-          user_id,
-        },
-      });
-
-      return {
-        calendarEvents,
-        availability,
-      }
-    });
-    const allUserData = await Promise.all(getUserDataTasks);
-
-    let freeSlotsGroupByUser = [];
-    for (const userData of allUserData) {
-      const busySlots = processCalendarEvents(userData.calendarEvents);
-      let freeSlots = findFreeSlots(busySlots, userData.availability, date, duration_in_min, selectedSlot);
-
-      // Check if the date is today. If so, filter out past time slots
-      if (moment(date).isSame(moment(), 'day')) {
-        const currentTime = moment();
-        freeSlots = freeSlots.filter(slot => moment(slot).isAfter(currentTime));
-      }
-
-      freeSlotsGroupByUser.push(freeSlots);
-    }
-
-    const commonFreeSlotsForAllUser = findCommonFreeSlotsForAllUser(freeSlotsGroupByUser);
-    return commonFreeSlotsForAllUser;
-  } catch (error) {
-    throw error;
-  }
 }
 
 type AddExternalGuestToMeetingArgs = {
@@ -943,8 +881,8 @@ const meetingEventService = {
   updateMeetingEvent,
   getMicrosoftCalendarEvents,
   getGoogleCalendarEvents,
-  getAvailableTimeSlots,
   addExternalGuestToMeeting,
+  getCalendarEventsForUser,
 };
 
 export default meetingEventService;

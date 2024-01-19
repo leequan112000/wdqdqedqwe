@@ -65,6 +65,11 @@ type CalendarEvent {
   is_draft: Boolean
 }
 
+type DateWithTimeSlots {
+  date: String
+  time_slots: [Date]
+}
+
 type Query {
   meetingFormAttendees(project_connection_id: String!): [User]
   meetingEvents(status: String): [MeetingEvent]
@@ -73,12 +78,14 @@ type Query {
   microsoftCalendarEvents: [CalendarEvent]
   googleCalendarAuthorizationUri(redirect_url: String): String
   googleCalendarEvents: [CalendarEvent]
-  availableTimeSlots(
-    date: Date!
+  availableDateTimeSlots(
+    from: String!
+    to: String!
     duration_in_min: Int!
     attendee_user_ids: [String]
     meeting_event_id: String # Optional: To include the selected timeslot in the available time slots when editing meeting.
-  ): [Date]
+    timezone: String!
+  ): [DateWithTimeSlots]
   moreAttendeesToAdd(meeting_event_id: String!): [User]
 }
 
