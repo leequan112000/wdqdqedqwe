@@ -2,8 +2,8 @@ import moment from "moment-timezone";
 import { User } from "@prisma/client";
 import { GaxiosError } from 'googleapis-common';
 import invariant from "../../helper/invariant";
-import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
-import { createGoogleEvent, deleteGoogleEvent, googleApiClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
+import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClient, microsoftClientRefreshToken, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
+import { createGoogleEvent, deleteGoogleEvent, googleApiClient, googleClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
 
 import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
 import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
@@ -16,6 +16,8 @@ import { PublicError } from "../../graphql/errors/PublicError";
 import { checkIfUserInProjectConnection } from "../projectConnection/projectConnection.service";
 import { meetingInvitationForCromaticUserWithinProjectEmail, meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
+import { GraphError } from "@microsoft/microsoft-graph-client";
+import { refreshToken } from "../../helper/clientOauth2";
 
 type CreateMeetingEventArgs = {
   title: string;
@@ -626,8 +628,67 @@ const updateMeetingEvent = async (args: UpdateMeetingEventArgs, ctx: ServiceCont
   };
 }
 
+type RefreshTokenArgs = {
+  access_token: string;
+  refresh_token: string;
+  user_id: string;
+}
+
+const refreshMicrosoftToken = async (args: RefreshTokenArgs, ctx: ServiceContext) => {
+  const { access_token, refresh_token, user_id } = args;
+  const newToken = await refreshToken({ access_token,  refresh_token,  user_id, client: microsoftClient  })
+  await ctx.prisma.oauth.upsert({
+    where: {
+      user_id_provider: {
+        user_id,
+        provider: OauthProvider.MICROSOFT,
+      }
+    },
+    create: {
+      user_id,
+      provider: OauthProvider.MICROSOFT,
+      access_token: newToken.accessToken,
+      refresh_token: newToken.refreshToken,
+    },
+    update: {
+      user_id,
+      provider: OauthProvider.MICROSOFT,
+      access_token: newToken.accessToken,
+      refresh_token: newToken.refreshToken,
+    },
+  });
+  return newToken;
+}
+
+const refreshGoogleToken = async (args: RefreshTokenArgs, ctx: ServiceContext) => {
+  const { access_token, refresh_token, user_id } = args;
+  const newToken = await refreshToken({ access_token, refresh_token, user_id, client: googleClient });
+  await ctx.prisma.oauth.upsert({
+    where: {
+      user_id_provider: {
+        user_id,
+        provider: OauthProvider.GOOGLE,
+      }
+    },
+    create: {
+      user_id,
+      provider: OauthProvider.GOOGLE,
+      access_token: newToken.accessToken,
+      refresh_token: newToken.refreshToken,
+    },
+    update: {
+      user_id,
+      provider: OauthProvider.GOOGLE,
+      access_token: newToken.accessToken,
+      refresh_token: newToken.refreshToken,
+    },
+  });
+  return newToken;
+}
+
 type GetMicrosoftCalendarEventsArgs = {
   access_token: string;
+  refresh_token: string;
   start_date_iso: string;
   end_date_iso?: string;
 }
@@ -636,35 +697,31 @@ const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs) 
   const { access_token, start_date_iso, end_date_iso } = args;
   const client = microsoftGraphClient(access_token);
 
-  try {
-    // Doc: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
-    const startDateFilterStr = `start/dateTime ge '${start_date_iso}'`;
-    const endDateFilterStr = end_date_iso ? ` and start/dateTime le '${end_date_iso}'` : ''
+  // Doc: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
+  const startDateFilterStr = `start/dateTime ge '${start_date_iso}'`;
+  const endDateFilterStr = end_date_iso ? ` and start/dateTime le '${end_date_iso}'` : ''
 
-    const response: { value: MicrosoftCalendarEvent[] } = await client
-      .api("/me/calendar/events")
-      .filter(`${startDateFilterStr}${endDateFilterStr}`)
-      .get();
+  const response: { value: MicrosoftCalendarEvent[] } = await client
+    .api("/me/calendar/events")
+    .filter(`${startDateFilterStr}${endDateFilterStr}`)
+    .get();
 
-    return response.value.map((event) => ({
-      id: event.id,
-      title: event.subject,
-      description: event.bodyPreview,
-      start_time: moment.utc(event.start.dateTime).format(),
-      end_time: moment.utc(event.end.dateTime).format(),
-      timezone: event.start.timeZone,
-      all_day: event.isAllDay,
-      meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
-      guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
-      organizer: {
-        name: event.organizer.emailAddress.name,
-        email: event.organizer.emailAddress.address,
-      },
-      is_draft: event.isDraft,
-    } as CalendarEvent)) || [];
-  } catch (error) {
-    throw error;
-  }
+  return response.value.map((event) => ({
+    id: event.id,
+    title: event.subject,
+    description: event.bodyPreview,
+    start_time: moment.utc(event.start.dateTime).format(),
+    end_time: moment.utc(event.end.dateTime).format(),
+    timezone: event.start.timeZone,
+    all_day: event.isAllDay,
+    meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
+    guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
+    organizer: {
+      name: event.organizer.emailAddress.name,
+      email: event.organizer.emailAddress.address,
+    },
+    is_draft: event.isDraft,
+  } as CalendarEvent)) || [];
 }
 
 type GetGoogleCalendarEventsArgs = {
@@ -722,14 +779,37 @@ const getCalendarEventsForUser = async (
   });
 
   if (oauthGoogle) {
-    const googleEvents = await getGoogleCalendarEvents({
-      access_token: oauthGoogle.access_token,
-      refresh_token: oauthGoogle.refresh_token,
-      single_events: true,
-      start_date_iso,
-      end_date_iso,
-    });
-    events = events.concat(googleEvents);
+    try {
+      const googleEvents = await getGoogleCalendarEvents({
+        access_token: oauthGoogle.access_token,
+        refresh_token: oauthGoogle.refresh_token,
+        single_events: true,
+        start_date_iso,
+        end_date_iso,
+      });
+      events = events.concat(googleEvents);
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === 401
+      ) {
+        const newToken = await refreshGoogleToken({
+          access_token: oauthGoogle.access_token,
+          refresh_token: oauthGoogle.refresh_token,
+          user_id,
+        }, ctx);
+        const googleEvents = await getGoogleCalendarEvents({
+          access_token: newToken.accessToken,
+          refresh_token: newToken.refreshToken,
+          single_events: true,
+          start_date_iso,
+          end_date_iso,
+        });
+        events = events.concat(googleEvents);
+      }
+    }
   }
 
   const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
@@ -743,15 +823,21 @@ const getCalendarEventsForUser = async (
     try {
       const microsoftEvents = await getMicrosoftCalendarEvents({
         access_token: oauthMicrosoft.access_token,
+        refresh_token: oauthMicrosoft.refresh_token,
         start_date_iso,
         end_date_iso,
       });
       events = events.concat(microsoftEvents);
     } catch (error: any) {
-      if (error.statusCode === 401) {
-        const newToken = await microsoftClientRefreshToken(oauthMicrosoft.access_token, oauthMicrosoft.refresh_token, user_id);
+      if (error instanceof GraphError && error.statusCode === 401) {
+        const newToken = await refreshMicrosoftToken({
+          access_token: oauthMicrosoft.access_token,
+          refresh_token: oauthMicrosoft.refresh_token,
+          user_id,
+        }, ctx);
         const microsoftEvents = await getMicrosoftCalendarEvents({
           access_token: newToken.accessToken,
+          refresh_token: newToken.refreshToken,
           start_date_iso,
           end_date_iso,
         });
