@@ -1,0 +1,12 @@
+type ExtractedRfp {
+  project_title: String
+  project_desc: String
+  preparation_details: String
+  vendor_requirement: String
+}
+
+type Mutation {
+  extractPdfRfp(
+    file: Upload!
+  ): ExtractedRfp
+}

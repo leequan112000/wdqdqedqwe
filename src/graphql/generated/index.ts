@@ -261,6 +261,14 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type ExtractedRfp = {
+  __typename?: 'ExtractedRfp';
+  preparation_details?: Maybe<Scalars['String']>;
+  project_desc?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
+  vendor_requirement?: Maybe<Scalars['String']>;
+};
+
 export type InviteCollaboratorInput = {
   email: Scalars['String'];
   first_name: Scalars['String'];
@@ -408,6 +416,7 @@ export type Mutation = {
   declineQuote?: Maybe<Quote>;
   declinedProjectConnection?: Maybe<ProjectConnection>;
   draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
+  extractPdfRfp?: Maybe<ExtractedRfp>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -598,6 +607,11 @@ export type MutationDraftQuoteReviewArgs = {
   input?: InputMaybe<Array<ReviewInput>>;
   is_final_step?: InputMaybe<Scalars['Boolean']>;
   quote_id: Scalars['String'];
+};
+
+
+export type MutationExtractPdfRfpArgs = {
+  file: Scalars['Upload'];
 };
 
 
@@ -1699,6 +1713,7 @@ export type ResolversTypes = ResolversObject<{
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  ExtractedRfp: ResolverTypeWrapper<ExtractedRfp>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -1780,6 +1795,7 @@ export type ResolversParentTypes = ResolversObject<{
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
+  ExtractedRfp: ExtractedRfp;
   Float: Scalars['Float'];
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
@@ -2074,6 +2090,14 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type ExtractedRfpResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtractedRfp'] = ResolversParentTypes['ExtractedRfp']> = ResolversObject<{
+  preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
   commission_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2218,6 +2242,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
+  extractPdfRfp?: Resolver<Maybe<ResolversTypes['ExtractedRfp']>, ParentType, ContextType, RequireFields<MutationExtractPdfRfpArgs, 'file'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -2767,6 +2792,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  ExtractedRfp?: ExtractedRfpResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;
