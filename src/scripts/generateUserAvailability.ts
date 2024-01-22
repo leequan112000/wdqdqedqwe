@@ -1,9 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { Client } from "@googlemaps/google-maps-services-js";
 
-import { AvailabilityDay } from "../helper/constant";
 import invariant from "../helper/invariant";
 import prisma from "../prisma";
+import { availabilitiesCreateData } from "../helper/availability";
 
 const client = new Client({});
 
@@ -87,25 +87,6 @@ const main = async () => {
     });
 
     const results = await Promise.all(tasks);
-
-    const availabilitiesCreateData = (
-      tz: string,
-      userId: string
-    ): Prisma.AvailabilityCreateManyInput[] => {
-      return [
-        AvailabilityDay.MONDAY,
-        AvailabilityDay.TUESDAY,
-        AvailabilityDay.WEDNESDAY,
-        AvailabilityDay.THURSDAY,
-        AvailabilityDay.FRIDAY,
-      ].map((day) => ({
-        user_id: userId,
-        day_of_week: day,
-        start_time: "9:00am",
-        end_time: "5:00pm",
-        timezone: tz,
-      }));
-    };
 
     const createInputData = results
       .filter((r) => !!r.timezone)
