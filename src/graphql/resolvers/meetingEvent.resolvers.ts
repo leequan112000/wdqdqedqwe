@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import moment from "moment";
+import moment from "moment-timezone";
 import {
   googleApiClient,
   googleClient,
@@ -24,6 +24,14 @@ import meetingEventService from "../../services/meetingEvent/meetingEvent.servic
 import { PublicError } from "../errors/PublicError";
 import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
+import {
+  dedupGroupedAvailability,
+  filterAvailableSlotsByDuration,
+  generateCalendarEventBusySlots,
+  generateCommonAvailableSlots,
+  generateDates,
+  groupAvailabilityByDayOfWeek,
+} from "../../helper/availableTimeSlots";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -470,21 +478,158 @@ const resolvers: Resolvers<Context> = {
 
       return meetingEvents;
     },
-    availableTimeSlots: async (_, args, context) => {
-      const { date, attendee_user_ids, duration_in_min, meeting_event_id } = args;
-      const { user_id } = context.req;
-      invariant(user_id, "User ID not found.");
+    availableDateTimeSlots: async (_, args, context) => {
+      const {
+        duration_in_min,
+        from,
+        to,
+        timezone,
+        attendee_user_ids,
+        meeting_event_id,
+      } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, "Missing user id.");
 
-      return meetingEventService.getAvailableTimeSlots(
-        {
-          date,
-          user_id,
-          duration_in_min,
-          attendee_user_ids: attendee_user_ids as string[],
-          meeting_event_id: meeting_event_id || undefined,
+      const allParticipantUserIds = [
+        ...((attendee_user_ids as string[]) || []),
+        currentUserId,
+      ];
+
+      const existingMeetingEvent = meeting_event_id
+        ? await context.prisma.meetingEvent.findFirst({
+            where: {
+              id: meeting_event_id,
+            },
+          })
+        : undefined;
+
+      const availabilities = await context.prisma.availability.findMany({
+        where: {
+          user_id: {
+            in: allParticipantUserIds,
+          },
         },
-        context
+      });
+      invariant(availabilities.length >= 0, "Availability not found.");
+
+      const startDate = moment.tz(from, "YYYY-MM-DD", timezone);
+      const endDate = moment.tz(to, "YYYY-MM-DD", timezone);
+
+      // Group time by day of week
+      const groupedAvailability = groupAvailabilityByDayOfWeek(availabilities);
+
+      // Find intersecting available time.
+      // These are the time when all participants are available.
+      const groupedIntersectingAvailability =
+        dedupGroupedAvailability(groupedAvailability);
+
+      // Generate all date given start and end date
+      const dateArr: string[] = generateDates(
+        startDate.toDate(),
+        endDate.toDate()
       );
+
+      /**
+       * Find available time slots for each day of week.
+       * Not affected by calender event
+       */
+      const allCommonAvailableSlots = generateCommonAvailableSlots(
+        groupedIntersectingAvailability
+      );
+
+      // Filter slots based on the meeting duration
+      const availableSlotsAfterDurationFilter = filterAvailableSlotsByDuration(
+        allCommonAvailableSlots,
+        duration_in_min
+      );
+
+      const getCalendarEventTasks = allParticipantUserIds.map(async (id) => {
+        const calendarEvents =
+          await meetingEventService.getCalendarEventsForUser(
+            {
+              start_date_iso: startDate.toISOString(),
+              end_date_iso: endDate.toISOString(),
+              user_id: id,
+            },
+            {
+              prisma: context.prisma,
+            }
+          );
+        return {
+          userId: id,
+          calendarEvents,
+        };
+      });
+      const calendarEventDataArr = await Promise.all(getCalendarEventTasks);
+      const calendarEventBusySlots =
+        generateCalendarEventBusySlots(calendarEventDataArr);
+
+      const dateWithAvailableTimeSlots = dateArr.map((d) => {
+        const date = moment(d, "YYYY-MM-DD");
+
+        // Skip date if no availability on that day
+        if (
+          availableSlotsAfterDurationFilter[date.format("dddd")] === undefined
+        ) {
+          return {
+            date: date.format("YYYY-MM-DD"),
+            time_slots: [],
+          };
+        }
+
+        // Make sure all time slots match the date.
+        const timeSlots = availableSlotsAfterDurationFilter[
+          date.format("dddd")
+        ].map((interval) => ({
+          start_time: moment(interval.start_time)
+            .year(date.year())
+            .month(date.month())
+            .date(date.date()),
+          end_time: moment(interval.end_time)
+            .year(date.year())
+            .month(date.month())
+            .date(date.date()),
+        }));
+
+        // Filter time slots based on calendar event
+        // Or if the time slot is selected by existing meeting event
+        const selectedSlot = existingMeetingEvent
+          ? {
+              start_time: moment
+                .tz(
+                  existingMeetingEvent.start_time,
+                  existingMeetingEvent.timezone
+                )
+                .toDate(),
+              end_time: moment
+                .tz(
+                  existingMeetingEvent.end_time,
+                  existingMeetingEvent.timezone
+                )
+                .toDate(),
+            }
+          : undefined;
+
+        const finalTimeSlots = timeSlots.filter((slot) => {
+          const isBusy = calendarEventBusySlots.some(
+            (busySlot) =>
+              moment(busySlot.start_time).isBefore(slot.end_time) &&
+              moment(busySlot.end_time).isAfter(slot.start_time)
+          );
+          const isSelected =
+            selectedSlot &&
+            moment(selectedSlot.start_time).isSame(slot.start_time);
+
+          return !isBusy || isSelected;
+        });
+
+        return {
+          date: date.format("YYYY-MM-DD"),
+          time_slots: finalTimeSlots.map((s) => s.start_time),
+        };
+      });
+
+      return dateWithAvailableTimeSlots;
     },
     microsoftCalendarAuthorizationUri: async (_, args, context) => {
       const { redirect_url } = args;
@@ -524,6 +669,7 @@ const resolvers: Resolvers<Context> = {
       try {
         return await meetingEventService.getMicrosoftCalendarEvents({
           access_token: oauth.access_token,
+          refresh_token: oauth.refresh_token,
           start_date_iso: oneMonthAgo,
         });
       } catch (error: any) {
@@ -535,6 +681,7 @@ const resolvers: Resolvers<Context> = {
           );
           return await meetingEventService.getMicrosoftCalendarEvents({
             access_token: newToken.accessToken,
+            refresh_token: oauth.refresh_token,
             start_date_iso: oneMonthAgo,
           });
         }

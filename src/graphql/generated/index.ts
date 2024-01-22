@@ -284,6 +284,12 @@ export type CustomerConnection = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type DateWithTimeSlots = {
+  __typename?: 'DateWithTimeSlots';
+  date?: Maybe<Scalars['String']>;
+  time_slots?: Maybe<Array<Maybe<Scalars['Date']>>>;
+};
+
 export type ExternalGuest = {
   __typename?: 'ExternalGuest';
   email?: Maybe<Scalars['String']>;
@@ -1358,7 +1364,7 @@ export type PurchaseOrder = {
 export type Query = {
   __typename?: 'Query';
   availability?: Maybe<Availability>;
-  availableTimeSlots?: Maybe<Array<Maybe<Scalars['Date']>>>;
+  availableDateTimeSlots?: Maybe<Array<Maybe<DateWithTimeSlots>>>;
   bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
@@ -1408,11 +1414,13 @@ export type Query = {
 };
 
 
-export type QueryAvailableTimeSlotsArgs = {
+export type QueryAvailableDateTimeSlotsArgs = {
   attendee_user_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  date: Scalars['Date'];
   duration_in_min: Scalars['Int'];
+  from: Scalars['String'];
   meeting_event_id?: InputMaybe<Scalars['String']>;
+  timezone: Scalars['String'];
+  to: Scalars['String'];
 };
 
 
@@ -1925,6 +1933,7 @@ export type ResolversTypes = ResolversObject<{
   Customer: ResolverTypeWrapper<Customer>;
   CustomerConnection: ResolverTypeWrapper<CustomerConnection>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
+  DateWithTimeSlots: ResolverTypeWrapper<DateWithTimeSlots>;
   ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
   ExternalParticipantInput: ExternalParticipantInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
@@ -2020,6 +2029,7 @@ export type ResolversParentTypes = ResolversObject<{
   Customer: Customer;
   CustomerConnection: CustomerConnection;
   Date: Scalars['Date'];
+  DateWithTimeSlots: DateWithTimeSlots;
   ExternalGuest: ExternalGuest;
   ExternalParticipantInput: ExternalParticipantInput;
   Float: Scalars['Float'];
@@ -2336,6 +2346,12 @@ export type CustomerConnectionResolvers<ContextType = any, ParentType extends Re
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
+
+export type DateWithTimeSlotsResolvers<ContextType = any, ParentType extends ResolversParentTypes['DateWithTimeSlots'] = ResolversParentTypes['DateWithTimeSlots']> = ResolversObject<{
+  date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_slots?: Resolver<Maybe<Array<Maybe<ResolversTypes['Date']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
 export type ExternalGuestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalGuest'] = ResolversParentTypes['ExternalGuest']> = ResolversObject<{
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2806,7 +2822,7 @@ export type PurchaseOrderResolvers<ContextType = any, ParentType extends Resolve
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   availability?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType>;
-  availableTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['Date']>>>, ParentType, ContextType, RequireFields<QueryAvailableTimeSlotsArgs, 'date' | 'duration_in_min'>>;
+  availableDateTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['DateWithTimeSlots']>>>, ParentType, ContextType, RequireFields<QueryAvailableDateTimeSlotsArgs, 'duration_in_min' | 'from' | 'timezone' | 'to'>>;
   bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
@@ -3116,6 +3132,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Customer?: CustomerResolvers<ContextType>;
   CustomerConnection?: CustomerConnectionResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  DateWithTimeSlots?: DateWithTimeSlotsResolvers<ContextType>;
   ExternalGuest?: ExternalGuestResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
