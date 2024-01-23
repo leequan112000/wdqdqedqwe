@@ -8,7 +8,7 @@ const resolvers: Resolvers<Context> = {
       const { file } = args;
       const data = await file;
 
-      return await sourcererService.extractPdfToRfp(data);;
+      return await sourcererService.extractPdfToRfp(data);
     },
   }
 }
