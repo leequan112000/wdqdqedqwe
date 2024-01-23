@@ -39,7 +39,7 @@ const client = new JWT({
   subject: process.env.GOOGLE_CALENDAR_ID!,
 });
 
-type GEvent = {
+export type GEvent = {
   summary?: string;
   description?: string | null;
   start?: {
