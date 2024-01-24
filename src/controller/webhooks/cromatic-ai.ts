@@ -1,0 +1,51 @@
+import crypto from "crypto";
+import { Request, Response } from 'express';
+import { pubsub } from "../../helper/pubsub";
+
+
+const verifySignature = (req: Request, signature: string): boolean => {
+  // Sort keys alphabetically before stringifying the payload
+  const jsonBody = JSON.parse(req.body);
+  const sortedBody = JSON.stringify(jsonBody, Object.keys(jsonBody).sort());
+  const computedSignature = crypto
+    .createHmac('sha256', process.env.CROMATIC_AI_WEBHOOK_SECRET!)
+    .update(sortedBody)
+    .digest('hex');
+
+  // Compare the computed signature with the expected signature
+  if (computedSignature === signature) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export const cromaticAiWebhook = async (req: Request, res: Response): Promise<void> => {
+  const signature = req.query.signature;
+  if (!verifySignature(req, signature as string)) {
+    res.status(400).send(`Webhook Error: Invalid signature`);
+    return;
+  }
+
+  const payload = JSON.parse(req.body);
+  const data = payload.data;
+  const task_id = payload.task_id;
+  const event_name = payload.event_name;
+
+  try {
+    switch (event_name) {
+      case "source_rfp_specialties": {
+        pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, data } });
+      }
+      default:
+        break;
+    }
+    res.status(200).send('OK');
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).send(`Webhook Error: ${error.message}`);
+    } else {
+      res.status(400).send('Webhook Error');
+    }
+  }
+};
