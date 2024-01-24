@@ -789,19 +789,15 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createMeetingEvent: async (parent, args, context) => {
-      const organizerUser = await context.prisma.user.findFirst({
-        where: {
-          id: context.req.user_id,
-        },
-      });
+      const currentUserId = context.req.user_id;
 
-      invariant(organizerUser, "Current user not found.");
+      invariant(currentUserId, "User ID not found.");
 
       return await context.prisma.$transaction(async (trx) => {
         return await meetingEventService.createMeetingEvent(
           {
             ...args,
-            organizer_user: organizerUser,
+            organizer_user_id: currentUserId,
           },
           { prisma: trx }
         );

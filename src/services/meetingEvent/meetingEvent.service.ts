@@ -17,6 +17,7 @@ import { CalendarEvent } from "../../graphql/generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { checkIfUserInProjectConnection } from "../projectConnection/projectConnection.service";
 import { meetingInvitationForCromaticUserWithinProjectEmail, meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
+import { newMeetingNotificationEmail } from "../../mailer/meetingEvent";
 import { app_env } from "../../environment";
 import { refreshToken } from "../../helper/clientOauth2";
 import { InternalError } from "../../graphql/errors/InternalError";
@@ -315,6 +316,20 @@ const createMeetingEventOnCalendarApp = async (
   }
 }
 
+type CreateMeetingEventArgs = {
+  title: string;
+  meeting_link?: string | null;
+  platform: string;
+  end_time: string;
+  start_time: string;
+  cromatic_participants: Array<{ id: string; email: string; }>;
+  external_participants: Array<{ email: string; name?: string | null; }>;
+  timezone: string;
+  description?: string | null;
+  project_connection_id: string;
+  organizer_user_id: string;
+}
+
 const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceContext) => {
   const {
     title,
@@ -327,7 +342,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     external_participants,
     description,
     project_connection_id,
-    organizer_user,
+    organizer_user_id,
   } = args;
 
   let meeting_link = null;
@@ -340,7 +355,38 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
   const externalParticipantEmails = external_participants.map((a) => a.email);
 
-  const attendeeConnections = await createMeetingAttendeeConnections(cromaticParticipantEmails, organizer_user, ctx);
+  const organizerUser = await ctx.prisma.user.findFirst({
+    where: {
+      id: organizer_user_id,
+    },
+    include: {
+      customer: {
+        include: {
+          biotech: true,
+        }
+      },
+      vendor_member: {
+        include: {
+          vendor_company: true,
+        },
+      },
+    },
+  });
+  const organizerIsBiotech = !!organizerUser?.customer;
+
+  invariant(organizerUser, 'Organizer user not found.');
+
+  const cromaticParticipantUserData = await ctx.prisma.user.findMany({
+    where: {
+      email: {
+        in: cromaticParticipantEmails,
+      },
+    },
+    include: {
+      customer: true,
+      vendor_member: true,
+    },
+  });
 
   // Create event on third party application
   if (platform === MeetingPlatform.CUSTOM) {
@@ -352,9 +398,9 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
         all_participants_emails: [
           ...cromaticParticipantEmails,
           ...externalParticipantEmails,
-          organizer_user.email,
+          organizerUser.email,
         ],
-        organizer_user_id: organizer_user.id,
+        organizer_user_id: organizerUser.id,
         title,
         description: description || undefined,
         end_time,
@@ -372,6 +418,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     platform_event_id = newMeetingEventOnCalendarApp.platform_event_id;
   }
 
+  const meetingAttendeeConnectionCreateData = [...cromaticParticipantUserData, organizerUser].map((u) => ({ user_id: u.id }));
   const newMeetingEvent = await ctx.prisma.meetingEvent.create({
     data: {
       title,
@@ -386,10 +433,10 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       phone_country,
       project_connection_id,
       platform_event_id,
-      organizer_id: organizer_user.id,
+      organizer_id: organizerUser.id,
       is_sharable: true,
       meetingAttendeeConnections: {
-        create: attendeeConnections,
+        create: meetingAttendeeConnectionCreateData,
       },
       meeting_guests: {
         create: external_participants.map((p) => ({
@@ -422,14 +469,60 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
 
   const meetingGuests = await Promise.all(addExternalParticipantTasks);
 
+  if (platform === MeetingPlatform.CUSTOM) {
+    const organizerParticipants = cromaticParticipantUserData.filter((u) => {
+      const thisUserIsBiotech = !!u.customer;
+      if (organizerIsBiotech && thisUserIsBiotech) {
+        return true;
+      } else if (!organizerIsBiotech && !thisUserIsBiotech) {
+        return true;
+      }
+      return false;
+    });
+    const attendingParticipants = cromaticParticipantUserData.filter((u) => {
+      const thisUserIsBiotech = !!u.customer;
+      if (organizerIsBiotech && !thisUserIsBiotech) {
+        return true;
+      } else if (!organizerIsBiotech && thisUserIsBiotech) {
+        return true;
+      }
+      return false;
+    });
+    const organizerParticipantEmailData = organizerParticipants.map((u) => ({
+      meeting_title: newMeetingEvent.title,
+      project_title: newMeetingEvent.project_connection.project_request.title,
+      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+      user_name: `${u.first_name} ${u.last_name}`,
+      button_url: `${app_env.APP_URL}/app/meeting-events`,
+      receive_email: u.email,
+    }));
+    const organizerCompany =
+      organizerUser.customer?.biotech?.name ||
+      organizerUser.vendor_member?.vendor_company?.name;
+    const attendingParticipantEmailData = attendingParticipants.map((u) => ({
+      meeting_title: newMeetingEvent.title,
+      project_title: newMeetingEvent.project_connection.project_request.title,
+      company_name: organizerCompany!,
+      user_name: `${u.first_name} ${u.last_name}`,
+      button_url: `${app_env.APP_URL}/app/meeting-events`,
+      receive_email: u.email,
+    }));
+
+    [...organizerParticipantEmailData, ...attendingParticipantEmailData].map(
+      ({ receive_email, ...data }) => {
+        newMeetingNotificationEmail(data, receive_email);
+      }
+    );
+  }
+
   const notificationJob = {
-    data: attendeeConnections.map((a) =>
+    data: cromaticParticipantUserData.map((u) =>
       createNewMeetingNotificationJob({
         meeting_event_id: newMeetingEvent.id,
-        organizer_full_name: `${organizer_user.first_name} ${organizer_user.last_name}`,
+        organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
         project_title:
           newMeetingEvent.project_connection.project_request.title,
-        recipient_id: a.user_id,
+        recipient_id: u.id,
       })
     ),
   };
