@@ -963,7 +963,7 @@ const resolvers: Resolvers<Context> = {
       );
 
       await context.prisma.$transaction(async (trx) => {
-        meetingEventService.removeCromaticParticipant(
+        await meetingEventService.removeCromaticParticipant(
           {
             meeting_event_id,
             organizer_user_id: currentUserId,

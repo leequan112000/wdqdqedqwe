@@ -105,20 +105,6 @@ export const patchGoogleEvent = async (googleApiClient: GoogleOAuth2Client, even
       eventId,
       requestBody: {
         ...gEvent,
-        conferenceData: {
-          createRequest: {
-            requestId: uuidv4(),
-            conferenceSolutionKey: {
-              type: 'hangoutsMeet',
-            },
-          },
-          entryPoints: [
-            { entryPointType: 'video' },
-          ],
-        },
-        guestsCanSeeOtherGuests: false,
-        guestsCanModify: false,
-        guestsCanInviteOthers: false,
       },
       sendUpdates: sendUpdates ? 'all' : 'none',
       conferenceDataVersion: 1,

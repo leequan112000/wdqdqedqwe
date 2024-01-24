@@ -1372,7 +1372,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
           g_event: { attendees: attendeesArr },
           organizer_user_id: organizer_user_id,
           platform_event_id: meetingEvent.platform_event_id!,
-          send_updates: false,
+          send_updates: true,
         },
         ctx
       );
@@ -1510,7 +1510,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
           g_event: { attendees: attendeesArr },
           organizer_user_id: organizer_user_id,
           platform_event_id: meetingEvent.platform_event_id!,
-          send_updates: false,
+          send_updates: true,
         },
         ctx,
       );
