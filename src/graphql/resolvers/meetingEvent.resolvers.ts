@@ -8,7 +8,6 @@ import {
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import {
-  MeetingGuestStatus,
   MeetingPlatform,
   OauthProvider,
 } from "../../helper/constant";
@@ -872,126 +871,17 @@ const resolvers: Resolvers<Context> = {
       );
 
       return await context.prisma.$transaction(async (trx) => {
-        const addExternalParticipantTasks = external_participants.map(
-          async (p) => {
-            const { email, name } = p;
-            return await meetingEventService.addExternalGuestToMeeting(
-              {
-                email,
-                name,
-                meeting_event_id,
-              },
-              {
-                prisma: trx,
-              }
-            );
+        return meetingEventService.addParticipants(
+          {
+            cromatic_participants,
+            external_participants,
+            meeting_event_id,
+            organizer_user_id: currentUserId,
+          },
+          {
+            prisma: trx,
           }
         );
-
-        await Promise.all(addExternalParticipantTasks);
-
-        const addInternalParticipantTasks = cromatic_participants.map(
-          async (p) => {
-            const userId = p.id!;
-
-            const user = await trx.user.findFirst({
-              where: {
-                id: userId,
-              },
-            });
-            await trx.meetingAttendeeConnection.create({
-              data: {
-                user_id: userId,
-                meeting_event_id,
-              },
-            });
-
-            return user;
-          }
-        );
-
-        const cromaticUsers = await Promise.all(addInternalParticipantTasks);
-
-        // Update attendees on calendar / video call app
-        const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
-          (mac) => mac.user
-        );
-        const existingExternalGuests = meetingEvent.meeting_guests;
-
-        switch (meetingEvent.platform) {
-          case MeetingPlatform.GOOGLE_MEET: {
-            const oauthGoogle = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.GOOGLE,
-              },
-            });
-            invariant(oauthGoogle, new PublicError("Missing token."));
-
-            const client = googleApiClient(
-              oauthGoogle.access_token,
-              oauthGoogle.refresh_token
-            );
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({ email: a.email })),
-              ...existingExternalGuests.map((a) => ({ email: a.email })),
-              ...cromatic_participants.map((a) => ({ email: a.email })),
-              ...external_participants.map((a) => ({ email: a.email })),
-            ];
-
-            await patchGoogleEvent(
-              client,
-              meetingEvent.platform_event_id!,
-              { attendees: attendeesArr },
-              true
-            );
-            break;
-          }
-          case MeetingPlatform.MICROSOFT_TEAMS: {
-            const oauthMicrosoft = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.MICROSOFT,
-              },
-            });
-
-            invariant(oauthMicrosoft, new PublicError("Missing token."));
-            const client = microsoftGraphClient(oauthMicrosoft.access_token);
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...existingExternalGuests.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...cromatic_participants.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...external_participants.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-            ];
-            await patchMicrosoftEvent(client, {
-              attendees: attendeesArr,
-              id: meetingEvent.platform_event_id!,
-            });
-            break;
-          }
-          default:
-        }
-
-        return [
-          ...cromaticUsers.map((p) => ({
-            email: p!.email,
-            name: `${p!.first_name} ${p!.last_name}`,
-            status: MeetingGuestStatus.ACCEPTED,
-          })),
-          ...external_participants.map((p) => ({
-            email: p.email,
-            name: p.name,
-            status: MeetingGuestStatus.PENDING,
-          })),
-        ];
       });
     },
     sendGuestReminder: async (_, args, context) => {

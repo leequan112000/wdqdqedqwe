@@ -1,5 +1,4 @@
 import moment from "moment-timezone";
-import { User } from "@prisma/client";
 import type { GaxiosResponse} from 'googleapis-common';
 import type { calendar_v3 } from '@googleapis/calendar'
 import * as MicrosoftGraph from "@microsoft/microsoft-graph-types"
@@ -107,27 +106,77 @@ const refreshGoogleToken = async (args: RefreshTokenArgs, ctx: ServiceContext) =
   return newToken;
 }
 
-type CreateMeetingEventArgs = {
-  title: string;
-  meeting_link?: string | null;
-  platform: string;
-  end_time: string;
-  start_time: string;
-  cromatic_participants: Array<{ id: string; email: string; }>;
-  external_participants: Array<{ email: string; name?: string | null; }>;
-  timezone: string;
-  description?: string | null;
-  project_connection_id: string;
-  organizer_user: User;
+type SafePatchGoogleEventArgs = {
+  access_token: string;
+  refresh_token: string;
+  g_event: GEvent,
+  send_updates: boolean;
+  platform_event_id: string;
+  organizer_user_id: string;
 }
 
-const createMeetingAttendeeConnections = async (attendeeEmails: string[], organizer_user: User, ctx: ServiceContext) => {
-  const attendeeUsers = await ctx.prisma.user.findMany({
-    where: { email: { in: attendeeEmails } },
-  });
+const safePatchGoogleEvent = async (args: SafePatchGoogleEventArgs, ctx: ServiceContext) => {
+  const { access_token, g_event, refresh_token, platform_event_id, send_updates, organizer_user_id } = args;
+  const client = googleApiClient(access_token, refresh_token);
+  try {
+    return await patchGoogleEvent(
+      client,
+      platform_event_id,
+      g_event,
+      send_updates,
+    );
+  } catch (error) {
+    if (isGoogleExpiredError(error)) {
+      const newToken = await refreshGoogleToken(
+        {
+          access_token,
+          refresh_token,
+          user_id: organizer_user_id,
+        },
+        ctx
+      );
+      client.setCredentials({ access_token: newToken.accessToken, refresh_token: newToken.refreshToken });
+      return await patchGoogleEvent(
+        client,
+        platform_event_id,
+        g_event,
+        send_updates,
+      );
+    } else {
+      throw error;
+    }
+  }
+}
 
-  return [...attendeeUsers, organizer_user].map(u => ({ user_id: u.id }));
-};
+type SafePatchMicrosoftEventArgs = {
+  access_token: string;
+  refresh_token: string;
+  event_data: MicrosoftGraph.Event,
+  organizer_user_id: string;
+}
+
+const safePatchMicrosoftEvent = async (args: SafePatchMicrosoftEventArgs, ctx: ServiceContext) => {
+  const { access_token, refresh_token, event_data, organizer_user_id } = args;
+  const client = microsoftGraphClient(access_token);
+  try {
+    return await patchMicrosoftEvent(client, event_data);
+  } catch (error) {
+    if (isMicrosoftExpiredError(error)) {
+      const newToken = await refreshMicrosoftToken(
+        {
+          access_token,
+          refresh_token,
+          user_id: organizer_user_id,
+        },
+        ctx
+      );
+      const newClient = microsoftGraphClient(newToken.accessToken);
+      return await patchMicrosoftEvent(newClient, event_data);
+    } else {
+      throw error;
+    }
+  }
+}
 
 type CreateMeetingEventOnCalendarAppArgs = {
   platform: string;
@@ -862,7 +911,6 @@ type AddExternalGuestToMeetingArgs = {
   name?: string | null;
 }
 
-// TODO: remove
 const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ctx: ServiceContext) => {
   const { email, name, meeting_event_id } = args;
 
@@ -1059,40 +1107,17 @@ const updateMeetingEvent = async (
         };
       }
 
-      try {
-        const client = googleApiClient(
-          oauthGoogle.access_token,
-          oauthGoogle.refresh_token
-        );
-        await patchGoogleEvent(
-          client,
-          meetingEvent.platform_event_id!,
-          patchEventData,
-          true
-        );
-      } catch (error) {
-        if (isGoogleExpiredError(error)) {
-          const newToken = await refreshGoogleToken(
-            {
-              access_token: oauthGoogle.access_token,
-              refresh_token: oauthGoogle.refresh_token,
-              user_id: organizer_user_id,
-            },
-            ctx
-          );
-          const newClient = googleApiClient(
-            newToken.accessToken,
-            newToken.refreshToken
-          );
-          await patchGoogleEvent(
-            newClient,
-            meetingEvent.platform_event_id!,
-            patchEventData,
-            true
-          );
-        }
-      }
-
+      await safePatchGoogleEvent(
+        {
+          access_token: oauthGoogle.access_token,
+          refresh_token: oauthGoogle.refresh_token,
+          platform_event_id: meetingEvent.platform_event_id!,
+          g_event: patchEventData,
+          organizer_user_id,
+          send_updates: true,
+        },
+        ctx,
+      )
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
@@ -1125,23 +1150,15 @@ const updateMeetingEvent = async (
         };
       }
 
-      try {
-        const client = microsoftGraphClient(oauthMicrosoft.access_token);
-        await patchMicrosoftEvent(client, patchEventData);
-      } catch (error) {
-        if (isMicrosoftExpiredError(error)) {
-          const newToken = await refreshMicrosoftToken(
-            {
-              access_token: oauthMicrosoft.access_token,
-              refresh_token: oauthMicrosoft.refresh_token,
-              user_id: organizer_user_id,
-            },
-            ctx
-          );
-          const newClient = microsoftGraphClient(newToken.accessToken);
-          await patchMicrosoftEvent(newClient, patchEventData);
-        }
-      }
+      await safePatchMicrosoftEvent(
+        {
+          access_token: oauthMicrosoft.access_token,
+          refresh_token: oauthMicrosoft.refresh_token,
+          event_data: patchEventData,
+          organizer_user_id,
+        },
+        ctx,
+      )
       break;
     }
     case MeetingPlatform.CUSTOM:
@@ -1343,20 +1360,21 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
         },
       });
       invariant(oauthGoogle, new PublicError("Missing token."));
-      const client = googleApiClient(
-        oauthGoogle.access_token,
-        oauthGoogle.refresh_token
-      );
       const attendeesArr = [
         ...existingAttendees.map((a) => ({ email: a.email })),
         ...existingExternalGuests.map((a) => ({ email: a.email })),
       ];
 
-      await patchGoogleEvent(
-        client,
-        meetingEvent.platform_event_id!,
-        { attendees: attendeesArr },
-        false,
+      await safePatchGoogleEvent(
+        {
+          access_token: oauthGoogle.access_token,
+          refresh_token: oauthGoogle.refresh_token,
+          g_event: { attendees: attendeesArr },
+          organizer_user_id: organizer_user_id,
+          platform_event_id: meetingEvent.platform_event_id!,
+          send_updates: false,
+        },
+        ctx
       );
       break;
     }
@@ -1378,14 +1396,178 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
           emailAddress: { address: a.email },
         })),
       ];
-      await patchMicrosoftEvent(client, {
-        attendees: attendeesArr,
-        id: meetingEvent.platform_event_id!,
-      });
+      await safePatchMicrosoftEvent(
+        {
+          access_token: oauthMicrosoft.access_token,
+          refresh_token: oauthMicrosoft.refresh_token,
+          event_data: {
+            attendees: attendeesArr,
+            id: meetingEvent.platform_event_id!,
+          },
+          organizer_user_id,
+        },
+        ctx
+      );
       break;
     }
     default:
   }
+}
+
+type AddParticipantsArgs = {
+  cromatic_participants: { email: string; id: string; }[];
+  external_participants: { email: string; name?: string | null; }[]
+  meeting_event_id: string;
+  organizer_user_id: string;
+}
+
+const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) => {
+  const { cromatic_participants, external_participants, meeting_event_id, organizer_user_id } = args;
+
+  const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
+    where: {
+      id: meeting_event_id,
+    },
+    include: {
+      meetingAttendeeConnections: {
+        include: {
+          user: true,
+        },
+      },
+      meeting_guests: true,
+    },
+  });
+
+  invariant(meetingEvent, "Meeting event not found");
+
+  invariant(meetingEvent.organizer_id === organizer_user_id, "User is not organizer");
+
+  const addExternalParticipantTasks = external_participants.map(
+    async (p) => {
+      const { email, name } = p;
+      return await addExternalGuestToMeeting(
+        {
+          email,
+          name,
+          meeting_event_id,
+        },
+        ctx,
+      );
+    }
+  );
+
+  await Promise.all(addExternalParticipantTasks);
+
+  const addInternalParticipantTasks = cromatic_participants.map(
+    async (p) => {
+      const userId = p.id!;
+
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+      });
+      await ctx.prisma.meetingAttendeeConnection.create({
+        data: {
+          user_id: userId,
+          meeting_event_id,
+        },
+      });
+
+      return user;
+    }
+  );
+
+  const cromaticUsers = await Promise.all(addInternalParticipantTasks);
+
+  // Update attendees on calendar / video call app
+  const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
+    (mac) => mac.user
+  );
+  const existingExternalGuests = meetingEvent.meeting_guests;
+
+  switch (meetingEvent.platform) {
+    case MeetingPlatform.GOOGLE_MEET: {
+      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: organizer_user_id,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+      invariant(oauthGoogle, new PublicError("Missing token."));
+
+      const attendeesArr = [
+        ...existingAttendees.map((a) => ({ email: a.email })),
+        ...existingExternalGuests.map((a) => ({ email: a.email })),
+        ...cromatic_participants.map((a) => ({ email: a.email })),
+        ...external_participants.map((a) => ({ email: a.email })),
+      ];
+
+      await safePatchGoogleEvent(
+        {
+          access_token: oauthGoogle.access_token,
+          refresh_token: oauthGoogle.refresh_token,
+          g_event: { attendees: attendeesArr },
+          organizer_user_id: organizer_user_id,
+          platform_event_id: meetingEvent.platform_event_id!,
+          send_updates: false,
+        },
+        ctx,
+      );
+      break;
+    }
+    case MeetingPlatform.MICROSOFT_TEAMS: {
+      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        where: {
+          user_id: organizer_user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      const attendeesArr = [
+        ...existingAttendees.map((a) => ({
+          emailAddress: { address: a.email },
+        })),
+        ...existingExternalGuests.map((a) => ({
+          emailAddress: { address: a.email },
+        })),
+        ...cromatic_participants.map((a) => ({
+          emailAddress: { address: a.email },
+        })),
+        ...external_participants.map((a) => ({
+          emailAddress: { address: a.email },
+        })),
+      ];
+      await safePatchMicrosoftEvent(
+        {
+          access_token: oauthMicrosoft.access_token,
+          refresh_token: oauthMicrosoft.refresh_token,
+          organizer_user_id,
+          event_data: {
+            attendees: attendeesArr,
+            id: meetingEvent.platform_event_id!,
+          },
+        },
+        ctx
+      );
+      break;
+    }
+    default:
+  }
+
+  return [
+    ...cromaticUsers.map((p) => ({
+      email: p!.email,
+      name: `${p!.first_name} ${p!.last_name}`,
+      status: MeetingGuestStatus.ACCEPTED,
+    })),
+    ...external_participants.map((p) => ({
+      email: p.email,
+      name: p.name,
+      status: MeetingGuestStatus.PENDING,
+    })),
+  ];
 }
 
 const meetingEventService = {
@@ -1396,6 +1578,7 @@ const meetingEventService = {
   addExternalGuestToMeeting,
   getCalendarEventsForUser,
   removeCromaticParticipant,
+  addParticipants,
 };
 
 export default meetingEventService;
