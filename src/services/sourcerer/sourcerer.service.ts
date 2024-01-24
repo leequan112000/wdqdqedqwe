@@ -51,8 +51,33 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs) => {
   }
 }
 
+export type SourceRfpSpecialtiesArgs = {
+  project_title: string;
+  project_desc: string;
+  preparation_details: string;
+  vendor_requirement: string;
+  num_specialties: number;
+}
+
+export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs) => {
+  try {
+    const response = await axios({
+      method: 'post',
+      url: `${app_env.AI_SERVER_URL}/source-rfp-specialties/`,
+      data: {
+        ...args,
+        prompt: '',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 const sourcererService = {
   extractPdfToRfp,
+  sourceRfpSpecialties,
 };
 
 export default sourcererService;
