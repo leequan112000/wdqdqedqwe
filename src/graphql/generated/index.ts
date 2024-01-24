@@ -451,6 +451,7 @@ export type Mutation = {
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
+  sourceRfpSpecialties?: Maybe<SourceRfpSpecialtyTask>;
   startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
@@ -797,6 +798,14 @@ export type MutationSignUpUserArgs = {
   last_name: Scalars['String'];
   password: Scalars['String'];
   phone_number: Scalars['String'];
+};
+
+
+export type MutationSourceRfpSpecialtiesArgs = {
+  preparation_details: Scalars['String'];
+  project_desc: Scalars['String'];
+  project_title: Scalars['String'];
+  vendor_requirement: Scalars['String'];
 };
 
 
@@ -1449,6 +1458,17 @@ export type ReviewQuestionSet = {
   name?: Maybe<Scalars['String']>;
 };
 
+export type SourceRfpSpecialtySubscriptionPayload = {
+  __typename?: 'SourceRfpSpecialtySubscriptionPayload';
+  data?: Maybe<Array<Maybe<Scalars['String']>>>;
+  task_id?: Maybe<Scalars['String']>;
+};
+
+export type SourceRfpSpecialtyTask = {
+  __typename?: 'SourceRfpSpecialtyTask';
+  id?: Maybe<Scalars['String']>;
+};
+
 export type StripeAccountCapabilities = {
   __typename?: 'StripeAccountCapabilities';
   tax_reporting_us_1099_k?: Maybe<Scalars['String']>;
@@ -1505,11 +1525,17 @@ export type Subscription = {
   cdaUrl?: Maybe<Scalars['String']>;
   newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
+  sourceRfpSpecialties?: Maybe<SourceRfpSpecialtySubscriptionPayload>;
 };
 
 
 export type SubscriptionNewMessageArgs = {
   chat_id: Scalars['String'];
+};
+
+
+export type SubscriptionSourceRfpSpecialtiesArgs = {
+  task_id: Scalars['String'];
 };
 
 export type UpdateMilestoneInput = {
@@ -1756,6 +1782,8 @@ export type ResolversTypes = ResolversObject<{
   ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
   ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
   ReviewQuestionSet: ResolverTypeWrapper<ReviewQuestionSet>;
+  SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
+  SourceRfpSpecialtyTask: ResolverTypeWrapper<SourceRfpSpecialtyTask>;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -1838,6 +1866,8 @@ export type ResolversParentTypes = ResolversObject<{
   ReviewQuestion: ReviewQuestion;
   ReviewQuestionOption: ReviewQuestionOption;
   ReviewQuestionSet: ReviewQuestionSet;
+  SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
+  SourceRfpSpecialtyTask: SourceRfpSpecialtyTask;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -2275,6 +2305,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  sourceRfpSpecialties?: Resolver<Maybe<ResolversTypes['SourceRfpSpecialtyTask']>, ParentType, ContextType, RequireFields<MutationSourceRfpSpecialtiesArgs, 'preparation_details' | 'project_desc' | 'project_title' | 'vendor_requirement'>>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
@@ -2610,6 +2641,17 @@ export type ReviewQuestionSetResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload']> = ResolversObject<{
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceRfpSpecialtyTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtyTask'] = ResolversParentTypes['SourceRfpSpecialtyTask']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type StripeAccountCapabilitiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountCapabilities'] = ResolversParentTypes['StripeAccountCapabilities']> = ResolversObject<{
   tax_reporting_us_1099_k?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   transfers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2665,6 +2707,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
+  sourceRfpSpecialties?: SubscriptionResolver<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionPayload']>, "sourceRfpSpecialties", ParentType, ContextType, RequireFields<SubscriptionSourceRfpSpecialtiesArgs, 'task_id'>>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -2829,6 +2872,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
+  SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
+  SourceRfpSpecialtyTask?: SourceRfpSpecialtyTaskResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;
