@@ -608,7 +608,9 @@ const resolvers: Resolvers<Context> = {
             }
           : undefined;
 
+        const now = moment();
         const finalTimeSlots = timeSlots.filter((slot) => {
+          const isFutureTimeSlot = slot.start_time.isAfter(now);
           const isBusy = calendarEventBusySlots.some(
             (busySlot) =>
               moment(busySlot.start_time).isBefore(slot.end_time) &&
@@ -618,7 +620,7 @@ const resolvers: Resolvers<Context> = {
             selectedSlot &&
             moment(selectedSlot.start_time).isSame(slot.start_time);
 
-          return !isBusy || isSelected;
+          return isFutureTimeSlot && (!isBusy || isSelected);
         });
 
         return {
