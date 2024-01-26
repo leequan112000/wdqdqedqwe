@@ -335,3 +335,8 @@ export const AvailabilityDayIndexObj = {
   [AvailabilityDay.FRIDAY]: 5,
   [AvailabilityDay.SATURDAY]: 6,
 };
+
+export enum CalendarIntegrationErrorType {
+  NO_TEAMS_FOR_BUSINESS = 'NoTeamsForBusiness',
+  AUTHENTICATION_FAILED = 'AuthenticationFailed',
+}

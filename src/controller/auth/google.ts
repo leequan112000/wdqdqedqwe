@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { googleClient } from '../../helper/googleCalendar';
-import { OauthProvider } from '../../helper/constant';
+import { CalendarIntegrationErrorType, OauthProvider } from '../../helper/constant';
 import { codeVerifier, decryptOauthState } from '../../helper/oauth';
 import { app_env } from '../../environment';
 import prisma from '../../prisma';
@@ -60,7 +60,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     return;
   } catch (error) {
     Sentry.captureException(error);
-    res.redirect(`${app_env.APP_URL}/app/meeting-events?error=AuthenticationFailed`);
+    res.redirect(`${app_env.APP_URL}/app/meeting-events?error=${CalendarIntegrationErrorType.AUTHENTICATION_FAILED}`);
     return;
   }
 };
