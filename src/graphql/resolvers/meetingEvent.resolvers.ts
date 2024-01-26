@@ -6,7 +6,7 @@ import {
   patchGoogleEvent,
 } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { CalendarEvent, Resolvers } from "../generated";
 import {
   MeetingPlatform,
   OauthProvider,
@@ -30,6 +30,7 @@ import {
   generateDates,
   groupAvailabilityByDayOfWeek,
 } from "../../helper/availableTimeSlots";
+import Sentry from "../../sentry";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
