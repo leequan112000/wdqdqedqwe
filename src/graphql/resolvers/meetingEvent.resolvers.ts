@@ -542,8 +542,10 @@ const resolvers: Resolvers<Context> = {
       );
 
       const getCalendarEventTasks = allParticipantUserIds.map(async (id) => {
-        const calendarEvents =
-          await meetingEventService.getCalendarEventsForUser(
+        let calendarEvents: CalendarEvent[] = [];
+
+        try {
+          calendarEvents = await meetingEventService.getCalendarEventsForUser(
             {
               start_date_iso: startDate.toISOString(),
               end_date_iso: endDate.toISOString(),
@@ -553,6 +555,10 @@ const resolvers: Resolvers<Context> = {
               prisma: context.prisma,
             }
           );
+        } catch (error) {
+          Sentry.captureException(error);
+        }
+
         return {
           userId: id,
           calendarEvents,
