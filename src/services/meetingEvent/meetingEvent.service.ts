@@ -1367,9 +1367,15 @@ const updateMeetingPlatform = async (
 
   invariant(previousMeetingEvent, "Meeting event not found.");
 
-  if (previousMeetingEvent.platform === newPlatform) {
+  if (
+    (previousMeetingEvent.platform === MeetingPlatform.CUSTOM &&
+      newPlatform === MeetingPlatform.CUSTOM &&
+      previousMeetingEvent.meeting_link === newMeetingLink) ||
+    previousMeetingEvent.platform === newPlatform
+  ) {
     return previousMeetingEvent;
   }
+
 
   const existingCromaticParticipantsEmails =
     previousMeetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
