@@ -1055,6 +1055,17 @@ const updateMeetingEvent = async (
 
   invariant(meetingEvent, "Meeting event not found.");
 
+  // Skip if no new changes.
+  if (
+    (title ? title === meetingEvent.title : true) &&
+    (description ? description === meetingEvent.description : true) &&
+    (end_time ? end_time === meetingEvent.end_time.toISOString() : true) &&
+    (start_time ? start_time === meetingEvent.start_time.toISOString() : true) &&
+    (timezone ? timezone === meetingEvent.timezone : true)
+  ) {
+    return meetingEvent;
+  }
+
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
       id: organizer_user_id,
