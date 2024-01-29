@@ -713,16 +713,18 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
     },
   });
 
-  invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
+  if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
+    invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
 
-  await removeMeetingEventOnCalendarApp(
-    {
-      current_user_id,
-      platform: meetingEvent.platform,
-      platform_event_id: meetingEvent.platform_event_id!
-    },
-    ctx,
-  );
+    await removeMeetingEventOnCalendarApp(
+      {
+        current_user_id,
+        platform: meetingEvent.platform,
+        platform_event_id: meetingEvent.platform_event_id!
+      },
+      ctx,
+    );
+  }
 
   const notificationJob = {
     data: meetingEvent.meetingAttendeeConnections
