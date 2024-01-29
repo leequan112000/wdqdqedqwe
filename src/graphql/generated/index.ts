@@ -981,6 +981,7 @@ export type MutationUpdateCustomerArgs = {
   has_setup_profile?: InputMaybe<Scalars['Boolean']>;
   job_title?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
+  timezone?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1076,6 +1077,7 @@ export type MutationUpdateVendorCompanyLabSpecializationsArgs = {
 export type MutationUpdateVendorMemberArgs = {
   department?: InputMaybe<Scalars['String']>;
   phone?: InputMaybe<Scalars['String']>;
+  timezone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
