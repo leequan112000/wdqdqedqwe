@@ -6,15 +6,13 @@ import {
   patchGoogleEvent,
 } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { CalendarEvent, Resolvers } from "../generated";
 import {
-  MeetingGuestStatus,
   MeetingPlatform,
   OauthProvider,
 } from "../../helper/constant";
 import {
   microsoftClient,
-  microsoftClientRefreshToken,
   microsoftGraphClient,
   patchMicrosoftEvent,
 } from "../../helper/microsoft";
@@ -32,6 +30,7 @@ import {
   generateDates,
   groupAvailabilityByDayOfWeek,
 } from "../../helper/availableTimeSlots";
+import Sentry from "../../sentry";
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -544,8 +543,10 @@ const resolvers: Resolvers<Context> = {
       );
 
       const getCalendarEventTasks = allParticipantUserIds.map(async (id) => {
-        const calendarEvents =
-          await meetingEventService.getCalendarEventsForUser(
+        let calendarEvents: CalendarEvent[] = [];
+
+        try {
+          calendarEvents = await meetingEventService.getCalendarEventsForUser(
             {
               start_date_iso: startDate.toISOString(),
               end_date_iso: endDate.toISOString(),
@@ -555,6 +556,10 @@ const resolvers: Resolvers<Context> = {
               prisma: context.prisma,
             }
           );
+        } catch (error) {
+          Sentry.captureException(error);
+        }
+
         return {
           userId: id,
           calendarEvents,
@@ -610,7 +615,9 @@ const resolvers: Resolvers<Context> = {
             }
           : undefined;
 
+        const now = moment();
         const finalTimeSlots = timeSlots.filter((slot) => {
+          const isFutureTimeSlot = slot.start_time.isAfter(now);
           const isBusy = calendarEventBusySlots.some(
             (busySlot) =>
               moment(busySlot.start_time).isBefore(slot.end_time) &&
@@ -620,7 +627,7 @@ const resolvers: Resolvers<Context> = {
             selectedSlot &&
             moment(selectedSlot.start_time).isSame(slot.start_time);
 
-          return !isBusy || isSelected;
+          return isFutureTimeSlot && (!isBusy || isSelected);
         });
 
         return {
@@ -666,29 +673,17 @@ const resolvers: Resolvers<Context> = {
       invariant(oauth, new PublicError("User not authenticated!"));
 
       const oneMonthAgo = moment().subtract(1, "months").toISOString();
-      try {
-        return await meetingEventService.getMicrosoftCalendarEvents({
-          access_token: oauth.access_token,
-          refresh_token: oauth.refresh_token,
+
+      return await meetingEventService.getCalendarEventsForUser(
+        {
           start_date_iso: oneMonthAgo,
-        });
-      } catch (error: any) {
-        if (error.statusCode === 401) {
-          const newToken = await microsoftClientRefreshToken(
-            oauth.access_token,
-            oauth.refresh_token,
-            user_id
-          );
-          return await meetingEventService.getMicrosoftCalendarEvents({
-            access_token: newToken.accessToken,
-            refresh_token: oauth.refresh_token,
-            start_date_iso: oneMonthAgo,
-          });
+          user_id,
+          calendar: "microsoft",
+        },
+        {
+          prisma: context.prisma,
         }
-        throw new PublicError(
-          "Something went wrong connecting to your calendar."
-        );
-      }
+      );
     },
     googleCalendarAuthorizationUri: async (_, args, context) => {
       const { redirect_url } = args;
@@ -725,19 +720,17 @@ const resolvers: Resolvers<Context> = {
 
       invariant(oauth, new PublicError("User not authenticated!"));
 
-      try {
-        const oneMonthAgo = moment().subtract(1, "months").toISOString();
-        return await meetingEventService.getGoogleCalendarEvents({
-          access_token: oauth.access_token,
-          refresh_token: oauth.refresh_token,
-          single_events: false,
+      const oneMonthAgo = moment().subtract(1, "months").toISOString();
+      return await meetingEventService.getCalendarEventsForUser(
+        {
+          user_id,
           start_date_iso: oneMonthAgo,
-        });
-      } catch (error: any) {
-        throw new PublicError(
-          "Something went wrong connecting to your calendar."
-        );
-      }
+          googleConfig: {
+            single_events: false,
+          },
+        },
+        { prisma: context.prisma }
+      );
     },
     moreAttendeesToAdd: async (_, args, context) => {
       const attendeeConnections =
@@ -804,19 +797,15 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     createMeetingEvent: async (parent, args, context) => {
-      const organizerUser = await context.prisma.user.findFirst({
-        where: {
-          id: context.req.user_id,
-        },
-      });
+      const currentUserId = context.req.user_id;
 
-      invariant(organizerUser, "Current user not found.");
+      invariant(currentUserId, "User ID not found.");
 
       return await context.prisma.$transaction(async (trx) => {
         return await meetingEventService.createMeetingEvent(
           {
             ...args,
-            organizer_user: organizerUser,
+            organizer_user_id: currentUserId,
           },
           { prisma: trx }
         );
@@ -891,126 +880,17 @@ const resolvers: Resolvers<Context> = {
       );
 
       return await context.prisma.$transaction(async (trx) => {
-        const addExternalParticipantTasks = external_participants.map(
-          async (p) => {
-            const { email, name } = p;
-            return await meetingEventService.addExternalGuestToMeeting(
-              {
-                email,
-                name,
-                meeting_event_id,
-              },
-              {
-                prisma: trx,
-              }
-            );
+        return meetingEventService.addParticipants(
+          {
+            cromatic_participants,
+            external_participants,
+            meeting_event_id,
+            organizer_user_id: currentUserId,
+          },
+          {
+            prisma: trx,
           }
         );
-
-        await Promise.all(addExternalParticipantTasks);
-
-        const addInternalParticipantTasks = cromatic_participants.map(
-          async (p) => {
-            const userId = p.id!;
-
-            const user = await trx.user.findFirst({
-              where: {
-                id: userId,
-              },
-            });
-            await trx.meetingAttendeeConnection.create({
-              data: {
-                user_id: userId,
-                meeting_event_id,
-              },
-            });
-
-            return user;
-          }
-        );
-
-        const cromaticUsers = await Promise.all(addInternalParticipantTasks);
-
-        // Update attendees on calendar / video call app
-        const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
-          (mac) => mac.user
-        );
-        const existingExternalGuests = meetingEvent.meeting_guests;
-
-        switch (meetingEvent.platform) {
-          case MeetingPlatform.GOOGLE_MEET: {
-            const oauthGoogle = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.GOOGLE,
-              },
-            });
-            invariant(oauthGoogle, new PublicError("Missing token."));
-
-            const client = googleApiClient(
-              oauthGoogle.access_token,
-              oauthGoogle.refresh_token
-            );
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({ email: a.email })),
-              ...existingExternalGuests.map((a) => ({ email: a.email })),
-              ...cromatic_participants.map((a) => ({ email: a.email })),
-              ...external_participants.map((a) => ({ email: a.email })),
-            ];
-
-            await patchGoogleEvent(
-              client,
-              meetingEvent.platform_event_id!,
-              { attendees: attendeesArr },
-              true
-            );
-            break;
-          }
-          case MeetingPlatform.MICROSOFT_TEAMS: {
-            const oauthMicrosoft = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.MICROSOFT,
-              },
-            });
-
-            invariant(oauthMicrosoft, new PublicError("Missing token."));
-            const client = microsoftGraphClient(oauthMicrosoft.access_token);
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...existingExternalGuests.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...cromatic_participants.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...external_participants.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-            ];
-            await patchMicrosoftEvent(client, {
-              attendees: attendeesArr,
-              id: meetingEvent.platform_event_id!,
-            });
-            break;
-          }
-          default:
-        }
-
-        return [
-          ...cromaticUsers.map((p) => ({
-            email: p!.email,
-            name: `${p!.first_name} ${p!.last_name}`,
-            status: MeetingGuestStatus.ACCEPTED,
-          })),
-          ...external_participants.map((p) => ({
-            email: p.email,
-            name: p.name,
-            status: MeetingGuestStatus.PENDING,
-          })),
-        ];
       });
     },
     sendGuestReminder: async (_, args, context) => {
@@ -1092,83 +972,16 @@ const resolvers: Resolvers<Context> = {
       );
 
       await context.prisma.$transaction(async (trx) => {
-        await trx.meetingAttendeeConnection.deleteMany({
-          where: {
+        await meetingEventService.removeCromaticParticipant(
+          {
             meeting_event_id,
-            user: {
-              id: user_id,
-            },
+            organizer_user_id: currentUserId,
+            user_id,
           },
-        });
-
-        const existingAttendeeConnections =
-          await trx.meetingAttendeeConnection.findMany({
-            where: {
-              meeting_event_id,
-            },
-            include: {
-              user: true,
-            },
-          });
-
-        const existingAttendees = existingAttendeeConnections.map(
-          (conn) => conn.user
+          {
+            prisma: trx,
+          }
         );
-
-        const existingExternalGuests = meetingEvent.meeting_guests;
-
-        switch (meetingEvent.platform) {
-          case MeetingPlatform.GOOGLE_MEET: {
-            const oauthGoogle = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.GOOGLE,
-              },
-            });
-            invariant(oauthGoogle, new PublicError("Missing token."));
-            const client = googleApiClient(
-              oauthGoogle.access_token,
-              oauthGoogle.refresh_token
-            );
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({ email: a.email })),
-              ...existingExternalGuests.map((a) => ({ email: a.email })),
-            ];
-
-            await patchGoogleEvent(
-              client,
-              meetingEvent.platform_event_id!,
-              { attendees: attendeesArr },
-              true
-            );
-            break;
-          }
-          case MeetingPlatform.MICROSOFT_TEAMS: {
-            const oauthMicrosoft = await trx.oauth.findFirst({
-              where: {
-                user_id: currentUserId,
-                provider: OauthProvider.MICROSOFT,
-              },
-            });
-
-            invariant(oauthMicrosoft, new PublicError("Missing token."));
-            const client = microsoftGraphClient(oauthMicrosoft.access_token);
-            const attendeesArr = [
-              ...existingAttendees.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-              ...existingExternalGuests.map((a) => ({
-                emailAddress: { address: a.email },
-              })),
-            ];
-            await patchMicrosoftEvent(client, {
-              attendees: attendeesArr,
-              id: meetingEvent.platform_event_id!,
-            });
-            break;
-          }
-          default:
-        }
       });
 
       return true;
@@ -1279,81 +1092,22 @@ const resolvers: Resolvers<Context> = {
       const { end_time, meeting_event_id, start_time, timezone } = args;
       const currentUserId = context.req.user_id;
 
-      const meetingEvent = await context.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_event_id,
-        },
-      });
+      invariant(currentUserId, "Missing user id.");
 
-      invariant(meetingEvent, "Meeting event not found.");
-
-      const updatedMeetingEvent = await context.prisma.meetingEvent.update({
-        where: {
-          id: meeting_event_id,
-        },
-        data: {
-          start_time,
-          end_time,
-        },
-      });
-
-      switch (meetingEvent.platform) {
-        case MeetingPlatform.GOOGLE_MEET: {
-          const oauthGoogle = await context.prisma.oauth.findFirst({
-            where: {
-              user_id: currentUserId,
-              provider: OauthProvider.GOOGLE,
-            },
-          });
-          invariant(oauthGoogle, new PublicError("Missing token."));
-
-          const client = googleApiClient(
-            oauthGoogle.access_token,
-            oauthGoogle.refresh_token
-          );
-
-          await patchGoogleEvent(
-            client,
-            meetingEvent.platform_event_id!,
+      const updatedMeetingEvent = await context.prisma.$transaction(
+        async (trx) => {
+          return meetingEventService.updateMeetingEvent(
             {
-              start: {
-                dateTime: start_time,
-                timeZone: timezone,
-              },
-              end: {
-                dateTime: end_time,
-                timeZone: timezone,
-              },
+              meeting_event_id,
+              organizer_user_id: currentUserId,
+              start_time,
+              end_time,
+              timezone,
             },
-            true
+            { prisma: trx }
           );
-          break;
         }
-        case MeetingPlatform.MICROSOFT_TEAMS: {
-          const oauthMicrosoft = await context.prisma.oauth.findFirst({
-            where: {
-              user_id: currentUserId,
-              provider: OauthProvider.MICROSOFT,
-            },
-          });
-
-          invariant(oauthMicrosoft, new PublicError("Missing token."));
-          const client = microsoftGraphClient(oauthMicrosoft.access_token);
-          await patchMicrosoftEvent(client, {
-            start: {
-              dateTime: start_time,
-              timeZone: timezone,
-            },
-            end: {
-              dateTime: end_time,
-              timeZone: timezone,
-            },
-            id: meetingEvent.platform_event_id!,
-          });
-          break;
-        }
-        default:
-      }
+      );
 
       return updatedMeetingEvent;
     },
@@ -1361,69 +1115,21 @@ const resolvers: Resolvers<Context> = {
       const { meeting_event_id, description, title } = args;
       const currentUserId = context.req.user_id;
 
-      const meetingEvent = await context.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_event_id,
-        },
-      });
+      invariant(currentUserId, "Missing user id.");
 
-      invariant(meetingEvent, "Meeting event not found.");
-
-      const updatedMeetingEvent = await context.prisma.meetingEvent.update({
-        where: {
-          id: meeting_event_id,
-        },
-        data: {
-          title: title || undefined,
-          description: description || undefined,
-        },
-      });
-
-      switch (meetingEvent.platform) {
-        case MeetingPlatform.GOOGLE_MEET: {
-          const oauthGoogle = await context.prisma.oauth.findFirst({
-            where: {
-              user_id: currentUserId,
-              provider: OauthProvider.GOOGLE,
-            },
-          });
-          invariant(oauthGoogle, new PublicError("Missing token."));
-
-          const client = googleApiClient(
-            oauthGoogle.access_token,
-            oauthGoogle.refresh_token
-          );
-
-          await patchGoogleEvent(
-            client,
-            meetingEvent.platform_event_id!,
+      const updatedMeetingEvent = await context.prisma.$transaction(
+        async (trx) => {
+          return meetingEventService.updateMeetingEvent(
             {
-              ...(title ? { summary: title } : {}),
-              ...(description ? { description } : {}),
+              meeting_event_id,
+              organizer_user_id: currentUserId,
+              title: title || undefined,
+              description: description || undefined,
             },
-            true
+            { prisma: trx }
           );
-          break;
         }
-        case MeetingPlatform.MICROSOFT_TEAMS: {
-          const oauthMicrosoft = await context.prisma.oauth.findFirst({
-            where: {
-              user_id: currentUserId,
-              provider: OauthProvider.MICROSOFT,
-            },
-          });
-
-          invariant(oauthMicrosoft, new PublicError("Missing token."));
-          const client = microsoftGraphClient(oauthMicrosoft.access_token);
-          await patchMicrosoftEvent(client, {
-            ...(title ? { subject: title } : {}),
-            ...(description ? { description } : {}),
-            id: meetingEvent.platform_event_id!,
-          });
-          break;
-        }
-        default:
-      }
+      );
 
       return updatedMeetingEvent;
     },
@@ -1434,111 +1140,20 @@ const resolvers: Resolvers<Context> = {
         meeting_link: newMeetingLink,
       } = args;
       const currentUserId = context.req.user_id;
-
       invariant(currentUserId, "Missing current user id.");
 
-      const currentUser = await context.prisma.user.findFirst({
-        where: {
-          id: currentUserId,
-        },
-      });
-
-      invariant(currentUser, "Missing current user.");
-
-      const previousMeetingEvent = await context.prisma.meetingEvent.findFirst({
-        where: {
-          id: meeting_event_id,
-        },
-        include: {
-          meetingAttendeeConnections: {
-            include: {
-              user: true,
-            },
-          },
-          meeting_guests: true,
-        },
-      });
-
-      invariant(previousMeetingEvent, "Meeting event not found.");
-
-      if (previousMeetingEvent.platform === newPlatform) {
-        return previousMeetingEvent;
-      }
-
-      const existingCromaticParticipantsEmails =
-        previousMeetingEvent.meetingAttendeeConnections.map(
-          (u) => u.user.email
-        );
-
-      const existingExternalParticipantsEmails =
-        previousMeetingEvent.meeting_guests.map((g) => g.email);
-
       const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
-        if (newPlatform === MeetingPlatform.CUSTOM) {
-          invariant(newMeetingLink, "Missing new meeting link");
-          const updatedMeetingEvent = await trx.meetingEvent.update({
-            where: {
-              id: previousMeetingEvent.id,
-            },
-            data: {
-              meeting_link: newMeetingLink,
-              platform: newPlatform,
-              phone: null,
-              phone_pin: null,
-              phone_country: null,
-              platform_event_id: null,
-            },
-          });
-          await meetingEventService.removeMeetingEventOnCalendarApp(
-            {
-              current_user_id: currentUserId,
-              platform: previousMeetingEvent.platform,
-              platform_event_id: previousMeetingEvent.platform_event_id!,
-            },
-            { prisma: trx }
-          );
-          return updatedMeetingEvent;
-        } else {
-          const newMeetingEventOnCalendarApp =
-            await meetingEventService.createMeetingEventOnCalendarApp(
-              {
-                end_time: previousMeetingEvent.end_time.toISOString(),
-                start_time: previousMeetingEvent.start_time.toISOString(),
-                platform: newPlatform,
-                timezone: previousMeetingEvent.timezone,
-                title: previousMeetingEvent.title,
-                description: previousMeetingEvent.description || undefined,
-                organizer_user_id: currentUserId,
-                all_participants_emails: [
-                  ...existingCromaticParticipantsEmails,
-                  ...existingExternalParticipantsEmails,
-                ],
-              },
-              { prisma: trx }
-            );
-          const updatedMeetingEvent = await trx.meetingEvent.update({
-            where: {
-              id: previousMeetingEvent.id,
-            },
-            data: {
-              meeting_link: newMeetingEventOnCalendarApp.meeting_link,
-              platform: newPlatform,
-              phone: newMeetingEventOnCalendarApp.phone,
-              phone_pin: newMeetingEventOnCalendarApp.phone_pin,
-              phone_country: newMeetingEventOnCalendarApp.phone_country,
-              platform_event_id: newMeetingEventOnCalendarApp.platform_event_id,
-            },
-          });
-          await meetingEventService.removeMeetingEventOnCalendarApp(
-            {
-              current_user_id: currentUserId,
-              platform: previousMeetingEvent.platform,
-              platform_event_id: previousMeetingEvent.platform_event_id!,
-            },
-            { prisma: trx }
-          );
-          return updatedMeetingEvent;
-        }
+        return meetingEventService.updateMeetingPlatform(
+          {
+            meeting_event_id,
+            platform: newPlatform,
+            meeting_link: newMeetingLink || undefined,
+            organizer_user_id: currentUserId,
+          },
+          {
+            prisma: trx,
+          }
+        );
       });
 
       return newMeetingEvent;
