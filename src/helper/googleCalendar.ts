@@ -39,7 +39,7 @@ const client = new JWT({
   subject: process.env.GOOGLE_CALENDAR_ID!,
 });
 
-type GEvent = {
+export type GEvent = {
   summary?: string;
   description?: string | null;
   start?: {
@@ -105,20 +105,6 @@ export const patchGoogleEvent = async (googleApiClient: GoogleOAuth2Client, even
       eventId,
       requestBody: {
         ...gEvent,
-        conferenceData: {
-          createRequest: {
-            requestId: uuidv4(),
-            conferenceSolutionKey: {
-              type: 'hangoutsMeet',
-            },
-          },
-          entryPoints: [
-            { entryPointType: 'video' },
-          ],
-        },
-        guestsCanSeeOtherGuests: false,
-        guestsCanModify: false,
-        guestsCanInviteOthers: false,
       },
       sendUpdates: sendUpdates ? 'all' : 'none',
       conferenceDataVersion: 1,

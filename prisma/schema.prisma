@@ -41,7 +41,7 @@ model User {
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
-  Availability                        Availability[]
+  availability                        Availability[]
 
   @@map("users")
 }

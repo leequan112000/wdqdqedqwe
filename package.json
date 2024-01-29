@@ -64,6 +64,7 @@
     "@aws-sdk/lib-storage": "^3.293.0",
     "@aws-sdk/s3-request-presigner": "^3.293.0",
     "@googleapis/calendar": "^4.0.0",
+    "@googlemaps/google-maps-services-js": "^3.3.42",
     "@graphql-tools/load-files": "^6.6.1",
     "@graphql-tools/schema": "^9.0.16",
     "@graphql-tools/utils": "^9.2.1",

@@ -580,21 +580,10 @@ const resolvers: Resolvers<Context> = {
         });
 
         const updateMeetingEventTasks = targetedMeetingEvents.map(async (e) => {
-          const emailsWithoutDeactivatedUser = e.meetingAttendeeConnections.reduce<string[]>((acc, cur) => {
-            if (cur.user_id !== user_id) {
-              acc.unshift(cur.user.email);
-            }
-            return acc;
-          }, [])
-
-          return await meetingEventService.updateMeetingEvent({
-            attendee_emails: emailsWithoutDeactivatedUser,
-            end_time: e.end_time.toISOString(),
+          return await meetingEventService.removeCromaticParticipant({
             meeting_event_id: e.id,
-            start_time: e.start_time.toISOString(),
-            timezone: e.timezone,
-            title: e.title,
-            description: e.description,
+            organizer_user_id: e.organizer_id,
+            user_id,
           }, {
             prisma: trx
           });
