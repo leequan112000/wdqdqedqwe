@@ -649,7 +649,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const authorizationUri = microsoftClient.code.getUri({
-        scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access"],
+        scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access User.Read"],
         state,
         query: {
           code_challenge: codeChallenge,

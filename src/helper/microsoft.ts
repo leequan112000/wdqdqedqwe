@@ -19,6 +19,15 @@ export const microsoftGraphClient = (token: string) => {
   });
 }
 
+export const getMicrosoftUserInfo = async (client: Client, select: string | undefined = undefined): Promise<MicrosoftGraph.User> => {
+  let req = client.api('/me');
+
+  if (select) {
+    req = req.select(select);
+  }
+  return await req.get();
+}
+
 export const createMicrosoftEvent = async (client: Client, eventDetails: MicrosoftGraph.Event): Promise<MicrosoftGraph.Event> => {
   return await client
     .api("/me/events")
