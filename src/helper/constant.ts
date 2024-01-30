@@ -101,6 +101,8 @@ export enum NotificationType {
   NEW_MEETING_NOTIFICATION = 'NewMeetingNotification',
   UPDATE_MEETING_NOTIFICATION = 'UpdateMeetingNotification',
   REMOVE_MEETING_NOTIFICATION = 'RemoveMeetingNotification',
+  ACCEPTED_MEETING_INVITATION_NOTIFICATION = 'AcceptedMeetingInvitationNotification',
+  DECLINED_MEETING_INVITATION_NOTIFICATION = 'DeclinedMeetingInvitationNotification',
   VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION = 'VendorProjectRequestExpiringNotification',
   VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION = 'VendorProjectRequestExpiredNotification',
   BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION = 'BiotechInvoicePaymentVerifiedNotification',
@@ -151,6 +153,10 @@ export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = 
 
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
+  MICROSOFT_TEAMS = 'microsoft-teams',
+  WEBEX = 'webex',
+  ZOOM = 'zoom',
+  CUSTOM = 'custom',
 }
 
 export enum BiotechAccountType {
@@ -284,7 +290,53 @@ export enum BlanketPurchaseOrderTransactionType {
   CREDIT = 'credit',
 }
 
+export enum InvitationAnswer {
+  YES = 'yes',
+  NO = 'no',
+}
+
+export enum MeetingGuestStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  DECLINED = 'declined',
+}
+
+export enum MeetingGuestType {
+  LINK = 'link',
+  INVITE = 'invite',
+}
+
 export enum OauthProvider {
   MICROSOFT = 'microsoft',
   GOOGLE = 'google',
+}
+
+export enum AvailabilityDay {
+  SUNDAY = 'Sunday',
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+}
+
+/**
+ * IMPORTANT
+ * The indexes are strictly following the frontend form field sequence.
+ * Only change the index if the sequence changed.
+ */
+export const AvailabilityDayIndexObj = {
+  [AvailabilityDay.SUNDAY]: 0,
+  [AvailabilityDay.MONDAY]: 1,
+  [AvailabilityDay.TUESDAY]: 2,
+  [AvailabilityDay.WEDNESDAY]: 3,
+  [AvailabilityDay.THURSDAY]: 4,
+  [AvailabilityDay.FRIDAY]: 5,
+  [AvailabilityDay.SATURDAY]: 6,
+};
+
+export enum CalendarIntegrationErrorType {
+  NO_TEAMS_FOR_BUSINESS = 'NoTeamsForBusiness',
+  AUTHENTICATION_FAILED = 'AuthenticationFailed',
 }

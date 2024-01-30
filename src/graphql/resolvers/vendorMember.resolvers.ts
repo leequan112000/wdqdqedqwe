@@ -6,6 +6,7 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
+import { availabilitiesCreateData } from "../../helper/availability";
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -41,7 +42,23 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     updateVendorMember: async (_, args, context) => {
-      try {
+      const { timezone } = args;
+      const currentUserId = context.req.user_id;
+      invariant(currentUserId, 'Missing user id.');
+      return context.prisma.$transaction(async (trx) => {
+        const existingRules = await trx.availability.findMany({
+          where: {
+            user_id: currentUserId,
+          }
+        });
+        const hasExistingRules = existingRules.length > 0;
+        if (timezone && !hasExistingRules) {
+          const availabilityCreateInputs = availabilitiesCreateData(timezone, currentUserId);
+          await trx.availability.createMany({
+            data: availabilityCreateInputs,
+          });
+        }
+
         return await context.prisma.vendorMember.update({
           where: {
             user_id: context.req.user_id
@@ -50,11 +67,9 @@ const resolvers: Resolvers<Context> = {
             title: args.title,
             phone: args.phone,
             department: args.department,
-          }
+          },
         });
-      } catch (error) {
-        throw error;
-      }
+      });
     },
     inviteVendorMember: async (_, args, context) => {
       try {

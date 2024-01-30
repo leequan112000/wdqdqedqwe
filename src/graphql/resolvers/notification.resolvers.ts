@@ -68,6 +68,8 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.NEW_MEETING_NOTIFICATION:
         case NotificationType.UPDATE_MEETING_NOTIFICATION:
         case NotificationType.REMOVE_MEETING_NOTIFICATION:
+        case NotificationType.ACCEPTED_MEETING_INVITATION_NOTIFICATION:
+        case NotificationType.DECLINED_MEETING_INVITATION_NOTIFICATION:
           return `/app/meeting-events`;
         default:
           return `/app`;

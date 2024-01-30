@@ -41,6 +41,7 @@ model User {
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
+  availability                        Availability[]
 
   @@map("users")
 }
@@ -447,9 +448,11 @@ model MeetingEvent {
   updated_at                 DateTime                    @updatedAt
   project_connection_id      String                      @db.Uuid
   organizer_id               String                      @db.Uuid
+  is_sharable                Boolean                     @default(false)
   project_connection         ProjectConnection           @relation(fields: [project_connection_id], references: [id])
   meetingAttendeeConnections MeetingAttendeeConnection[]
   organizer                  User                        @relation(fields: [organizer_id], references: [id])
+  meeting_guests             MeetingGuest[]
 
   @@map("meeting_events")
 }
@@ -457,7 +460,7 @@ model MeetingEvent {
 model MeetingAttendeeConnection {
   id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   meeting_event_id String       @db.Uuid
-  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id])
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
   user_id          String       @db.Uuid
   user             User         @relation(fields: [user_id], references: [id])
 
@@ -917,6 +920,21 @@ model BiotechInvoiceAttachment {
   @@map("biotech_invoice_attachments")
 }
 
+model MeetingGuest {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String?
+  email            String
+  meeting_event_id String       @db.Uuid
+  meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
+  status           String       @default("pending")
+  type             String
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  @@unique([email, meeting_event_id])
+  @@map("meeting_guests")
+}
+
 model Oauth {
   id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   provider      String
@@ -927,4 +945,16 @@ model Oauth {
 
   @@unique([user_id, provider])
   @@map("oauths")
+}
+
+model Availability {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String @db.Uuid
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  day_of_week String
+  start_time  String
+  end_time    String
+  timezone    String
+
+  @@map("availabilities")
 }
