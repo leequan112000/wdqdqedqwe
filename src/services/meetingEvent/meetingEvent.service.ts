@@ -21,6 +21,8 @@ import { app_env } from "../../environment";
 import { refreshToken } from "../../helper/clientOauth2";
 import { InternalError } from "../../graphql/errors/InternalError";
 import { MeetingEvent, ProjectConnection, ProjectRequest } from "@prisma/client";
+import { NoOAuthError } from "../../graphql/errors/NoOAuthError";
+import Sentry from "../../sentry";
 
 const isGoogleExpiredError = (error: any) => {
   return (
@@ -604,7 +606,7 @@ const removeMeetingEventOnCalendarApp = async (
           provider: OauthProvider.GOOGLE,
         },
       });
-      invariant(oauthGoogle, new PublicError("Missing token."));
+      invariant(oauthGoogle, new NoOAuthError());
 
       const client = googleApiClient(
         oauthGoogle.access_token,
@@ -642,7 +644,7 @@ const removeMeetingEventOnCalendarApp = async (
         },
       });
 
-      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      invariant(oauthMicrosoft, new NoOAuthError());
 
       try {
         const client = microsoftGraphClient(oauthMicrosoft.access_token);
@@ -716,14 +718,23 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
   if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
     invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
 
-    await removeMeetingEventOnCalendarApp(
-      {
-        current_user_id,
-        platform: meetingEvent.platform,
-        platform_event_id: meetingEvent.platform_event_id!
-      },
-      ctx,
-    );
+    // Try-catch to prevent it from breaking the Cromatic platform functionality
+    try {
+      await removeMeetingEventOnCalendarApp(
+        {
+          current_user_id,
+          platform: meetingEvent.platform,
+          platform_event_id: meetingEvent.platform_event_id!
+        },
+        ctx,
+      );
+    } catch (error) {
+      if (error instanceof NoOAuthError) {
+        Sentry.captureMessage('No OAuth found.', 'log');
+      } else {
+        Sentry.captureException(error);
+      }
+    }
   }
 
   const notificationJob = {
