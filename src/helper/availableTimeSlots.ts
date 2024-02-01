@@ -13,42 +13,31 @@ type GroupedSlots = {
 };
 
 function findIntersectingIntervals(slots: Slot[]) {
-  slots.sort((a, b) => {
-    if (moment(a.start_time, "h:mma").isBefore(moment(b.start_time, "h:mma")))
-      return -1;
-    if (moment(a.start_time, "h:mma").isAfter(moment(b.start_time, "h:mma")))
-      return 1;
-    return 0;
-  });
-
   const result: typeof slots = [];
 
   if (slots.length === 1) {
     result.push(slots[0]);
   } else {
-    let intersect: { start_time: Date; end_time: Date } | undefined = undefined;
+    let intersect: Slot | undefined = undefined;
     for (let i = 0; i < slots.length - 1; i++) {
-      const interval1: { start_time: Date; end_time: Date } =
-        intersect || slots[i];
+      const interval1: Slot = intersect || slots[i];
       const interval2 = slots[i + 1];
+      const start1 = moment(interval1.start_time);
+      const end1 = moment(interval1.end_time);
+      const start2 = moment(interval2.start_time);
+      const end2 = moment(interval2.end_time);
 
-      const start1 = moment(interval1.start_time, "h:mma");
-      const end1 = moment(interval1.end_time, "h:mma");
-      const start2 = moment(interval2.start_time, "h:mma");
-      const end2 = moment(interval2.end_time, "h:mma");
-      if (end1.isSameOrAfter(start2) && end2.isSameOrAfter(start1)) {
-        const intersectStart = moment.max(start1, start2);
-        const intersectEnd = moment.min(end1, end2);
+      const maxStart = moment.max(start1, start2);
+      const minEnd = moment.min(end1, end2);
 
+      if (maxStart.isBefore(minEnd)) {
         intersect = {
-          start_time: intersectStart.toDate(),
-          end_time: intersectEnd.toDate(),
+          start_time: maxStart.toDate(),
+          end_time: minEnd.toDate(),
         };
       } else if (intersect) {
         result.push(intersect);
         intersect = undefined;
-      } else {
-        result.push(interval1);
       }
 
       /**
@@ -56,12 +45,8 @@ function findIntersectingIntervals(slots: Slot[]) {
        * If intersecting, keep the intersection.
        * If not, keep both interval.
        */
-      if (i === slots.length - 2) {
-        if (intersect) {
-          result.push(intersect);
-        } else {
-          result.push(interval2);
-        }
+      if (i === slots.length - 2 && intersect) {
+        result.push(intersect);
       }
     }
   }
