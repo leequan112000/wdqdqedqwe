@@ -15,12 +15,15 @@ import {
   InvitationAnswer,
   MeetingGuestStatus,
   MeetingGuestType,
+  MeetingPlatform,
+  OauthProvider,
 } from "../../helper/constant";
 import {
   createAcceptedMeetingRSVPNotification,
   createDeclinedMeetingRSVPNotification,
 } from "../../notification/guestMeeting";
 import { checkIfUserInProjectConnection } from "../../services/projectConnection/projectConnection.service";
+import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -76,13 +79,12 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    submitAttendance: async (parent, args, context) => {
-      const { email, name, token } = args;
+    answerInvitation: async (parent, args, context) => {
+      const { answer, meeting_token, guest_token, name, email } = args;
 
-      const meeting = await context.prisma.meetingEvent.findFirst({
+      const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
-          id: token,
-          is_sharable: true,
+          id: meeting_token,
         },
         include: {
           organizer: true,
@@ -91,13 +93,19 @@ const resolvers: Resolvers<Context> = {
               project_request: true,
             },
           },
+          meeting_guests: true,
+          meetingAttendeeConnections: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
-      invariant(meeting, new PublicError("Invalid token"));
+      invariant(meetingEvent, new PublicError("Invalid token"));
 
       const now = moment();
-      const isEnded = now.isAfter(moment(meeting.end_time));
+      const isEnded = now.isAfter(moment(meetingEvent.end_time));
 
       invariant(!isEnded, new PublicError("The meeting is already ended"));
 
@@ -106,12 +114,11 @@ const resolvers: Resolvers<Context> = {
           email,
         },
       });
-
       let isPartOfProject = false;
       if (existingUser) {
         isPartOfProject = await checkIfUserInProjectConnection(
           {
-            project_connection_id: meeting.project_connection_id,
+            project_connection_id: meetingEvent.project_connection_id,
             user_id: existingUser.id,
           },
           {
@@ -124,126 +131,58 @@ const resolvers: Resolvers<Context> = {
         where: {
           email_meeting_event_id: {
             email,
-            meeting_event_id: meeting.id,
+            meeting_event_id: meetingEvent.id,
           },
+          id: guest_token || undefined,
         },
         create: {
           email,
           name: name ? name : null,
-          meeting_event_id: meeting.id,
+          meeting_event_id: meetingEvent.id,
           type: MeetingGuestType.LINK,
-          status: MeetingGuestStatus.ACCEPTED,
-        },
-        update: {
-          name: name ? name : null,
-        },
-      });
-
-      const guestButtonUrl = isPartOfProject
-        ? `${app_env.APP_URL}/app/meeting-events`
-        : `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`;
-
-      acceptedMeetingRSVPNotificationForGuestEmail(
-        {
-          button_url: guestButtonUrl,
-          meeting_title: meeting.title,
-          guest_name: name || "guest",
-          project_title: meeting.project_connection.project_request.title,
-          host_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
-        },
-        email
-      );
-      acceptedMeetingRSVPUpdateNotificationEmail(
-        {
-          button_url: `${app_env.APP_URL}/app/meeting-events`,
-          meeting_title: meeting.title,
-          guest_name: name || "guest",
-          host_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
-          project_title: meeting.project_connection.project_request.title,
-        },
-        meeting.organizer.email
-      );
-
-      return {
-        token: meetingGuest.id,
-        status: meetingGuest.status,
-        email,
-        name,
-        meeting_link: meeting.meeting_link,
-      };
-    },
-    answerInvitation: async (parent, args, context) => {
-      const { answer, token, name } = args;
-
-      const meetingGuest = await context.prisma.meetingGuest.findFirst({
-        where: {
-          id: token,
-        },
-        include: {
-          meeting_event: {
-            include: {
-              organizer: true,
-              project_connection: {
-                include: {
-                  project_request: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      invariant(meetingGuest, new PublicError("Invalid response."));
-
-      const now = moment();
-      const isEnded = now.isAfter(moment(meetingGuest.meeting_event.end_time));
-
-      invariant(!isEnded, new PublicError("The meeting is already ended"));
-
-      const updatedMeetingGuest = await context.prisma.meetingGuest.update({
-        where: {
-          id: token,
-        },
-        data: {
           status:
             answer === InvitationAnswer.YES
               ? MeetingGuestStatus.ACCEPTED
               : MeetingGuestStatus.DECLINED,
+        },
+        update: {
           name: name ? name : null,
+          status:
+            answer === InvitationAnswer.YES
+              ? MeetingGuestStatus.ACCEPTED
+              : MeetingGuestStatus.DECLINED,
         },
       });
 
-      const {
-        organizer,
-        id: meetingEventId,
-        organizer_id,
-      } = meetingGuest.meeting_event;
+      const { organizer, id: meetingEventId, organizer_id } = meetingEvent;
       const projectTitle =
-        meetingGuest.meeting_event.project_connection.project_request.title;
+        meetingEvent.project_connection.project_request.title;
       const guestName = name || "guest";
+
       // Send response confirmation email
       if (answer === InvitationAnswer.YES) {
+        const buttonUrl = isPartOfProject
+          ? `${app_env.APP_URL}/app/meeting-events`
+          : `${app_env.APP_URL}/meeting/${meetingEvent.id}?authToken=${meetingGuest.id}`;
         acceptedMeetingRSVPNotificationForGuestEmail(
           {
-            button_url: `${app_env.APP_URL}/meeting/attendance/${meetingGuest.id}`,
-            meeting_title: meetingGuest.meeting_event.title,
+            button_url: buttonUrl,
+            meeting_title: meetingEvent.title,
             guest_name: name || "guest",
             project_title:
-              meetingGuest.meeting_event.project_connection.project_request
-                .title,
+              meetingEvent.project_connection.project_request.title,
             host_name: `${organizer.first_name} ${organizer.last_name}`,
           },
-          updatedMeetingGuest.email
+          meetingGuest.email
         );
         acceptedMeetingRSVPUpdateNotificationEmail(
           {
-            button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting
-            meeting_title: meetingGuest.meeting_event.title,
+            button_url: `${app_env.APP_URL}/app/meeting-events`,
+            meeting_title: meetingEvent.title,
             guest_name: name || "guest",
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
-              meetingGuest.meeting_event.project_connection.project_request
-                .title,
+              meetingEvent.project_connection.project_request.title,
           },
           organizer.email
         );
@@ -257,24 +196,22 @@ const resolvers: Resolvers<Context> = {
       if (answer === InvitationAnswer.NO) {
         declinedMeetingRSVPNotificationForGuestEmail(
           {
-            meeting_title: meetingGuest.meeting_event.title,
+            meeting_title: meetingEvent.title,
             guest_name: name || "guest",
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
-              meetingGuest.meeting_event.project_connection.project_request
-                .title,
+              meetingEvent.project_connection.project_request.title,
           },
-          updatedMeetingGuest.email
+          meetingGuest.email
         );
         declinedMeetingRSVPUpdateNotificationEmail(
           {
-            button_url: `${app_env.APP_URL}/app/meeting-events`, // Todo: update the link to view meeting
-            meeting_title: meetingGuest.meeting_event.title,
+            button_url: `${app_env.APP_URL}/app/meeting-events`,
+            meeting_title: meetingEvent.title,
             guest_name: name || "guest",
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
-              meetingGuest.meeting_event.project_connection.project_request
-                .title,
+              meetingEvent.project_connection.project_request.title,
           },
           organizer.email
         );
@@ -286,12 +223,84 @@ const resolvers: Resolvers<Context> = {
         });
       }
 
+      // Patch calendar event
+      if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
+        const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
+          (mac) => mac.user
+        );
+        const existingExternalGuests = meetingEvent.meeting_guests;
+        switch (meetingEvent.platform) {
+          case MeetingPlatform.GOOGLE_MEET: {
+            const oauthGoogle = await context.prisma.oauth.findFirst({
+              where: {
+                user_id: meetingEvent.organizer_id,
+                provider: OauthProvider.GOOGLE,
+              },
+            });
+            invariant(oauthGoogle, new PublicError("Missing token."));
+
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({ email: a.email })),
+              ...existingExternalGuests.map((a) => ({ email: a.email })),
+              { email: email },
+            ];
+
+            await meetingEventService.safePatchGoogleEvent(
+              {
+                access_token: oauthGoogle.access_token,
+                refresh_token: oauthGoogle.refresh_token,
+                g_event: { attendees: attendeesArr },
+                organizer_user_id: meetingEvent.organizer_id,
+                platform_event_id: meetingEvent.platform_event_id!,
+                send_updates: true,
+              },
+              context,
+            );
+            break;
+          }
+          case MeetingPlatform.MICROSOFT_TEAMS: {
+            const oauthMicrosoft = await context.prisma.oauth.findFirst({
+              where: {
+                user_id: meetingEvent.organizer_id,
+                provider: OauthProvider.MICROSOFT,
+              },
+            });
+
+            invariant(oauthMicrosoft, new PublicError("Missing token."));
+            const attendeesArr = [
+              ...existingAttendees.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+              ...existingExternalGuests.map((a) => ({
+                emailAddress: { address: a.email },
+              })),
+              { emailAddress: { address: email } },
+            ];
+            await meetingEventService.safePatchMicrosoftEvent(
+              {
+                access_token: oauthMicrosoft.access_token,
+                refresh_token: oauthMicrosoft.refresh_token,
+                event_data: {
+                  attendees: attendeesArr,
+                  id: meetingEvent.platform_event_id!,
+                },
+                organizer_user_id: meetingEvent.organizer_id,
+              },
+              context,
+            );
+            break;
+          }
+          default:
+            break;
+        }
+      }
+
       return {
-        name: updatedMeetingGuest.name,
-        email: updatedMeetingGuest.email,
-        status: updatedMeetingGuest.status,
-        token: updatedMeetingGuest.id,
-        meeting_link: meetingGuest.meeting_event.meeting_link,
+        name: meetingGuest.name,
+        email: meetingGuest.email,
+        status: meetingGuest.status,
+        token: meetingGuest.id,
+        meeting_link: meetingEvent.meeting_link,
         answer: answer,
       };
     },

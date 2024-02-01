@@ -41,14 +41,11 @@ type Query {
 }
 
 type Mutation {
-  submitAttendance(
-    name: String
-    email: String!
-    token: String! # Meeting ID
-  ): SubmitAttendanceResp
   answerInvitation(
-    token: String! # MeetingGuest ID
+    meeting_token: String! # Meeting ID
+    guest_token: String # MeetingGuest ID
     answer: String!
     name: String
+    email: String!
   ): SubmitAttendanceResp
 }

@@ -1806,7 +1806,6 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
         ...existingAttendees.map((a) => ({ email: a.email })),
         ...existingExternalGuests.map((a) => ({ email: a.email })),
         ...cromatic_participants.map((a) => ({ email: a.email })),
-        ...external_participants.map((a) => ({ email: a.email })),
       ];
 
       await safePatchGoogleEvent(
@@ -1839,9 +1838,6 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
           emailAddress: { address: a.email },
         })),
         ...cromatic_participants.map((a) => ({
-          emailAddress: { address: a.email },
-        })),
-        ...external_participants.map((a) => ({
           emailAddress: { address: a.email },
         })),
       ];
@@ -1956,6 +1952,8 @@ const meetingEventService = {
   getCalendarEventsForUser,
   removeCromaticParticipant,
   addParticipants,
+  safePatchGoogleEvent,
+  safePatchMicrosoftEvent,
 };
 
 export default meetingEventService;
