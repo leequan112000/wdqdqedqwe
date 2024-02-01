@@ -40,7 +40,7 @@ export const microsoftCallback = async (req: Request, res: Response): Promise<vo
     }
 
     const client = microsoftGraphClient(response.accessToken);
-    const resp = await getMicrosoftUserInfo(client);
+    const resp = await getMicrosoftUserInfo(client, 'userPrincipalName,assignedPlans');
     if ((resp.assignedPlans || []).some((p) => p.servicePlanId === MicrosoftServicePlanId.MicrosoftTeam)) {
       await prisma.oauth.upsert({
         where: {
