@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import moment from "moment-timezone";
+import { groupBy } from "lodash";
 import {
   googleApiClient,
   googleClient,
@@ -7,10 +8,7 @@ import {
 } from "../../helper/googleCalendar";
 import { Context } from "../../types/context";
 import { CalendarEvent, Resolvers } from "../generated";
-import {
-  MeetingPlatform,
-  OauthProvider,
-} from "../../helper/constant";
+import { MeetingPlatform, OauthProvider } from "../../helper/constant";
 import {
   microsoftClient,
   microsoftGraphClient,
@@ -23,12 +21,11 @@ import { PublicError } from "../errors/PublicError";
 import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
 import { app_env } from "../../environment";
 import {
-  dedupGroupedAvailability,
   filterAvailableSlotsByDuration,
+  findIntersectingIntervals,
   generateCalendarEventBusySlots,
   generateCommonAvailableSlots,
   generateDates,
-  groupAvailabilityByDayOfWeek,
 } from "../../helper/availableTimeSlots";
 import Sentry from "../../sentry";
 
@@ -514,13 +511,106 @@ const resolvers: Resolvers<Context> = {
       const startDate = moment.tz(from, "YYYY-MM-DD", timezone);
       const endDate = moment.tz(to, "YYYY-MM-DD", timezone);
 
-      // Group time by day of week
-      const groupedAvailability = groupAvailabilityByDayOfWeek(availabilities);
+      const availabilityGroupByUser = availabilities.reduce<{
+        [user_id: string]: { start_time: Date; end_time: Date }[];
+      }>((acc, cur) => {
+        const draft = Object.assign(acc);
+        const startTime = moment
+          .tz(cur.start_time, "h:mma", cur.timezone)
+          .day(cur.day_of_week)
+          .toDate();
+        const endTime = moment
+          .tz(cur.end_time, "h:mma", cur.timezone)
+          .day(cur.day_of_week)
+          .toDate();
+        if (draft[cur.user_id] === undefined) {
+          draft[cur.user_id] = [
+            {
+              start_time: startTime,
+              end_time: endTime,
+            },
+          ];
+        } else {
+          draft[cur.user_id].push({
+            start_time: startTime,
+            end_time: endTime,
+          });
+        }
+        return draft;
+      }, {});
 
-      // Find intersecting available time.
-      // These are the time when all participants are available.
-      const groupedIntersectingAvailability =
-        dedupGroupedAvailability(groupedAvailability);
+      const userIds = Object.keys(availabilityGroupByUser);
+      let mutualAvailability: { start_time: Date; end_time: Date }[] =
+        availabilityGroupByUser[userIds[0]];
+      for (let i = 0; i < userIds.length - 1; i += 1) {
+        const availability2 = availabilityGroupByUser[userIds[i + 1]];
+        mutualAvailability = findIntersectingIntervals([
+          ...mutualAvailability,
+          ...availability2,
+        ]);
+      }
+
+      /**
+       * Split overnight availability. To make grouping easier.
+       * Eg:
+       * If start time is 2024-02-01 9:00PM and end time is 2024-02-02 9:00AM,
+       * it will be split into 2 intervals as below:
+       * {
+       *    start_time: 2024-02-01 9:00PM,
+       *    end_time: 2024-02-01 11:59PM,
+       * }
+       * {
+       *    start_time: 2024-02-02 12:00AM,
+       *    end_time: 2024-02-02 9:00AM,
+       * }
+       */
+      const mutualAvailabilityWithoutOvernight = mutualAvailability.reduce<
+        { start_time: Date; end_time: Date }[]
+      >((acc, cur) => {
+        /**
+         * Set timezone as user's timezone here because overnight is viewed in user's timezone.
+         */
+        const startTime = moment(cur.start_time).tz(timezone);
+        const endTime = moment(cur.end_time).tz(timezone);
+        if (!startTime.isSame(endTime, "date")) {
+          return [
+            ...acc,
+            {
+              start_time: startTime.toDate(),
+              end_time: startTime.clone().endOf("day").toDate(),
+            },
+            {
+              start_time: endTime.clone().startOf("day").toDate(),
+              end_time: endTime.toDate(),
+            },
+          ];
+        }
+        return [...acc, cur];
+      }, []);
+
+      const groupMutualAvailabilityByDayOfWeek =
+        mutualAvailabilityWithoutOvernight.reduce<{
+          [day_of_week: string]: { start_time: Date; end_time: Date }[];
+        }>((acc, cur) => {
+          const draft = Object.assign(acc);
+          const dayOfWeek = moment(cur.start_time).tz(timezone).format("dddd");
+          const startTime = moment(cur.start_time).tz(timezone).toDate();
+          const endTime = moment(cur.end_time).tz(timezone).toDate();
+          if (draft[dayOfWeek] === undefined) {
+            draft[dayOfWeek] = [
+              {
+                start_time: startTime,
+                end_time: endTime,
+              },
+            ];
+          } else {
+            draft[dayOfWeek].push({
+              start_time: startTime,
+              end_time: endTime,
+            });
+          }
+          return draft;
+        }, {});
 
       // Generate all date given start and end date
       const dateArr: string[] = generateDates(
@@ -533,7 +623,7 @@ const resolvers: Resolvers<Context> = {
        * Not affected by calender event
        */
       const allCommonAvailableSlots = generateCommonAvailableSlots(
-        groupedIntersectingAvailability
+        groupMutualAvailabilityByDayOfWeek
       );
 
       // Filter slots based on the meeting duration
@@ -570,7 +660,7 @@ const resolvers: Resolvers<Context> = {
         generateCalendarEventBusySlots(calendarEventDataArr);
 
       const dateWithAvailableTimeSlots = dateArr.map((d) => {
-        const date = moment(d, "YYYY-MM-DD");
+        const date = moment.tz(d, "YYYY-MM-DD", timezone);
 
         // Skip date if no availability on that day
         if (
@@ -649,7 +739,9 @@ const resolvers: Resolvers<Context> = {
       });
 
       const authorizationUri = microsoftClient.code.getUri({
-        scopes: ["Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access User.Read"],
+        scopes: [
+          "Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access User.Read",
+        ],
         state,
         query: {
           code_challenge: codeChallenge,
