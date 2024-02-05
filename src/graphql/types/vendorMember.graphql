@@ -21,6 +21,7 @@ type Mutation {
     phone: String
     title: String
     department: String
+    timezone: String
   ): VendorMember
   inviteVendorMember(
     first_name: String!

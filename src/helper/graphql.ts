@@ -11,6 +11,9 @@ export const operationWhitelist = [
   'SubscribeEmailUpdates',
   'IntrospectionQuery',
   'NewsPage_Query',
+  'Public_ViewMeeting_Query',
+  'Public_SubmitAttendance_Mutation',
+  'Public_AnswerAttendance_Mutation',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

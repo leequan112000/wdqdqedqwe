@@ -19,6 +19,7 @@ import { InternalError } from "../errors/InternalError";
 import {
   CasbinRole,
   CompanyCollaboratorRoleType,
+  OauthProvider,
   UserType,
   VendorType,
 } from "../../helper/constant";
@@ -441,6 +442,34 @@ const resolvers: Resolvers<Context> = {
       }
 
       throw new InternalError("User company collaborator role not found.");
+    },
+    is_connected_microsoft: async (parent, args, context) => {
+      const userId = context.req.user_id;
+      invariant(userId, "Missing user id");
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id: userId,
+          provider: OauthProvider.MICROSOFT,
+        },
+      });
+
+      return !!oauth;
+      // TODO: properly check token validity
+    },
+    is_connected_google: async (parent, args, context) => {
+      const userId = context.req.user_id;
+      invariant(userId, "Missing user id");
+
+      const oauth = await context.prisma.oauth.findFirst({
+        where: {
+          user_id: userId,
+          provider: OauthProvider.GOOGLE,
+        },
+      });
+
+      return !!oauth;
+      // TODO: properly check token validity
     },
   },
   Subscription: {

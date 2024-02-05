@@ -1,4 +1,3 @@
-import moment from 'moment';
 import ClientOAuth2 from 'client-oauth2';
 import { OAuth2Client as GoogleOAuth2Client } from 'google-auth-library';
 import { calendar } from '@googleapis/calendar';
@@ -40,7 +39,7 @@ const client = new JWT({
   subject: process.env.GOOGLE_CALENDAR_ID!,
 });
 
-type GEvent = {
+export type GEvent = {
   summary?: string;
   description?: string | null;
   start?: {
@@ -58,12 +57,13 @@ type GEvent = {
   attendees?: Array<{ email: string; comment?: string }>;
 }
 
-export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client) => {
+export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client, singleEvents: boolean, startDateIso: string, endDateIso?: string) => {
   try {
-    const oneMonthAgo = moment().subtract(1, 'months').toISOString();
     const response = await calendar({ version: 'v3', auth: googleApiClient }).events.list({
       calendarId: 'primary',
-      timeMin: oneMonthAgo,
+      timeMin: startDateIso,
+      ...(endDateIso ? { timeMax: endDateIso, } : {}),
+      singleEvents,
     });
 
     const events = response.data.items;
@@ -73,10 +73,9 @@ export const listGoogleEvents = async (googleApiClient: GoogleOAuth2Client) => {
   }
 }
 
-export const createGoogleEvent = async (gEvent: GEvent) => {
-  return await calendar('v3').events.insert({
-    calendarId: process.env.GOOGLE_CALENDAR_ID!,
-    auth: client,
+export const createGoogleEvent = async (googleApiClient: GoogleOAuth2Client, gEvent: GEvent) => {
+  return await calendar({ version: 'v3', auth: googleApiClient}).events.insert({
+    calendarId: 'primary',
     requestBody: {
       ...gEvent,
       conferenceData: {
@@ -99,31 +98,20 @@ export const createGoogleEvent = async (gEvent: GEvent) => {
   });
 }
 
-export const patchGoogleEvent = async (eventId: string, gEvent: GEvent, sendUpdates = false) => {
-  return await calendar('v3').events.patch({
-    calendarId: process.env.GOOGLE_CALENDAR_ID!,
-    eventId,
-    auth: client,
-    requestBody: {
-      ...gEvent,
-      conferenceData: {
-        createRequest: {
-          requestId: uuidv4(),
-          conferenceSolutionKey: {
-            type: 'hangoutsMeet',
-          },
-        },
-        entryPoints: [
-          { entryPointType: 'video' },
-        ],
+export const patchGoogleEvent = async (googleApiClient: GoogleOAuth2Client, eventId: string, gEvent: GEvent, sendUpdates = false) => {
+  try {
+    return await calendar({ version: 'v3', auth: googleApiClient }).events.patch({
+      calendarId: 'primary',
+      eventId,
+      requestBody: {
+        ...gEvent,
       },
-      guestsCanSeeOtherGuests: false,
-      guestsCanModify: false,
-      guestsCanInviteOthers: false,
-    },
-    sendUpdates: sendUpdates ? 'all' : 'none',
-    conferenceDataVersion: 1,
-  });
+      sendUpdates: sendUpdates ? 'all' : 'none',
+      conferenceDataVersion: 1,
+    });
+  } catch (error) {
+    throw error;
+  }
 }
 
 export const cancelGoogleEvent = async (eventId: string) => {
@@ -136,4 +124,24 @@ export const cancelGoogleEvent = async (eventId: string) => {
     },
     sendUpdates: 'none',
   })
+}
+
+export const deleteGoogleEvent = async (googleApiClient: GoogleOAuth2Client, eventId: string) => {
+  return await calendar({ version: 'v3', auth: googleApiClient }).events.delete({
+    calendarId: 'primary',
+    eventId,
+    sendUpdates: 'all',
+  });
+}
+
+export const disconnectGoogleOauth2 = async (googleApiClient: GoogleOAuth2Client, accessToken: string) => {
+  try {
+    return await googleApiClient.revokeToken(accessToken);
+  } catch (error: any) {
+    if (error.status === 400) {
+      const response = await googleApiClient.refreshAccessToken();
+      return await googleApiClient.revokeToken(response.credentials.access_token as string);
+    }
+    throw error;
+  }
 }

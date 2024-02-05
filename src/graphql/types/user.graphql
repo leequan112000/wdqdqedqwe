@@ -20,6 +20,8 @@ type User {
   is_active: Boolean
   country_code: String
   phone_number: String
+  is_connected_microsoft: Boolean
+  is_connected_google: Boolean
 }
 
 type AuthResponse {

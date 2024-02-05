@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { googleClient } from '../../helper/googleCalendar';
-import { OauthProvider } from '../../helper/constant';
-import { codeVerifier } from '../../helper/oauth';
+import { CalendarIntegrationErrorType, OauthProvider } from '../../helper/constant';
+import { codeVerifier, decryptOauthState } from '../../helper/oauth';
 import { app_env } from '../../environment';
 import prisma from '../../prisma';
+import Sentry from '../../sentry';
 
 export const googleCallback = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,7 +17,9 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       }
     );
 
-    const user_id = req.query.state as string;
+    const state = decryptOauthState(req.query.state as string);
+    const user_id = state.user_id;
+    const redirect_url = state.redirect_url;
 
     if (!user_id) {
       throw new Error("No user ID!");
@@ -53,10 +56,11 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       },
     });
 
-    res.redirect(`${app_env.APP_URL}/app/meeting-events`);
+    res.redirect(redirect_url ?? `${app_env.APP_URL}/app/meeting-events`);
     return;
   } catch (error) {
-    res.redirect(`${app_env.APP_URL}/app/meeting-events?error=AuthenticationFailed`);
+    Sentry.captureException(error);
+    res.redirect(`${app_env.APP_URL}/app/meeting-events?error=${CalendarIntegrationErrorType.AUTHENTICATION_FAILED}`);
     return;
   }
 };

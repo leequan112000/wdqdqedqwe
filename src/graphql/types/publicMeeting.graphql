@@ -1,0 +1,51 @@
+type PubMeeting {
+  id: String
+  title: String
+  start_time: String
+  end_time: String
+  organizer_name: String
+  organizer_company_name: String
+  guest_info: PubMeetingGuestInfo
+  meeting_link: String
+  project_title: String
+  is_ended: Boolean
+  platform: String
+}
+
+type PubRVSP {
+  id: String
+  guest_name: String
+  meeting_title: String
+}
+
+type PubMeetingGuestInfo {
+  name: String
+  email: String
+  status: String
+  type: String
+}
+
+type SubmitAttendanceResp {
+  token: String # MeetingGuest ID
+  name: String
+  email: String
+  status: String
+  meeting_link: String
+}
+
+type Query {
+  pubMeeting(
+    token: String! # Meeting ID
+    guest_token: String # MeetingGuest ID
+  ): PubMeeting
+}
+
+type Mutation {
+  answerInvitation(
+    meeting_token: String! # Meeting ID
+    guest_token: String # MeetingGuest ID
+    answer: String!
+    name: String
+    email: String!
+  ): SubmitAttendanceResp
+}
