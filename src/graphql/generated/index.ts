@@ -515,10 +515,8 @@ export type Mutation = {
   updateBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
-  updateMeetingDateTime?: Maybe<MeetingEvent>;
   updateMeetingDetails?: Maybe<MeetingEvent>;
   updateMeetingEventSharable?: Maybe<MeetingEvent>;
-  updateMeetingPlatform?: Maybe<MeetingEvent>;
   updateProjectRequestCollaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   updateQuote?: Maybe<Quote>;
   updateUserInfo?: Maybe<User>;
@@ -979,17 +977,14 @@ export type MutationUpdateCustomerArgs = {
 };
 
 
-export type MutationUpdateMeetingDateTimeArgs = {
-  end_time: Scalars['String'];
-  meeting_event_id: Scalars['String'];
-  start_time: Scalars['String'];
-  timezone: Scalars['String'];
-};
-
-
 export type MutationUpdateMeetingDetailsArgs = {
   description?: InputMaybe<Scalars['String']>;
+  end_time?: InputMaybe<Scalars['String']>;
   meeting_event_id: Scalars['String'];
+  meeting_link?: InputMaybe<Scalars['String']>;
+  platform?: InputMaybe<Scalars['String']>;
+  start_time?: InputMaybe<Scalars['String']>;
+  timezone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
@@ -997,13 +992,6 @@ export type MutationUpdateMeetingDetailsArgs = {
 export type MutationUpdateMeetingEventSharableArgs = {
   is_sharable: Scalars['Boolean'];
   meeting_event_id: Scalars['String'];
-};
-
-
-export type MutationUpdateMeetingPlatformArgs = {
-  meeting_event_id: Scalars['String'];
-  meeting_link?: InputMaybe<Scalars['String']>;
-  platform: Scalars['String'];
 };
 
 
@@ -2563,10 +2551,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationUpdateBlanketPurchaseOrderArgs, 'amount' | 'id' | 'name' | 'po_number'>>;
   updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
-  updateMeetingDateTime?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingDateTimeArgs, 'end_time' | 'meeting_event_id' | 'start_time' | 'timezone'>>;
   updateMeetingDetails?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingDetailsArgs, 'meeting_event_id'>>;
   updateMeetingEventSharable?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingEventSharableArgs, 'is_sharable' | 'meeting_event_id'>>;
-  updateMeetingPlatform?: Resolver<Maybe<ResolversTypes['MeetingEvent']>, ParentType, ContextType, RequireFields<MutationUpdateMeetingPlatformArgs, 'meeting_event_id' | 'platform'>>;
   updateProjectRequestCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType, RequireFields<MutationUpdateProjectRequestCollaboratorsArgs, 'customer_ids' | 'project_request_id'>>;
   updateQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationUpdateQuoteArgs, 'amount' | 'id' | 'milestones'>>;
   updateUserInfo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'email' | 'first_name' | 'last_name'>>;

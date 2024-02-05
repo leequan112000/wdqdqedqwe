@@ -20,7 +20,7 @@ import { newMeetingNotificationEmail, updatedMeetingNotificationEmail } from "..
 import { app_env } from "../../environment";
 import { refreshToken } from "../../helper/clientOauth2";
 import { InternalError } from "../../graphql/errors/InternalError";
-import { MeetingEvent, ProjectConnection, ProjectRequest } from "@prisma/client";
+import { MeetingEvent, Prisma, ProjectConnection, ProjectRequest } from "@prisma/client";
 import { NoOAuthError } from "../../graphql/errors/NoOAuthError";
 import Sentry from "../../sentry";
 
@@ -1038,6 +1038,9 @@ type UpdateMeetingEventArgs = {
   timezone?: string;
   title?: string;
   description?: string;
+
+  platform?: string;
+  meeting_link?: string;
 }
 
 const updateMeetingEvent = async (
@@ -1052,8 +1055,11 @@ const updateMeetingEvent = async (
     title,
     organizer_user_id,
     timezone,
+
+    platform,
+    meeting_link,
   } = args;
-  const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
+  const previousMeetingEvent = await ctx.prisma.meetingEvent.findFirst({
     where: {
       id: meeting_event_id,
     },
@@ -1063,21 +1069,11 @@ const updateMeetingEvent = async (
           user: true,
         },
       },
+      meeting_guests: true,
     },
   });
 
-  invariant(meetingEvent, "Meeting event not found.");
-
-  // Skip if no new changes.
-  if (
-    (title ? title === meetingEvent.title : true) &&
-    (description ? description === meetingEvent.description : true) &&
-    (end_time ? end_time === meetingEvent.end_time.toISOString() : true) &&
-    (start_time ? start_time === meetingEvent.start_time.toISOString() : true) &&
-    (timezone ? timezone === meetingEvent.timezone : true)
-  ) {
-    return meetingEvent;
-  }
+  invariant(previousMeetingEvent, "Meeting event not found.");
 
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
@@ -1097,19 +1093,223 @@ const updateMeetingEvent = async (
     },
   });
 
-  invariant(organizerUser, 'Missing organizer user.')
+  invariant(organizerUser, "Missing organizer user.");
+
+  let meetingEventUpdateInput: Prisma.MeetingEventUpdateInput = {
+    title: title || previousMeetingEvent.title,
+    description: description || previousMeetingEvent.description,
+    timezone: timezone || previousMeetingEvent.timezone,
+    start_time: start_time || previousMeetingEvent.start_time.toISOString(),
+    end_time: end_time || previousMeetingEvent.end_time.toISOString(),
+    platform: platform || previousMeetingEvent.platform,
+    meeting_link: meeting_link || previousMeetingEvent.meeting_link,
+  };
+
+  let removePreviousCalendarEvent = false;
+  let createNewCalendarEvent = false;
+  let patchCalendarEvent = false;
+
+  if (
+    meetingEventUpdateInput.platform !== MeetingPlatform.CUSTOM &&
+    meetingEventUpdateInput.platform === previousMeetingEvent.platform
+  ) {
+    patchCalendarEvent = true;
+  } else if (
+    meetingEventUpdateInput.platform !== MeetingPlatform.CUSTOM &&
+    meetingEventUpdateInput.platform !== previousMeetingEvent.platform
+  ) {
+    removePreviousCalendarEvent = true;
+    createNewCalendarEvent = true;
+  } else if (
+    meetingEventUpdateInput.platform === MeetingPlatform.CUSTOM &&
+    meetingEventUpdateInput.platform !== previousMeetingEvent.platform
+  ) {
+    removePreviousCalendarEvent = true;
+  }
+
+  const existingCromaticParticipantsEmails =
+    previousMeetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
+  const existingCromaticParticipantWithoutOrganizerEmails =
+    existingCromaticParticipantsEmails.filter((e) => e !== organizerUser.email);
+
+  const existingExternalParticipantsEmails =
+    previousMeetingEvent.meeting_guests.map((g) => g.email);
+
+  const cromaticParticipantWithoutOrganizerUserData =
+    await ctx.prisma.user.findMany({
+      where: {
+        email: {
+          in: existingCromaticParticipantWithoutOrganizerEmails,
+        },
+      },
+      include: {
+        customer: true,
+        vendor_member: true,
+      },
+    });
+
+  const organizerCompanyName =
+    organizerUser.customer?.biotech?.name ||
+    organizerUser.vendor_member?.vendor_company?.name;
+  const organizerIsBiotech = !!organizerUser?.customer;
+
+  const organizerParticipants =
+    cromaticParticipantWithoutOrganizerUserData.filter((u) => {
+      const thisUserIsBiotech = !!u.customer;
+      if (organizerIsBiotech && thisUserIsBiotech) {
+        return true;
+      } else if (!organizerIsBiotech && !thisUserIsBiotech) {
+        return true;
+      }
+      return false;
+    });
+  const attendingParticipants =
+    cromaticParticipantWithoutOrganizerUserData.filter((u) => {
+      const thisUserIsBiotech = !!u.customer;
+      if (organizerIsBiotech && !thisUserIsBiotech) {
+        return true;
+      } else if (!organizerIsBiotech && thisUserIsBiotech) {
+        return true;
+      }
+      return false;
+    });
+
+  if (patchCalendarEvent) {
+    invariant(
+      previousMeetingEvent.platform_event_id,
+      "Platform event id not found."
+    );
+    switch (previousMeetingEvent.platform) {
+      case MeetingPlatform.GOOGLE_MEET: {
+        const oauthGoogle = await ctx.prisma.oauth.findFirst({
+          where: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.GOOGLE,
+          },
+        });
+        invariant(oauthGoogle, new PublicError("Missing token."));
+
+        const patchEventData: GEvent = {
+          ...(title ? { summary: title } : {}),
+          ...(description ? { description } : {}),
+        };
+        if (start_time) {
+          invariant(timezone, "Missing timezone");
+          patchEventData.start = {
+            dateTime: start_time,
+            timeZone: timezone,
+          };
+        }
+        if (end_time) {
+          invariant(timezone, "Missing timezone");
+          patchEventData.end = {
+            dateTime: end_time,
+            timeZone: timezone,
+          };
+        }
+
+        await safePatchGoogleEvent(
+          {
+            access_token: oauthGoogle.access_token,
+            refresh_token: oauthGoogle.refresh_token,
+            platform_event_id: previousMeetingEvent.platform_event_id!,
+            g_event: patchEventData,
+            organizer_user_id,
+            send_updates: true,
+          },
+          ctx
+        );
+        break;
+      }
+      case MeetingPlatform.MICROSOFT_TEAMS: {
+        const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+          where: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.MICROSOFT,
+          },
+        });
+
+        invariant(oauthMicrosoft, new PublicError("Missing token."));
+
+        const patchEventData: MicrosoftGraph.Event = {
+          ...(title ? { subject: title } : {}),
+          ...(description ? { description } : {}),
+          id: previousMeetingEvent.platform_event_id!,
+        };
+        if (start_time) {
+          invariant(timezone, "Missing timezone");
+          patchEventData.start = {
+            dateTime: start_time,
+            timeZone: timezone,
+          };
+        }
+        if (end_time) {
+          invariant(timezone, "Missing timezone");
+          patchEventData.end = {
+            dateTime: end_time,
+            timeZone: timezone,
+          };
+        }
+
+        await safePatchMicrosoftEvent(
+          {
+            access_token: oauthMicrosoft.access_token,
+            refresh_token: oauthMicrosoft.refresh_token,
+            event_data: patchEventData,
+            organizer_user_id,
+          },
+          ctx
+        );
+        break;
+      }
+      case MeetingPlatform.CUSTOM:
+      default:
+    }
+  }
+
+  if (removePreviousCalendarEvent) {
+    meetingEventUpdateInput = {
+      ...meetingEventUpdateInput,
+      phone: null,
+      phone_pin: null,
+      phone_country: null,
+      platform_event_id: null,
+    };
+  }
+
+  if (createNewCalendarEvent) {
+    const newMeetingEventOnCalendarApp = await createMeetingEventOnCalendarApp(
+      {
+        end_time: meetingEventUpdateInput.end_time! as string,
+        start_time: meetingEventUpdateInput.start_time! as string,
+        platform: meetingEventUpdateInput.platform! as string,
+        timezone: meetingEventUpdateInput.timezone! as string,
+        title: meetingEventUpdateInput.title! as string,
+        description: (meetingEventUpdateInput.description as string) || undefined,
+        organizer_user_id: organizer_user_id,
+        all_participants_emails: [
+          ...existingCromaticParticipantsEmails,
+          ...existingExternalParticipantsEmails,
+        ],
+      },
+      ctx
+    );
+
+    meetingEventUpdateInput = {
+      ...meetingEventUpdateInput,
+      meeting_link: newMeetingEventOnCalendarApp.meeting_link,
+      phone: newMeetingEventOnCalendarApp.phone,
+      phone_country: newMeetingEventOnCalendarApp.phone_country,
+      phone_pin: newMeetingEventOnCalendarApp.phone_pin,
+      platform_event_id: newMeetingEventOnCalendarApp.platform_event_id,
+    };
+  }
 
   const updatedMeetingEvent = await ctx.prisma.meetingEvent.update({
     where: {
       id: meeting_event_id,
     },
-    data: {
-      start_time,
-      end_time,
-      timezone,
-      title,
-      description,
-    },
+    data: meetingEventUpdateInput,
     include: {
       organizer: true,
       project_connection: {
@@ -1135,124 +1335,8 @@ const updateMeetingEvent = async (
     },
   });
 
-  // Update meeting info on calendar event.
-  if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
-    invariant(meetingEvent.platform_event_id, "Platform event id not found.");
-  }
-  switch (meetingEvent.platform) {
-    case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
-        where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.GOOGLE,
-        },
-      });
-      invariant(oauthGoogle, new PublicError("Missing token."));
-
-      const patchEventData: GEvent = {
-        ...(title ? { summary: title } : {}),
-        ...(description ? { description } : {}),
-      };
-      if (start_time) {
-        invariant(timezone, "Missing timezone");
-        patchEventData.start = {
-          dateTime: start_time,
-          timeZone: timezone,
-        };
-      }
-      if (end_time) {
-        invariant(timezone, "Missing timezone");
-        patchEventData.end = {
-          dateTime: end_time,
-          timeZone: timezone,
-        };
-      }
-
-      await safePatchGoogleEvent(
-        {
-          access_token: oauthGoogle.access_token,
-          refresh_token: oauthGoogle.refresh_token,
-          platform_event_id: meetingEvent.platform_event_id!,
-          g_event: patchEventData,
-          organizer_user_id,
-          send_updates: true,
-        },
-        ctx,
-      )
-      break;
-    }
-    case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
-        where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.MICROSOFT,
-        },
-      });
-
-      invariant(oauthMicrosoft, new PublicError("Missing token."));
-
-      const patchEventData: MicrosoftGraph.Event = {
-        ...(title ? { subject: title } : {}),
-        ...(description ? { description } : {}),
-        id: meetingEvent.platform_event_id!,
-      };
-      if (start_time) {
-        invariant(timezone, "Missing timezone");
-        patchEventData.start = {
-          dateTime: start_time,
-          timeZone: timezone,
-        };
-      }
-      if (end_time) {
-        invariant(timezone, "Missing timezone");
-        patchEventData.end = {
-          dateTime: end_time,
-          timeZone: timezone,
-        };
-      }
-
-      await safePatchMicrosoftEvent(
-        {
-          access_token: oauthMicrosoft.access_token,
-          refresh_token: oauthMicrosoft.refresh_token,
-          event_data: patchEventData,
-          organizer_user_id,
-        },
-        ctx,
-      )
-      break;
-    }
-    case MeetingPlatform.CUSTOM:
-    default:
-  }
-
-  const cromaticParticipantUserData = updatedMeetingEvent
-    .meetingAttendeeConnections
-    .filter((mac) => mac.user.email !== organizerUser.email)
-    .map((mac) => mac.user);
-  const organizerIsBiotech = !!organizerUser?.customer;
-    const organizerCompanyName =
-      organizerUser.customer?.biotech?.name ||
-      organizerUser.vendor_member?.vendor_company?.name;
-    const organizerParticipants = cromaticParticipantUserData.filter((u) => {
-      const thisUserIsBiotech = !!u.customer;
-      if (organizerIsBiotech && thisUserIsBiotech) {
-        return true;
-      } else if (!organizerIsBiotech && !thisUserIsBiotech) {
-        return true;
-      }
-      return false;
-    });
-    const attendingParticipants = cromaticParticipantUserData.filter((u) => {
-      const thisUserIsBiotech = !!u.customer;
-      if (organizerIsBiotech && !thisUserIsBiotech) {
-        return true;
-      } else if (!organizerIsBiotech && thisUserIsBiotech) {
-        return true;
-      }
-      return false;
-    });
-  if (meetingEvent.platform === MeetingPlatform.CUSTOM) {
+  // Email and notification
+  if (previousMeetingEvent.platform === MeetingPlatform.CUSTOM) {
     // Generate email data for all participants
     const organizerParticipantEmailData = organizerParticipants.map((u) => ({
       meeting_title: updatedMeetingEvent.title,
@@ -1272,25 +1356,25 @@ const updateMeetingEvent = async (
       button_url: `${app_env.APP_URL}/app/meeting-events`,
       receive_email: u.email,
     }));
-    const externalParticipantEmailData = updatedMeetingEvent.meeting_guests.map((guest) => ({
-      meeting_title: updatedMeetingEvent.title,
-      project_title:
-        updatedMeetingEvent.project_connection.project_request.title,
-      company_name: organizerCompanyName!,
-      user_name: guest.name ? guest.name : 'guest',
-      button_url: `${app_env.APP_URL}/meeting/${updatedMeetingEvent.id}?authToken=${guest.id}`,
-      receive_email: guest.email,
-    }));
+    const externalParticipantEmailData = updatedMeetingEvent.meeting_guests.map(
+      (guest) => ({
+        meeting_title: updatedMeetingEvent.title,
+        project_title:
+          updatedMeetingEvent.project_connection.project_request.title,
+        company_name: organizerCompanyName!,
+        user_name: guest.name ? guest.name : "guest",
+        button_url: `${app_env.APP_URL}/meeting/${updatedMeetingEvent.id}?authToken=${guest.id}`,
+        receive_email: guest.email,
+      })
+    );
     // Send email to all participants.
     [
       ...organizerParticipantEmailData,
       ...attendingParticipantEmailData,
       ...externalParticipantEmailData,
-    ].map(
-      ({ receive_email, ...emailData }) => {
-        updatedMeetingNotificationEmail(emailData, receive_email);
-      }
-    );
+    ].map(({ receive_email, ...emailData }) => {
+      updatedMeetingNotificationEmail(emailData, receive_email);
+    });
   }
 
   // Generate in-app notification data.
@@ -1318,6 +1402,23 @@ const updateMeetingEvent = async (
       ...attendingParticipantNotifcationJob,
     ],
   });
+
+  // Remove event at the end.
+  if (removePreviousCalendarEvent) {
+    // Prevent remove meeting failure from causing
+    try {
+      await removeMeetingEventOnCalendarApp(
+        {
+          current_user_id: organizer_user_id,
+          platform: previousMeetingEvent.platform,
+          platform_event_id: previousMeetingEvent.platform_event_id!,
+        },
+        ctx
+      );
+    } catch (error) {
+      // no-op
+    }
+  }
 
   return updatedMeetingEvent;
 };
