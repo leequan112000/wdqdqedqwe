@@ -12,15 +12,22 @@ type GroupedSlots = {
   [day_of_week: string]: Slot[];
 };
 
-function findIntersectingIntervals(slots: Slot[]) {
+export function findIntersectingIntervals(slots: Slot[]) {
+  slots.sort((a, b) => {
+    if (moment(a.start_time, "h:mma").isBefore(moment(b.start_time, "h:mma")))
+      return -1;
+    if (moment(a.start_time, "h:mma").isAfter(moment(b.start_time, "h:mma")))
+      return 1;
+    return 0;
+  });
+
   const result: typeof slots = [];
 
   if (slots.length === 1) {
     result.push(slots[0]);
   } else {
-    let intersect: Slot | undefined = undefined;
     for (let i = 0; i < slots.length - 1; i++) {
-      const interval1: Slot = intersect || slots[i];
+      const interval1 = slots[i];
       const interval2 = slots[i + 1];
       const start1 = moment(interval1.start_time);
       const end1 = moment(interval1.end_time);
@@ -31,62 +38,16 @@ function findIntersectingIntervals(slots: Slot[]) {
       const minEnd = moment.min(end1, end2);
 
       if (maxStart.isBefore(minEnd)) {
-        intersect = {
+        result.push({
           start_time: maxStart.toDate(),
           end_time: minEnd.toDate(),
-        };
-      } else if (intersect) {
-        result.push(intersect);
-        intersect = undefined;
-      }
-
-      /**
-       * If comparing last 2 items, is either they are intersecting or not.
-       * If intersecting, keep the intersection.
-       * If not, keep both interval.
-       */
-      if (i === slots.length - 2 && intersect) {
-        result.push(intersect);
+        });
       }
     }
   }
 
   return result;
 }
-
-export const groupAvailabilityByDayOfWeek = (
-  availabilities: Availability[]
-) => {
-  return availabilities.reduce<GroupedSlots>((acc, cur) => {
-    const draft = acc;
-    if (draft[cur.day_of_week] === undefined) {
-      draft[cur.day_of_week] = [
-        {
-          start_time: moment.tz(cur.start_time, "h:mma", cur.timezone).toDate(),
-          end_time: moment.tz(cur.end_time, "h:mma", cur.timezone).toDate(),
-        },
-      ];
-    } else {
-      draft[cur.day_of_week].push({
-        start_time: moment.tz(cur.start_time, "h:mma", cur.timezone).toDate(),
-        end_time: moment.tz(cur.end_time, "h:mma", cur.timezone).toDate(),
-      });
-    }
-    return draft;
-  }, {});
-};
-
-export const dedupGroupedAvailability = (groupedAvailability: GroupedSlots) => {
-  let intersectingIntervals: GroupedSlots = {};
-  Object.keys(groupedAvailability).forEach((day) => {
-    const times = groupedAvailability[day];
-
-    const results = findIntersectingIntervals(times);
-    intersectingIntervals[day] = results;
-  });
-
-  return intersectingIntervals;
-};
 
 export const generateDates = (from: Date, to: Date) => {
   const startDate = moment(from);
