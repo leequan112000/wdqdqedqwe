@@ -16,7 +16,7 @@ import { CalendarEvent } from "../../graphql/generated";
 import { PublicError } from "../../graphql/errors/PublicError";
 import { checkIfUserInProjectConnection } from "../projectConnection/projectConnection.service";
 import { meetingInvitationForCromaticUserWithinProjectEmail, meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
-import { newMeetingNotificationEmail, updatedMeetingNotificationEmail } from "../../mailer/meetingEvent";
+import { canceledMeetingNotificationEmail, newMeetingNotificationEmail, updatedMeetingNotificationEmail } from "../../mailer/meetingEvent";
 import { app_env } from "../../environment";
 import { refreshToken } from "../../helper/clientOauth2";
 import { InternalError } from "../../graphql/errors/InternalError";
@@ -697,10 +697,35 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
           project_request: true,
         },
       },
+      meeting_guests: {
+        where: {
+          status: MeetingGuestStatus.ACCEPTED,
+        },
+      },
     },
   });
 
   invariant(meetingEvent, 'Meeting event not found.');
+
+  const organizerUser = await ctx.prisma.user.findFirst({
+    where: {
+      id: current_user_id,
+    },
+    include: {
+      customer: {
+        include: {
+          biotech: true,
+        },
+      },
+      vendor_member: {
+        include: {
+          vendor_company: true,
+        },
+      },
+    },
+  });
+
+  invariant(organizerUser, "Missing organizer user.");
 
   // Delete all meeting attendee connections.
   await ctx.prisma.meetingAttendeeConnection.deleteMany({
@@ -735,6 +760,87 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
         Sentry.captureException(error);
       }
     }
+  } else {
+    const existingCromaticParticipantsEmails =
+      meetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
+    const existingCromaticParticipantWithoutOrganizerEmails =
+      existingCromaticParticipantsEmails.filter(
+        (e) => e !== organizerUser.email
+      );
+
+    const cromaticParticipantWithoutOrganizerUserData =
+      await ctx.prisma.user.findMany({
+        where: {
+          email: {
+            in: existingCromaticParticipantWithoutOrganizerEmails,
+          },
+        },
+        include: {
+          customer: true,
+          vendor_member: true,
+        },
+      });
+
+    const organizerCompanyName =
+      organizerUser.customer?.biotech?.name ||
+      organizerUser.vendor_member?.vendor_company?.name;
+    const organizerIsBiotech = !!organizerUser?.customer;
+
+    const organizerParticipants =
+      cromaticParticipantWithoutOrganizerUserData.filter((u) => {
+        const thisUserIsBiotech = !!u.customer;
+        if (organizerIsBiotech && thisUserIsBiotech) {
+          return true;
+        } else if (!organizerIsBiotech && !thisUserIsBiotech) {
+          return true;
+        }
+        return false;
+      });
+    const attendingParticipants =
+      cromaticParticipantWithoutOrganizerUserData.filter((u) => {
+        const thisUserIsBiotech = !!u.customer;
+        if (organizerIsBiotech && !thisUserIsBiotech) {
+          return true;
+        } else if (!organizerIsBiotech && thisUserIsBiotech) {
+          return true;
+        }
+        return false;
+      });
+
+    const organizerParticipantEmailData = organizerParticipants.map((u) => ({
+      meeting_title: meetingEvent.title,
+      project_title:
+      meetingEvent.project_connection.project_request.title,
+      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+      user_name: `${u.first_name} ${u.last_name}`,
+      receive_email: u.email,
+    }));
+    const attendingParticipantEmailData = attendingParticipants.map((u) => ({
+      meeting_title: meetingEvent.title,
+      project_title:
+      meetingEvent.project_connection.project_request.title,
+      company_name: organizerCompanyName!,
+      user_name: `${u.first_name} ${u.last_name}`,
+      receive_email: u.email,
+    }));
+    const externalParticipantEmailData = meetingEvent.meeting_guests.map(
+      (guest) => ({
+        meeting_title: meetingEvent.title,
+        project_title:
+        meetingEvent.project_connection.project_request.title,
+        company_name: organizerCompanyName!,
+        user_name: guest.name ? guest.name : "guest",
+        receive_email: guest.email,
+      })
+    );
+    // Send email to all participants.
+    [
+      ...organizerParticipantEmailData,
+      ...attendingParticipantEmailData,
+      ...externalParticipantEmailData,
+    ].map(({ receive_email, ...emailData }) => {
+      canceledMeetingNotificationEmail(emailData, receive_email);
+    });
   }
 
   const notificationJob = {
