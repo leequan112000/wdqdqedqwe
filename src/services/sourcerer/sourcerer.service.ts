@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { PDFExtract } from 'pdf.js-extract';
 import { app_env } from '../../environment';
+import { ServiceContext } from '../../types/context';
 
 export type ExtractPdfToRfpArgs = {
   filename: string;
@@ -59,7 +60,7 @@ export type SourceRfpSpecialtiesArgs = {
   num_specialties: number;
 }
 
-export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs) => {
+export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: ServiceContext) => {
   try {
     const response = await axios({
       method: 'post',
@@ -69,7 +70,21 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs) => {
         prompt: '',
       },
     });
-    return response.data;
+
+    const session = await ctx.prisma.sourcingSession.create({
+      data: {
+        task_id: response.data.id,
+        project_title: args.project_title,
+        project_desc: args.project_desc,
+        preparation_details: args.preparation_details,
+        vendor_requirement: args.vendor_requirement,
+      }
+    });
+
+    return {
+      session_id: session.id,
+      ...response.data
+    };
   } catch (error) {
     throw error;
   }
