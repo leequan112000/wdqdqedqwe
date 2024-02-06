@@ -82,7 +82,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
     });
 
     return {
-      session_id: session.id,
+      sourcing_session_id: session.id,
       ...response.data
     };
   } catch (error) {

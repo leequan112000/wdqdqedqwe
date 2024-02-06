@@ -1682,6 +1682,50 @@ export type SourceRfpSpecialtySubscriptionPayload = {
 export type SourceRfpSpecialtyTask = {
   __typename?: 'SourceRfpSpecialtyTask';
   id?: Maybe<Scalars['String']>;
+  session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcedCro = {
+  __typename?: 'SourcedCro';
+  cro_db_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_shortlisted?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  score?: Maybe<Scalars['Float']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcingSession = {
+  __typename?: 'SourcingSession';
+  id?: Maybe<Scalars['String']>;
+  preparation_details?: Maybe<Scalars['String']>;
+  project_desc?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
+  sourced_cros?: Maybe<Array<Maybe<SourcedCro>>>;
+  sourcing_specialties?: Maybe<Array<Maybe<SourcingSpecialty>>>;
+  sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
+  task_id?: Maybe<Scalars['String']>;
+  vendor_requirement?: Maybe<Scalars['String']>;
+};
+
+export type SourcingSpecialty = {
+  __typename?: 'SourcingSpecialty';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcingSubspecialty = {
+  __typename?: 'SourcingSubspecialty';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+  sourcing_specialty?: Maybe<SourcingSpecialty>;
+  sourcing_specialty_id?: Maybe<Scalars['String']>;
+  weight?: Maybe<Scalars['Float']>;
 };
 
 export type StripeAccountCapabilities = {
@@ -2024,6 +2068,10 @@ export type ResolversTypes = ResolversObject<{
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourceRfpSpecialtyTask: ResolverTypeWrapper<SourceRfpSpecialtyTask>;
+  SourcedCro: ResolverTypeWrapper<SourcedCro>;
+  SourcingSession: ResolverTypeWrapper<SourcingSession>;
+  SourcingSpecialty: ResolverTypeWrapper<SourcingSpecialty>;
+  SourcingSubspecialty: ResolverTypeWrapper<SourcingSubspecialty>;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -2123,6 +2171,10 @@ export type ResolversParentTypes = ResolversObject<{
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourceRfpSpecialtyTask: SourceRfpSpecialtyTask;
+  SourcedCro: SourcedCro;
+  SourcingSession: SourcingSession;
+  SourcingSpecialty: SourcingSpecialty;
+  SourcingSubspecialty: SourcingSubspecialty;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -2996,6 +3048,50 @@ export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, Pa
 
 export type SourceRfpSpecialtyTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtyTask'] = ResolversParentTypes['SourceRfpSpecialtyTask']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCro'] = ResolversParentTypes['SourcedCro']> = ResolversObject<{
+  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourced_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  sourcing_specialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSpecialty']>>>, ParentType, ContextType>;
+  sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingSpecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSpecialty'] = ResolversParentTypes['SourcingSpecialty']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingSubspecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSubspecialty'] = ResolversParentTypes['SourcingSubspecialty']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_specialty?: Resolver<Maybe<ResolversTypes['SourcingSpecialty']>, ParentType, ContextType>;
+  sourcing_specialty_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  weight?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3241,6 +3337,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RuleInterval?: RuleIntervalResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtyTask?: SourceRfpSpecialtyTaskResolvers<ContextType>;
+  SourcedCro?: SourcedCroResolvers<ContextType>;
+  SourcingSession?: SourcingSessionResolvers<ContextType>;
+  SourcingSpecialty?: SourcingSpecialtyResolvers<ContextType>;
+  SourcingSubspecialty?: SourcingSubspecialtyResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;
