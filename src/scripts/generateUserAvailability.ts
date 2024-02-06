@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { Client } from "@googlemaps/google-maps-services-js";
 
 import invariant from "../helper/invariant";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { availabilitiesCreateData } from "../helper/availability";
 
 const client = new Client({});

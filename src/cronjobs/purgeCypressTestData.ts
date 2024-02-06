@@ -1,4 +1,4 @@
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import userService from '../services/user/user.service';
 
 async function main() {

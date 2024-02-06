@@ -1,5 +1,5 @@
 import moment from 'moment';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { createVendorProjectRequestExpiredNoticeEmailJob } from '../queues/email.queues';
 import { CreateVendorProjectRequestExpiredNoticeEmailJobParam } from '../queues/types';
 import { ProjectConnectionVendorStatus } from '../helper/constant';

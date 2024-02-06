@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("AWS_CRO_DATABASE_URL")
+}
+
+model VendorCompany {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name       String
+  website_url        String
+  linkedin_url       String
+  crunchbase_url     String
+  type               String
+  is_active          Boolean
+  is_cromatic_vendor Boolean
+
+  traffic_infos  TrafficInfo[]
+  linkedin_infos LinkedinInfo[]
+  funding_infos  FundingInfo[]
+  website_infos  WebsiteInfo[]
+
+  @@map("vendor_companies")
+}
+
+model TrafficInfo {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id      String        @unique @db.Uuid
+  last_updated    DateTime      @default(now())
+  display_date    DateTime
+  rank            Int
+  visits          Int
+  users           Int
+  search_organic  Int
+  search_paid     Int
+  social_organic  Int
+  social_paid     Int
+  referral        Int
+  time_on_site    Int
+  pages_per_visit Float
+  bounce_rate     Float
+  categories      String
+  vendor_company  VendorCompany @relation(fields: [company_id], references: [id])
+
+  @@map("traffic_info")
+}
+
+model LinkedinInfo {
+  id                 String        @id
+  company_id         String        @unique @db.Uuid
+  last_updated       DateTime      @default(now())
+  company_size       String
+  industry           String
+  description        String
+  linkedin_followers Int
+  founded            Int
+  created            DateTime
+  li_last_updated    DateTime
+  type               String
+  employees_count    Int
+  vendor_company     VendorCompany @relation(fields: [company_id], references: [id])
+
+  company_specialties_collection        CompanySpecialty[]
+  company_featured_employees_collection FeaturedEmployee[]
+  locations_collection                  Location[]
+
+  @@map("linkedin_info")
+}
+
+model CompanySpecialty {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  specialty_id     String
+  linkedin_info_id String
+  specialty        String
+  linkedin_info    LinkedinInfo @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([specialty_id, linkedin_info_id])
+  @@map("company_specialties")
+}
+
+model FeaturedEmployee {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id      String
+  linkedin_info_id String
+  linkedin_url     String
+  linkedin_info    LinkedinInfo @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([employee_id, linkedin_info_id])
+  @@map("featured_employees")
+}
+
+model Location {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  location_id      String
+  linkedin_info_id String
+  location_address String
+  linkedin_info    LinkedinInfo @relation(fields: [linkedin_info_id], references: [id])
+
+  @@unique([location_id, linkedin_info_id])
+  @@map("locations")
+}
+
+model FundingInfo {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id      String        @unique @db.Uuid
+  last_updated    DateTime      @default(now())
+  company_img_url String
+  company_type    String
+  ipo_status      String
+  revenue_range   String
+  org_rank        Int
+  num_articles    Int
+  vendor_company  VendorCompany @relation(fields: [company_id], references: [id])
+
+  categories            Category[]
+  press_references      PressReference[]
+  raised_funding_rounds FundingRound[]
+  founders              Founder[]
+
+  @@unique([id, company_id])
+  @@map("funding_info")
+}
+
+model Category {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category_id     String
+  funding_info_id String      @db.Uuid
+  category        String
+  funding_info    FundingInfo @relation(fields: [funding_info_id], references: [id])
+
+  @@unique([category_id, funding_info_id])
+  @@map("categories")
+}
+
+model PressReference {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  press_id        String
+  funding_info_id String      @db.Uuid
+  author          String
+  title           String
+  publisher       String
+  url             String
+  posted_on       DateTime
+  funding_info    FundingInfo @relation(fields: [funding_info_id], references: [id])
+
+  @@unique([press_id, funding_info_id])
+  @@map("press_references")
+}
+
+model FundingRound {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  round_id          String
+  funding_info_id   String      @db.Uuid
+  is_equity         Boolean
+  investment_stage  String
+  short_description String
+  currency          String
+  money_raised      BigInt
+  announced_on      DateTime
+  funding_info      FundingInfo @relation(fields: [funding_info_id], references: [id])
+
+  @@unique([round_id, funding_info_id])
+  @@map("funding_rounds")
+}
+
+model Founder {
+  id                        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  founder_id                String
+  funding_info_id           String      @db.Uuid
+  full_name                 String
+  primary_job_title         String
+  description               String
+  linkedin                  String
+  num_founded_organizations Int
+  rank_person               Int
+  funding_info              FundingInfo @relation(fields: [funding_info_id], references: [id])
+
+  @@unique([founder_id, funding_info_id])
+  @@map("founders")
+}
+
+model WebsiteInfo {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id   String   @unique @db.Uuid
+  specialties  String
+  last_updated DateTime @default(now())
+
+  vendor_company VendorCompany @relation(fields: [company_id], references: [id])
+
+  @@map("website_info")
+}
