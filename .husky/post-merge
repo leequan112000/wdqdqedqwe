@@ -2,4 +2,5 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 yarn
-yarn prisma generate
+yarn prisma:generate:main
+yarn prisma:generate:cro
