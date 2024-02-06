@@ -650,4 +650,3 @@ describe('process stripe event', () => {
     });
   });
 });
-
