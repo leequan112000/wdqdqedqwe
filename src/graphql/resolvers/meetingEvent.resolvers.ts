@@ -1101,6 +1101,7 @@ const resolvers: Resolvers<Context> = {
         await trx.meetingGuest.deleteMany({
           where: {
             meeting_event_id,
+            email,
           },
         });
 
