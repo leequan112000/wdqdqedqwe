@@ -265,16 +265,18 @@ const createMeetingEventOnCalendarApp = async (
         conferenceData && hangoutLink,
         new PublicError("Missing hangout link.")
       );
+      meeting_link = hangoutLink;
+      platform_event_id = gEventId as string;
 
       const entryPoints = conferenceData.entryPoints;
       const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
-      const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+      if (phoneEntryPoint) {
+        const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+        phone_pin = phoneEntryPoint.pin as string;
+        phone = gPhone as string;
+        phone_country = countryCode;
+      }
 
-      meeting_link = hangoutLink;
-      phone_pin = phoneEntryPoint.pin as string;
-      phone = gPhone as string;
-      phone_country = countryCode;
-      platform_event_id = gEventId as string;
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
