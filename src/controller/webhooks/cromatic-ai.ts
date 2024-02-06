@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
+import prisma from '../../prisma';
 import { pubsub } from "../../helper/pubsub";
-
 
 const verifySignature = (req: Request, signature: string): boolean => {
   // Sort keys alphabetically before stringifying the payload
@@ -35,6 +35,21 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
   try {
     switch (event_name) {
       case "source_rfp_specialties": {
+        const sourcing_session = await prisma.sourcingSession.findFirst({
+          where: {
+            task_id,
+          },
+        });
+        if (sourcing_session) {
+          await prisma.sourcingSpecialty.createMany({
+            data: data.map((specialtyString: string) => {
+              return {
+                name: specialtyString,
+                sourcing_session_id:  sourcing_session.id,
+              }
+            })
+          });
+        }
         pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, data } });
       }
       default:
