@@ -334,9 +334,11 @@ export type MutationDuplicateQuestionSetArgs = {
 
 export type MutationInviteCustomerByAdminArgs = {
   biotech_id: Scalars['String'];
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
   role: Scalars['String'];
 };
 
@@ -354,9 +356,11 @@ export type MutationInviteVendorCompanyToProjectByBiotechArgs = {
 
 
 export type MutationInviteVendorMemberByAdminArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   email: Scalars['String'];
   first_name: Scalars['String'];
   last_name: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
   role: Scalars['String'];
   vendor_company_id: Scalars['String'];
 };
@@ -448,9 +452,11 @@ export type MutationUpdateCertificationTagArgs = {
 
 
 export type MutationUpdateCustomerByAdminArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   first_name?: InputMaybe<Scalars['String']>;
   job_title?: InputMaybe<Scalars['String']>;
   last_name?: InputMaybe<Scalars['String']>;
+  phone_number?: InputMaybe<Scalars['String']>;
   role?: InputMaybe<Scalars['String']>;
   team?: InputMaybe<Scalars['String']>;
   user_id: Scalars['String'];
@@ -523,9 +529,11 @@ export type MutationUpdateReviewQuestionSetArgs = {
 
 
 export type MutationUpdateVendorMemberByAdminArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   department?: InputMaybe<Scalars['String']>;
   first_name?: InputMaybe<Scalars['String']>;
   last_name?: InputMaybe<Scalars['String']>;
+  phone_number?: InputMaybe<Scalars['String']>;
   role?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   user_id: Scalars['String'];

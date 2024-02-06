@@ -1,0 +1,38 @@
+type RuleInterval {
+  from: String!
+  to: String!
+}
+
+type AvailabilityRule {
+  day: String!
+  intervals: [RuleInterval!]!
+}
+
+type Availability {
+  id: String! # same as user id
+  rules: [AvailabilityRule!]!
+  timezone: String
+}
+
+input RuleIntervalInput {
+  from: String!
+  to: String!
+}
+
+input AvailabilityRuleInput {
+  day: String!
+  intervals: [RuleIntervalInput!]!
+}
+
+input SaveAvailabilityRulesInput {
+  timezone: String!
+  rules: [AvailabilityRuleInput!]!
+}
+
+type Query {
+  availability: Availability
+}
+
+type Mutation {
+  saveAvailabilityRules(input: SaveAvailabilityRulesInput!): Availability
+}
