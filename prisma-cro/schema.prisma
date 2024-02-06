@@ -18,15 +18,78 @@ model VendorCompany {
   linkedin_url       String
   crunchbase_url     String
   type               String
+  product            String?
+  logo_url           String?
   is_active          Boolean
   is_cromatic_vendor Boolean
 
-  traffic_infos  TrafficInfo[]
-  linkedin_infos LinkedinInfo[]
-  funding_infos  FundingInfo[]
-  website_infos  WebsiteInfo[]
+  traffic_infos                 TrafficInfo[]
+  linkedin_infos                LinkedinInfo[]
+  funding_infos                 FundingInfo[]
+  website_infos                 WebsiteInfo[]
+  vendor_company_subspecialties VendorCompanySubspecialty[]
+  vendor_company_locations      VendorCompanyLocation[]
+  vendor_company_types          VendorCompanyType[]
+  vendor_company_certifications VendorCompanyCertification[]
 
   @@map("vendor_companies")
+}
+
+model Specialty {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  definition     String?
+  subspecialties Subspecialty[]
+
+  @@map("specialties")
+}
+
+model Subspecialty {
+  id                            String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                          String
+  definition                    String?
+  specialty_id                  String                      @db.Uuid
+  specialty                     Specialty                   @relation(fields: [specialty_id], references: [id])
+  vendor_company_subspecialties VendorCompanySubspecialty[]
+
+  @@map("subspecialties")
+}
+
+model VendorCompanySubspecialty {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subspecialty_id   String        @db.Uuid
+  subspecialty      Subspecialty  @relation(fields: [subspecialty_id], references: [id])
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("vendor_company_subspecialties")
+}
+
+model VendorCompanyLocation {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  country           String
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("vendor_company_locations")
+}
+
+model VendorCompanyType {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_type      String
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("vendor_company_types")
+}
+
+model VendorCompanyCertification {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  certification_name String
+  vendor_company_id  String        @db.Uuid
+  vendor_company     VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("vendor_company_certifications")
 }
 
 model TrafficInfo {
