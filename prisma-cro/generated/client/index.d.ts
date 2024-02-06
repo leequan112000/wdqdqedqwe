@@ -12914,18 +12914,21 @@ export namespace Prisma {
   export type Website_infoMinAggregateOutputType = {
     id: string | null
     company_id: string | null
+    specialties: string | null
     last_updated: Date | null
   }
 
   export type Website_infoMaxAggregateOutputType = {
     id: string | null
     company_id: string | null
+    specialties: string | null
     last_updated: Date | null
   }
 
   export type Website_infoCountAggregateOutputType = {
     id: number
     company_id: number
+    specialties: number
     last_updated: number
     _all: number
   }
@@ -12934,18 +12937,21 @@ export namespace Prisma {
   export type Website_infoMinAggregateInputType = {
     id?: true
     company_id?: true
+    specialties?: true
     last_updated?: true
   }
 
   export type Website_infoMaxAggregateInputType = {
     id?: true
     company_id?: true
+    specialties?: true
     last_updated?: true
   }
 
   export type Website_infoCountAggregateInputType = {
     id?: true
     company_id?: true
+    specialties?: true
     last_updated?: true
     _all?: true
   }
@@ -13025,6 +13031,7 @@ export namespace Prisma {
   export type Website_infoGroupByOutputType = {
     id: string
     company_id: string
+    specialties: string
     last_updated: Date
     _count: Website_infoCountAggregateOutputType | null
     _min: Website_infoMinAggregateOutputType | null
@@ -13048,6 +13055,7 @@ export namespace Prisma {
   export type website_infoSelect<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     company_id?: boolean
+    specialties?: boolean
     last_updated?: boolean
     vendor_company?: boolean | vendor_companiesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["website_info"]>
@@ -13055,6 +13063,7 @@ export namespace Prisma {
   export type website_infoSelectScalar = {
     id?: boolean
     company_id?: boolean
+    specialties?: boolean
     last_updated?: boolean
   }
 
@@ -13071,6 +13080,7 @@ export namespace Prisma {
     scalars: $Extensions.GetResult<{
       id: string
       company_id: string
+      specialties: string
       last_updated: Date
     }, ExtArgs["result"]["website_info"]>
     composites: {}
@@ -13469,6 +13479,7 @@ export namespace Prisma {
   interface website_infoFieldRefs {
     readonly id: FieldRef<"website_info", 'String'>
     readonly company_id: FieldRef<"website_info", 'String'>
+    readonly specialties: FieldRef<"website_info", 'String'>
     readonly last_updated: FieldRef<"website_info", 'DateTime'>
   }
     
@@ -13967,6 +13978,7 @@ export namespace Prisma {
   export const Website_infoScalarFieldEnum: {
     id: 'id',
     company_id: 'company_id',
+    specialties: 'specialties',
     last_updated: 'last_updated'
   };
 
@@ -14893,6 +14905,7 @@ export namespace Prisma {
     NOT?: website_infoWhereInput | website_infoWhereInput[]
     id?: UuidFilter<"website_info"> | string
     company_id?: UuidFilter<"website_info"> | string
+    specialties?: StringFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
   }
@@ -14900,6 +14913,7 @@ export namespace Prisma {
   export type website_infoOrderByWithRelationInput = {
     id?: SortOrder
     company_id?: SortOrder
+    specialties?: SortOrder
     last_updated?: SortOrder
     vendor_company?: vendor_companiesOrderByWithRelationInput
   }
@@ -14910,6 +14924,7 @@ export namespace Prisma {
     AND?: website_infoWhereInput | website_infoWhereInput[]
     OR?: website_infoWhereInput[]
     NOT?: website_infoWhereInput | website_infoWhereInput[]
+    specialties?: StringFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
     vendor_company?: XOR<Vendor_companiesRelationFilter, vendor_companiesWhereInput>
   }, "id" | "company_id">
@@ -14917,6 +14932,7 @@ export namespace Prisma {
   export type website_infoOrderByWithAggregationInput = {
     id?: SortOrder
     company_id?: SortOrder
+    specialties?: SortOrder
     last_updated?: SortOrder
     _count?: website_infoCountOrderByAggregateInput
     _max?: website_infoMaxOrderByAggregateInput
@@ -14929,6 +14945,7 @@ export namespace Prisma {
     NOT?: website_infoScalarWhereWithAggregatesInput | website_infoScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"website_info"> | string
     company_id?: UuidWithAggregatesFilter<"website_info"> | string
+    specialties?: StringWithAggregatesFilter<"website_info"> | string
     last_updated?: DateTimeWithAggregatesFilter<"website_info"> | Date | string
   }
 
@@ -15808,6 +15825,7 @@ export namespace Prisma {
 
   export type website_infoCreateInput = {
     id?: string
+    specialties: string
     last_updated?: Date | string
     vendor_company: vendor_companiesCreateNestedOneWithoutWebsite_infoInput
   }
@@ -15815,11 +15833,13 @@ export namespace Prisma {
   export type website_infoUncheckedCreateInput = {
     id?: string
     company_id: string
+    specialties: string
     last_updated?: Date | string
   }
 
   export type website_infoUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
     vendor_company?: vendor_companiesUpdateOneRequiredWithoutWebsite_infoNestedInput
   }
@@ -15827,23 +15847,27 @@ export namespace Prisma {
   export type website_infoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type website_infoCreateManyInput = {
     id?: string
     company_id: string
+    specialties: string
     last_updated?: Date | string
   }
 
   export type website_infoUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type website_infoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     company_id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16622,18 +16646,21 @@ export namespace Prisma {
   export type website_infoCountOrderByAggregateInput = {
     id?: SortOrder
     company_id?: SortOrder
+    specialties?: SortOrder
     last_updated?: SortOrder
   }
 
   export type website_infoMaxOrderByAggregateInput = {
     id?: SortOrder
     company_id?: SortOrder
+    specialties?: SortOrder
     last_updated?: SortOrder
   }
 
   export type website_infoMinOrderByAggregateInput = {
     id?: SortOrder
     company_id?: SortOrder
+    specialties?: SortOrder
     last_updated?: SortOrder
   }
 
@@ -17596,11 +17623,13 @@ export namespace Prisma {
 
   export type website_infoCreateWithoutVendor_companyInput = {
     id?: string
+    specialties: string
     last_updated?: Date | string
   }
 
   export type website_infoUncheckedCreateWithoutVendor_companyInput = {
     id?: string
+    specialties: string
     last_updated?: Date | string
   }
 
@@ -17739,6 +17768,7 @@ export namespace Prisma {
     NOT?: website_infoScalarWhereInput | website_infoScalarWhereInput[]
     id?: UuidFilter<"website_info"> | string
     company_id?: UuidFilter<"website_info"> | string
+    specialties?: StringFilter<"website_info"> | string
     last_updated?: DateTimeFilter<"website_info"> | Date | string
   }
 
@@ -19009,6 +19039,7 @@ export namespace Prisma {
 
   export type website_infoCreateManyVendor_companyInput = {
     id?: string
+    specialties: string
     last_updated?: Date | string
   }
 
@@ -19157,16 +19188,19 @@ export namespace Prisma {
 
   export type website_infoUpdateWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type website_infoUncheckedUpdateWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type website_infoUncheckedUpdateManyWithoutVendor_companyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    specialties?: StringFieldUpdateOperationsInput | string
     last_updated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

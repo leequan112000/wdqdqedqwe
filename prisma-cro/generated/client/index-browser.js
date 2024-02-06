@@ -244,6 +244,7 @@ exports.Prisma.FoundersScalarFieldEnum = {
 exports.Prisma.Website_infoScalarFieldEnum = {
   id: 'id',
   company_id: 'company_id',
+  specialties: 'specialties',
   last_updated: 'last_updated'
 };
 

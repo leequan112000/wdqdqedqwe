@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("CRO_DATABASE_URL")
+  url      = env("AWS_CRO_DATABASE_URL")
 }
 
 model vendor_companies {
@@ -174,6 +174,7 @@ model founders {
 model website_info {
   id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   company_id   String            @unique @db.Uuid
+  specialties  String
   last_updated DateTime          @default(now())
 
   vendor_company  vendor_companies @relation(fields: [company_id], references: [id])
