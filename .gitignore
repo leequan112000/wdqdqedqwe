@@ -30,3 +30,4 @@ npm-debug.log*
 newrelic_agent.log
 dump.rdb
 /dist
+/prisma-cro/generated
