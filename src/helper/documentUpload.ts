@@ -1,4 +1,4 @@
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { ProjectAttachmentDocumentType } from './constant';
 
 export const getFilenameWithVersion = async (fullFilename: string, version: number, projectConnectionId: string): Promise<string> => {

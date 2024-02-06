@@ -3,7 +3,7 @@ import { googleClient } from '../../helper/googleCalendar';
 import { CalendarIntegrationErrorType, OauthProvider } from '../../helper/constant';
 import { codeVerifier, decryptOauthState } from '../../helper/oauth';
 import { app_env } from '../../environment';
-import prisma from '../../prisma';
+import { prisma } from '../../prisma';
 import Sentry from '../../sentry';
 
 export const googleCallback = async (req: Request, res: Response): Promise<void> => {

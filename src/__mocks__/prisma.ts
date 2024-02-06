@@ -7,4 +7,5 @@ beforeEach(() => {
 })
 
 const prisma = mockDeep<PrismaClient>()
-export default prisma
+const prismaCRODb = mockDeep<PrismaClient>()
+export { prisma, prismaCRODb }

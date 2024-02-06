@@ -1,6 +1,6 @@
 import type { Stripe } from 'stripe';
 import moment from 'moment';
-import prisma from '../../../prisma';
+import { prisma } from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import milestoneService from '../../../services/milestone/milestone.service';
 import { InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';

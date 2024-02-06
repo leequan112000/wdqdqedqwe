@@ -3,7 +3,7 @@ import { getMicrosoftUserInfo, microsoftClient, microsoftGraphClient } from '../
 import { CalendarIntegrationErrorType, OauthProvider } from '../../helper/constant';
 import { codeVerifier, decryptOauthState } from '../../helper/oauth';
 import { app_env } from '../../environment';
-import prisma from '../../prisma';
+import { prisma } from '../../prisma';
 import Sentry from '../../sentry';
 
 const MicrosoftServicePlanId = {
