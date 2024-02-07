@@ -104,18 +104,16 @@ type Mutation {
     is_sharable: Boolean
   ): MeetingEvent
   updateMeetingEventSharable(meeting_event_id: String!, is_sharable: Boolean!): MeetingEvent
-  updateMeetingDateTime(
-    meeting_event_id: String!
-    start_time: String!
-    end_time: String!
-    timezone: String!
-  ): MeetingEvent
   updateMeetingDetails(
     meeting_event_id: String!
     title: String
     description: String
+    start_time: String
+    end_time: String
+    timezone: String
+    platform: String
+    meeting_link: String
   ): MeetingEvent
-  updateMeetingPlatform(meeting_event_id: String!, platform: String!, meeting_link: String): MeetingEvent
   removeMeetingEvent(meeting_event_id: String!): MeetingEvent
   addMoreParticipants(
     external_participants: [ExternalParticipantInput!]!

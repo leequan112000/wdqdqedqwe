@@ -44,3 +44,4 @@ export const meetingInvitationTemplate = 'd-9fc4542b21ef4c268af43b891d74d595';
 export const meetingInvitationForCromaticUserWithinProjectTemplate = 'd-1709403a96474306b82faf01a15b2e56';
 export const newMeetingNotificationTemplate = 'd-4c45d6b30bc84a278526077aeb915a02';
 export const updatedMeetingNotificationTemplate = 'd-d834816983b84f8abaff496743dfd958';
+export const canceledMeetingNotificationTemplate = 'd-f183ecd8cc504d7691f91d4ec465335a';

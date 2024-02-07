@@ -1101,6 +1101,7 @@ const resolvers: Resolvers<Context> = {
         await trx.meetingGuest.deleteMany({
           where: {
             meeting_event_id,
+            email,
           },
         });
 
@@ -1180,31 +1181,17 @@ const resolvers: Resolvers<Context> = {
 
       return true;
     },
-    updateMeetingDateTime: async (_, args, context) => {
-      const { end_time, meeting_event_id, start_time, timezone } = args;
-      const currentUserId = context.req.user_id;
-
-      invariant(currentUserId, "Missing user id.");
-
-      const updatedMeetingEvent = await context.prisma.$transaction(
-        async (trx) => {
-          return meetingEventService.updateMeetingEvent(
-            {
-              meeting_event_id,
-              organizer_user_id: currentUserId,
-              start_time,
-              end_time,
-              timezone,
-            },
-            { prisma: trx }
-          );
-        }
-      );
-
-      return updatedMeetingEvent;
-    },
     updateMeetingDetails: async (_, args, context) => {
-      const { meeting_event_id, description, title } = args;
+      const {
+        meeting_event_id,
+        description,
+        title,
+        end_time,
+        meeting_link,
+        platform,
+        start_time,
+        timezone,
+      } = args;
       const currentUserId = context.req.user_id;
 
       invariant(currentUserId, "Missing user id.");
@@ -1217,6 +1204,11 @@ const resolvers: Resolvers<Context> = {
               organizer_user_id: currentUserId,
               title: title || undefined,
               description: description || undefined,
+              platform: platform || undefined,
+              end_time: end_time || undefined,
+              meeting_link: meeting_link || undefined,
+              start_time: start_time || undefined,
+              timezone: timezone || undefined,
             },
             { prisma: trx }
           );
@@ -1224,31 +1216,6 @@ const resolvers: Resolvers<Context> = {
       );
 
       return updatedMeetingEvent;
-    },
-    updateMeetingPlatform: async (_, args, context) => {
-      const {
-        meeting_event_id,
-        platform: newPlatform,
-        meeting_link: newMeetingLink,
-      } = args;
-      const currentUserId = context.req.user_id;
-      invariant(currentUserId, "Missing current user id.");
-
-      const newMeetingEvent = await context.prisma.$transaction(async (trx) => {
-        return meetingEventService.updateMeetingPlatform(
-          {
-            meeting_event_id,
-            platform: newPlatform,
-            meeting_link: newMeetingLink || undefined,
-            organizer_user_id: currentUserId,
-          },
-          {
-            prisma: trx,
-          }
-        );
-      });
-
-      return newMeetingEvent;
     },
   },
 };
