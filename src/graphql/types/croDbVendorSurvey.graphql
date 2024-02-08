@@ -30,7 +30,7 @@ type Mutation {
     subspecialty_ids: [String!]!
     custom_specialties: [String]
     certifications: [String]
-    product: String
+    products: [String]
     note: String
     logo: Upload!
     attachment: Upload

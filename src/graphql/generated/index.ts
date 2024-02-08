@@ -765,7 +765,7 @@ export type MutationCreateVendorSurveyArgs = {
   custom_specialties?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   logo: Scalars['Upload'];
   note?: InputMaybe<Scalars['String']>;
-  product?: InputMaybe<Scalars['String']>;
+  products?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   subspecialty_ids: Array<Scalars['String']>;
   vendor_company_id: Scalars['String'];
   website: Scalars['String'];

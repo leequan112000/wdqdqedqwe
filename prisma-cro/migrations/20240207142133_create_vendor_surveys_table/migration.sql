@@ -10,7 +10,7 @@ CREATE TABLE "vendor_surveys" (
     "subspecialty_ids" TEXT[],
     "custom_specialties" TEXT[],
     "certifications" TEXT[],
-    "product" TEXT,
+    "products" TEXT[],
     "note" TEXT,
     "attachment_key" TEXT,
     "attachment_file_name" TEXT,

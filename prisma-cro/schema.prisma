@@ -271,7 +271,7 @@ model VendorSurvey {
   subspecialty_ids        String[]
   custom_specialties      String[]
   certifications          String[]
-  product                 String?
+  products                String[]
   note                    String?
   attachment_key          String?
   attachment_file_name    String?
