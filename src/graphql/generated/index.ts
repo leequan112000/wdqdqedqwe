@@ -393,6 +393,18 @@ export type ExternalParticipantInput = {
   name?: InputMaybe<Scalars['String']>;
 };
 
+export type InitialVendorSurveyData = {
+  __typename?: 'InitialVendorSurveyData';
+  countries?: Maybe<Array<Maybe<Scalars['String']>>>;
+  has_submitted: Scalars['Boolean'];
+  id: Scalars['String'];
+  logo_url?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  subspecialty_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  vendor_type?: Maybe<Array<Maybe<Scalars['String']>>>;
+  website?: Maybe<Scalars['String']>;
+};
+
 export type InviteCollaboratorInput = {
   email: Scalars['String'];
   first_name: Scalars['String'];
@@ -767,7 +779,7 @@ export type MutationCreateVendorSurveyArgs = {
   note?: InputMaybe<Scalars['String']>;
   products?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   subspecialty_ids: Array<Scalars['String']>;
-  vendor_company_id: Scalars['String'];
+  token: Scalars['String'];
   website: Scalars['String'];
 };
 
@@ -1465,11 +1477,13 @@ export type Query = {
   blanketPurchaseOrders?: Maybe<Array<Maybe<BlanketPurchaseOrder>>>;
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
+  croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
   croDbVendorCompany?: Maybe<CroDbVendorCompany>;
   customer?: Maybe<Customer>;
   featuredNews?: Maybe<Array<Maybe<News>>>;
   googleCalendarAuthorizationUri?: Maybe<Scalars['String']>;
   googleCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
+  initialVendorSurveyData?: Maybe<InitialVendorSurveyData>;
   invoice?: Maybe<Invoice>;
   invoiceCheckoutUrl?: Maybe<Scalars['String']>;
   invoices?: Maybe<Array<Maybe<Invoice>>>;
@@ -1549,6 +1563,11 @@ export type QueryCroDbVendorCompanyArgs = {
 
 export type QueryGoogleCalendarAuthorizationUriArgs = {
   redirect_url?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryInitialVendorSurveyDataArgs = {
+  token: Scalars['String'];
 };
 
 
@@ -2043,6 +2062,7 @@ export type ResolversTypes = ResolversObject<{
   ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
   ExternalParticipantInput: ExternalParticipantInput;
   Float: ResolverTypeWrapper<Scalars['Float']>;
+  InitialVendorSurveyData: ResolverTypeWrapper<InitialVendorSurveyData>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InviteCollaboratorInput: InviteCollaboratorInput;
   Invoice: ResolverTypeWrapper<Invoice>;
@@ -2147,6 +2167,7 @@ export type ResolversParentTypes = ResolversObject<{
   ExternalGuest: ExternalGuest;
   ExternalParticipantInput: ExternalParticipantInput;
   Float: Scalars['Float'];
+  InitialVendorSurveyData: InitialVendorSurveyData;
   Int: Scalars['Int'];
   InviteCollaboratorInput: InviteCollaboratorInput;
   Invoice: Invoice;
@@ -2565,6 +2586,18 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type InitialVendorSurveyDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitialVendorSurveyData'] = ResolversParentTypes['InitialVendorSurveyData']> = ResolversObject<{
+  countries?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  has_submitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subspecialty_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  vendor_type?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = ResolversObject<{
   commission_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -2722,7 +2755,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
-  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_name' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'vendor_company_id' | 'website'>>;
+  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_name' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'token' | 'website'>>;
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
@@ -3034,11 +3067,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   blanketPurchaseOrders?: Resolver<Maybe<Array<Maybe<ResolversTypes['BlanketPurchaseOrder']>>>, ParentType, ContextType>;
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
+  croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
   croDbVendorCompany?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType, RequireFields<QueryCroDbVendorCompanyArgs, 'id'>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
   googleCalendarAuthorizationUri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryGoogleCalendarAuthorizationUriArgs>>;
   googleCalendarEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['CalendarEvent']>>>, ParentType, ContextType>;
+  initialVendorSurveyData?: Resolver<Maybe<ResolversTypes['InitialVendorSurveyData']>, ParentType, ContextType, RequireFields<QueryInitialVendorSurveyDataArgs, 'token'>>;
   invoice?: Resolver<Maybe<ResolversTypes['Invoice']>, ParentType, ContextType, RequireFields<QueryInvoiceArgs, 'id'>>;
   invoiceCheckoutUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryInvoiceCheckoutUrlArgs, 'cancel_url' | 'id' | 'success_url'>>;
   invoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invoice']>>>, ParentType, ContextType>;
@@ -3346,6 +3381,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Date?: GraphQLScalarType;
   DateWithTimeSlots?: DateWithTimeSlotsResolvers<ContextType>;
   ExternalGuest?: ExternalGuestResolvers<ContextType>;
+  InitialVendorSurveyData?: InitialVendorSurveyDataResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
   JSON?: GraphQLScalarType;

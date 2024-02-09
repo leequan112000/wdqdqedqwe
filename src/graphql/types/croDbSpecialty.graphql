@@ -4,3 +4,7 @@ type CroDbSpecialty {
   definition: String
   subspecialties: [CroDbSubspecialty]
 }
+
+type Query {
+  croDbSpecialties: [CroDbSpecialty]
+}

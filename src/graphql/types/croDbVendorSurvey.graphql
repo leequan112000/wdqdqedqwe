@@ -20,9 +20,24 @@ type CroDbVendorSurvey {
   vendor_company: CroDbVendorCompany
 }
 
+type InitialVendorSurveyData {
+  id: String!
+  name: String
+  logo_url: String
+  vendor_type: [String]
+  website: String
+  countries: [String]
+  subspecialty_ids: [String]
+  has_submitted: Boolean!
+}
+
+type Query {
+  initialVendorSurveyData(token: String!): InitialVendorSurveyData
+}
+
 type Mutation {
   createVendorSurvey(
-    vendor_company_id: String!
+    token: String! # Vendor company ID
     company_name: String!
     company_types: [String!]!
     website: String!
