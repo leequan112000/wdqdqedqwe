@@ -41,15 +41,16 @@ const resolvers: Resolvers<Context> = {
       }
       const subspecialtyIds = vendorCompany.vendor_company_subspecialties.map((s) => s.subspecialty_id);
       const vendorType = vendorCompany.vendor_company_types.map((t) => t.company_type);
+      const countries = vendorCompany.vendor_company_locations.map((l) => l.country)
 
       return {
         id: vendorCompany.id,
-        countries: ['MY'],
+        countries: [... new Set(countries)],
         logo_url: vendorCompany.logo_url,
         name: vendorCompany.company_name,
         subspecialty_ids: subspecialtyIds,
         website: vendorCompany.website_url,
-        vendor_type: vendorType,
+        vendor_type: [... new Set(vendorType)],
         has_submitted: false,
       }
     },
