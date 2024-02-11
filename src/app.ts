@@ -120,7 +120,7 @@ export async function startServer() {
 
   app.use(
     graphqlUploadExpress({
-      maxFileSize: 10000000,
+      maxFileSize: 100000000,
       maxFiles: 10,
     }),
   );
