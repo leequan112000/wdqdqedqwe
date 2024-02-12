@@ -14,6 +14,9 @@ export const operationWhitelist = [
   'Public_ViewMeeting_Query',
   'Public_SubmitAttendance_Mutation',
   'Public_AnswerAttendance_Mutation',
+  'Public_FormInitialValue_Query',
+  'Public_CROSurveyPage_Query',
+  'Public_SubmitSurvey_Mutation',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({
