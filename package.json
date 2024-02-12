@@ -6,8 +6,7 @@
   "scripts": {
     "prisma:generate:main": "prisma generate --schema=./prisma-main/schema.prisma",
     "prisma:generate:cro": "prisma generate --schema=./prisma-cro/schema.prisma",
-    "build": "yarn prisma:generate:main && yarn prisma:generate:cro && tsc --project ./ && yarn copy-graphql && yarn sentry:sourcemaps",
-    "build:without-sentry": "yarn prisma:generate:main && yarn prisma:generate:cro && tsc --project ./ && yarn copy-graphql",
+    "build": "yarn prisma:generate:main && yarn prisma:generate:cro && tsc --project ./ && yarn copy-graphql",
     "start:dev": "concurrently \"yarn nodemon src/server.ts\" \"yarn generate --watch\" \"yarn generate:admin --watch\"",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
