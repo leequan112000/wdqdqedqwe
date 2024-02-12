@@ -15,7 +15,7 @@ export const operationWhitelist = [
   'Public_SubmitAttendance_Mutation',
   'Public_AnswerAttendance_Mutation',
   'Public_FormInitialValue_Query',
-  'Public_CROSurveyPage_Query',
+  'Public_VendorSurveyPage_Query',
   'Public_SubmitSurvey_Mutation',
 ];
 
