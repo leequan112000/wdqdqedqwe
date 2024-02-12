@@ -159,10 +159,10 @@ const main = async () => {
       });
     });
 
-    // await importVendorCompanySubspecialties(records);
-    // await importVendorCompanyTypes(records);
+    await importVendorCompanySubspecialties(records);
+    await importVendorCompanyTypes(records);
     await importVendorCompanyCertifications(records);
-    // await importVendorCompanyLocations(records);
+    await importVendorCompanyLocations(records);
     console.log("Operation done.");
   } catch (error) {
     console.log("Operation failed.");
