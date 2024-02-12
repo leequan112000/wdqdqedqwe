@@ -1,4 +1,6 @@
-import * as Sentry from '@sentry/node'
+import * as Sentry from "@sentry/node";
+
+import { prisma, prismaCRODb } from "./prisma";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -7,6 +9,12 @@ Sentry.init({
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
+  integrations: [
+    new Sentry.Integrations.Prisma({ client: prisma }),
+    new Sentry.Integrations.Prisma({ client: prismaCRODb }),
+    new Sentry.Integrations.Apollo(),
+    new Sentry.Integrations.GraphQL(),
+  ],
 });
 
 export default Sentry;
