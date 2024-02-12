@@ -93,18 +93,20 @@ const importVendorCompanyCertifications = async (records: any) => {
       const certifications = record['Certifications'].split(', ');
       if (certifications.length > 0) {
         await Promise.all(certifications.map(async (certification_name: string) => {
-          await prismaCRODb.vendorCompanyCertification.create({
-            data: {
-              certification_name,
-              vendor_company_id,
-            }
-          })
+          if (certification_name) {
+            await prismaCRODb.vendorCompanyCertification.create({
+              data: {
+                certification_name,
+                vendor_company_id,
+              }
+            })
+          }
         }));
       }
     }));
-    console.log("Import vendor company types done.");
+    console.log("Import vendor company certifications done.");
   } catch (error) {
-    console.log("Import vendor company types failed.");
+    console.log("Import vendor company certifications failed.");
     console.log(error);
   }
 };
@@ -157,10 +159,10 @@ const main = async () => {
       });
     });
 
-    await importVendorCompanySubspecialties(records);
-    await importVendorCompanyTypes(records);
+    // await importVendorCompanySubspecialties(records);
+    // await importVendorCompanyTypes(records);
     await importVendorCompanyCertifications(records);
-    await importVendorCompanyLocations(records);
+    // await importVendorCompanyLocations(records);
     console.log("Operation done.");
   } catch (error) {
     console.log("Operation failed.");
