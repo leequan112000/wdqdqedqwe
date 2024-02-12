@@ -55,19 +55,29 @@ const importVendorCompanySubspecialties = async (records: any) => {
 
 const importVendorCompanyTypes = async (records: any) => {
   try {
+    const recordsToCreate: {company_type: string, vendor_company_id: string}[] = [];
     await Promise.all(records.map(async (record: any) => {
       const vendor_company_id = record['ID'];
       const company_types = record['Type'].split(', ');
-      if (company_types.length > 0) {
-        await Promise.all(company_types.map(async (company_type: string) => {
-          await prismaCRODb.vendorCompanyType.create({
-            data: {
-              company_type,
-              vendor_company_id,
-            }
-          })
-        }));
-      }
+      await Promise.all(company_types.map(async (company_type: string) => {
+        const existingRecord = await prismaCRODb.vendorCompanyType.findFirst({
+          where: {
+            vendor_company_id,
+            company_type,
+          }
+        });
+
+        if (!existingRecord && !recordsToCreate.some(record => record.company_type === company_type && record.vendor_company_id === vendor_company_id)) {
+          recordsToCreate.push({
+            company_type,
+            vendor_company_id,
+          });
+        }
+      }));
+
+      await prismaCRODb.vendorCompanyType.createMany({
+        data: recordsToCreate,
+      });
     }));
     console.log("Import vendor company types done.");
   } catch (error) {
