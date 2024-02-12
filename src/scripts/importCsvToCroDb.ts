@@ -101,16 +101,30 @@ const importVendorCompanyCertifications = async (records: any) => {
 
 const importVendorCompanyLocations = async (records: any) => {
   try {
+    const recordsToCreate: {country: string, vendor_company_id: string}[] = [];
     await Promise.all(records.map(async (record: any) => {
       const vendor_company_id = record['ID'];
-      const country = record['Location'];
-      await prismaCRODb.vendorCompanyLocation.create({
-        data: {
-          country,
-          vendor_company_id,
+      const countries = record['Location'].split(', ');
+      await Promise.all(countries.map(async (country: string) => {
+        const existingRecord = await prismaCRODb.vendorCompanyLocation.findFirst({
+          where: {
+            vendor_company_id,
+            country,
+          }
+        });
+
+        if (!existingRecord && !recordsToCreate.some(record => record.country === country && record.vendor_company_id === vendor_company_id)) {
+          recordsToCreate.push({
+            country,
+            vendor_company_id,
+          });
         }
-      })
+      }));
     }));
+
+    await prismaCRODb.vendorCompanyLocation.createMany({
+      data: recordsToCreate,
+    });
     console.log("Import vendor company locations done.");
   } catch (error) {
     console.log("Import vendor company locations failed.");
