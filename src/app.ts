@@ -103,6 +103,7 @@ export const adminApolloServer = new ApolloServer<Context>({
 
 export async function startServer() {
   app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
   app.use(routes);
   app.use(express.json());
   app.use(cors(corsConfig));
