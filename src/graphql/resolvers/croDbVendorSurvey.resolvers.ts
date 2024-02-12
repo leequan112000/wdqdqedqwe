@@ -1,0 +1,114 @@
+import { Context } from "../../types/context";
+import { PublicError } from "../errors/PublicError";
+import { Resolvers } from "../generated";
+import invariant from "../../helper/invariant";
+import vendorSurveyService from "../../services/vendorSurvey/vendorSurvey.service";
+
+const resolvers: Resolvers<Context> = {
+  CroDbVendorSurvey: {
+    vendor_company: async (parent, _, context) => {
+      invariant(parent.vendor_company_id, "Missing vendor company id.");
+      return await context.prismaCRODb.vendorCompany.findFirst({
+        where: {
+          id: parent.vendor_company_id,
+        },
+      });
+    },
+  },
+  Query: {
+    initialVendorSurveyData: async (_, args, context) => {
+      const { token: vendor_company_id } = args;
+
+      const vendorCompany = await context.prismaCRODb.vendorCompany.findFirst({
+        where: {
+          id: vendor_company_id,
+        },
+        include: {
+          vendor_company_locations: true,
+          vendor_company_subspecialties: true,
+          vendor_company_types: true,
+          vendor_survey: true,
+        }
+      });
+
+      invariant(vendorCompany, new PublicError("Invalid token!"));
+
+      if (vendorCompany.vendor_survey) {
+        return {
+          id: vendorCompany.id,
+          has_submitted: true,
+        }
+      }
+      const subspecialtyIds = vendorCompany.vendor_company_subspecialties.map((s) => s.subspecialty_id);
+      const vendorType = vendorCompany.vendor_company_types.map((t) => t.company_type);
+      const countries = vendorCompany.vendor_company_locations.map((l) => l.country)
+
+      return {
+        id: vendorCompany.id,
+        countries: [... new Set(countries)],
+        logo_url: vendorCompany.logo_url,
+        name: vendorCompany.company_name,
+        subspecialty_ids: subspecialtyIds,
+        website: vendorCompany.website_url,
+        vendor_type: [... new Set(vendorType)],
+        has_submitted: false,
+      }
+    },
+  },
+  Mutation: {
+    createVendorSurvey: async (_, args, context) => {
+      const {
+        token: vendor_company_id,
+        company_name,
+        company_types,
+        website,
+        countries,
+        subspecialty_ids,
+        custom_specialties,
+        certifications,
+        products,
+        note,
+        logo,
+        attachment,
+      } = args;
+      const vendorCompany = await context.prismaCRODb.vendorCompany.findFirst({
+        where: { id: vendor_company_id },
+      });
+
+      invariant(vendorCompany, new PublicError("Vendor company not found."));
+
+      const existingVendorSurvey =
+        await context.prismaCRODb.vendorSurvey.findFirst({
+          where: {
+            vendor_company_id,
+          },
+        });
+
+      invariant(
+        !existingVendorSurvey,
+        new PublicError("Profile update has been submitted.")
+      );
+
+      await vendorSurveyService.createVendorSurvey(
+        {
+          vendor_company_id,
+          company_name,
+          company_types,
+          website,
+          countries,
+          subspecialty_ids,
+          custom_specialties: custom_specialties as string[],
+          products: products as string[],
+          certifications: certifications as string[],
+          logo: await logo,
+          ...(note !== null ? { note } : {}),
+          ...(attachment !== null ? { attachment: await attachment } : {}),
+        },
+        context
+      );
+      return vendorCompany;
+    },
+  },
+};
+
+export default resolvers;

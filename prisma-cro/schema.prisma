@@ -31,6 +31,7 @@ model VendorCompany {
   vendor_company_locations      VendorCompanyLocation[]
   vendor_company_types          VendorCompanyType[]
   vendor_company_certifications VendorCompanyCertification[]
+  vendor_survey                 VendorSurvey?
 
   @@map("vendor_companies")
 }
@@ -257,4 +258,29 @@ model WebsiteInfo {
   vendor_company VendorCompany @relation(fields: [company_id], references: [id])
 
   @@map("website_info")
+}
+
+model VendorSurvey {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendor_company_id       String   @unique @db.Uuid
+  company_name            String
+  company_types           String[]
+  logo_url                String
+  website                 String
+  countries               String[]
+  subspecialty_ids        String[]
+  custom_specialties      String[]
+  certifications          String[]
+  products                String[]
+  note                    String?
+  attachment_key          String?
+  attachment_file_name    String?
+  attachment_content_type String?
+  status                  String
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  vendor_company VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  @@map("vendor_surveys")
 }
