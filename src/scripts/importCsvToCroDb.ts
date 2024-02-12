@@ -74,11 +74,11 @@ const importVendorCompanyTypes = async (records: any) => {
           });
         }
       }));
-
-      await prismaCRODb.vendorCompanyType.createMany({
-        data: recordsToCreate,
-      });
     }));
+
+    await prismaCRODb.vendorCompanyType.createMany({
+      data: recordsToCreate,
+    });
     console.log("Import vendor company types done.");
   } catch (error) {
     console.log("Import vendor company types failed.");
