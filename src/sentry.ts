@@ -12,7 +12,6 @@ Sentry.init({
   integrations: [
     new Sentry.Integrations.Prisma({ client: prisma }),
     new Sentry.Integrations.Prisma({ client: prismaCRODb }),
-    new Sentry.Integrations.Apollo(),
     new Sentry.Integrations.GraphQL(),
   ],
 });
