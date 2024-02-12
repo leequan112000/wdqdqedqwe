@@ -67,7 +67,7 @@ const importVendorCompanyTypes = async (records: any) => {
           }
         });
 
-        if (!existingRecord && !recordsToCreate.some(record => record.company_type === company_type && record.vendor_company_id === vendor_company_id)) {
+        if (company_type && !existingRecord && !recordsToCreate.some(record => record.company_type === company_type && record.vendor_company_id === vendor_company_id)) {
           recordsToCreate.push({
             company_type,
             vendor_company_id,
