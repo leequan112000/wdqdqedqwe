@@ -30,6 +30,6 @@ jobs:
     - name: 💡 Install dependencies
       run: yarn --frozen-lockfile
     - name: 👷 Build
-      run: yarn build:without-sentry
+      run: yarn build
     - name: 🤖 Run tests
       run: yarn test
