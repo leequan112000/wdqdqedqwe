@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
-import prisma from '../../prisma';
+import { prisma } from '../../prisma';
 import { pubsub } from "../../helper/pubsub";
 
 const verifySignature = (req: Request, signature: string): boolean => {
@@ -45,7 +45,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             data: data.map((specialtyString: string) => {
               return {
                 name: specialtyString,
-                sourcing_session_id:  sourcing_session.id,
+                sourcing_session_id: sourcing_session.id,
               }
             })
           });
