@@ -14,7 +14,7 @@ import { useServer } from 'graphql-ws/lib/use/ws'
 import corsConfig from './cors';
 import { Context } from './types/context'
 import { authMiddleware } from './middlewares/auth';
-import prisma from './prisma';
+import { prisma, prismaCRODb } from './prisma';
 import routes from './routes';
 import schema from './graphql/index';
 import adminSchema from './graphql-admin/index';
@@ -53,6 +53,7 @@ const serverCleanup = useServer({
     return {
       req,
       prisma,
+      prismaCRODb,
       pubsub,
     }
   },
@@ -102,6 +103,7 @@ export const adminApolloServer = new ApolloServer<Context>({
 
 export async function startServer() {
   app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
   app.use(routes);
   app.use(express.json());
   app.use(cors(corsConfig));
@@ -119,7 +121,7 @@ export async function startServer() {
 
   app.use(
     graphqlUploadExpress({
-      maxFileSize: 10000000,
+      maxFileSize: 100000000,
       maxFiles: 10,
     }),
   );
@@ -141,7 +143,7 @@ export async function startServer() {
           // if user_id exist
           || req.is_admin_authorized
         ) {
-          return ({ prisma, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub });
         }
 
         throw new GraphQLError('Admin is not authenticated', {
@@ -190,7 +192,7 @@ export async function startServer() {
           // bypass authentication for whitelisted operation, eg. signIn and signUp
           || isWhitelisted
         ) {
-          return ({ prisma, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub });
         }
 
         throw new GraphQLError('User is not authenticated', {

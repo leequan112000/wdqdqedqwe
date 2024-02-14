@@ -1,0 +1,7 @@
+type CroDbSubspecialty {
+  id: String
+  name: String
+  definition: String
+  specialty_id: String
+  specialty: CroDbSpecialty
+}

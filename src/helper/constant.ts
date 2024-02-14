@@ -290,6 +290,16 @@ export enum BlanketPurchaseOrderTransactionType {
   CREDIT = 'credit',
 }
 
+export enum VendorSurveyStatus {
+  PENDING = 'pending',
+  REVIEWED = 'reviewed',
+}
+
+export enum VendorSurveyFilePath {
+  LOGO = 'cro_db/vendor_logo',
+  ATTACHMENT = 'cro_db/vendor_attachment',
+}
+
 export enum InvitationAnswer {
   YES = 'yes',
   NO = 'no',

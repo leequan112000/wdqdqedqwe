@@ -4,17 +4,22 @@
   "description": "Cromatic Backend",
   "main": "server.ts",
   "scripts": {
-    "build": "yarn prisma generate && tsc --project ./ && yarn copy-graphql",
+    "prisma:generate:main": "prisma generate --schema=./prisma-main/schema.prisma",
+    "prisma:generate:cro": "prisma generate --schema=./prisma-cro/schema.prisma",
+    "build": "yarn prisma:generate:main && yarn prisma:generate:cro && tsc --project ./ && yarn copy-graphql",
     "start:dev": "concurrently \"yarn nodemon src/server.ts\" \"yarn generate --watch\" \"yarn generate:admin --watch\"",
     "start:prod": "node dist/server.js",
     "generate": "graphql-codegen",
     "generate:admin": "graphql-codegen --config ./codegen-admin.ts",
     "copy-graphql": "cp -r ./src/graphql/types ./dist/graphql/types && cp -r ./src/graphql-admin/types ./dist/graphql-admin/types",
-    "db:migrate": "yarn prisma migrate dev --create-only && yarn prisma generate",
-    "db:push": "yarn prisma db push",
+    "db:migrate:main": "prisma migrate dev --create-only --schema=./prisma-main/schema.prisma",
+    "db:migrate:cro": "prisma migrate dev --create-only --schema=./prisma-cro/schema.prisma",
+    "db:push:main": "prisma db push --schema=./prisma-main/schema.prisma",
+    "db:push:cro": "prisma db push --schema=./prisma-cro/schema.prisma",
     "prepare": "husky install",
     "test": "vitest -c ./vitest.config.unit.ts",
-    "stripe:listen:local": "stripe listen --forward-to localhost:9000/webhook/stripe --skip-verify --events customer.subscription.updated,customer.subscription.deleted,checkout.session.completed"
+    "stripe:listen:local": "stripe listen --forward-to localhost:9000/webhook/stripe --skip-verify --events customer.subscription.updated,customer.subscription.deleted,checkout.session.completed",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cromatic --project octavian ./dist && sentry-cli sourcemaps upload --org cromatic --project octavian ./dist"
   },
   "engines": {
     "node": "^18"
@@ -73,6 +78,7 @@
     "@prisma/client": "^5.1.1",
     "@sendgrid/client": "^7.7.0",
     "@sendgrid/mail": "^7.7.0",
+    "@sentry/cli": "^2.28.0",
     "@sentry/node": "^7.99.0",
     "@supercharge/promise-pool": "^3.0.0",
     "@tryghost/content-api": "^1.11.19",
