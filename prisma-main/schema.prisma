@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -123,6 +123,7 @@ model Biotech {
   biotech_invoices        BiotechInvoice[]
   purchase_orders         PurchaseOrder[]
   blanket_purchase_orders BlanketPurchaseOrder[]
+  sourcing_sessions       SourcingSession[]
 
   @@map("biotechs")
 }
@@ -965,6 +966,8 @@ model SourcingSession {
   preparation_details     String
   vendor_requirement      String
   task_id                 String
+  biotech_id              String                 @db.Uuid
+  biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
   sourcing_specialties    SourcingSpecialty[]
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
