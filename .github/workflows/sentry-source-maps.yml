@@ -47,9 +47,9 @@ jobs:
       - name: 🤖 Upload Source Maps
         run: |
           if [ ${{ github.ref }} == "refs/heads/master" ]; then
-            yarn sentry-cli sourcemaps upload --release production --org cromatic --project octavian ./dist"
+            yarn sentry-cli sourcemaps upload --release production --org cromatic --project octavian ./dist
           elif [ ${{ github.ref }} == "refs/heads/staging" ]; then
-            yarn sentry-cli sourcemaps upload --release staging --org cromatic --project octavian ./dist"
+            yarn sentry-cli sourcemaps upload --release staging --org cromatic --project octavian ./dist
           else
-            yarn sentry-cli sourcemaps upload --release development --org cromatic --project octavian ./dist"
+            yarn sentry-cli sourcemaps upload --release development --org cromatic --project octavian ./dist
           fi
