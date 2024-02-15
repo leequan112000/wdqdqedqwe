@@ -4,9 +4,18 @@ import { Context } from "../../types/context";
 import sourcererService from '../../services/sourcerer/sourcerer.service';
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   SourcingSession: {
+    biotech: async (parent, _, context) => {
+      invariant(parent.biotech_id, 'Missing biotech id.');
+      return await context.prisma.biotech.findFirst({
+        where: {
+          id: parent.biotech_id
+        },
+      });
+    },
     sourcing_specialties: async (parent, _, context) => {
       invariant(parent.id, 'Missing session id.');
       return await context.prisma.sourcingSpecialty.findMany({
@@ -41,6 +50,16 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    sourcing_subspecialties: async (parent, _, context) => {
+      invariant(parent.sourcing_session_id, 'Missing session id.');
+      invariant(parent.id, 'Missing specialty id.');
+      return await context.prisma.sourcingSubspecialty.findMany({
+        where: {
+          sourcing_session_id: parent.sourcing_session_id,
+          sourcing_specialty_id: parent.id,
+        },
+      });
+    },
   },
   SourcingSubspecialty: {
     sourcing_session: async (parent, _, context) => {
@@ -70,6 +89,29 @@ const resolvers: Resolvers<Context> = {
       });
     },
   },
+  Query: {
+    sourcingSession: async (_, args, context) => {
+      const { id } = args;
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      const sourcingSession = await context.prisma.sourcingSession.findFirst({
+        where: {
+          id,
+          biotech_id: customer.biotech_id,
+        },
+      });
+
+      invariant(sourcingSession, new PublicError('Sourcing session not found.'));
+
+      return sourcingSession;
+    },
+  },
   Mutation: {
     extractPdfRfp: async (_, args, __) => {
       const { file } = args;
@@ -78,9 +120,18 @@ const resolvers: Resolvers<Context> = {
       return await sourcererService.extractPdfToRfp(data);
     },
     sourceRfpSpecialties: async (_, args, context) => {
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
       return await sourcererService.sourceRfpSpecialties({
         ...args,
         num_specialties: 5,
+        biotech_id: customer.biotech_id,
       }, context);
     },
   },

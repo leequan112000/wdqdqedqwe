@@ -5,6 +5,8 @@ type SourcingSession {
   preparation_details: String
   vendor_requirement: String
   task_id: String
+  biotech_id: String
+  biotech: Biotech
   sourcing_specialties: [SourcingSpecialty]
   sourcing_subspecialties: [SourcingSubspecialty]
   sourced_cros: [SourcedCro]
@@ -15,6 +17,7 @@ type SourcingSpecialty {
   name: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
+  sourcing_subspecialties: [SourcingSubspecialty]
 }
 
 type SourcingSubspecialty {
@@ -52,6 +55,10 @@ type SourceRfpSpecialtyTask {
 type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
   data: [String]
+}
+
+type Query {
+  sourcingSession(id: String!): SourcingSession
 }
 
 type Mutation {

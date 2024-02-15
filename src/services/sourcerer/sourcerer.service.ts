@@ -57,6 +57,7 @@ export type SourceRfpSpecialtiesArgs = {
   project_desc: string;
   preparation_details: string;
   vendor_requirement: string;
+  biotech_id: string;
   num_specialties: number;
 }
 
@@ -78,6 +79,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
         project_desc: args.project_desc,
         preparation_details: args.preparation_details,
         vendor_requirement: args.vendor_requirement,
+        biotech_id: args.biotech_id,
       }
     });
 

@@ -1532,6 +1532,7 @@ export type Query = {
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
+  sourcingSession?: Maybe<SourcingSession>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -1701,6 +1702,11 @@ export type QuerySearchLabSpecializationsArgs = {
 };
 
 
+export type QuerySourcingSessionArgs = {
+  id: Scalars['String'];
+};
+
+
 export type QueryUpcomingMeetingEventsArgs = {
   project_connection_id?: InputMaybe<Scalars['String']>;
 };
@@ -1819,6 +1825,8 @@ export type SourcedCro = {
 
 export type SourcingSession = {
   __typename?: 'SourcingSession';
+  biotech?: Maybe<Biotech>;
+  biotech_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   preparation_details?: Maybe<Scalars['String']>;
   project_desc?: Maybe<Scalars['String']>;
@@ -1836,6 +1844,7 @@ export type SourcingSpecialty = {
   name?: Maybe<Scalars['String']>;
   sourcing_session?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
+  sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
 };
 
 export type SourcingSubspecialty = {
@@ -3207,6 +3216,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
+  sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
@@ -3308,6 +3318,8 @@ export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3325,6 +3337,7 @@ export type SourcingSpecialtyResolvers<ContextType = any, ParentType extends Res
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
