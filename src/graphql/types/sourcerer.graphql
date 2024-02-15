@@ -47,13 +47,14 @@ type ExtractedRfp {
   vendor_requirement: String
 }
 
-type SourceRfpSpecialtyTask {
+type SourcingTask {
   id: String
   sourcing_session_id: String
 }
 
 type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
+  sourcing_session_id: String
   data: [String]
 }
 
@@ -62,15 +63,13 @@ type Query {
 }
 
 type Mutation {
-  extractPdfRfp(
-    file: Upload!
-  ): ExtractedRfp
+  extractPdfRfp(file: Upload!): ExtractedRfp
   sourceRfpSpecialties(
     project_title: String!
     project_desc: String!
     preparation_details: String!
     vendor_requirement: String!
-  ): SourceRfpSpecialtyTask
+  ): SourcingTask
 }
 
 type Subscription {

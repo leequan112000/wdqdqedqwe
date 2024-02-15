@@ -50,7 +50,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           });
         }
-        pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, data } });
+        pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data } });
       }
       default:
         break;
