@@ -134,6 +134,19 @@ const resolvers: Resolvers<Context> = {
         biotech_id: customer.biotech_id,
       }, context);
     },
+    sourceCros: async (_, args, context) => {
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      return await sourcererService.sourceCros({
+        ...args,
+      }, context);
+    },
   },
   Subscription: {
     sourceRfpSpecialties: {

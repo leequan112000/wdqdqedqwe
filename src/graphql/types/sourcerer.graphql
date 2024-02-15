@@ -52,6 +52,11 @@ type SourcingTask {
   sourcing_session_id: String
 }
 
+type SubspecialtyNameWithWeight {
+  name: String!
+  weight: String!
+}
+
 type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
   sourcing_session_id: String
@@ -69,6 +74,10 @@ type Mutation {
     project_desc: String!
     preparation_details: String!
     vendor_requirement: String!
+  ): SourcingTask
+  sourceCros(
+    subspecialty_names_with_weight: [SubspecialtyNameWithWeight!]!
+    sourcing_session_id: String!
   ): SourcingTask
 }
 

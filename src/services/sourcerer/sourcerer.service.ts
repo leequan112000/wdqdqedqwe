@@ -92,9 +92,47 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
   }
 }
 
+export type SourceCrosArgs = {
+  subspecialty_names_with_weight: {
+    name: string;
+    weight: string;
+  }[];
+  sourcing_session_id: string;
+}
+
+export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
+  try {
+    const { subspecialty_names_with_weight, sourcing_session_id } = args;
+    const response = await axios({
+      method: 'post',
+      url: `${app_env.AI_SERVER_URL}/source-cro/`,
+      data: {
+        weighted_specs: subspecialty_names_with_weight.map(s => `${s.name}, ${s.weight}`),
+      },
+    });
+
+    await ctx.prisma.sourcingSession.update({
+      where: {
+        id: sourcing_session_id,
+      },
+      data: {
+        task_id: response.data.id,
+      }
+    });
+
+    return {
+      sourcing_session_id,
+      ...response.data
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
 const sourcererService = {
   extractPdfToRfp,
   sourceRfpSpecialties,
+  sourceCros,
 };
 
 export default sourcererService;
