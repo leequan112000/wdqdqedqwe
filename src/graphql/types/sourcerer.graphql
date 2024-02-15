@@ -52,12 +52,18 @@ type SourcingTask {
   sourcing_session_id: String
 }
 
-type SubspecialtyNameWithWeight {
+input SubspecialtyNameWithWeight {
   name: String!
   weight: String!
 }
 
 type SourceRfpSpecialtySubscriptionPayload {
+  task_id: String
+  sourcing_session_id: String
+  data: [String]
+}
+
+type SourceCroSubscriptionPayload {
   task_id: String
   sourcing_session_id: String
   data: [String]
@@ -83,4 +89,5 @@ type Mutation {
 
 type Subscription {
   sourceRfpSpecialties(task_id: String!): SourceRfpSpecialtySubscriptionPayload
+  sourceCros(task_id: String!): SourceCroSubscriptionPayload
 }

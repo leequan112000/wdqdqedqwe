@@ -1508,6 +1508,7 @@ export type Query = {
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
+  croDbSpecialty?: Maybe<CroDbSpecialty>;
   croDbVendorCompany?: Maybe<CroDbVendorCompany>;
   customer?: Maybe<Customer>;
   featuredNews?: Maybe<Array<Maybe<News>>>;
@@ -1584,6 +1585,11 @@ export type QueryBiotechInvoicesArgs = {
 
 export type QueryCollaboratorsArgs = {
   active_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryCroDbSpecialtyArgs = {
+  name: Scalars['String'];
 };
 
 
@@ -1807,6 +1813,13 @@ export type SaveAvailabilityRulesInput = {
   timezone: Scalars['String'];
 };
 
+export type SourceCroSubscriptionPayload = {
+  __typename?: 'SourceCroSubscriptionPayload';
+  data?: Maybe<Array<Maybe<Scalars['String']>>>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+  task_id?: Maybe<Scalars['String']>;
+};
+
 export type SourceRfpSpecialtySubscriptionPayload = {
   __typename?: 'SourceRfpSpecialtySubscriptionPayload';
   data?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -1931,6 +1944,7 @@ export type Subscription = {
   cdaUrl?: Maybe<Scalars['String']>;
   newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
+  sourceCros?: Maybe<SourceCroSubscriptionPayload>;
   sourceRfpSpecialties?: Maybe<SourceRfpSpecialtySubscriptionPayload>;
 };
 
@@ -1940,12 +1954,16 @@ export type SubscriptionNewMessageArgs = {
 };
 
 
+export type SubscriptionSourceCrosArgs = {
+  task_id: Scalars['String'];
+};
+
+
 export type SubscriptionSourceRfpSpecialtiesArgs = {
   task_id: Scalars['String'];
 };
 
 export type SubspecialtyNameWithWeight = {
-  __typename?: 'SubspecialtyNameWithWeight';
   name: Scalars['String'];
   weight: Scalars['String'];
 };
@@ -2219,6 +2237,7 @@ export type ResolversTypes = ResolversObject<{
   RuleInterval: ResolverTypeWrapper<RuleInterval>;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
+  SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourcedCro: ResolverTypeWrapper<SourcedCro>;
   SourcingSession: ResolverTypeWrapper<SourcingSession>;
@@ -2234,7 +2253,7 @@ export type ResolversTypes = ResolversObject<{
   StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
   SubmitAttendanceResp: ResolverTypeWrapper<SubmitAttendanceResp>;
   Subscription: ResolverTypeWrapper<{}>;
-  SubspecialtyNameWithWeight: ResolverTypeWrapper<SubspecialtyNameWithWeight>;
+  SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   UploadResult: ResolverTypeWrapper<UploadResult>;
@@ -2332,6 +2351,7 @@ export type ResolversParentTypes = ResolversObject<{
   RuleInterval: RuleInterval;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
+  SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourcedCro: SourcedCro;
   SourcingSession: SourcingSession;
@@ -3202,6 +3222,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
   croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
+  croDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<QueryCroDbSpecialtyArgs, 'name'>>;
   croDbVendorCompany?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType, RequireFields<QueryCroDbVendorCompanyArgs, 'id'>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
@@ -3308,6 +3329,13 @@ export type ReviewQuestionSetResolvers<ContextType = any, ParentType extends Res
 export type RuleIntervalResolvers<ContextType = any, ParentType extends ResolversParentTypes['RuleInterval'] = ResolversParentTypes['RuleInterval']> = ResolversObject<{
   from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3434,13 +3462,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
+  sourceCros?: SubscriptionResolver<Maybe<ResolversTypes['SourceCroSubscriptionPayload']>, "sourceCros", ParentType, ContextType, RequireFields<SubscriptionSourceCrosArgs, 'task_id'>>;
   sourceRfpSpecialties?: SubscriptionResolver<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionPayload']>, "sourceRfpSpecialties", ParentType, ContextType, RequireFields<SubscriptionSourceRfpSpecialtiesArgs, 'task_id'>>;
-}>;
-
-export type SubspecialtyNameWithWeightResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubspecialtyNameWithWeight'] = ResolversParentTypes['SubspecialtyNameWithWeight']> = ResolversObject<{
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  weight?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -3625,6 +3648,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   RuleInterval?: RuleIntervalResolvers<ContextType>;
+  SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourcedCro?: SourcedCroResolvers<ContextType>;
   SourcingSession?: SourcingSessionResolvers<ContextType>;
@@ -3639,7 +3663,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StripeExternalAccountData?: StripeExternalAccountDataResolvers<ContextType>;
   SubmitAttendanceResp?: SubmitAttendanceRespResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
-  SubspecialtyNameWithWeight?: SubspecialtyNameWithWeightResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   UploadResult?: UploadResultResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

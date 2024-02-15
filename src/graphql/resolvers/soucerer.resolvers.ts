@@ -158,6 +158,15 @@ const resolvers: Resolvers<Context> = {
         },
       ),
     },
+    sourceCros: {
+      // @ts-ignore
+      subscribe: withFilter(
+        () => pubsub.asyncIterator<any>(['SOURCE_CROS']),
+        (payload, variables) => {
+          return (payload.sourceCros.task_id === variables.task_id);
+        },
+      ),
+    },
   }
 }
 

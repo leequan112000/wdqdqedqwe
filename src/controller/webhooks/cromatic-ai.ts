@@ -52,6 +52,27 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         }
         pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data } });
       }
+      case "source_cros": {
+        const sourcing_session = await prisma.sourcingSession.findFirst({
+          where: {
+            task_id,
+          },
+        });
+        if (sourcing_session) {
+          await prisma.sourcedCro.createMany({
+            data: data.map((cro: { cro_name: string, cro_id: string, score: number }) => {
+              return {
+                name: cro.cro_name,
+                cro_db_id: cro.cro_id,
+                score: cro.score,
+                is_shortlisted: false,
+                sourcing_session_id: sourcing_session.id,
+              }
+            })
+          });
+        }
+        pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session?.id, data } });
+      }
       default:
         break;
     }
