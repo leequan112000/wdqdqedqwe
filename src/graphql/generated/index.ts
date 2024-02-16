@@ -279,7 +279,6 @@ export type CroDbVendorCompany = {
   linkedin_url?: Maybe<Scalars['String']>;
   logo_url?: Maybe<Scalars['String']>;
   product?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
   vendor_company_certifications?: Maybe<Array<Maybe<CroDbVendorCompanyCertification>>>;
   vendor_company_locations?: Maybe<Array<Maybe<CroDbVendorCompanyLocation>>>;
   vendor_company_subspecialties?: Maybe<Array<Maybe<CroDbVendorCompanySubspecialty>>>;
@@ -2620,7 +2619,6 @@ export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends Re
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_company_certifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyCertification']>>>, ParentType, ContextType>;
   vendor_company_locations?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyLocation']>>>, ParentType, ContextType>;
   vendor_company_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanySubspecialty']>>>, ParentType, ContextType>;
