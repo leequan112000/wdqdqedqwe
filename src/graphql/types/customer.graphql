@@ -28,6 +28,7 @@ type Mutation {
     has_setup_profile: Boolean
     job_title: String
     team: String
+    timezone: String
   ): Customer!
   inviteCustomer(
     first_name: String!

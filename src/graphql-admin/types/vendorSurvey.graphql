@@ -1,0 +1,7 @@
+type Query {
+  vendorSurveyAttachmentSignedUrl(key: String!): String
+}
+
+type Mutation {
+  approveVendorSurvey(id: String!): Boolean
+}

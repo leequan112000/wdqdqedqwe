@@ -2,7 +2,7 @@ import { User, Prisma } from "@prisma/client";
 import PromisePool from '@supercharge/promise-pool';
 import { addRoleForUser } from "../helper/casbin";
 import { CasbinRole, CompanyCollaboratorRoleType } from "../helper/constant";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 
 const main = async () => {
   try {

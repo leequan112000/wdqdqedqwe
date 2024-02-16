@@ -1,5 +1,5 @@
 import moment from 'moment';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { CompanyCollaboratorRoleType, InvoicePaymentStatus, MilestoneStatus } from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';

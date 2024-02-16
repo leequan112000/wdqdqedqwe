@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 import { PromisePool } from '@supercharge/promise-pool';
-import prisma from '../prisma';
+import { prisma } from '../prisma';
 import { addRoleForUser } from '../helper/casbin';
 import { CasbinRole } from '../helper/constant';
 

@@ -1,5 +1,5 @@
 import cron from 'cron';
-import prisma from "../prisma";
+import { prisma } from '../prisma';
 import { createSendAdminZeroAcceptedProjectNoticeJob } from '../queues/email.queues';
 
 const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async () => {
@@ -13,7 +13,7 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
       },
       project_connections: {
         none: {
-          vendor_status: "accepted",
+          vendor_status: 'accepted',
         },
       },
     },
@@ -33,14 +33,14 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
     where: {
       project_connections: {
         some: {
-          vendor_status: "accepted",
+          vendor_status: 'accepted',
         },
       },
     },
     include: {
       project_connections: {
         where: {
-          vendor_status: "accepted",
+          vendor_status: 'accepted',
         },
       },
       biotech: {

@@ -1,3 +1,4 @@
+import type { Attachment } from "@sendgrid/helpers/classes";
 import { createQueue } from "../helper/queue";
 import { createMailData, sendMail } from "../mailer/config";
 
@@ -5,6 +6,7 @@ type SendMailJob = {
   emailData: { [s: string]: string };
   templateId: string;
   receiverEmail: string;
+  attachments?: Attachment[];
 };
 
 const emailQueue = createQueue<SendMailJob>("email");

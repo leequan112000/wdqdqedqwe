@@ -133,6 +133,7 @@ export type Mutation = {
   addReviewQuestion?: Maybe<ReviewQuestion>;
   addReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   addReviewQuestionSet?: Maybe<ReviewQuestionSet>;
+  approveVendorSurvey?: Maybe<Scalars['Boolean']>;
   createAdmin?: Maybe<Admin>;
   createCertificationTag?: Maybe<CertificationTag>;
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
@@ -207,6 +208,11 @@ export type MutationAddReviewQuestionOptionArgs = {
 
 export type MutationAddReviewQuestionSetArgs = {
   name: Scalars['String'];
+};
+
+
+export type MutationApproveVendorSurveyArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -582,12 +588,18 @@ export type Query = {
   _dummy?: Maybe<Scalars['String']>;
   biotechInvoice?: Maybe<BiotechInvoice>;
   paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
+  vendorSurveyAttachmentSignedUrl?: Maybe<Scalars['String']>;
   verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
 };
 
 
 export type QueryBiotechInvoiceArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryVendorSurveyAttachmentSignedUrlArgs = {
+  key: Scalars['String'];
 };
 
 export type ReviewQuestion = {
@@ -905,6 +917,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionArgs, 'ordinal' | 'question_text' | 'question_type' | 'review_question_set_id'>>;
   addReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionOptionArgs, 'option_text' | 'review_question_id'>>;
   addReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionSetArgs, 'name'>>;
+  approveVendorSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationApproveVendorSurveyArgs, 'id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
@@ -991,6 +1004,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
   paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
+  vendorSurveyAttachmentSignedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorSurveyAttachmentSignedUrlArgs, 'key'>>;
   verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
 

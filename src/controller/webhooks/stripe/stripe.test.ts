@@ -13,7 +13,7 @@ import {
   customerSubscriptionDeleted,
 } from './stripe-mock-data/stripeMockData';
 import { processStripeEvent } from './stripe';
-import prisma from '../../../__mocks__/prisma';
+import { prisma } from '../../../__mocks__/prisma';
 import stripe from '../../../helper/__mocks__/stripe';
 import {
   createInvoicePaymentNoticeEmailJob,
@@ -650,4 +650,3 @@ describe('process stripe event', () => {
     });
   });
 });
-
