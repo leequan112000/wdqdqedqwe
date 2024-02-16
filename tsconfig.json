@@ -60,7 +60,7 @@
     // Set `sourceRoot` to  "/" to strip the build path prefix
     // from generated source code references.
     // This improves issue grouping in Sentry.
-    "sourceRoot": "/",                                 /* Specify the root path for debuggers to find the reference source code. */
+    // "sourceRoot": "/",                                 /* Specify the root path for debuggers to find the reference source code. */
     // "mapRoot": "",                                    /* Specify the location where debugger should locate map files instead of generated locations. */
     // "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
     "inlineSources": true,                            /* Include source code in the sourcemaps inside the emitted JavaScript. */
