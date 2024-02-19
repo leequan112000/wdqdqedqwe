@@ -6,10 +6,10 @@ import { pubsub } from "../../helper/pubsub";
 const verifySignature = (req: Request, signature: string): boolean => {
   // Sort keys alphabetically before stringifying the payload
   const jsonBody = JSON.parse(req.body);
-  const sortedBody = JSON.stringify(jsonBody, Object.keys(jsonBody).sort());
+  const jsonBodyStr = JSON.stringify(jsonBody);
   const computedSignature = crypto
     .createHmac('sha256', process.env.CROMATIC_AI_WEBHOOK_SECRET!)
-    .update(sortedBody)
+    .update(jsonBodyStr)
     .digest('hex');
 
   // Compare the computed signature with the expected signature
