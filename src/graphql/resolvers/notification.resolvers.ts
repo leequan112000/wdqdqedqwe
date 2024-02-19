@@ -24,29 +24,31 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
-    url: async (parent, _, context) => {
-      const project_connection = await context.prisma.projectConnection.findFirst({
-        where: {
-          id: parent.params.project_connection_id
-        }
-      });
+    url: async (parentNotification, _, context) => {
+      const project_connection = parentNotification.params.project_connection_id
+        ? await context.prisma.projectConnection.findUnique({
+            where: {
+              id: parentNotification.params.project_connection_id,
+            },
+          })
+        : undefined;
 
-      switch (parent.notification_type) {
+      switch (parentNotification.notification_type) {
         case NotificationType.ACCEPT_REQUEST_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}`;
         case NotificationType.ADMIN_INVITE_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}/project-request`;
         case NotificationType.COLLABORATED_NOTIFICATION:
           if (project_connection?.vendor_status !== 'accepted') {
-            return `/app/project-connection/${parent.params.project_connection_id}/project-request`;
+            return `/app/project-connection/${parentNotification.params.project_connection_id}/project-request`;
           }
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}`;
         case NotificationType.FILE_UPLOAD_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}`;
         case NotificationType.FINAL_CONTRACT_UPLOAD_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}`;
         case NotificationType.MESSAGE_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}`;
         case NotificationType.QUOTE_NOTIFICATION:
         case NotificationType.MILESTONE_NOTIFICATION:
         case NotificationType.MILESTONE_PAYMENT_FAILED_NOTIFICATION:
@@ -55,7 +57,7 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_ACCEPTED_NOTIFICATION:
         case NotificationType.QUOTE_DECLINED_NOTIFICATION:
         case NotificationType.QUOTE_SUBMITTED_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
+          return `/app/project-connection/${parentNotification.params.project_connection_id}/quote/${parentNotification.params.quote_id}`;
         case NotificationType.NEW_INVOICE_NOTIFICATION:
         case NotificationType.NEW_BIOTECH_INVOICE_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_NOTIFICATION:
@@ -64,7 +66,7 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.BIOTECH_INVOICE_PAYMENT_VERIFIED_NOTIFICATION:
         case NotificationType.BIOTECH_INVOICE_PAYMENT_REMINDER_NOTIFICATION:
         case NotificationType.BIOTECH_INVOICE_PAYMENT_OVERDUE_NOTIFICATION:
-          return `/app/invoices/${parent.params.invoice_id}`;
+          return `/app/invoices/${parentNotification.params.invoice_id}`;
         case NotificationType.NEW_MEETING_NOTIFICATION:
         case NotificationType.UPDATE_MEETING_NOTIFICATION:
         case NotificationType.REMOVE_MEETING_NOTIFICATION:
