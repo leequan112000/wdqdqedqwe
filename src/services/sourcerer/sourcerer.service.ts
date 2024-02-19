@@ -95,7 +95,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
 export type SourceCrosArgs = {
   subspecialty_names_with_weight: {
     name: string;
-    weight: string;
+    weight: number;
   }[];
   sourcing_session_id: string;
 }

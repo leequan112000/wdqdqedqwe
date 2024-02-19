@@ -54,7 +54,7 @@ type SourcingTask {
 
 input SubspecialtyNameWithWeight {
   name: String!
-  weight: String!
+  weight: Float!
 }
 
 type SourceRfpSpecialtySubscriptionPayload {
@@ -63,10 +63,17 @@ type SourceRfpSpecialtySubscriptionPayload {
   data: [String]
 }
 
+type SourceCroSubscriptionData {
+  cro_name: String
+  cro_id: String
+  score: Float
+  specialties: String
+}
+
 type SourceCroSubscriptionPayload {
   task_id: String
   sourcing_session_id: String
-  data: [String]
+  data: [SourceCroSubscriptionData]
 }
 
 type Query {
