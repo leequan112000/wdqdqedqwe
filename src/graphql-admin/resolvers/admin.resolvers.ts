@@ -14,10 +14,12 @@ const resolvers: Resolvers<Context> = {
 
       invariant(!existingAdmin, new PublicError('Admin already exists'));
 
+      const lowerCaseEmail = args.email.toLowerCase();
+
       return await context.prisma.admin.create({
         data: {
           username: args.username,
-          email: args.email,
+          email: lowerCaseEmail,
           team: args.team,
           encrypted_password: "",
         }

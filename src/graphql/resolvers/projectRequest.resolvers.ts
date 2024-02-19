@@ -335,6 +335,7 @@ const resolvers: Resolvers<Context> = {
           invariant(args.email, 'Email is required.');
           invariant(args.first_name, 'First name is required.');
           invariant(args.last_name, 'Last name is required.');
+          const lowerCaseEmail = args.email.toLowerCase();
           const admins = await context.prisma.admin.findMany({
             where: {
               team: AdminTeam.SCIENCE
@@ -347,7 +348,7 @@ const resolvers: Resolvers<Context> = {
               project_request_id: projectRequest.id,
               company_name: args.company_name,
               website: args.website,
-              email: args.email,
+              email: lowerCaseEmail,
               first_name: args.first_name,
               last_name: args.last_name,
               inviter_id: user.id,
@@ -369,7 +370,7 @@ const resolvers: Resolvers<Context> = {
             website: args.website,
             first_name: args.first_name,
             last_name: args.last_name,
-            email: args.email,
+            email: lowerCaseEmail,
             project_request_name: projectRequest.title,
           };
           await Promise.all(admins.map(async (admin) => {
