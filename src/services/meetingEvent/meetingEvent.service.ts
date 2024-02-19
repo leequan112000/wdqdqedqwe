@@ -207,10 +207,12 @@ const createMeetingEventOnCalendarApp = async (
 
   switch (platform) {
     case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+      const oauthGoogle = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
 
@@ -280,10 +282,12 @@ const createMeetingEventOnCalendarApp = async (
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+      const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
@@ -602,10 +606,12 @@ const removeMeetingEventOnCalendarApp = async (
   const { current_user_id, platform, platform_event_id } = args;
   switch (platform) {
     case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+      const oauthGoogle = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: current_user_id,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: current_user_id,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
       invariant(oauthGoogle, new NoOAuthError());
@@ -639,10 +645,12 @@ const removeMeetingEventOnCalendarApp = async (
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+      const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: current_user_id,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: current_user_id,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
@@ -951,10 +959,12 @@ const getCalendarEventsForUser = async (
   let events: CalendarEvent[] = [];
 
   if (calendar === "all" || calendar === 'google') {
-    const oauthGoogle = await ctx.prisma.oauth.findFirst({
+    const oauthGoogle = await ctx.prisma.oauth.findUnique({
       where: {
-        user_id,
-        provider: OauthProvider.GOOGLE,
+        user_id_provider: {
+          user_id,
+          provider: OauthProvider.GOOGLE,
+        },
       },
     });
 
@@ -989,10 +999,12 @@ const getCalendarEventsForUser = async (
   }
 
   if (calendar === 'all' || calendar === 'microsoft') {
-    const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+    const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
       where: {
-        user_id,
-        provider: OauthProvider.MICROSOFT,
+        user_id_provider: {
+          user_id,
+          provider: OauthProvider.MICROSOFT,
+        },
       },
     });
 
@@ -1289,10 +1301,12 @@ const updateMeetingEvent = async (
     );
     switch (previousMeetingEvent.platform) {
       case MeetingPlatform.GOOGLE_MEET: {
-        const oauthGoogle = await ctx.prisma.oauth.findFirst({
+        const oauthGoogle = await ctx.prisma.oauth.findUnique({
           where: {
-            user_id: organizer_user_id,
-            provider: OauthProvider.GOOGLE,
+            user_id_provider: {
+              user_id: organizer_user_id,
+              provider: OauthProvider.GOOGLE,
+            },
           },
         });
         invariant(oauthGoogle, new PublicError("Missing token."));
@@ -1330,10 +1344,12 @@ const updateMeetingEvent = async (
         break;
       }
       case MeetingPlatform.MICROSOFT_TEAMS: {
-        const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+        const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
           where: {
-            user_id: organizer_user_id,
-            provider: OauthProvider.MICROSOFT,
+            user_id_provider: {
+              user_id: organizer_user_id,
+              provider: OauthProvider.MICROSOFT,
+            },
           },
         });
 
@@ -1844,10 +1860,12 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
 
   switch (meetingEvent.platform) {
     case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+      const oauthGoogle = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
       invariant(oauthGoogle, new PublicError("Missing token."));
@@ -1870,10 +1888,12 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+      const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
@@ -2003,10 +2023,12 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
 
   switch (meetingEvent.platform) {
     case MeetingPlatform.GOOGLE_MEET: {
-      const oauthGoogle = await ctx.prisma.oauth.findFirst({
+      const oauthGoogle = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
       invariant(oauthGoogle, new PublicError("Missing token."));
@@ -2031,10 +2053,12 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
       break;
     }
     case MeetingPlatform.MICROSOFT_TEAMS: {
-      const oauthMicrosoft = await ctx.prisma.oauth.findFirst({
+      const oauthMicrosoft = await ctx.prisma.oauth.findUnique({
         where: {
-          user_id: organizer_user_id,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: organizer_user_id,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
