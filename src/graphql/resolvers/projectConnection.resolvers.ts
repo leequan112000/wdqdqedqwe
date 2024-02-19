@@ -25,11 +25,11 @@ import { hasPermission } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
-    vendor_company: async (parent, _, context) => {
-      invariant(parent.vendor_company_id, 'Vendor company id not found.');
-      const vendorCompany = await context.prisma.vendorCompany.findFirst({
+    vendor_company: async (parentProjectConnection, _, context) => {
+      invariant(parentProjectConnection.vendor_company_id, 'Vendor company id not found.');
+      const vendorCompany = await context.prisma.vendorCompany.findUnique({
         where: {
-          id: parent.vendor_company_id,
+          id: parentProjectConnection.vendor_company_id,
         },
       });
       invariant(vendorCompany, 'Vendor company not found.');
@@ -80,11 +80,11 @@ const resolvers: Resolvers<Context> = {
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
-    quotes: async (parent, _, context) => {
-      invariant(parent.id, 'Project connection id not found.');
+    quotes: async (parentProjectConnection, _, context) => {
+      invariant(parentProjectConnection.id, 'Project connection id not found.');
       const currentUserId = context.req.user_id;
 
-      const currentUser = await context.prisma.user.findFirst({
+      const currentUser = await context.prisma.user.findUnique({
         where: {
           id: currentUserId,
         },
@@ -96,9 +96,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currentUser, 'Current user not found.')
 
-      const filter: Prisma.QuoteWhereInput = {
-        project_connection_id: parent.id,
-      };
+      const filter: Prisma.QuoteWhereInput = {};
 
       if (currentUser.customer) {
         filter.status = {
@@ -106,12 +104,16 @@ const resolvers: Resolvers<Context> = {
         };
       }
 
-      const quotes = await context.prisma.quote.findMany({
+      const quotes = await context.prisma.projectConnection.findUnique({
+        where: {
+          id: parentProjectConnection.id,
+        },
+      }).quotes({
         where: filter,
         orderBy: {
           created_at: 'asc',
-        }
-      });
+        },
+      }) || [];
 
       return quotes.map((quote) => {
         return {

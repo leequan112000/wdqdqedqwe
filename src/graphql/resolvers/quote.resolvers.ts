@@ -117,29 +117,37 @@ const resolvers: Resolvers<Context> = {
 
       return toDollar(amountPaid)
     },
-    status: async (parent, _, context) => {
+    status: async (parentQuote, _, context) => {
       const now = new Date();
-      if (parent.expired_at && parent.status) {
-        if (parent.status === QuoteStatus.PENDING_DECISION && now >= new Date(parent.expired_at)) {
+      if (parentQuote.expired_at && parentQuote.status) {
+        if (
+          parentQuote.status === QuoteStatus.PENDING_DECISION &&
+          now >= new Date(parentQuote.expired_at)
+        ) {
           return QuoteStatus.EXPIRED;
         }
       }
 
-      invariant(parent.id, 'Quote id not found.');
-      const milestones = await context.prisma.milestone.findMany({
-        where: {
-          quote_id: parent.id,
-        },
-      });
+      invariant(parentQuote.id, "Quote id not found.");
+      const milestones =
+        (await context.prisma.quote
+          .findUnique({
+            where: {
+              id: parentQuote.id,
+            },
+          })
+          .milestones()) || [];
 
-      const completedMilestones = milestones.filter((m) => m.status === MilestoneStatus.COMPLETED);
+      const completedMilestones = milestones.filter(
+        (m) => m.status === MilestoneStatus.COMPLETED
+      );
 
       if (completedMilestones.length === milestones.length) {
         return QuoteStatus.COMPLETED;
       }
 
-      if (parent.status) {
-        return parent.status;
+      if (parentQuote.status) {
+        return parentQuote.status;
       }
       return null;
     },

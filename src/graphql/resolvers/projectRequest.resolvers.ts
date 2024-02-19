@@ -40,43 +40,44 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
-    project_connections: async (parent, args, context) => {
-      invariant(parent.id, 'Missing project request id.');
+    project_connections: async (parentProjectRequest, args, context) => {
+      invariant(parentProjectRequest.id, 'Missing project request id.');
 
       const { filter } = args;
 
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      const projectConnections = await context.prisma.projectConnection.findMany({
-        where: {
-          project_request_id: parent.id,
-          customer_connections: {
-            some: {
-              customer_id: customer?.id
+      const projectConnections = await context.prisma.projectRequest
+        .findUnique({
+          where: {
+            id: parentProjectRequest.id,
+          },
+        })
+        .project_connections({
+          where: {
+            customer_connections: {
+              some: {
+                customer: {
+                  user_id: context.req.user_id,
+                },
+              },
+            },
+            vendor_status: filter?.vendor_status
+              ? {
+                  equals: filter.vendor_status,
+                }
+              : {},
+          },
+          orderBy: [
+            { final_contract_uploaded_at: { sort: "desc", nulls: "last" } },
+            { updated_at: "desc" },
+          ],
+          include: {
+            quotes: {
+              include: {
+                milestones: true,
+              },
             },
           },
-          vendor_status: filter?.vendor_status
-            ? {
-              equals: filter.vendor_status,
-            }
-            : {},
-        },
-        orderBy: [
-          { final_contract_uploaded_at: { sort: 'desc', nulls: 'last' } },
-          { updated_at: 'desc' }
-        ],
-        include: {
-          quotes: {
-            include: {
-              milestones: true,
-            },
-          },
-        },
-      });
+        }) || [];
 
       if (filter?.collaboration_status) {
         return filterByCollaborationStatus(projectConnections, filter.collaboration_status as ProjectConnectionCollaborationStatus);

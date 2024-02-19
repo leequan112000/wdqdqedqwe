@@ -46,21 +46,31 @@ const resolvers: Resolvers<Context> = {
 
       return primaryMembers;
     },
-    certification_tags: async (parent, _, context) => {
-      invariant(parent.id, 'Vendor company id not found.');
+    certification_tags: async (parentVendorCompany, _, context) => {
+      invariant(parentVendorCompany.id, "Vendor company id not found.");
 
-      const certificationTagConnections = await context.prisma.certificationTagConnection.findMany({
-        where: {
-          vendor_company_id: parent.id,
-        },
-        include: {
-          certification_tag: true
-        }
-      });
+      const certificationTagConnections =
+        (await context.prisma.vendorCompany
+          .findUnique({
+            where: {
+              id: parentVendorCompany.id,
+            },
+          })
+          .certification_tag_connections({
+            include: {
+              certification_tag: true,
+            },
+          })) || [];
 
-      const certificationTags = certificationTagConnections.map(c => c.certification_tag);
-      const priorityTags = certificationTags.filter((tag) => tag.priority && tag.priority > 0);
-      const nonPriorityTags = certificationTags.filter((tag) => tag.priority === null);
+      const certificationTags = certificationTagConnections.map(
+        (c) => c.certification_tag
+      );
+      const priorityTags = certificationTags.filter(
+        (tag) => tag.priority && tag.priority > 0
+      );
+      const nonPriorityTags = certificationTags.filter(
+        (tag) => tag.priority === null
+      );
 
       return [...priorityTags, ...nonPriorityTags];
     },
