@@ -16,8 +16,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
-    messagesConnection: async (parent, args, context) => {
-      invariant(parent.id, 'Chat id not found.');
+    messagesConnection: async (parentChat, args, context) => {
+      invariant(parentChat.id, 'Chat id not found.');
 
       const { first, after } = args;
 
@@ -25,19 +25,22 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currectUserId, 'Current user not found.');
 
-      const messages = await context.prisma.message.findMany({
-        take: first,
-        skip: after ? 1 : undefined, // Skip the cursor
-        cursor: after
-          ? { id: after }
-          : undefined,
-        orderBy: {
-          created_at: 'desc'
-        },
-        where: {
-          chat_id: parent.id,
-        },
-      });
+      const messages = await context.prisma.chat
+        .findUnique({
+          where: {
+            id: parentChat.id,
+          },
+        })
+        .messages({
+          take: first,
+          skip: after ? 1 : undefined, // Skip the cursor
+          cursor: after
+            ? { id: after }
+            : undefined,
+          orderBy: {
+            created_at: 'desc'
+          },
+        }) || [];
 
       const edges = messages.map((m) => ({
         cursor: m.id,
@@ -48,19 +51,22 @@ const resolvers: Resolvers<Context> = {
       let hasNextPage = false;
 
       if (endCursor) {
-        const nextMessages = await context.prisma.message.findMany({
-          take: first,
-          skip: endCursor ? 1 : undefined, // Skip the cursor
-          cursor: endCursor
-            ? { id: endCursor }
-            : undefined,
-          orderBy: {
-            created_at: 'desc',
-          },
-          where: {
-            chat_id: parent.id,
-          },
-        });
+        const nextMessages = await context.prisma.chat
+          .findUnique({
+            where: {
+              id: parentChat.id,
+            },
+          })
+          .messages({
+            take: first,
+            skip: endCursor ? 1 : undefined, // Skip the cursor
+            cursor: endCursor
+              ? { id: endCursor }
+              : undefined,
+            orderBy: {
+              created_at: 'desc',
+            },
+        }) || [];
 
         hasNextPage = nextMessages.length > 0;
       }
