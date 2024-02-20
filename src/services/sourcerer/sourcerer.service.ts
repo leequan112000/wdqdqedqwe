@@ -96,6 +96,7 @@ export type SourceCrosArgs = {
   subspecialty_names_with_weight: {
     name: string;
     weight: number;
+    sourcing_specialty_id: string;
   }[];
   sourcing_session_id: string;
 }
@@ -118,6 +119,21 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       data: {
         task_id: response.data.id,
       }
+    });
+
+    await ctx.prisma.sourcingSubspecialty.deleteMany({
+      where: {
+        sourcing_session_id,
+      }
+    });
+
+    await ctx.prisma.sourcingSubspecialty.createMany({
+      data: subspecialty_names_with_weight.map(s => ({
+        sourcing_session_id,
+        name: s.name,
+        weight: s.weight,
+        sourcing_specialty_id: s.sourcing_specialty_id,
+      })),
     });
 
     return {

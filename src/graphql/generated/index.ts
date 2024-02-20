@@ -1972,6 +1972,7 @@ export type SubscriptionSourceRfpSpecialtiesArgs = {
 
 export type SubspecialtyNameWithWeight = {
   name: Scalars['String'];
+  sourcing_specialty_id: Scalars['String'];
   weight: Scalars['Float'];
 };
 

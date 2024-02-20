@@ -55,6 +55,7 @@ type SourcingTask {
 input SubspecialtyNameWithWeight {
   name: String!
   weight: Float!
+  sourcing_specialty_id: String!
 }
 
 type SourceRfpSpecialtySubscriptionPayload {
