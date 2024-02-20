@@ -54,8 +54,18 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.QUOTE_EXPIRING_NOTIFICATION:
         case NotificationType.QUOTE_ACCEPTED_NOTIFICATION:
         case NotificationType.QUOTE_DECLINED_NOTIFICATION:
-        case NotificationType.QUOTE_SUBMITTED_NOTIFICATION:
-          return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
+        case NotificationType.QUOTE_SUBMITTED_NOTIFICATION: {
+          const quote = await context.prisma.quote.findUnique({
+            where: {
+              id: parent.params.quote_id,
+            },
+          });
+          // Quick walkaround to handle notification that accessing deleted quote.
+          if (quote) {
+            return `/app/project-connection/${parent.params.project_connection_id}/quote/${parent.params.quote_id}`;
+          }
+          return `/app/project-connection/${parent.params.project_connection_id}`;
+        }
         case NotificationType.NEW_INVOICE_NOTIFICATION:
         case NotificationType.NEW_BIOTECH_INVOICE_NOTIFICATION:
         case NotificationType.INVOICE_PAYMENT_NOTIFICATION:
