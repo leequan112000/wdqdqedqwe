@@ -2,6 +2,7 @@ import axios from 'axios';
 import { PDFExtract } from 'pdf.js-extract';
 import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
+import { InputMaybe } from '../../graphql/generated';
 
 export type ExtractPdfToRfpArgs = {
   filename: string;
@@ -59,18 +60,27 @@ export type SourceRfpSpecialtiesArgs = {
   vendor_requirement: string;
   biotech_id: string;
   num_specialties: number;
+  sourcing_session_id?: InputMaybe<string> | undefined;
 }
 
 export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: ServiceContext) => {
   try {
+    const { sourcing_session_id, ...rest_args} = args;
     const response = await axios({
       method: 'post',
       url: `${app_env.AI_SERVER_URL}/source-rfp-specialties/`,
       data: {
-        ...args,
+        ...rest_args,
         prompt: '',
       },
     });
+
+    if (sourcing_session_id) {
+      return {
+        sourcing_session_id,
+        ...response.data
+      };
+    }
 
     const session = await ctx.prisma.sourcingSession.create({
       data: {

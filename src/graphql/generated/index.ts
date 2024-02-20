@@ -1044,6 +1044,7 @@ export type MutationSourceRfpSpecialtiesArgs = {
   preparation_details: Scalars['String'];
   project_desc: Scalars['String'];
   project_title: Scalars['String'];
+  sourcing_session_id?: InputMaybe<Scalars['String']>;
   vendor_requirement: Scalars['String'];
 };
 
