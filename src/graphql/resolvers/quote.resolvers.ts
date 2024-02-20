@@ -7,6 +7,7 @@ import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent
 import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
 import { PublicError } from '../errors/PublicError';
 import invariant from '../../helper/invariant';
+import { QuoteNotFoundError } from '../errors/QuoteNotFoundError';
 
 const EXPIRY_DAYS = 7;
 
@@ -174,12 +175,12 @@ const resolvers: Resolvers<Context> = {
         }
       });
 
-      return quote
-        ? {
-          ...quote,
-          amount: toDollar(quote.amount.toNumber())
-        }
-        : {};
+      invariant(quote, new QuoteNotFoundError())
+
+      return {
+        ...quote,
+        amount: toDollar(quote.amount.toNumber())
+      };
     },
   },
   Mutation: {
