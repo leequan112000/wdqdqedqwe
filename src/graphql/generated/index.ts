@@ -271,7 +271,11 @@ export type CroDbSubspecialty = {
 
 export type CroDbVendorCompany = {
   __typename?: 'CroDbVendorCompany';
+  company_description?: Maybe<Scalars['String']>;
+  company_ipo_status?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
+  company_revenue?: Maybe<Scalars['String']>;
+  company_size?: Maybe<Scalars['String']>;
   crunchbase_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   is_active?: Maybe<Scalars['Boolean']>;
@@ -605,6 +609,7 @@ export type Mutation = {
   removeParticipant?: Maybe<Scalars['Boolean']>;
   removeProjectCollaborator?: Maybe<User>;
   removeProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
+  removeSourcedCroFromShortlist?: Maybe<SourcedCro>;
   resendExpiredQuote?: Maybe<Quote>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
@@ -613,6 +618,7 @@ export type Mutation = {
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
+  shortlistSourcedCro?: Maybe<SourcedCro>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
@@ -974,6 +980,12 @@ export type MutationRemoveProjectRequestCollaboratorArgs = {
 };
 
 
+export type MutationRemoveSourcedCroFromShortlistArgs = {
+  sourced_cro_id: Scalars['String'];
+  sourcing_session_id: Scalars['String'];
+};
+
+
 export type MutationResendExpiredQuoteArgs = {
   id: Scalars['String'];
 };
@@ -1014,6 +1026,12 @@ export type MutationSendMessageArgs = {
 
 export type MutationSetProjectRequestPublicArgs = {
   project_request_id: Scalars['String'];
+};
+
+
+export type MutationShortlistSourcedCroArgs = {
+  sourced_cro_id: Scalars['String'];
+  sourcing_session_id: Scalars['String'];
 };
 
 
@@ -2633,7 +2651,11 @@ export type CroDbSubspecialtyResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CroDbVendorCompany'] = ResolversParentTypes['CroDbVendorCompany']> = ResolversObject<{
+  company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   crunchbase_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2956,6 +2978,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeParticipant?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRemoveParticipantArgs, 'meeting_event_id' | 'user_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   removeProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationRemoveProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
+  removeSourcedCroFromShortlist?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationRemoveSourcedCroFromShortlistArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   resendExpiredQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationResendExpiredQuoteArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
@@ -2964,6 +2987,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
+  shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;

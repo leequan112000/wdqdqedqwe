@@ -148,6 +148,46 @@ const resolvers: Resolvers<Context> = {
         ...args,
       }, context);
     },
+    shortlistSourcedCro: async (_, args, context) => {
+      const { sourcing_session_id, sourced_cro_id } = args;
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      return await context.prisma.sourcedCro.update({
+        where: {
+          id: sourced_cro_id,
+          sourcing_session_id,
+        },
+        data: {
+          is_shortlisted: true,
+        }
+      });
+    },
+    removeSourcedCroFromShortlist: async (_, args, context) => {
+      const { sourcing_session_id, sourced_cro_id } = args;
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      return await context.prisma.sourcedCro.update({
+        where: {
+          id: sourced_cro_id,
+          sourcing_session_id,
+        },
+        data: {
+          is_shortlisted: false,
+        }
+      });
+    },
   },
   Subscription: {
     sourceRfpSpecialties: {

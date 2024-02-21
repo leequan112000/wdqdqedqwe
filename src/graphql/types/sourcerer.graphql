@@ -101,6 +101,14 @@ type Mutation {
     subspecialty_names_with_weight: [SubspecialtyNameWithWeight!]!
     sourcing_session_id: String!
   ): SourcingTask
+  shortlistSourcedCro(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
+  removeSourcedCroFromShortlist(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
 }
 
 type Subscription {
