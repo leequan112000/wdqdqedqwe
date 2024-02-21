@@ -76,6 +76,15 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
     });
 
     if (sourcing_session_id) {
+      await ctx.prisma.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          task_id: response.data.id,
+        }
+      });
+
       return {
         sourcing_session_id,
         ...response.data
