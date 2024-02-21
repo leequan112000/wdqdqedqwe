@@ -1,6 +1,10 @@
 type CroDbVendorCompany {
   id: String
   company_name: String
+  company_description: String
+  company_ipo_status: String
+  company_revenue: String
+  company_size: String
   website_url: String
   linkedin_url: String
   crunchbase_url: String
