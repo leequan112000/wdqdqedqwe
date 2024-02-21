@@ -92,6 +92,14 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    cro_db_vendor_company: async (parent, _, context) => {
+      invariant(parent.cro_db_id, 'Missing CRO DB id.');
+      return await context.prismaCRODb.vendorCompany.findFirst({
+        where: {
+          id: parent.cro_db_id
+        },
+      });
+    },
   },
   Query: {
     sourcingSession: async (_, args, context) => {

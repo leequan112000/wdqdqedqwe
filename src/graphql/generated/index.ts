@@ -1864,6 +1864,7 @@ export type SourceRfpSpecialtySubscriptionPayload = {
 export type SourcedCro = {
   __typename?: 'SourcedCro';
   cro_db_id?: Maybe<Scalars['String']>;
+  cro_db_vendor_company?: Maybe<CroDbVendorCompany>;
   id?: Maybe<Scalars['String']>;
   is_shortlisted?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
@@ -3408,6 +3409,7 @@ export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, Pa
 
 export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCro'] = ResolversParentTypes['SourcedCro']> = ResolversObject<{
   cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cro_db_vendor_company?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -38,6 +38,7 @@ type SourcedCro {
   cro_db_id: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
+  cro_db_vendor_company: CroDbVendorCompany
 }
 
 type ExtractedRfp {
