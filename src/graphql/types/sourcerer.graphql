@@ -58,10 +58,16 @@ input SubspecialtyNameWithWeight {
   sourcing_specialty_id: String!
 }
 
+type SourceRfpSpecialtySubscriptionData {
+  id: String
+  name: String
+  sourcing_session_id: String
+}
+
 type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
   sourcing_session_id: String
-  data: [String]
+  data: [SourceRfpSpecialtySubscriptionData]
 }
 
 type SourceCroSubscriptionData {

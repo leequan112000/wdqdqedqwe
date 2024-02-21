@@ -40,17 +40,24 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             task_id,
           },
         });
-        if (sourcing_session) {
-          await prisma.sourcingSpecialty.createMany({
-            data: data.map((specialtyString: string) => {
-              return {
-                name: specialtyString,
-                sourcing_session_id: sourcing_session.id,
-              }
-            })
-          });
+
+        if (!sourcing_session) {
+          throw new Error('No sourcing session found');
         }
-        pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data } });
+
+        prisma.$transaction(async (trx) => {
+          const sourcingSpecialties = await Promise.all(
+            data.map(async (specialtyString: string) => {
+              return await trx.sourcingSpecialty.create({
+                data: {
+                  name: specialtyString,
+                  sourcing_session_id: sourcing_session.id,
+                }
+              })
+            })
+          );
+          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcingSpecialties } });
+        });
       }
       case "source_cros": {
         const sourcing_session = await prisma.sourcingSession.findFirst({
