@@ -22,6 +22,7 @@ const resolvers: Resolvers<Context> = {
         where: {
           sourcing_session_id: parent.id
         },
+        take: 5,
       });
     },
     sourcing_subspecialties: async (parent, _, context) => {
