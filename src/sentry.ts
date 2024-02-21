@@ -14,6 +14,7 @@ Sentry.init({
     new Sentry.Integrations.Prisma({ client: prismaCRODb }),
     new Sentry.Integrations.GraphQL(),
   ],
+  release: process.env.SENTRY_RELEASE,
 });
 
 export default Sentry;

@@ -85,6 +85,21 @@ export type CertificationTagConnection = {
   vendor_company_id?: Maybe<Scalars['String']>;
 };
 
+export type CroDbSpecialty = {
+  __typename?: 'CroDbSpecialty';
+  definition?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type CroDbSubspecialty = {
+  __typename?: 'CroDbSubspecialty';
+  definition?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  specialty_id?: Maybe<Scalars['String']>;
+};
+
 export type Customer = {
   __typename?: 'Customer';
   biotech_id?: Maybe<Scalars['String']>;
@@ -133,9 +148,12 @@ export type Mutation = {
   addReviewQuestion?: Maybe<ReviewQuestion>;
   addReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   addReviewQuestionSet?: Maybe<ReviewQuestionSet>;
+  approveVendorSurvey?: Maybe<Scalars['Boolean']>;
   createAdmin?: Maybe<Admin>;
   createCertificationTag?: Maybe<CertificationTag>;
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
+  createCroDbSpecialty?: Maybe<CroDbSpecialty>;
+  createCroDbSubspecialty?: Maybe<CroDbSubspecialty>;
   createLabSpecialization?: Maybe<LabSpecialization>;
   createLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
   createNews?: Maybe<News>;
@@ -170,6 +188,8 @@ export type Mutation = {
   unregisterBiotechAccount?: Maybe<Scalars['Boolean']>;
   updateBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   updateCertificationTag?: Maybe<CertificationTag>;
+  updateCroDbSpecialty?: Maybe<CroDbSpecialty>;
+  updateCroDbSubspecialty?: Maybe<CroDbSubspecialty>;
   updateCustomerByAdmin?: Maybe<Scalars['Boolean']>;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateNews?: Maybe<News>;
@@ -210,6 +230,11 @@ export type MutationAddReviewQuestionSetArgs = {
 };
 
 
+export type MutationApproveVendorSurveyArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationCreateAdminArgs = {
   email: Scalars['String'];
   encrypted_password?: InputMaybe<Scalars['String']>;
@@ -228,6 +253,19 @@ export type MutationCreateCertificationTagArgs = {
 export type MutationCreateCertificationTagConnectionArgs = {
   certification_tag_id: Scalars['String'];
   vendor_company_id: Scalars['String'];
+};
+
+
+export type MutationCreateCroDbSpecialtyArgs = {
+  definition?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+};
+
+
+export type MutationCreateCroDbSubspecialtyArgs = {
+  definition?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+  specialty_id: Scalars['String'];
 };
 
 
@@ -448,6 +486,20 @@ export type MutationUpdateCertificationTagArgs = {
   id: Scalars['String'];
   priority?: InputMaybe<Scalars['Int']>;
   short_name?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateCroDbSpecialtyArgs = {
+  definition?: InputMaybe<Scalars['String']>;
+  id: Scalars['String'];
+  name: Scalars['String'];
+};
+
+
+export type MutationUpdateCroDbSubspecialtyArgs = {
+  definition?: InputMaybe<Scalars['String']>;
+  id: Scalars['String'];
+  name: Scalars['String'];
 };
 
 
@@ -733,6 +785,8 @@ export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CertificationTag: ResolverTypeWrapper<CertificationTag>;
   CertificationTagConnection: ResolverTypeWrapper<CertificationTagConnection>;
+  CroDbSpecialty: ResolverTypeWrapper<CroDbSpecialty>;
+  CroDbSubspecialty: ResolverTypeWrapper<CroDbSubspecialty>;
   Customer: ResolverTypeWrapper<Customer>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
@@ -765,6 +819,8 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean'];
   CertificationTag: CertificationTag;
   CertificationTagConnection: CertificationTagConnection;
+  CroDbSpecialty: CroDbSpecialty;
+  CroDbSubspecialty: CroDbSubspecialty;
   Customer: Customer;
   Date: Scalars['Date'];
   Float: Scalars['Float'];
@@ -856,6 +912,21 @@ export type CertificationTagConnectionResolvers<ContextType = any, ParentType ex
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CroDbSpecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CroDbSpecialty'] = ResolversParentTypes['CroDbSpecialty']> = ResolversObject<{
+  definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CroDbSubspecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CroDbSubspecialty'] = ResolversParentTypes['CroDbSubspecialty']> = ResolversObject<{
+  definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  specialty_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type CustomerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Customer'] = ResolversParentTypes['Customer']> = ResolversObject<{
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -911,9 +982,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionArgs, 'ordinal' | 'question_text' | 'question_type' | 'review_question_set_id'>>;
   addReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionOptionArgs, 'option_text' | 'review_question_id'>>;
   addReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionSetArgs, 'name'>>;
+  approveVendorSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationApproveVendorSurveyArgs, 'id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
+  createCroDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<MutationCreateCroDbSpecialtyArgs, 'name'>>;
+  createCroDbSubspecialty?: Resolver<Maybe<ResolversTypes['CroDbSubspecialty']>, ParentType, ContextType, RequireFields<MutationCreateCroDbSubspecialtyArgs, 'name' | 'specialty_id'>>;
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
   createLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationConnectionArgs, 'lab_specialization_id' | 'vendor_company_id'>>;
   createNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationCreateNewsArgs, 'title'>>;
@@ -948,6 +1022,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unregisterBiotechAccount?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnregisterBiotechAccountArgs, 'biotech_id'>>;
   updateBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationUpdateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'id' | 'last_name' | 'website'>>;
   updateCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationUpdateCertificationTagArgs, 'full_name' | 'id'>>;
+  updateCroDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<MutationUpdateCroDbSpecialtyArgs, 'id' | 'name'>>;
+  updateCroDbSubspecialty?: Resolver<Maybe<ResolversTypes['CroDbSubspecialty']>, ParentType, ContextType, RequireFields<MutationUpdateCroDbSubspecialtyArgs, 'id' | 'name'>>;
   updateCustomerByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateCustomerByAdminArgs, 'user_id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUpdateNewsArgs, 'news_id'>>;
@@ -1072,6 +1148,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BiotechInvoiceAttachment?: BiotechInvoiceAttachmentResolvers<ContextType>;
   CertificationTag?: CertificationTagResolvers<ContextType>;
   CertificationTagConnection?: CertificationTagConnectionResolvers<ContextType>;
+  CroDbSpecialty?: CroDbSpecialtyResolvers<ContextType>;
+  CroDbSubspecialty?: CroDbSubspecialtyResolvers<ContextType>;
   Customer?: CustomerResolvers<ContextType>;
   Date?: GraphQLScalarType;
   JSON?: GraphQLScalarType;

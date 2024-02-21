@@ -12,16 +12,20 @@ datasource db {
 }
 
 model VendorCompany {
-  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_name       String
-  website_url        String
-  linkedin_url       String
-  crunchbase_url     String
-  type               String
-  product            String?
-  logo_url           String?
-  is_active          Boolean
-  is_cromatic_vendor Boolean
+  id                  String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name        String
+  company_size        String?
+  company_revenue     String?
+  company_ipo_status  String?
+  company_description String?
+  website_url         String
+  linkedin_url        String
+  crunchbase_url      String
+  type                String
+  product             String?
+  logo_url            String?
+  is_active           Boolean
+  is_cromatic_vendor  Boolean
 
   traffic_infos                 TrafficInfo[]
   linkedin_infos                LinkedinInfo[]

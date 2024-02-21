@@ -405,9 +405,10 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   let phone_country = null;
   let platform_event_id = null;
 
+  const externalParticipants = external_participants.map((ep) => ({ ...ep, email: ep.email.toUpperCase() }));
 
   const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
-  const externalParticipantEmails = external_participants.map((a) => a.email);
+  const externalParticipantEmails = externalParticipants.map((a) => a.email);
 
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
@@ -481,7 +482,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
         create: meetingAttendeeConnectionCreateData,
       },
       meeting_guests: {
-        create: external_participants.map((p) => ({
+        create: externalParticipants.map((p) => ({
           email: p.email,
           type: MeetingGuestType.INVITE,
           status: MeetingGuestStatus.PENDING,
@@ -498,7 +499,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     },
   });
 
-  const addExternalParticipantTasks = external_participants.map(async (p) => {
+  const addExternalParticipantTasks = externalParticipants.map(async (p) => {
     return await addExternalGuestToMeeting(
       {
         email: p.email,
@@ -1915,6 +1916,8 @@ type AddParticipantsArgs = {
 const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) => {
   const { cromatic_participants, external_participants, meeting_event_id, organizer_user_id } = args;
 
+  const externalParticipants = external_participants.map((ep) => ({ ...ep, email: ep.email.toLowerCase() }));
+
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
       id: organizer_user_id,
@@ -1957,7 +1960,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
 
   invariant(meetingEvent.organizer_id === organizer_user_id, "User is not organizer");
 
-  const addExternalParticipantTasks = external_participants.map(
+  const addExternalParticipantTasks = externalParticipants.map(
     async (p) => {
       const { email, name } = p;
       return await addExternalGuestToMeeting(
@@ -2144,7 +2147,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
       name: `${p!.first_name} ${p!.last_name}`,
       status: MeetingGuestStatus.ACCEPTED,
     })),
-    ...external_participants.map((p) => ({
+    ...externalParticipants.map((p) => ({
       email: p.email,
       name: p.name,
       status: MeetingGuestStatus.PENDING,

@@ -73,10 +73,11 @@ const resolvers: Resolvers<Context> = {
     },
     inviteVendorMember: async (_, args, context) => {
       try {
+        const lowerCaseEmail = args.email.toLowerCase();
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({
             where: {
-              email: args.email
+              email: lowerCaseEmail,
             }
           });
 

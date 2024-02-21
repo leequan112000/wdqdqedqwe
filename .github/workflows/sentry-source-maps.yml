@@ -28,21 +28,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
-      - name: Set ENV based on branch
-        run: |
-          if [ ${{ github.ref }} == "refs/heads/master" ]; then
-            echo "Setting ENV to production for master branch"
-            echo "NODE_ENV=production" >> $GITHUB_ENV
-          elif [ ${{ github.ref }} == "refs/heads/staging" ]; then
-            echo "Setting ENV to for staging branch"
-            echo "NODE_ENV=staging" >> $GITHUB_ENV
-          else
-            echo "Setting ENV to for default case"
-            echo "NODE_ENV=development" >> $GITHUB_ENV
-          fi
       - name: 💡 Install dependencies
         run: yarn --frozen-lockfile
       - name: 👷 Build
         run: yarn build
       - name: 🤖 Upload Source Maps
-        run: yarn sentry:sourcemaps
+        run: |
+          if [ ${{ github.ref }} == "refs/heads/master" ]; then
+            yarn sentry-cli sourcemaps upload --release production --org cromatic --project octavian ./dist
+          elif [ ${{ github.ref }} == "refs/heads/staging" ]; then
+            yarn sentry-cli sourcemaps upload --release staging --org cromatic --project octavian ./dist
+          else
+            yarn sentry-cli sourcemaps upload --release development --org cromatic --project octavian ./dist
+          fi
