@@ -40,7 +40,6 @@ const resolvers: Resolvers<Context> = {
           sourcing_session_id: parent.id
         },
         orderBy: [
-          { is_shortlisted: 'desc' },
           { score: 'desc' }
         ],
       });
