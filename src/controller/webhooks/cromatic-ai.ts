@@ -46,6 +46,19 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         }
 
         prisma.$transaction(async (trx) => {
+          // Clear up existing records
+          await trx.sourcingSubspecialty.deleteMany({
+            where: {
+              sourcing_session_id: sourcing_session.id,
+            }
+          });
+
+          await trx.sourcingSpecialty.deleteMany({
+            where: {
+              sourcing_session_id: sourcing_session.id,
+            }
+          });
+
           const sourcingSpecialties = await Promise.all(
             data.map(async (specialtyString: string) => {
               return await trx.sourcingSpecialty.create({
@@ -56,6 +69,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
               })
             })
           );
+
           pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcingSpecialties } });
         });
       }
