@@ -71,10 +71,11 @@ type SourceRfpSpecialtySubscriptionPayload {
 }
 
 type SourceCroSubscriptionData {
-  cro_name: String
-  cro_id: String
+  id: String
+  name: String
   score: Float
-  specialties: String
+  is_shortlisted: Boolean
+  cro_db_id: String
 }
 
 type SourceCroSubscriptionPayload {

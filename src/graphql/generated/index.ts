@@ -1815,10 +1815,11 @@ export type SaveAvailabilityRulesInput = {
 
 export type SourceCroSubscriptionData = {
   __typename?: 'SourceCroSubscriptionData';
-  cro_id?: Maybe<Scalars['String']>;
-  cro_name?: Maybe<Scalars['String']>;
+  cro_db_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_shortlisted?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
   score?: Maybe<Scalars['Float']>;
-  specialties?: Maybe<Scalars['String']>;
 };
 
 export type SourceCroSubscriptionPayload = {
@@ -3352,10 +3353,11 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type SourceCroSubscriptionDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionData'] = ResolversParentTypes['SourceCroSubscriptionData']> = ResolversObject<{
-  cro_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  cro_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  specialties?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

@@ -79,20 +79,28 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             task_id,
           },
         });
-        if (sourcing_session) {
-          await prisma.sourcedCro.createMany({
-            data: data.map((cro: { cro_name: string, cro_id: string, score: number }) => {
-              return {
-                name: cro.cro_name,
-                cro_db_id: cro.cro_id,
-                score: cro.score,
-                is_shortlisted: false,
-                sourcing_session_id: sourcing_session.id,
-              }
-            })
-          });
+
+        if (!sourcing_session) {
+          throw new Error('No sourcing session found');
         }
-        pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session?.id, data } });
+
+        prisma.$transaction(async (trx) => {
+          const sourcedCros = await Promise.all(
+            data.map(async (cro: { cro_name: string, cro_id: string, score: number }) => {
+              return await trx.sourcedCro.create({
+                data: {
+                  name: cro.cro_name,
+                  cro_db_id: cro.cro_id,
+                  score: cro.score,
+                  is_shortlisted: false,
+                  sourcing_session_id: sourcing_session.id,
+                }
+              })
+            })
+          );
+
+          pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session.id, data: sourcedCros } });
+        });
       }
       default:
         break;
