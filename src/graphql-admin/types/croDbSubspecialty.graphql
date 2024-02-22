@@ -1,0 +1,12 @@
+type CroDbSubspecialty {
+  id: String
+  name: String
+  definition: String
+  specialty_id: String
+}
+
+
+type Mutation {
+  createCroDbSubspecialty(specialty_id: String!, name: String!, definition: String): CroDbSubspecialty
+  updateCroDbSubspecialty(id: String!, name: String!, definition: String): CroDbSubspecialty
+}

@@ -87,10 +87,15 @@ const resolvers: Resolvers<Context> = {
         });
       }
 
+      const lowerCaseEmail = args.email.toLowerCase();
+
       // Check for existing user
       const existingUser = await context.prisma.user.findFirst({
         where: {
-          email: args.email,
+          email: {
+            mode: 'insensitive',
+            equals: lowerCaseEmail,
+          },
         },
       });
 
@@ -132,7 +137,7 @@ const resolvers: Resolvers<Context> = {
           data: {
             first_name: args.first_name,
             last_name: args.last_name,
-            email: args.email,
+            email: lowerCaseEmail,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
             customer: isBiotech
@@ -207,10 +212,14 @@ const resolvers: Resolvers<Context> = {
       invariant(allowInviteCompanyCollaborator, new PermissionDeniedError());
 
       const addCollaboratorTasks = collaborators.map(async (collaborator) => {
+        const lowerCaseEmail = collaborator.email.toLowerCase();
         // Check for existing user
         const existingUser = await context.prisma.user.findFirst({
           where: {
-            email: collaborator.email,
+            email: {
+              mode: 'insensitive',
+              equals: lowerCaseEmail,
+            },
           },
         });
 
@@ -249,6 +258,7 @@ const resolvers: Resolvers<Context> = {
       if (collaborators && collaborators.length > 0) {
         const collabs = collaborators.map(async (collaborator) => {
           const resetToken = createResetPasswordToken();
+          const lowerCaseEmail = collaborator.email.toLowerCase();
 
           return await context.prisma.$transaction(async (trx) => {
             // Create new user
@@ -256,7 +266,7 @@ const resolvers: Resolvers<Context> = {
               data: {
                 first_name: collaborator.first_name,
                 last_name: collaborator.last_name,
-                email: collaborator.email,
+                email: lowerCaseEmail,
                 reset_password_token: resetToken,
                 reset_password_expiration: new Date(resetTokenExpiration),
               },

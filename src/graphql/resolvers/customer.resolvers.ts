@@ -141,10 +141,11 @@ const resolvers: Resolvers<Context> = {
       });
     },
     inviteCustomer: async (_, args, context) => {
+      const lowerCaseEmail = args.email.toLowerCase();
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            email: args.email
+            email: lowerCaseEmail
           }
         });
 
@@ -165,7 +166,7 @@ const resolvers: Resolvers<Context> = {
           data: {
             first_name: args.first_name,
             last_name: args.last_name,
-            email: args.email,
+            email: lowerCaseEmail,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
           }

@@ -25,10 +25,11 @@ const resolver: Resolvers<Context> = {
   },
   Mutation: {
     inviteVendorMemberByAdmin: async (_, args, context) => {
+      const lowerCaseEmail = args.email.toLowerCase();
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            email: args.email,
+            email: lowerCaseEmail,
           },
         });
 
@@ -53,7 +54,7 @@ const resolver: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            email: args.email,
+            email: lowerCaseEmail,
             first_name: args.first_name,
             last_name: args.last_name,
             reset_password_token: resetToken,

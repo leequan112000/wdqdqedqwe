@@ -570,9 +570,14 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     signUpUser: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
+        const lowerCaseEmail = args.email.toLowerCase();
+
         const user = await trx.user.findFirst({
           where: {
-            email: args.email,
+            email: {
+              mode: 'insensitive',
+              equals: lowerCaseEmail,
+            },
           },
         });
 
@@ -604,7 +609,7 @@ const resolvers: Resolvers<Context> = {
 
         const newCreatedUser = await trx.user.create({
           data: {
-            email: args.email,
+            email: lowerCaseEmail,
             first_name: args.first_name,
             last_name: args.last_name,
             encrypted_password: hashedPassword,
@@ -636,7 +641,10 @@ const resolvers: Resolvers<Context> = {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email,
+          email: {
+            mode: 'insensitive',
+            equals: email,
+          },
         },
       });
 
@@ -710,16 +718,21 @@ const resolvers: Resolvers<Context> = {
     forgotPassword: async (_, args, context) => {
       invariant(args.email, new InternalError("Missing argument: email."));
 
+      const lowerCaseEmail = args.email.toLowerCase();
+
       const user = await context.prisma.user.findFirst({
         where: {
-          email: args.email,
+          email: {
+            mode: 'insensitive',
+            equals: lowerCaseEmail,
+          },
         },
       });
 
       invariant(user, new PublicError("User not found."));
 
       const updatedUser = authService.forgotPassword(
-        { email: args.email },
+        { email: lowerCaseEmail },
         { prisma: context.prisma }
       );
 
@@ -771,6 +784,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     updateUserInfo: async (_, args, context) => {
+      const lowerCaseEmail = args.email.toLowerCase();
       const user = await context.prisma.user.update({
         where: {
           id: context.req.user_id,
@@ -778,7 +792,7 @@ const resolvers: Resolvers<Context> = {
         data: {
           first_name: args.first_name,
           last_name: args.last_name,
-          email: args.email,
+          email: lowerCaseEmail,
           phone_number: args.phone_number || null,
           country_code: args.country_code || null,
         },
