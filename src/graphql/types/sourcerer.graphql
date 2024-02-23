@@ -7,27 +7,15 @@ type SourcingSession {
   task_id: String
   biotech_id: String
   biotech: Biotech
-  sourcing_specialties: [SourcingSpecialty]
   sourcing_subspecialties: [SourcingSubspecialty]
   sourced_cros: [SourcedCro]
-}
-
-type SourcingSpecialty {
-  id: String
-  name: String
-  sourcing_session_id: String
-  sourcing_session: SourcingSession
-  sourcing_subspecialties: [SourcingSubspecialty]
 }
 
 type SourcingSubspecialty {
   id: String
   name: String
-  weight: Float
   sourcing_session_id: String
   sourcing_session: SourcingSession
-  sourcing_specialty_id: String
-  sourcing_specialty: SourcingSpecialty
 }
 
 type SourcedCro {
@@ -56,7 +44,6 @@ type SourcingTask {
 input SubspecialtyNameWithWeight {
   name: String!
   weight: Float!
-  sourcing_specialty_id: String!
 }
 
 type SourceRfpSpecialtySubscriptionData {
@@ -99,7 +86,7 @@ type Mutation {
     sourcing_session_id: String
   ): SourcingTask
   sourceCros(
-    subspecialty_names_with_weight: [SubspecialtyNameWithWeight!]!
+    names: [String!]!
     sourcing_session_id: String!
   ): SourcingTask
   shortlistSourcedCro(
