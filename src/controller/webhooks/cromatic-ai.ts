@@ -53,24 +53,19 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             }
           });
 
-          await trx.sourcingSpecialty.deleteMany({
-            where: {
-              sourcing_session_id: sourcing_session.id,
-            }
-          });
-
-          const sourcingSpecialties = await Promise.all(
-            data.map(async (specialtyString: string) => {
-              return await trx.sourcingSpecialty.create({
+          const sourcingSubspecialties = await Promise.all(
+            data.map(async (subspecialtyString: string) => {
+              const [subspecialtyName, _] = subspecialtyString.split(',').map(item => item.trim());
+              await trx.sourcingSubspecialty.create({
                 data: {
-                  name: specialtyString,
+                  name: subspecialtyName,
                   sourcing_session_id: sourcing_session.id,
                 }
-              })
+              });
             })
           );
 
-          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcingSpecialties } });
+          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcingSubspecialties } });
         });
         break;
       }
