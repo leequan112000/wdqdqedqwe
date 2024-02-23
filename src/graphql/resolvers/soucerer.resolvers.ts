@@ -136,6 +136,9 @@ const resolvers: Resolvers<Context> = {
         where: {
           biotech_id: customer.biotech_id,
         },
+        orderBy: {
+          updated_at: 'desc',
+        },
       });
 
       return sessions;
