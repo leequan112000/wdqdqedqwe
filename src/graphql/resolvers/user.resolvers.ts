@@ -33,7 +33,7 @@ const resolvers: Resolvers<Context> = {
       if (parent.user_type) return parent.user_type;
       if (!parent.id) return null;
 
-      const user = await context.prisma.user.findFirst({
+      const user = await context.prisma.user.findUnique({
         where: {
           id: parent.id,
         },
@@ -55,7 +55,7 @@ const resolvers: Resolvers<Context> = {
     },
     has_completed_onboarding: async (parent, _, context) => {
       invariant(parent.id, "Missing user id.");
-      const result = await context.prisma.user.findFirst({
+      const result = await context.prisma.user.findUnique({
         where: {
           id: parent.id,
         },
@@ -216,7 +216,7 @@ const resolvers: Resolvers<Context> = {
       }
       if (!parent.id) return null;
 
-      const customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findUnique({
         where: {
           user_id: parent.id,
         },
@@ -233,7 +233,7 @@ const resolvers: Resolvers<Context> = {
         return customer.biotech.name;
       }
 
-      const vendorMember = await context.prisma.vendorMember.findFirst({
+      const vendorMember = await context.prisma.vendorMember.findUnique({
         where: {
           user_id: parent.id,
         },
@@ -447,10 +447,12 @@ const resolvers: Resolvers<Context> = {
       const userId = context.req.user_id;
       invariant(userId, "Missing user id");
 
-      const oauth = await context.prisma.oauth.findFirst({
+      const oauth = await context.prisma.oauth.findUnique({
         where: {
-          user_id: userId,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: userId,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
@@ -461,10 +463,12 @@ const resolvers: Resolvers<Context> = {
       const userId = context.req.user_id;
       invariant(userId, "Missing user id");
 
-      const oauth = await context.prisma.oauth.findFirst({
+      const oauth = await context.prisma.oauth.findUnique({
         where: {
-          user_id: userId,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: userId,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
 
