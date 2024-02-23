@@ -123,6 +123,26 @@ const resolvers: Resolvers<Context> = {
 
       return sourcingSession;
     },
+    sourcingSessions: async (_, __, context) => {
+      const customer = await context.prisma.customer.findUnique({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      const sessions = await context.prisma.sourcingSession.findMany({
+        where: {
+          biotech_id: customer.biotech_id,
+        },
+        orderBy: {
+          updated_at: 'desc',
+        },
+      });
+
+      return sessions;
+    },
   },
   Mutation: {
     extractPdfRfp: async (_, args, __) => {

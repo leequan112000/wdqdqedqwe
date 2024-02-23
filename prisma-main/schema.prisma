@@ -971,6 +971,8 @@ model SourcingSession {
   sourcing_specialties    SourcingSpecialty[]
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
+  created_at              DateTime               @default(now())
+  updated_at              DateTime               @default(now()) @updatedAt
 
   @@map("sourcing_sessions")
 }
