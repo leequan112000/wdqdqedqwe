@@ -10,6 +10,7 @@ type SourcingSession {
   sourcing_specialties: [SourcingSpecialty]
   sourcing_subspecialties: [SourcingSubspecialty]
   sourced_cros: [SourcedCro]
+  updated_at: Date
 }
 
 type SourcingSpecialty {
@@ -87,6 +88,7 @@ type SourceCroSubscriptionPayload {
 
 type Query {
   sourcingSession(id: String!): SourcingSession
+  sourcingSessions: [SourcingSession]
 }
 
 type Mutation {
