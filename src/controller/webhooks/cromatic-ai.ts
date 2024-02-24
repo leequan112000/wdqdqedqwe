@@ -82,12 +82,12 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         prisma.$transaction(async (trx) => {
           const sourcedCros = await Promise.all(
-            data.map(async (cro: { cro_name: string, cro_id: string, score: number }) => {
+            data.map(async (cro: { cro_name: string, cro_id: string, score: string }) => {
               return await trx.sourcedCro.create({
                 data: {
                   name: cro.cro_name,
                   cro_db_id: cro.cro_id,
-                  score: cro.score,
+                  score: parseFloat(cro.score),
                   is_shortlisted: false,
                   sourcing_session_id: sourcing_session.id,
                 }
