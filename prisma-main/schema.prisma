@@ -968,7 +968,6 @@ model SourcingSession {
   task_id                 String
   biotech_id              String                 @db.Uuid
   biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
-  sourcing_specialties    SourcingSpecialty[]
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
   created_at              DateTime               @default(now())
@@ -977,26 +976,12 @@ model SourcingSession {
   @@map("sourcing_sessions")
 }
 
-model SourcingSpecialty {
-  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                    String
-  sourcing_session_id     String                 @db.Uuid
-  sourcing_session        SourcingSession        @relation(fields: [sourcing_session_id], references: [id])
-  sourcing_subspecialties SourcingSubspecialty[]
-
-  @@map("sourcing_specialties")
-}
-
 model SourcingSubspecialty {
   id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name   String
-  weight Float
 
   sourcing_session_id String          @db.Uuid
   sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
-
-  sourcing_specialty_id String            @db.Uuid
-  sourcing_specialty    SourcingSpecialty @relation(fields: [sourcing_specialty_id], references: [id])
 
   @@map("sourcing_subspecialties")
 }

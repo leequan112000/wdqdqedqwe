@@ -16,15 +16,6 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
-    sourcing_specialties: async (parent, _, context) => {
-      invariant(parent.id, 'Missing session id.');
-      return await context.prisma.sourcingSpecialty.findMany({
-        where: {
-          sourcing_session_id: parent.id
-        },
-        take: 5,
-      });
-    },
     sourcing_subspecialties: async (parent, _, context) => {
       invariant(parent.id, 'Missing session id.');
       return await context.prisma.sourcingSubspecialty.findMany({
@@ -45,40 +36,12 @@ const resolvers: Resolvers<Context> = {
       });
     },
   },
-  SourcingSpecialty: {
-    sourcing_session: async (parent, _, context) => {
-      invariant(parent.sourcing_session_id, 'Missing session id.');
-      return await context.prisma.sourcingSession.findFirst({
-        where: {
-          id: parent.sourcing_session_id
-        },
-      });
-    },
-    sourcing_subspecialties: async (parent, _, context) => {
-      invariant(parent.sourcing_session_id, 'Missing session id.');
-      invariant(parent.id, 'Missing specialty id.');
-      return await context.prisma.sourcingSubspecialty.findMany({
-        where: {
-          sourcing_session_id: parent.sourcing_session_id,
-          sourcing_specialty_id: parent.id,
-        },
-      });
-    },
-  },
   SourcingSubspecialty: {
     sourcing_session: async (parent, _, context) => {
       invariant(parent.sourcing_session_id, 'Missing session id.');
       return await context.prisma.sourcingSession.findFirst({
         where: {
           id: parent.sourcing_session_id
-        },
-      });
-    },
-    sourcing_specialty: async (parent, _, context) => {
-      invariant(parent.sourcing_specialty_id, 'Missing specialty id.');
-      return await context.prisma.sourcingSpecialty.findFirst({
-        where: {
-          id: parent.sourcing_specialty_id
         },
       });
     },

@@ -112,22 +112,18 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
 }
 
 export type SourceCrosArgs = {
-  subspecialty_names_with_weight: {
-    name: string;
-    weight: number;
-    sourcing_specialty_id: string;
-  }[];
+  names: string[];
   sourcing_session_id: string;
 }
 
 export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
   try {
-    const { subspecialty_names_with_weight, sourcing_session_id } = args;
+    const { names, sourcing_session_id } = args;
     const response = await axios({
       method: 'post',
       url: `${app_env.AI_SERVER_URL}/source-cro/`,
       data: {
-        weighted_specs: subspecialty_names_with_weight.map(s => `${s.name}, ${s.weight}`),
+        weighted_specs: names.map(name => `${name}, 1`),
       },
     });
 
@@ -147,11 +143,9 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
     });
 
     await ctx.prisma.sourcingSubspecialty.createMany({
-      data: subspecialty_names_with_weight.map(s => ({
+      data: names.map(name => ({
         sourcing_session_id,
-        name: s.name,
-        weight: s.weight,
-        sourcing_specialty_id: s.sourcing_specialty_id,
+        name,
       })),
     });
 
