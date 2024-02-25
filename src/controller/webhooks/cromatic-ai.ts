@@ -56,7 +56,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
           const sourcingSubspecialties = await Promise.all(
             data.map(async (subspecialtyString: string) => {
               const [subspecialtyName, _] = subspecialtyString.split(',').map(item => item.trim());
-              await trx.sourcingSubspecialty.create({
+              return await trx.sourcingSubspecialty.create({
                 data: {
                   name: subspecialtyName,
                   sourcing_session_id: sourcing_session.id,
