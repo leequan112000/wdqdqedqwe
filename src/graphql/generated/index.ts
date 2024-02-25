@@ -569,6 +569,8 @@ export type Mutation = {
   addMoreParticipants?: Maybe<Array<Maybe<MeetingParticipant>>>;
   addProjectCollaborator?: Maybe<User>;
   answerInvitation?: Maybe<SubmitAttendanceResp>;
+  confirmEditSourcingDetails?: Maybe<SourcingSession>;
+  confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   createBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   createCda?: Maybe<Scalars['Boolean']>;
@@ -686,6 +688,16 @@ export type MutationAnswerInvitationArgs = {
   guest_token?: InputMaybe<Scalars['String']>;
   meeting_token: Scalars['String'];
   name?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationConfirmEditSourcingDetailsArgs = {
+  sourcing_session_id: Scalars['String'];
+};
+
+
+export type MutationConfirmEditSourcingSubspecialtiesArgs = {
+  sourcing_session_id: Scalars['String'];
 };
 
 
@@ -2935,6 +2947,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addMoreParticipants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType, RequireFields<MutationAddMoreParticipantsArgs, 'cromatic_participants' | 'external_participants' | 'meeting_event_id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
+  confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
+  confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
   createBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationCreateBlanketPurchaseOrderArgs, 'amount' | 'name' | 'po_number'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
