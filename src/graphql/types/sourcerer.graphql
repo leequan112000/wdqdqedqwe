@@ -99,6 +99,7 @@ type Mutation {
     sourced_cro_id: String!
     sourcing_session_id: String!
   ): SourcedCro
+  confirmEditSourcingDetails(sourcing_session_id: String!): SourcingSession
 }
 
 type Subscription {

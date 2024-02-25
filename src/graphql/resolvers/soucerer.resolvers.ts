@@ -182,6 +182,28 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    confirmEditSourcingDetails: async (_, args, context) => {
+      const { sourcing_session_id } = args;
+      return await context.prisma.$transaction(async (trx) => {
+        await trx.sourcingSubspecialty.deleteMany({
+          where: {
+            sourcing_session_id: sourcing_session_id,
+          },
+        });
+
+        await trx.sourcedCro.deleteMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+
+        return await trx.sourcingSession.findUnique({
+          where: {
+            id: sourcing_session_id,
+          },
+        });
+      });
+    },
   },
   Subscription: {
     sourceRfpSpecialties: {
