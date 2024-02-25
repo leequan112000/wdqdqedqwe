@@ -5,3 +5,11 @@ type CroDbSubspecialty {
   specialty_id: String
   specialty: CroDbSpecialty
 }
+
+input CroDbSubspecialtiesFilterInput {
+  search: String
+}
+
+type Query {
+  croDbSubspecialties(filter: CroDbSubspecialtiesFilterInput): [CroDbSubspecialty]
+}

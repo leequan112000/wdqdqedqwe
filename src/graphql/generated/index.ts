@@ -260,6 +260,10 @@ export type CroDbSpecialty = {
   subspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
 };
 
+export type CroDbSubspecialtiesFilterInput = {
+  search?: InputMaybe<Scalars['String']>;
+};
+
 export type CroDbSubspecialty = {
   __typename?: 'CroDbSubspecialty';
   definition?: Maybe<Scalars['String']>;
@@ -1527,6 +1531,7 @@ export type Query = {
   collaborators?: Maybe<Array<Maybe<User>>>;
   croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
   croDbSpecialty?: Maybe<CroDbSpecialty>;
+  croDbSubspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
   croDbVendorCompany?: Maybe<CroDbVendorCompany>;
   customer?: Maybe<Customer>;
   featuredNews?: Maybe<Array<Maybe<News>>>;
@@ -1609,6 +1614,11 @@ export type QueryCollaboratorsArgs = {
 
 export type QueryCroDbSpecialtyArgs = {
   name: Scalars['String'];
+};
+
+
+export type QueryCroDbSubspecialtiesArgs = {
+  filter?: InputMaybe<CroDbSubspecialtiesFilterInput>;
 };
 
 
@@ -2196,6 +2206,7 @@ export type ResolversTypes = ResolversObject<{
   CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: ResolverTypeWrapper<CroDbSpecialty>;
+  CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
   CroDbSubspecialty: ResolverTypeWrapper<CroDbSubspecialty>;
   CroDbVendorCompany: ResolverTypeWrapper<CroDbVendorCompany>;
   CroDbVendorCompanyCertification: ResolverTypeWrapper<CroDbVendorCompanyCertification>;
@@ -2311,6 +2322,7 @@ export type ResolversParentTypes = ResolversObject<{
   CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: CroDbSpecialty;
+  CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
   CroDbSubspecialty: CroDbSubspecialty;
   CroDbVendorCompany: CroDbVendorCompany;
   CroDbVendorCompanyCertification: CroDbVendorCompanyCertification;
@@ -3254,6 +3266,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
   croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
   croDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<QueryCroDbSpecialtyArgs, 'name'>>;
+  croDbSubspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSubspecialty']>>>, ParentType, ContextType, Partial<QueryCroDbSubspecialtiesArgs>>;
   croDbVendorCompany?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType, RequireFields<QueryCroDbVendorCompanyArgs, 'id'>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
