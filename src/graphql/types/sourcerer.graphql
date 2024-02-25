@@ -100,6 +100,7 @@ type Mutation {
     sourcing_session_id: String!
   ): SourcedCro
   confirmEditSourcingDetails(sourcing_session_id: String!): SourcingSession
+  confirmEditSourcingSubspecialties(sourcing_session_id: String!): SourcingSession
 }
 
 type Subscription {
