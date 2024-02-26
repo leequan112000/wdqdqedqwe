@@ -260,6 +260,10 @@ export type CroDbSpecialty = {
   subspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
 };
 
+export type CroDbSubspecialtiesFilterInput = {
+  search?: InputMaybe<Scalars['String']>;
+};
+
 export type CroDbSubspecialty = {
   __typename?: 'CroDbSubspecialty';
   definition?: Maybe<Scalars['String']>;
@@ -271,7 +275,11 @@ export type CroDbSubspecialty = {
 
 export type CroDbVendorCompany = {
   __typename?: 'CroDbVendorCompany';
+  company_description?: Maybe<Scalars['String']>;
+  company_ipo_status?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
+  company_revenue?: Maybe<Scalars['String']>;
+  company_size?: Maybe<Scalars['String']>;
   crunchbase_url?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   is_active?: Maybe<Scalars['Boolean']>;
@@ -279,7 +287,6 @@ export type CroDbVendorCompany = {
   linkedin_url?: Maybe<Scalars['String']>;
   logo_url?: Maybe<Scalars['String']>;
   product?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
   vendor_company_certifications?: Maybe<Array<Maybe<CroDbVendorCompanyCertification>>>;
   vendor_company_locations?: Maybe<Array<Maybe<CroDbVendorCompanyLocation>>>;
   vendor_company_subspecialties?: Maybe<Array<Maybe<CroDbVendorCompanySubspecialty>>>;
@@ -391,6 +398,14 @@ export type ExternalGuest = {
 export type ExternalParticipantInput = {
   email: Scalars['String'];
   name?: InputMaybe<Scalars['String']>;
+};
+
+export type ExtractedRfp = {
+  __typename?: 'ExtractedRfp';
+  preparation_details?: Maybe<Scalars['String']>;
+  project_desc?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
+  vendor_requirement?: Maybe<Scalars['String']>;
 };
 
 export type InitialVendorSurveyData = {
@@ -554,6 +569,8 @@ export type Mutation = {
   addMoreParticipants?: Maybe<Array<Maybe<MeetingParticipant>>>;
   addProjectCollaborator?: Maybe<User>;
   answerInvitation?: Maybe<SubmitAttendanceResp>;
+  confirmEditSourcingDetails?: Maybe<SourcingSession>;
+  confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   createBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   createCda?: Maybe<Scalars['Boolean']>;
@@ -572,6 +589,7 @@ export type Mutation = {
   declinedProjectConnection?: Maybe<ProjectConnection>;
   disconnectOauth2?: Maybe<Scalars['Boolean']>;
   draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
+  extractPdfRfp?: Maybe<ExtractedRfp>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -597,6 +615,7 @@ export type Mutation = {
   removeParticipant?: Maybe<Scalars['Boolean']>;
   removeProjectCollaborator?: Maybe<User>;
   removeProjectRequestCollaborator?: Maybe<ProjectRequestCollaborator>;
+  removeSourcedCroFromShortlist?: Maybe<SourcedCro>;
   resendExpiredQuote?: Maybe<Quote>;
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
@@ -605,11 +624,14 @@ export type Mutation = {
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
+  shortlistSourcedCro?: Maybe<SourcedCro>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   skipCda?: Maybe<Scalars['Boolean']>;
+  sourceCros?: Maybe<SourcingTask>;
+  sourceRfpSpecialties?: Maybe<SourcingTask>;
   startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
@@ -666,6 +688,16 @@ export type MutationAnswerInvitationArgs = {
   guest_token?: InputMaybe<Scalars['String']>;
   meeting_token: Scalars['String'];
   name?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationConfirmEditSourcingDetailsArgs = {
+  sourcing_session_id: Scalars['String'];
+};
+
+
+export type MutationConfirmEditSourcingSubspecialtiesArgs = {
+  sourcing_session_id: Scalars['String'];
 };
 
 
@@ -808,6 +840,11 @@ export type MutationDraftQuoteReviewArgs = {
   input?: InputMaybe<Array<ReviewInput>>;
   is_final_step?: InputMaybe<Scalars['Boolean']>;
   quote_id: Scalars['String'];
+};
+
+
+export type MutationExtractPdfRfpArgs = {
+  file: Scalars['Upload'];
 };
 
 
@@ -959,6 +996,12 @@ export type MutationRemoveProjectRequestCollaboratorArgs = {
 };
 
 
+export type MutationRemoveSourcedCroFromShortlistArgs = {
+  sourced_cro_id: Scalars['String'];
+  sourcing_session_id: Scalars['String'];
+};
+
+
 export type MutationResendExpiredQuoteArgs = {
   id: Scalars['String'];
 };
@@ -1002,6 +1045,12 @@ export type MutationSetProjectRequestPublicArgs = {
 };
 
 
+export type MutationShortlistSourcedCroArgs = {
+  sourced_cro_id: Scalars['String'];
+  sourcing_session_id: Scalars['String'];
+};
+
+
 export type MutationSignInUserArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -1016,6 +1065,21 @@ export type MutationSignUpUserArgs = {
   last_name: Scalars['String'];
   password: Scalars['String'];
   phone_number: Scalars['String'];
+};
+
+
+export type MutationSourceCrosArgs = {
+  names: Array<Scalars['String']>;
+  sourcing_session_id: Scalars['String'];
+};
+
+
+export type MutationSourceRfpSpecialtiesArgs = {
+  preparation_details: Scalars['String'];
+  project_desc: Scalars['String'];
+  project_title: Scalars['String'];
+  sourcing_session_id?: InputMaybe<Scalars['String']>;
+  vendor_requirement: Scalars['String'];
 };
 
 
@@ -1478,6 +1542,8 @@ export type Query = {
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
   croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
+  croDbSpecialty?: Maybe<CroDbSpecialty>;
+  croDbSubspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
   croDbVendorCompany?: Maybe<CroDbVendorCompany>;
   customer?: Maybe<Customer>;
   featuredNews?: Maybe<Array<Maybe<News>>>;
@@ -1509,6 +1575,8 @@ export type Query = {
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
+  sourcingSession?: Maybe<SourcingSession>;
+  sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -1553,6 +1621,16 @@ export type QueryBiotechInvoicesArgs = {
 
 export type QueryCollaboratorsArgs = {
   active_only?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryCroDbSpecialtyArgs = {
+  name: Scalars['String'];
+};
+
+
+export type QueryCroDbSubspecialtiesArgs = {
+  filter?: InputMaybe<CroDbSubspecialtiesFilterInput>;
 };
 
 
@@ -1678,6 +1756,11 @@ export type QuerySearchLabSpecializationsArgs = {
 };
 
 
+export type QuerySourcingSessionArgs = {
+  id: Scalars['String'];
+};
+
+
 export type QueryUpcomingMeetingEventsArgs = {
   project_connection_id?: InputMaybe<Scalars['String']>;
 };
@@ -1771,6 +1854,77 @@ export type SaveAvailabilityRulesInput = {
   timezone: Scalars['String'];
 };
 
+export type SourceCroSubscriptionData = {
+  __typename?: 'SourceCroSubscriptionData';
+  cro_db_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_shortlisted?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  score?: Maybe<Scalars['Float']>;
+};
+
+export type SourceCroSubscriptionPayload = {
+  __typename?: 'SourceCroSubscriptionPayload';
+  data?: Maybe<Array<Maybe<SourceCroSubscriptionData>>>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+  task_id?: Maybe<Scalars['String']>;
+};
+
+export type SourceRfpSpecialtySubscriptionData = {
+  __typename?: 'SourceRfpSpecialtySubscriptionData';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourceRfpSpecialtySubscriptionPayload = {
+  __typename?: 'SourceRfpSpecialtySubscriptionPayload';
+  data?: Maybe<Array<Maybe<SourceRfpSpecialtySubscriptionData>>>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+  task_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcedCro = {
+  __typename?: 'SourcedCro';
+  cro_db_id?: Maybe<Scalars['String']>;
+  cro_db_vendor_company?: Maybe<CroDbVendorCompany>;
+  id?: Maybe<Scalars['String']>;
+  is_shortlisted?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  score?: Maybe<Scalars['Float']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcingSession = {
+  __typename?: 'SourcingSession';
+  biotech?: Maybe<Biotech>;
+  biotech_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  preparation_details?: Maybe<Scalars['String']>;
+  project_desc?: Maybe<Scalars['String']>;
+  project_title?: Maybe<Scalars['String']>;
+  sourced_cros?: Maybe<Array<Maybe<SourcedCro>>>;
+  sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
+  task_id?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['Date']>;
+  vendor_requirement?: Maybe<Scalars['String']>;
+};
+
+export type SourcingSubspecialty = {
+  __typename?: 'SourcingSubspecialty';
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
+export type SourcingTask = {
+  __typename?: 'SourcingTask';
+  id?: Maybe<Scalars['String']>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
 export type StripeAccountCapabilities = {
   __typename?: 'StripeAccountCapabilities';
   tax_reporting_us_1099_k?: Maybe<Scalars['String']>;
@@ -1836,11 +1990,28 @@ export type Subscription = {
   cdaUrl?: Maybe<Scalars['String']>;
   newMessage?: Maybe<MessageEdge>;
   newNotification?: Maybe<Notification>;
+  sourceCros?: Maybe<SourceCroSubscriptionPayload>;
+  sourceRfpSpecialties?: Maybe<SourceRfpSpecialtySubscriptionPayload>;
 };
 
 
 export type SubscriptionNewMessageArgs = {
   chat_id: Scalars['String'];
+};
+
+
+export type SubscriptionSourceCrosArgs = {
+  task_id: Scalars['String'];
+};
+
+
+export type SubscriptionSourceRfpSpecialtiesArgs = {
+  task_id: Scalars['String'];
+};
+
+export type SubspecialtyNameWithWeight = {
+  name: Scalars['String'];
+  weight: Scalars['Float'];
 };
 
 export type UpdateMilestoneInput = {
@@ -2047,6 +2218,7 @@ export type ResolversTypes = ResolversObject<{
   CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: ResolverTypeWrapper<CroDbSpecialty>;
+  CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
   CroDbSubspecialty: ResolverTypeWrapper<CroDbSubspecialty>;
   CroDbVendorCompany: ResolverTypeWrapper<CroDbVendorCompany>;
   CroDbVendorCompanyCertification: ResolverTypeWrapper<CroDbVendorCompanyCertification>;
@@ -2061,6 +2233,7 @@ export type ResolversTypes = ResolversObject<{
   DateWithTimeSlots: ResolverTypeWrapper<DateWithTimeSlots>;
   ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
   ExternalParticipantInput: ExternalParticipantInput;
+  ExtractedRfp: ResolverTypeWrapper<ExtractedRfp>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   InitialVendorSurveyData: ResolverTypeWrapper<InitialVendorSurveyData>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -2111,6 +2284,14 @@ export type ResolversTypes = ResolversObject<{
   RuleInterval: ResolverTypeWrapper<RuleInterval>;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
+  SourceCroSubscriptionData: ResolverTypeWrapper<SourceCroSubscriptionData>;
+  SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
+  SourceRfpSpecialtySubscriptionData: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionData>;
+  SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
+  SourcedCro: ResolverTypeWrapper<SourcedCro>;
+  SourcingSession: ResolverTypeWrapper<SourcingSession>;
+  SourcingSubspecialty: ResolverTypeWrapper<SourcingSubspecialty>;
+  SourcingTask: ResolverTypeWrapper<SourcingTask>;
   String: ResolverTypeWrapper<Scalars['String']>;
   StripeAccountCapabilities: ResolverTypeWrapper<StripeAccountCapabilities>;
   StripeAccountData: ResolverTypeWrapper<StripeAccountData>;
@@ -2120,6 +2301,7 @@ export type ResolversTypes = ResolversObject<{
   StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
   SubmitAttendanceResp: ResolverTypeWrapper<SubmitAttendanceResp>;
   Subscription: ResolverTypeWrapper<{}>;
+  SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   UploadResult: ResolverTypeWrapper<UploadResult>;
@@ -2152,6 +2334,7 @@ export type ResolversParentTypes = ResolversObject<{
   CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: CroDbSpecialty;
+  CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
   CroDbSubspecialty: CroDbSubspecialty;
   CroDbVendorCompany: CroDbVendorCompany;
   CroDbVendorCompanyCertification: CroDbVendorCompanyCertification;
@@ -2166,6 +2349,7 @@ export type ResolversParentTypes = ResolversObject<{
   DateWithTimeSlots: DateWithTimeSlots;
   ExternalGuest: ExternalGuest;
   ExternalParticipantInput: ExternalParticipantInput;
+  ExtractedRfp: ExtractedRfp;
   Float: Scalars['Float'];
   InitialVendorSurveyData: InitialVendorSurveyData;
   Int: Scalars['Int'];
@@ -2216,6 +2400,14 @@ export type ResolversParentTypes = ResolversObject<{
   RuleInterval: RuleInterval;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
+  SourceCroSubscriptionData: SourceCroSubscriptionData;
+  SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
+  SourceRfpSpecialtySubscriptionData: SourceRfpSpecialtySubscriptionData;
+  SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
+  SourcedCro: SourcedCro;
+  SourcingSession: SourcingSession;
+  SourcingSubspecialty: SourcingSubspecialty;
+  SourcingTask: SourcingTask;
   String: Scalars['String'];
   StripeAccountCapabilities: StripeAccountCapabilities;
   StripeAccountData: StripeAccountData;
@@ -2225,6 +2417,7 @@ export type ResolversParentTypes = ResolversObject<{
   StripeExternalAccountData: StripeExternalAccountData;
   SubmitAttendanceResp: SubmitAttendanceResp;
   Subscription: {};
+  SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: Scalars['Upload'];
   UploadResult: UploadResult;
@@ -2469,7 +2662,11 @@ export type CroDbSubspecialtyResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CroDbVendorCompany'] = ResolversParentTypes['CroDbVendorCompany']> = ResolversObject<{
+  company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   crunchbase_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2477,7 +2674,6 @@ export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends Re
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_company_certifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyCertification']>>>, ParentType, ContextType>;
   vendor_company_locations?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyLocation']>>>, ParentType, ContextType>;
   vendor_company_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanySubspecialty']>>>, ParentType, ContextType>;
@@ -2583,6 +2779,14 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ExtractedRfpResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtractedRfp'] = ResolversParentTypes['ExtractedRfp']> = ResolversObject<{
+  preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -2743,6 +2947,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addMoreParticipants?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingParticipant']>>>, ParentType, ContextType, RequireFields<MutationAddMoreParticipantsArgs, 'cromatic_participants' | 'external_participants' | 'meeting_event_id'>>;
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
+  confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
+  confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
   createBiotechInviteVendor?: Resolver<Maybe<ResolversTypes['BiotechInviteVendor']>, ParentType, ContextType, RequireFields<MutationCreateBiotechInviteVendorArgs, 'company_name' | 'email' | 'first_name' | 'last_name' | 'project_request_id' | 'website'>>;
   createBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationCreateBlanketPurchaseOrderArgs, 'amount' | 'name' | 'po_number'>>;
   createCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2761,6 +2967,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   disconnectOauth2?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisconnectOauth2Args, 'provider'>>;
   draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
+  extractPdfRfp?: Resolver<Maybe<ResolversTypes['ExtractedRfp']>, ParentType, ContextType, RequireFields<MutationExtractPdfRfpArgs, 'file'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'first_name' | 'last_name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -2784,6 +2991,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeParticipant?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRemoveParticipantArgs, 'meeting_event_id' | 'user_id'>>;
   removeProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRemoveProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   removeProjectRequestCollaborator?: Resolver<Maybe<ResolversTypes['ProjectRequestCollaborator']>, ParentType, ContextType, RequireFields<MutationRemoveProjectRequestCollaboratorArgs, 'customer_id' | 'project_request_id'>>;
+  removeSourcedCroFromShortlist?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationRemoveSourcedCroFromShortlistArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   resendExpiredQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationResendExpiredQuoteArgs, 'id'>>;
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
@@ -2792,11 +3000,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
+  shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipCda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  sourceCros?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceCrosArgs, 'names' | 'sourcing_session_id'>>;
+  sourceRfpSpecialties?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceRfpSpecialtiesArgs, 'preparation_details' | 'project_desc' | 'project_title' | 'vendor_requirement'>>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
@@ -3068,6 +3279,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
   croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
+  croDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<QueryCroDbSpecialtyArgs, 'name'>>;
+  croDbSubspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSubspecialty']>>>, ParentType, ContextType, Partial<QueryCroDbSubspecialtiesArgs>>;
   croDbVendorCompany?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType, RequireFields<QueryCroDbVendorCompanyArgs, 'id'>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
@@ -3099,6 +3312,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
+  sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
+  sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
@@ -3176,6 +3391,77 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SourceCroSubscriptionDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionData'] = ResolversParentTypes['SourceCroSubscriptionData']> = ResolversObject<{
+  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourceCroSubscriptionData']>>>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceRfpSpecialtySubscriptionDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionData'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionData']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload']> = ResolversObject<{
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionData']>>>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCro'] = ResolversParentTypes['SourcedCro']> = ResolversObject<{
+  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cro_db_vendor_company?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
+  biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
+  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourced_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
+  task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingSubspecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSubspecialty'] = ResolversParentTypes['SourcingSubspecialty']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcingTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingTask'] = ResolversParentTypes['SourcingTask']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type StripeAccountCapabilitiesResolvers<ContextType = any, ParentType extends ResolversParentTypes['StripeAccountCapabilities'] = ResolversParentTypes['StripeAccountCapabilities']> = ResolversObject<{
   tax_reporting_us_1099_k?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   transfers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3240,6 +3526,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   cdaUrl?: SubscriptionResolver<Maybe<ResolversTypes['String']>, "cdaUrl", ParentType, ContextType>;
   newMessage?: SubscriptionResolver<Maybe<ResolversTypes['MessageEdge']>, "newMessage", ParentType, ContextType, RequireFields<SubscriptionNewMessageArgs, 'chat_id'>>;
   newNotification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "newNotification", ParentType, ContextType>;
+  sourceCros?: SubscriptionResolver<Maybe<ResolversTypes['SourceCroSubscriptionPayload']>, "sourceCros", ParentType, ContextType, RequireFields<SubscriptionSourceCrosArgs, 'task_id'>>;
+  sourceRfpSpecialties?: SubscriptionResolver<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionPayload']>, "sourceRfpSpecialties", ParentType, ContextType, RequireFields<SubscriptionSourceRfpSpecialtiesArgs, 'task_id'>>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -3381,6 +3669,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Date?: GraphQLScalarType;
   DateWithTimeSlots?: DateWithTimeSlotsResolvers<ContextType>;
   ExternalGuest?: ExternalGuestResolvers<ContextType>;
+  ExtractedRfp?: ExtractedRfpResolvers<ContextType>;
   InitialVendorSurveyData?: InitialVendorSurveyDataResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
@@ -3423,6 +3712,14 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   RuleInterval?: RuleIntervalResolvers<ContextType>;
+  SourceCroSubscriptionData?: SourceCroSubscriptionDataResolvers<ContextType>;
+  SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
+  SourceRfpSpecialtySubscriptionData?: SourceRfpSpecialtySubscriptionDataResolvers<ContextType>;
+  SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
+  SourcedCro?: SourcedCroResolvers<ContextType>;
+  SourcingSession?: SourcingSessionResolvers<ContextType>;
+  SourcingSubspecialty?: SourcingSubspecialtyResolvers<ContextType>;
+  SourcingTask?: SourcingTaskResolvers<ContextType>;
   StripeAccountCapabilities?: StripeAccountCapabilitiesResolvers<ContextType>;
   StripeAccountData?: StripeAccountDataResolvers<ContextType>;
   StripeAccountRequirementError?: StripeAccountRequirementErrorResolvers<ContextType>;

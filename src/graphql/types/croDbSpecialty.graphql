@@ -7,4 +7,5 @@ type CroDbSpecialty {
 
 type Query {
   croDbSpecialties: [CroDbSpecialty]
+  croDbSpecialty(name: String!): CroDbSpecialty
 }

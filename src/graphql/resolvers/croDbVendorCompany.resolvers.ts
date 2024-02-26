@@ -38,6 +38,16 @@ const resolvers: Resolvers<Context> = {
       });
     },
   },
+  CroDbVendorCompanySubspecialty: {
+    subspecialty: async (parent, _, context) => {
+      invariant(parent.subspecialty_id, 'Missing subspecialty id.');
+      return await context.prismaCRODb.subspecialty.findFirst({
+        where: {
+          id: parent.subspecialty_id
+        },
+      });
+    },
+  },
   Query: {
     croDbVendorCompany: async (_, args, context) => {
       const { id } = args;

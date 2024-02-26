@@ -1,0 +1,109 @@
+type SourcingSession {
+  id: String
+  project_title: String
+  project_desc: String
+  preparation_details: String
+  vendor_requirement: String
+  task_id: String
+  biotech_id: String
+  biotech: Biotech
+  sourcing_subspecialties: [SourcingSubspecialty]
+  sourced_cros: [SourcedCro]
+  updated_at: Date
+}
+
+type SourcingSubspecialty {
+  id: String
+  name: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+}
+
+type SourcedCro {
+  id: String
+  name: String
+  score: Float
+  is_shortlisted: Boolean
+  cro_db_id: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+  cro_db_vendor_company: CroDbVendorCompany
+}
+
+type ExtractedRfp {
+  project_title: String
+  project_desc: String
+  preparation_details: String
+  vendor_requirement: String
+}
+
+type SourcingTask {
+  id: String
+  sourcing_session_id: String
+}
+
+input SubspecialtyNameWithWeight {
+  name: String!
+  weight: Float!
+}
+
+type SourceRfpSpecialtySubscriptionData {
+  id: String
+  name: String
+  sourcing_session_id: String
+}
+
+type SourceRfpSpecialtySubscriptionPayload {
+  task_id: String
+  sourcing_session_id: String
+  data: [SourceRfpSpecialtySubscriptionData]
+}
+
+type SourceCroSubscriptionData {
+  id: String
+  name: String
+  score: Float
+  is_shortlisted: Boolean
+  cro_db_id: String
+}
+
+type SourceCroSubscriptionPayload {
+  task_id: String
+  sourcing_session_id: String
+  data: [SourceCroSubscriptionData]
+}
+
+type Query {
+  sourcingSession(id: String!): SourcingSession
+  sourcingSessions: [SourcingSession]
+}
+
+type Mutation {
+  extractPdfRfp(file: Upload!): ExtractedRfp
+  sourceRfpSpecialties(
+    project_title: String!
+    project_desc: String!
+    preparation_details: String!
+    vendor_requirement: String!
+    sourcing_session_id: String
+  ): SourcingTask
+  sourceCros(
+    names: [String!]!
+    sourcing_session_id: String!
+  ): SourcingTask
+  shortlistSourcedCro(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
+  removeSourcedCroFromShortlist(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
+  confirmEditSourcingDetails(sourcing_session_id: String!): SourcingSession
+  confirmEditSourcingSubspecialties(sourcing_session_id: String!): SourcingSession
+}
+
+type Subscription {
+  sourceRfpSpecialties(task_id: String!): SourceRfpSpecialtySubscriptionPayload
+  sourceCros(task_id: String!): SourceCroSubscriptionPayload
+}

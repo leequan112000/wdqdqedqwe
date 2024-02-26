@@ -2,6 +2,7 @@ import { Router, raw } from "express";
 import multer from "multer";
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
+import { cromaticAiWebhook } from "./cromatic-ai";
 import { processStripeEvent } from './stripe/stripe';
 import { pandadocWebhook } from "./pandadoc";
 import { zohoWebhook } from "./zoho";
@@ -34,3 +35,4 @@ router.post('/pandadoc', raw({ type: 'application/json' }), pandadocWebhook);
 
 router.post('/zoho', upload.single('content'), zohoWebhook);
 
+router.post('/cromatic-ai', raw({ type: 'application/json' }), cromaticAiWebhook);

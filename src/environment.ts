@@ -1,14 +1,17 @@
 const dev = {
   APP_URL: 'http://localhost:3000',
   SERVER_URL: 'https://localhost:9000',
+  AI_SERVER_URL: 'http://localhost:8080',
 };
 const staging = {
   APP_URL: 'https://caesar-staging.herokuapp.com',
   SERVER_URL: 'https://octavian-staging.herokuapp.com',
+  AI_SERVER_URL: 'https://staging-ec2.cromatic.bio',
 };
 const prod = {
   APP_URL: 'https://www.cromatic.bio',
   SERVER_URL: 'https://octavian.herokuapp.com',
+  AI_SERVER_URL: 'https://ai.cromatic.bio',
 };
 
 let env = dev;

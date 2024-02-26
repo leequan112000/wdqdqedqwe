@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -123,6 +123,7 @@ model Biotech {
   biotech_invoices        BiotechInvoice[]
   purchase_orders         PurchaseOrder[]
   blanket_purchase_orders BlanketPurchaseOrder[]
+  sourcing_sessions       SourcingSession[]
 
   @@map("biotechs")
 }
@@ -956,4 +957,44 @@ model Availability {
   timezone    String
 
   @@map("availabilities")
+}
+
+model SourcingSession {
+  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_title           String
+  project_desc            String
+  preparation_details     String
+  vendor_requirement      String
+  task_id                 String
+  biotech_id              String                 @db.Uuid
+  biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
+  sourcing_subspecialties SourcingSubspecialty[]
+  sourced_cros            SourcedCro[]
+  created_at              DateTime               @default(now())
+  updated_at              DateTime               @default(now()) @updatedAt
+
+  @@map("sourcing_sessions")
+}
+
+model SourcingSubspecialty {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name   String
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+
+  @@map("sourcing_subspecialties")
+}
+
+model SourcedCro {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  score          Float
+  is_shortlisted Boolean
+  cro_db_id      String  @db.Uuid
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+
+  @@map("sourced_cros")
 }
