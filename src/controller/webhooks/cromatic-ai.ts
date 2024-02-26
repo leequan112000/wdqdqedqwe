@@ -53,9 +53,17 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             }
           });
 
+          // Filter subspecialty below 0.7 weight threshold
+          const filteredSubspecialtyNames = data
+            .map((subspecialtyString: string) => {
+              const [subspecialtyName, weight] = subspecialtyString.split(',').map(item => item.trim());
+              return { subspecialtyName, weight: parseFloat(weight) };
+            })
+            .filter(({ weight }: { weight: number }) => weight >= 0.7)
+            .map(({ subspecialtyName }: { subspecialtyName: string }) => subspecialtyName);
+
           const sourcingSubspecialties = await Promise.all(
-            data.map(async (subspecialtyString: string) => {
-              const [subspecialtyName, _] = subspecialtyString.split(',').map(item => item.trim());
+            filteredSubspecialtyNames.map(async (subspecialtyName: string) => {
               return await trx.sourcingSubspecialty.create({
                 data: {
                   name: subspecialtyName,
@@ -81,8 +89,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         }
 
         prisma.$transaction(async (trx) => {
+          const cappedData = data.slice(0, 50);
           const sourcedCros = await Promise.all(
-            data.map(async (cro: { cro_name: string, cro_id: string, score: string }) => {
+            cappedData.map(async (cro: { cro_name: string, cro_id: string, score: string }) => {
               return await trx.sourcedCro.create({
                 data: {
                   name: cro.cro_name,
