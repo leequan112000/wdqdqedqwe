@@ -38,6 +38,11 @@ const resolvers: Resolvers<Context> = {
       });
     },
   },
+  CroDbVendorCompanyLocation: {
+    country: async (parent, _, __) => {
+      return parent.country?.trim() || '';
+    },
+  },
   CroDbVendorCompanySubspecialty: {
     subspecialty: async (parent, _, context) => {
       invariant(parent.subspecialty_id, 'Missing subspecialty id.');
