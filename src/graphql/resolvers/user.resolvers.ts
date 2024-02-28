@@ -583,22 +583,6 @@ const resolvers: Resolvers<Context> = {
 
         invariant(!user, new PublicError("User already exists."));
 
-        const biotech = await trx.biotech.findFirst({
-          where: {
-            name: {
-              equals: args.company_name,
-              mode: "insensitive",
-            },
-          },
-        });
-
-        invariant(
-          !biotech,
-          new PublicError(
-            "Your company has already setup an account. Please ask any user from your account to invite you to the company account."
-          )
-        );
-
         const newBiotech = await trx.biotech.create({
           data: {
             name: args.company_name,
