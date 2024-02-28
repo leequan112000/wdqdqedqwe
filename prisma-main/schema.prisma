@@ -87,7 +87,7 @@ model Admin {
 
 model Biotech {
   id                                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                        String    @unique
+  name                                        String
   created_at                                  DateTime  @default(now())
   updated_at                                  DateTime  @updatedAt
   has_setup_profile                           Boolean   @default(false)
@@ -106,7 +106,7 @@ model Biotech {
   skip_cda                                    Boolean   @default(false)
   number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
-  legal_name                                  String?   @unique
+  legal_name                                  String?
   upload_limit                                Int       @default(1048576)
   founded_year                                String?
   team_size                                   String?
@@ -977,8 +977,8 @@ model SourcingSession {
 }
 
 model SourcingSubspecialty {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name   String
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
 
   sourcing_session_id String          @db.Uuid
   sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
