@@ -38,6 +38,24 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    company_size: async (parent, _, context) => {
+      let companySize = parent.company_size;
+      if (!companySize) {
+        companySize = (await context.prismaCRODb.vendorCompany.findUnique({
+          where: {
+            id: parent.id!,
+          },
+          select: {
+            id: true,
+            company_size: true,
+          },
+        }))?.company_size;
+      }
+
+      return companySize
+        ? companySize.replace('-', ' — ')
+        : null;
+    }
   },
   CroDbVendorCompanyLocation: {
     country: async (parent, _, __) => {
