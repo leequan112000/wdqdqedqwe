@@ -351,3 +351,10 @@ export enum CalendarIntegrationErrorType {
   NO_TEAMS_FOR_BUSINESS = 'NoTeamsForBusiness',
   AUTHENTICATION_FAILED = 'AuthenticationFailed',
 }
+
+export enum CroDbVendorCompanyType {
+  CRO = 'CRO',
+  CMO = 'CMO',
+  CDMO = 'CDMO',
+  NON_PROFIT = 'Non-profit research org'
+}
