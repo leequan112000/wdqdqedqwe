@@ -2,6 +2,7 @@ import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
+import { CroDbVendorCompanyType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   CroDbVendorCompany: {
@@ -37,6 +38,24 @@ const resolvers: Resolvers<Context> = {
         }
       });
     },
+    company_size: async (parent, _, context) => {
+      let companySize = parent.company_size;
+      if (!companySize) {
+        companySize = (await context.prismaCRODb.vendorCompany.findUnique({
+          where: {
+            id: parent.id!,
+          },
+          select: {
+            id: true,
+            company_size: true,
+          },
+        }))?.company_size;
+      }
+
+      return companySize
+        ? companySize.replace('-', ' — ')
+        : null;
+    }
   },
   CroDbVendorCompanyLocation: {
     country: async (parent, _, __) => {
@@ -51,6 +70,27 @@ const resolvers: Resolvers<Context> = {
           id: parent.subspecialty_id
         },
       });
+    },
+  },
+  CroDbVendorCompanyType: {
+    company_type: async (parent, _, context) => {
+      let companyType = parent.company_type;
+      if (!companyType) {
+        companyType = (await context.prismaCRODb.vendorCompanyType.findUnique({
+          where: {
+            id: parent.id!,
+          },
+          select: {
+            id: true,
+            company_type: true,
+          },
+        }))?.company_type;
+      }
+
+      if (companyType?.trim() === CroDbVendorCompanyType.NON_PROFIT) {
+        return 'Non-profit';
+      }
+      return companyType || null;
     },
   },
   Query: {
