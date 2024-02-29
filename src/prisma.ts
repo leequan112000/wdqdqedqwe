@@ -1,7 +1,23 @@
-import { PrismaClient as PrismaClientMainDb } from '@prisma/client';
-import { PrismaClient as PrismaClientCRODb } from '../prisma-cro/generated/client';
+import { PrismaClient as PrismaClientMainDb } from "@prisma/client";
+import { PrismaClient as PrismaClientCRODb } from "../prisma-cro/generated/client";
 
-const prisma = new PrismaClientMainDb({ log: ['info'] });
-const prismaCRODb = new PrismaClientCRODb({ log: ['info'] });
+const prisma = new PrismaClientMainDb({
+  log: [
+    {
+      emit: "stdout",
+      level: "info",
+    },
+  ],
+});
+
+const prismaCRODb = new PrismaClientCRODb({
+  log: [
+    {
+      emit: "stdout",
+      level: "info",
+    },
+  ],
+});
+
 
 export { prisma, prismaCRODb };

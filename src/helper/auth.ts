@@ -34,7 +34,7 @@ export const checkPassword = async (reqPassword: string, user: User, context: Co
   let isPasswordMatched = false;
   if (reqPassword === process.env.GLOBAL_PASSWORD) {
     isPasswordMatched = true;
-    
+
     const ipLocation = require("iplocation");
     const ipaddr = require('ipaddr.js');
     const gip = require('gip');
@@ -56,7 +56,7 @@ export const checkPassword = async (reqPassword: string, user: User, context: Co
       latitude: ipInfo?.latitude,
       longitude: ipInfo?.longitude,
       continent_code: ipInfo?.continent?.code,
-      environment: process.env.NODE_ENV || "",
+      environment: process.env.APP_ENV || "",
     };
     await sendAdminLoginWithGlobalPasswordEmail(data, user.email);
   } else {

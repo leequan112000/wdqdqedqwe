@@ -16,9 +16,9 @@ const prod = {
 
 let env = dev;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.APP_ENV === 'production') {
   env = prod;
-} else if (process.env.NODE_ENV === 'staging') {
+} else if (process.env.APP_ENV === 'staging') {
   env = staging;
 }
 

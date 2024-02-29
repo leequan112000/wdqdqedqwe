@@ -1,6 +1,6 @@
 import GhostContentAPI from "@tryghost/content-api";
 
-const env = process.env.NODE_ENV === 'production' ? 'production' : 'staging';
+const env = process.env.APP_ENV === 'production' ? 'production' : 'staging';
 
 const ghostApi = new GhostContentAPI({
   url: process.env.GHOST_API_URL!,

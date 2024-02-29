@@ -74,7 +74,7 @@ function formatApolloServerError(formattedError: GraphQLFormattedError, error: u
 export const apolloServer = new ApolloServer<Context>({
   schema,
   validationRules: [depthLimit(7)],
-  introspection: process.env.NODE_ENV === 'development',
+  introspection: process.env.APP_ENV === 'development',
   formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -94,7 +94,7 @@ export const apolloServer = new ApolloServer<Context>({
 export const adminApolloServer = new ApolloServer<Context>({
   schema: adminSchema,
   validationRules: [depthLimit(7)],
-  introspection: process.env.NODE_ENV === 'development',
+  introspection: process.env.APP_ENV === 'development',
   formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginSentryMonitor(),
@@ -139,7 +139,7 @@ export async function startServer() {
       context: async ({ req, res }) => {
         if (
           // bypass authentication for codegen
-          (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
           // if user_id exist
           || req.is_admin_authorized
         ) {
@@ -186,7 +186,7 @@ export async function startServer() {
 
         if (
           // bypass authentication for codegen
-          (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
           // if user_id exist
           || req.user_id
           // bypass authentication for whitelisted operation, eg. signIn and signUp
