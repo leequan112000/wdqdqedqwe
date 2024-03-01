@@ -4,8 +4,8 @@ const dev = {
   AI_SERVER_URL: 'http://localhost:8080',
 };
 const staging = {
-  APP_URL: 'https://caesar-staging.herokuapp.com',
-  SERVER_URL: 'https://octavian-staging.herokuapp.com',
+  APP_URL: 'https://staging.cromatic.bio',
+  SERVER_URL: 'https://octavian-staging.onrender.com',
   AI_SERVER_URL: 'https://staging-ec2.cromatic.bio',
 };
 const prod = {
