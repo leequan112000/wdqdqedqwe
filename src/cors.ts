@@ -11,8 +11,8 @@ if (process.env.APP_ENV === 'production') {
   ];
 } else if (process.env.APP_ENV === 'staging') {
   origin = [
-    'https://caesar-staging.herokuapp.com',
-    'https://octavian-staging.herokuapp.com',
+    'https://staging.cromatic.bio',
+    'https://octavian-staging.onrender.com',
     'https://staging.cromatic.bio',
   ];
 } else {
