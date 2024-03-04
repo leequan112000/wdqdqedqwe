@@ -6,6 +6,18 @@ const importVendorCompanySubspecialties = async (records: any) => {
   try {
     await Promise.all(records.map(async (record: any) => {
       const vendor_company_id = record['ID'];
+
+      const vendor_company = await prismaCRODb.vendorCompany.findFirst({
+        where: {
+          id: vendor_company_id
+        },
+      });
+
+      if (!vendor_company) {
+        console.log(`Vendor company not found: ${vendor_company_id}`);
+        return;
+      }
+
       const specialty_name = record['Specialties'];
       const subspecialty_name = record['Subspecialties'];
       const specialty = await prismaCRODb.specialty.findFirst({
@@ -38,8 +50,18 @@ const importVendorCompanySubspecialties = async (records: any) => {
       }
 
       if (subspecialty) {
-        return prismaCRODb.vendorCompanySubspecialty.create({
-          data: {
+        return await prismaCRODb.vendorCompanySubspecialty.upsert({
+          where: {
+            subspecialty_id_vendor_company_id: {
+              subspecialty_id: subspecialty.id,
+              vendor_company_id,
+            }
+          },
+          update: {
+            subspecialty_id: subspecialty.id,
+            vendor_company_id,
+          },
+          create: {
             subspecialty_id: subspecialty.id,
             vendor_company_id,
           },
@@ -93,7 +115,14 @@ const importVendorCompanyCertifications = async (records: any) => {
       const certifications = record['Certifications'].split(', ');
       if (certifications.length > 0) {
         await Promise.all(certifications.map(async (certification_name: string) => {
-          if (certification_name) {
+          const existingRecord = await prismaCRODb.vendorCompanyCertification.findFirst({
+            where: {
+              vendor_company_id,
+              certification_name,
+            }
+          });
+
+          if (!existingRecord && certification_name) {
             await prismaCRODb.vendorCompanyCertification.create({
               data: {
                 certification_name,

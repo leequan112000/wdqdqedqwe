@@ -67,6 +67,7 @@ model VendorCompanySubspecialty {
   vendor_company_id String        @db.Uuid
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
+  @@unique([subspecialty_id, vendor_company_id])
   @@map("vendor_company_subspecialties")
 }
 
@@ -76,6 +77,7 @@ model VendorCompanyLocation {
   vendor_company_id String        @db.Uuid
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
+  @@unique([country, vendor_company_id])
   @@map("vendor_company_locations")
 }
 
@@ -85,6 +87,7 @@ model VendorCompanyType {
   vendor_company_id String        @db.Uuid
   vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
+  @@unique([company_type, vendor_company_id])
   @@map("vendor_company_types")
 }
 
@@ -94,6 +97,7 @@ model VendorCompanyCertification {
   vendor_company_id  String        @db.Uuid
   vendor_company     VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
+  @@unique([certification_name, vendor_company_id])
   @@map("vendor_company_certifications")
 }
 
