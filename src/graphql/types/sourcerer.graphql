@@ -59,18 +59,10 @@ type SourceRfpSpecialtySubscriptionPayload {
   data: [SourceRfpSpecialtySubscriptionData]
 }
 
-type SourceCroSubscriptionData {
-  id: String
-  name: String
-  score: Float
-  is_shortlisted: Boolean
-  cro_db_id: String
-}
-
 type SourceCroSubscriptionPayload {
   task_id: String
   sourcing_session_id: String
-  data: [SourceCroSubscriptionData]
+  data: [SourcedCro]
 }
 
 type Query {
