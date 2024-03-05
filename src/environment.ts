@@ -9,7 +9,7 @@ const staging = {
 };
 const prod = {
   APP_URL: 'https://www.cromatic.bio',
-  SERVER_URL: 'https://octavian.onrender.com',
+  SERVER_URL: 'https://octavian.cromatic.com',
   AI_SERVER_URL: 'https://ai.cromatic.bio',
 };
 
