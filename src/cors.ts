@@ -8,6 +8,7 @@ if (process.env.NODE_ENV === 'production') {
     'https://www.cro-matic.com',
     'https://www.cromatic.bio',
     'https://octavian.cromatic.bio',
+    'https://octavian.onrender.bio',
   ];
 } else if (process.env.NODE_ENV === 'staging') {
   origin = [
