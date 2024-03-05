@@ -10,7 +10,7 @@ const resolvers: Resolvers<Context> = {
   SourcingSession: {
     biotech: async (parent, _, context) => {
       invariant(parent.biotech_id, 'Missing biotech id.');
-      return await context.prisma.biotech.findFirst({
+      return await context.prisma.biotech.findUnique({
         where: {
           id: parent.biotech_id
         },
@@ -18,28 +18,31 @@ const resolvers: Resolvers<Context> = {
     },
     sourcing_subspecialties: async (parent, _, context) => {
       invariant(parent.id, 'Missing session id.');
-      return await context.prisma.sourcingSubspecialty.findMany({
-        where: {
-          sourcing_session_id: parent.id
-        },
-      });
+      return await context.prisma.sourcingSession
+        .findUnique({
+          where: {
+            id: parent.id,
+          },
+        })
+        .sourcing_subspecialties();
     },
     sourced_cros: async (parent, _, context) => {
       invariant(parent.id, 'Missing session id.');
-      return await context.prisma.sourcedCro.findMany({
-        where: {
-          sourcing_session_id: parent.id
-        },
-        orderBy: [
-          { score: 'desc' }
-        ],
-      });
+      return await context.prisma.sourcingSession
+        .findUnique({
+          where: {
+            id: parent.id,
+          },
+        })
+        .sourced_cros({
+          orderBy: [{ score: "desc" }],
+        });
     },
   },
   SourcingSubspecialty: {
     sourcing_session: async (parent, _, context) => {
       invariant(parent.sourcing_session_id, 'Missing session id.');
-      return await context.prisma.sourcingSession.findFirst({
+      return await context.prisma.sourcingSession.findUnique({
         where: {
           id: parent.sourcing_session_id
         },
@@ -49,7 +52,7 @@ const resolvers: Resolvers<Context> = {
   SourcedCro: {
     sourcing_session: async (parent, _, context) => {
       invariant(parent.sourcing_session_id, 'Missing session id.');
-      return await context.prisma.sourcingSession.findFirst({
+      return await context.prisma.sourcingSession.findUnique({
         where: {
           id: parent.sourcing_session_id
         },
@@ -57,7 +60,7 @@ const resolvers: Resolvers<Context> = {
     },
     cro_db_vendor_company: async (parent, _, context) => {
       invariant(parent.cro_db_id, 'Missing CRO DB id.');
-      return await context.prismaCRODb.vendorCompany.findFirst({
+      return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.cro_db_id
         },
