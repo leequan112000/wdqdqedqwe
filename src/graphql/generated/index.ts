@@ -1854,18 +1854,9 @@ export type SaveAvailabilityRulesInput = {
   timezone: Scalars['String'];
 };
 
-export type SourceCroSubscriptionData = {
-  __typename?: 'SourceCroSubscriptionData';
-  cro_db_id?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  is_shortlisted?: Maybe<Scalars['Boolean']>;
-  name?: Maybe<Scalars['String']>;
-  score?: Maybe<Scalars['Float']>;
-};
-
 export type SourceCroSubscriptionPayload = {
   __typename?: 'SourceCroSubscriptionPayload';
-  data?: Maybe<Array<Maybe<SourceCroSubscriptionData>>>;
+  data?: Maybe<Array<Maybe<SourcedCro>>>;
   sourcing_session_id?: Maybe<Scalars['String']>;
   task_id?: Maybe<Scalars['String']>;
 };
@@ -2284,7 +2275,6 @@ export type ResolversTypes = ResolversObject<{
   RuleInterval: ResolverTypeWrapper<RuleInterval>;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
-  SourceCroSubscriptionData: ResolverTypeWrapper<SourceCroSubscriptionData>;
   SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
   SourceRfpSpecialtySubscriptionData: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionData>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
@@ -2400,7 +2390,6 @@ export type ResolversParentTypes = ResolversObject<{
   RuleInterval: RuleInterval;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
-  SourceCroSubscriptionData: SourceCroSubscriptionData;
   SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
   SourceRfpSpecialtySubscriptionData: SourceRfpSpecialtySubscriptionData;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
@@ -3391,17 +3380,8 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type SourceCroSubscriptionDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionData'] = ResolversParentTypes['SourceCroSubscriptionData']> = ResolversObject<{
-  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
-  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourceCroSubscriptionData']>>>, ParentType, ContextType>;
+  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3712,7 +3692,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   RuleInterval?: RuleIntervalResolvers<ContextType>;
-  SourceCroSubscriptionData?: SourceCroSubscriptionDataResolvers<ContextType>;
   SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionData?: SourceRfpSpecialtySubscriptionDataResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
