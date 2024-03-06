@@ -16,7 +16,7 @@
         "status": null
       },
       "billing_address_collection": null,
-      "cancel_url": "https://caesar-staging.herokuapp.com/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
+      "cancel_url": "https://staging.cromatic.bio/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
       "client_reference_id": "350a792a-2b63-4f9b-8c9a-1bd05c0c0e11",
       "consent": null,
       "consent_collection": null,
@@ -95,7 +95,7 @@
       "status": "complete",
       "submit_type": null,
       "subscription": null,
-      "success_url": "https://caesar-staging.herokuapp.com/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
+      "success_url": "https://staging.cromatic.bio/app/project-connection/bde778f5-0391-41e1-b68f-01299bf3e2e2/quote/997fad74-d2ad-4a3a-9b01-ee95dd4b974d",
       "total_details": {
         "amount_discount": 0,
         "amount_shipping": 0,
