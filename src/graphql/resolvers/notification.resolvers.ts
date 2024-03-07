@@ -83,6 +83,8 @@ const resolvers: Resolvers<Context> = {
         case NotificationType.ACCEPTED_MEETING_INVITATION_NOTIFICATION:
         case NotificationType.DECLINED_MEETING_INVITATION_NOTIFICATION:
           return `/app/meeting-events`;
+        case NotificationType.VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION:
+          return '/app/projects/expired';
         default:
           return `/app`;
       }
@@ -203,6 +205,8 @@ const resolvers: Resolvers<Context> = {
               NotificationType.FILE_UPLOAD_NOTIFICATION,
               NotificationType.FINAL_CONTRACT_UPLOAD_NOTIFICATION,
               NotificationType.MESSAGE_NOTIFICATION,
+              NotificationType.VENDOR_PROJECT_REQUEST_EXPIRING_NOTIFICATION,
+              NotificationType.VENDOR_PROJECT_REQUEST_EXPIRED_NOTIFICATION,
             ],
           },
         },

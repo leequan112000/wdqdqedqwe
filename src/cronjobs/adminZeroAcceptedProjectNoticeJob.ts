@@ -1,8 +1,7 @@
-import cron from 'cron';
 import { prisma } from '../prisma';
 import { createSendAdminZeroAcceptedProjectNoticeJob } from '../queues/email.queues';
 
-const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async () => {
+async function adminZeroAcceptedProjectNoticeJob() {
   // Get the timestamp for 24 hours ago
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   // zero accepted project for 24 hours
@@ -56,6 +55,8 @@ const adminZeroAcceptedProjectNoticeJob = new cron.CronJob('30 9 * * *', async (
 
 
   createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lowAcceptanceList: lowAcceptanceList });
-});
 
-adminZeroAcceptedProjectNoticeJob.start();
+  process.exit(0);
+};
+
+adminZeroAcceptedProjectNoticeJob();
