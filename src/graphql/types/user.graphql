@@ -13,9 +13,6 @@ type User {
   notifications: [Notification]
   has_setup_profile: Boolean
   company_name: String
-  cda_url: String
-  cda_signed_at: Date @deprecated(reason: "Remove after all cda expired.")
-  skip_cda: Boolean
   company_collaborator_role: String
   is_active: Boolean
   country_code: String
@@ -27,11 +24,6 @@ type User {
 type AuthResponse {
   access_token: String!
   refresh_token: String!
-}
-
-type Subscription {
-  cdaUrl: String
-  cdaSignedAt: String
 }
 
 type Query {
@@ -59,6 +51,4 @@ type Mutation {
     phone_number: String
     country_code: String
   ): User
-  createCda: Boolean
-  skipCda: Boolean
 }

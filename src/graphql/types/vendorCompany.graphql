@@ -1,7 +1,6 @@
 type VendorCompany {
   id: String
   name: String
-  legal_name: String
   website: String
   description: String
   created_at: Date
@@ -14,10 +13,6 @@ type VendorCompany {
   country: String
   zipcode: String
   stripe_account: String
-  cda_pandadoc_file_id: String
-  cda_pandadoc_signer: String
-  cda_signed_at: Date
-  skip_cda: Boolean
   skip_certification_tag: Boolean
   skip_lab_specialization: Boolean
   university_name: String
@@ -53,7 +48,6 @@ type Query {
 type Mutation {
   updateVendorCompany(
     name: String
-    legal_name: String
     address: String
     address1: String
     address2: String

@@ -206,22 +206,11 @@ const resolvers: Resolvers<Context> = {
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
 
-        if (args.legal_name && args.legal_name !== vendor_member?.vendor_company?.legal_name) {
-          const existingVendorCompany = await trx.vendorCompany.findFirst({
-            where: {
-              legal_name: args.legal_name
-            }
-          });
-
-          invariant(!existingVendorCompany, new PublicError('Vendor company legal name already exists.'));
-        }
-
         return await trx.vendorCompany.update({
           where: {
             id: vendor_member.vendor_company_id
           },
           data: {
-            legal_name: args.legal_name,
             description: args.description,
             website: args.website,
             address: args.address,
