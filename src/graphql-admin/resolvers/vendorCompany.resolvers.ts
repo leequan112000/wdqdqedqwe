@@ -24,7 +24,7 @@ const resolvers: Resolvers<Context> = {
           description: args.description,
           address: args.address,
           vendor_type: args.vendor_type,
-          skip_cda: args.skip_cda || false,
+          skip_cda: true, // deprecated
           is_on_marketplace: true,
           invited_by: InvitedByType.ADMIN,
         }

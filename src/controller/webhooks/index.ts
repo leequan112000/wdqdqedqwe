@@ -4,7 +4,6 @@ import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
 import { cromaticAiWebhook } from "./cromatic-ai";
 import { processStripeEvent } from './stripe/stripe';
-import { pandadocWebhook } from "./pandadoc";
 import { zohoWebhook } from "./zoho";
 
 export const router = Router();
@@ -30,8 +29,6 @@ router.post('/stripe', raw({ type: 'application/json' }), async (req, res) => {
   }
   return;
 });
-
-router.post('/pandadoc', raw({ type: 'application/json' }), pandadocWebhook);
 
 router.post('/zoho', upload.single('content'), zohoWebhook);
 

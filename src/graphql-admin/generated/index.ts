@@ -318,7 +318,6 @@ export type MutationCreateVendorCompanyArgs = {
   description?: InputMaybe<Scalars['String']>;
   invited_by?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  skip_cda?: InputMaybe<Scalars['Boolean']>;
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
 };
@@ -681,15 +680,12 @@ export type User = {
 export type VendorCompany = {
   __typename?: 'VendorCompany';
   address?: Maybe<Scalars['String']>;
-  cda_pandadoc_file_id?: Maybe<Scalars['String']>;
-  cda_signed_at?: Maybe<Scalars['Date']>;
   created_at?: Maybe<Scalars['Date']>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   invited_by?: Maybe<Scalars['String']>;
   is_on_marketplace?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
-  skip_cda?: Maybe<Scalars['Boolean']>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_type?: Maybe<Scalars['String']>;
   website?: Maybe<Scalars['String']>;
@@ -1113,15 +1109,12 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type VendorCompanyResolvers<ContextType = any, ParentType extends ResolversParentTypes['VendorCompany'] = ResolversParentTypes['VendorCompany']> = ResolversObject<{
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  cda_pandadoc_file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  cda_signed_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   invited_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_on_marketplace?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  skip_cda?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

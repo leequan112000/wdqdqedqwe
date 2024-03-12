@@ -127,7 +127,7 @@ const resolvers: Resolvers<Context> = {
               currency: 'usd',
               product_data: {
                 name: invoice!.invoice_number,
-                description: `Invoice payment by ${invoice?.vendor_company.legal_name}`,
+                description: `Invoice payment by ${invoice?.vendor_company.name}`,
               },
               unit_amount: totalPayableAmount,
             },
