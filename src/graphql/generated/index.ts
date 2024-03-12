@@ -1846,21 +1846,14 @@ export type SaveAvailabilityRulesInput = {
 
 export type SourceCroSubscriptionPayload = {
   __typename?: 'SourceCroSubscriptionPayload';
-  data?: Maybe<Array<Maybe<SourcedCro>>>;
+  data?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
   task_id?: Maybe<Scalars['String']>;
 };
 
-export type SourceRfpSpecialtySubscriptionData = {
-  __typename?: 'SourceRfpSpecialtySubscriptionData';
-  id?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  sourcing_session_id?: Maybe<Scalars['String']>;
-};
-
 export type SourceRfpSpecialtySubscriptionPayload = {
   __typename?: 'SourceRfpSpecialtySubscriptionPayload';
-  data?: Maybe<Array<Maybe<SourceRfpSpecialtySubscriptionData>>>;
+  data?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
   task_id?: Maybe<Scalars['String']>;
 };
@@ -2255,7 +2248,6 @@ export type ResolversTypes = ResolversObject<{
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
-  SourceRfpSpecialtySubscriptionData: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionData>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourcedCro: ResolverTypeWrapper<SourcedCro>;
   SourcingSession: ResolverTypeWrapper<SourcingSession>;
@@ -2370,7 +2362,6 @@ export type ResolversParentTypes = ResolversObject<{
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
   SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
-  SourceRfpSpecialtySubscriptionData: SourceRfpSpecialtySubscriptionData;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourcedCro: SourcedCro;
   SourcingSession: SourcingSession;
@@ -3353,21 +3344,14 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
-  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  data?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type SourceRfpSpecialtySubscriptionDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionData'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionData']> = ResolversObject<{
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload']> = ResolversObject<{
-  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionData']>>>, ParentType, ContextType>;
+  data?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3655,7 +3639,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   RuleInterval?: RuleIntervalResolvers<ContextType>;
   SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
-  SourceRfpSpecialtySubscriptionData?: SourceRfpSpecialtySubscriptionDataResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourcedCro?: SourcedCroResolvers<ContextType>;
   SourcingSession?: SourcingSessionResolvers<ContextType>;
