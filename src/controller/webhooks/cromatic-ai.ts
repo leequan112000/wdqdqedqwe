@@ -62,7 +62,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             .filter(({ weight }: { weight: number }) => weight >= 0.7)
             .map(({ subspecialtyName }: { subspecialtyName: string }) => subspecialtyName);
 
-          const sourcingSubspecialties = await Promise.all(
+          await Promise.all(
             filteredSubspecialtyNames.map(async (subspecialtyName: string) => {
               return await trx.sourcingSubspecialty.create({
                 data: {
@@ -73,7 +73,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcingSubspecialties } });
+          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcing_session } });
         });
         break;
       }
@@ -104,7 +104,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session.id, data: sourcedCros } });
+          pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session.id, data: sourcing_session } });
         });
         break;
       }
