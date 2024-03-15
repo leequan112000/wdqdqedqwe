@@ -25,6 +25,7 @@ import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
 import Sentry from './sentry';
 import { GqlErrorCode } from './helper/constant';
+import { redis } from './redis';
 
 const app = express();
 
@@ -143,7 +144,7 @@ export async function startServer() {
           // if user_id exist
           || req.is_admin_authorized
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
         }
 
         throw new GraphQLError('Admin is not authenticated', {
@@ -192,7 +193,7 @@ export async function startServer() {
           // bypass authentication for whitelisted operation, eg. signIn and signUp
           || isWhitelisted
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
         }
 
         throw new GraphQLError('User is not authenticated', {

@@ -16,5 +16,5 @@ type SingleVendorSearchResultPaginated {
 }
 
 type Query {
-  singleVendorSearch(keyword: String!, after: String): SingleVendorSearchResultPaginated
+  singleVendorSearch(keyword: String!, after: String, fingerprint: String, ip_address: String): SingleVendorSearchResultPaginated
 }

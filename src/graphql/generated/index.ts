@@ -1749,6 +1749,8 @@ export type QuerySearchLabSpecializationsArgs = {
 
 export type QuerySingleVendorSearchArgs = {
   after?: InputMaybe<Scalars['String']>;
+  fingerprint?: InputMaybe<Scalars['String']>;
+  ip_address?: InputMaybe<Scalars['String']>;
   keyword: Scalars['String'];
 };
 
