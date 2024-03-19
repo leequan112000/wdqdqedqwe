@@ -111,11 +111,24 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    extractPdfRfp: async (_, args, __) => {
-      const { file } = args;
+    extractPdfRfp: async (_, args, context) => {
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id,
+        },
+      });
+
+      invariant(customer, new PublicError('Customer not found.'));
+
+      const { file, sourcing_session_id } = args;
       const data = await file;
 
-      return await sourcererService.extractPdfToRfp(data);
+      return await sourcererService.extractPdfToRfp({
+        file: data,
+        user_id: customer.user_id,
+        biotech_id: customer.biotech_id,
+        sourcing_session_id: sourcing_session_id as string,
+      }, context);
     },
     sourceRfpSpecialties: async (_, args, context) => {
       const customer = await context.prisma.customer.findFirst({

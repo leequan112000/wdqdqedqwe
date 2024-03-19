@@ -400,6 +400,7 @@ export type ExtractedRfp = {
   preparation_details?: Maybe<Scalars['String']>;
   project_desc?: Maybe<Scalars['String']>;
   project_title?: Maybe<Scalars['String']>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
   vendor_requirement?: Maybe<Scalars['String']>;
 };
 
@@ -838,6 +839,7 @@ export type MutationDraftQuoteReviewArgs = {
 
 export type MutationExtractPdfRfpArgs = {
   file: Scalars['Upload'];
+  sourcing_session_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2740,6 +2742,7 @@ export type ExtractedRfpResolvers<ContextType = any, ParentType extends Resolver
   preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

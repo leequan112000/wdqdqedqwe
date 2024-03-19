@@ -3,10 +3,17 @@ import { PDFExtract } from 'pdf.js-extract';
 import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
 import { InputMaybe } from '../../graphql/generated';
+import storeUpload from '../../helper/storeUpload';
+import { deleteObject } from '../../helper/awsS3';
 
 export type ExtractPdfToRfpArgs = {
-  filename: string;
-  createReadStream: () => any;
+  sourcing_session_id?: string;
+  biotech_id: string;
+  user_id: string;
+  file: {
+    filename: string;
+    createReadStream: () => any;
+  };
 }
 
 const extractAndAppendPdfText = async (content: any) => {
@@ -22,9 +29,9 @@ const extractAndAppendPdfText = async (content: any) => {
   return pdfString
 };
 
-export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs) => {
-  const { createReadStream } = args;
-
+export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceContext) => {
+  const { file, biotech_id, user_id, sourcing_session_id } = args;
+  const { createReadStream } = file;
   const stream = createReadStream();
   let buffer = Buffer.from([]);
 
@@ -47,7 +54,75 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs) => {
       url: `${app_env.AI_SERVER_URL}/extract-rfp/`,
       data: { pdf_string: pdfString },
     });
-    return JSON.parse(response.data);
+
+    const { project_title, project_desc, preparation_details, vendor_requirement } = JSON.parse(response.data);
+    const { filename, key, filesize } = await storeUpload(
+      file,
+      'sourcerer_rfp',
+    );
+
+    let session_id = sourcing_session_id;
+    if (sourcing_session_id) {
+      const existingRfp = await ctx.prisma.sourcingAttachment.findFirst({
+        where: {
+          sourcing_session_id,
+        },
+      });
+      if (existingRfp) {
+        await ctx.prisma.sourcingAttachment.update({
+          data: {
+            byte_size: filesize,
+            filename,
+            key,
+          },
+          where: {
+            id: existingRfp.id,
+          },
+        });
+        // delete the old attachment s3 object
+        await deleteObject(existingRfp.key);
+      }
+
+      await ctx.prisma.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          project_title,
+          project_desc,
+          preparation_details,
+          vendor_requirement,
+        }
+      });
+    } else {
+      const session = await ctx.prisma.sourcingSession.create({
+        data: {
+          task_id: '',
+          project_title,
+          project_desc,
+          preparation_details,
+          vendor_requirement,
+          biotech_id: biotech_id,
+        }
+      });
+
+      session_id = session.id;
+
+      await ctx.prisma.sourcingAttachment.create({
+        data: {
+          byte_size: filesize,
+          filename,
+          key,
+          sourcing_session_id: session.id,
+          uploader_id: user_id,
+        },
+      });
+    }
+
+    return {
+      sourcing_session_id: session_id,
+      ...JSON.parse(response.data)
+    };
   } catch (error) {
     throw error;
   }
@@ -65,7 +140,7 @@ export type SourceRfpSpecialtiesArgs = {
 
 export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: ServiceContext) => {
   try {
-    const { sourcing_session_id, ...rest_args} = args;
+    const { sourcing_session_id, ...rest_args } = args;
     const response = await axios({
       method: 'post',
       url: `${app_env.AI_SERVER_URL}/source-rfp-specialties/`,
