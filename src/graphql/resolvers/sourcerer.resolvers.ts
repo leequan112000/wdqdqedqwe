@@ -4,6 +4,8 @@ import { Context } from "../../types/context";
 import sourcererService from '../../services/sourcerer/sourcerer.service';
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
+import { getSignedUrl } from "../../helper/awsS3";
+import { formatBytes } from "../../helper/filesize";
 import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
@@ -26,6 +28,21 @@ const resolvers: Resolvers<Context> = {
         })
         .sourcing_subspecialties();
     },
+    sourcing_attachments: async (parent, _, context) => {
+      invariant(parent.id, 'Missing session id.');
+      const attachments = await context.prisma.sourcingSession
+        .findUnique({
+          where: {
+            id: parent.id,
+          },
+        })
+        .sourcing_attachments();
+
+      return (attachments ?? []).map((a) => ({
+        ...a,
+        byte_size: Number(a.byte_size),
+      }));
+    },
     sourced_cros: async (parent, _, context) => {
       invariant(parent.id, 'Missing session id.');
       return await context.prisma.sourcingSession
@@ -47,6 +64,28 @@ const resolvers: Resolvers<Context> = {
           id: parent.sourcing_session_id
         },
       });
+    },
+  },
+  SourcingAttachment: {
+    signed_url: async (parent) => {
+      invariant(parent.key, 'Key not found.');
+      return await getSignedUrl(parent.key);
+    },
+    formatted_filesize: async (parent,) => {
+      if (parent.byte_size) {
+        return formatBytes(parent.byte_size);
+      }
+      return null;
+    },
+    sourcing_session: async (parent, _, context) => {
+      if (parent.sourcing_session_id) {
+        return await context.prisma.sourcingSession.findUnique({
+          where: {
+            id: parent.sourcing_session_id
+          },
+        });
+      }
+      return null;
     },
   },
   SourcedCro: {

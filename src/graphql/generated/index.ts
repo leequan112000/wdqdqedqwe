@@ -1872,6 +1872,19 @@ export type SourcedCro = {
   sourcing_session_id?: Maybe<Scalars['String']>;
 };
 
+export type SourcingAttachment = {
+  __typename?: 'SourcingAttachment';
+  byte_size?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['Date']>;
+  filename?: Maybe<Scalars['String']>;
+  formatted_filesize?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  key?: Maybe<Scalars['String']>;
+  signed_url?: Maybe<Scalars['String']>;
+  sourcing_session?: Maybe<SourcingSession>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
+};
+
 export type SourcingSession = {
   __typename?: 'SourcingSession';
   biotech?: Maybe<Biotech>;
@@ -1881,6 +1894,7 @@ export type SourcingSession = {
   project_desc?: Maybe<Scalars['String']>;
   project_title?: Maybe<Scalars['String']>;
   sourced_cros?: Maybe<Array<Maybe<SourcedCro>>>;
+  sourcing_attachments?: Maybe<Array<Maybe<SourcingAttachment>>>;
   sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
   task_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
@@ -2252,6 +2266,7 @@ export type ResolversTypes = ResolversObject<{
   SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourcedCro: ResolverTypeWrapper<SourcedCro>;
+  SourcingAttachment: ResolverTypeWrapper<SourcingAttachment>;
   SourcingSession: ResolverTypeWrapper<SourcingSession>;
   SourcingSubspecialty: ResolverTypeWrapper<SourcingSubspecialty>;
   SourcingTask: ResolverTypeWrapper<SourcingTask>;
@@ -2366,6 +2381,7 @@ export type ResolversParentTypes = ResolversObject<{
   SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourcedCro: SourcedCro;
+  SourcingAttachment: SourcingAttachment;
   SourcingSession: SourcingSession;
   SourcingSubspecialty: SourcingSubspecialty;
   SourcingTask: SourcingTask;
@@ -3372,6 +3388,19 @@ export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SourcingAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingAttachment'] = ResolversParentTypes['SourcingAttachment']> = ResolversObject<{
+  byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  filename?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  formatted_filesize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  signed_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3380,6 +3409,7 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sourced_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  sourcing_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingAttachment']>>>, ParentType, ContextType>;
   sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -3644,6 +3674,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourcedCro?: SourcedCroResolvers<ContextType>;
+  SourcingAttachment?: SourcingAttachmentResolvers<ContextType>;
   SourcingSession?: SourcingSessionResolvers<ContextType>;
   SourcingSubspecialty?: SourcingSubspecialtyResolvers<ContextType>;
   SourcingTask?: SourcingTaskResolvers<ContextType>;

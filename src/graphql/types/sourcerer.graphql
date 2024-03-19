@@ -8,6 +8,7 @@ type SourcingSession {
   biotech_id: String
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
+  sourcing_attachments: [SourcingAttachment]
   sourced_cros: [SourcedCro]
   updated_at: Date
 }
@@ -15,6 +16,18 @@ type SourcingSession {
 type SourcingSubspecialty {
   id: String
   name: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+}
+
+type SourcingAttachment {
+  id: String
+  key: String
+  filename: String
+  byte_size: Float
+  created_at: Date
+  signed_url: String
+  formatted_filesize: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
 }
