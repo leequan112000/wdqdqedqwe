@@ -34,7 +34,8 @@ model User {
   meetingAttendeeConnections          MeetingAttendeeConnection[]
   meetingEvents                       MeetingEvent[]
   project_attachments                 ProjectAttachment[]
-  CompanyAttachment                   CompanyAttachment[]
+  company_attachments                 CompanyAttachment[]
+  sourcing_attachments                SourcingAttachment[]
   biotech_invite_vendors              BiotechInviteVendor[]
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
@@ -970,6 +971,7 @@ model SourcingSession {
   biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
+  sourcing_attachments    SourcingAttachment[]
   created_at              DateTime               @default(now())
   updated_at              DateTime               @default(now()) @updatedAt
 
@@ -984,6 +986,22 @@ model SourcingSubspecialty {
   sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
 
   @@map("sourcing_subspecialties")
+}
+
+model SourcingAttachment {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key          String   @unique
+  filename     String
+  content_type String?
+  byte_size    BigInt
+  created_at   DateTime @default(now())
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  uploader_id         String          @db.Uuid
+  uploader            User            @relation(fields: [uploader_id], references: [id])
+
+  @@map("sourcing_attachments")
 }
 
 model SourcedCro {
