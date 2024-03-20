@@ -275,7 +275,20 @@ const resolvers: Resolvers<Context> = {
           }
         });
       });
-    }
+    },
+    cancelAiTask: async (_, args, context) => {
+      const { task_id, sourcing_session_id } = args;
+
+      const resp = await sourcererService.revokeAiTask(
+        {
+          task_id,
+          sourcing_session_id,
+        },
+        context
+      );
+
+      return resp;
+    },
   },
   Subscription: {
     sourceRfpSpecialties: {

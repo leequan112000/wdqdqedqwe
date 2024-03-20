@@ -94,6 +94,10 @@ type Mutation {
     names: [String!]!
     sourcing_session_id: String!
   ): SourcingTask
+  cancelAiTask(
+    task_id: String!
+    sourcing_session_id: String!
+  ): SourcingTask
   shortlistSourcedCro(
     sourced_cro_id: String!
     sourcing_session_id: String!
