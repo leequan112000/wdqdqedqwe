@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Request, Response } from 'express';
 import { prisma } from '../../prisma';
 import { pubsub } from "../../helper/pubsub";
+import invariant from "../../helper/invariant";
 
 const verifySignature = (req: Request, signature: string): boolean => {
   // Sort keys alphabetically before stringifying the payload
@@ -41,9 +42,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
           },
         });
 
-        if (!sourcing_session) {
-          throw new Error('No sourcing session found');
-        }
+        invariant(sourcing_session, 'No sourcing session found');
+
+        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
           // Clear up existing records
@@ -84,9 +85,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
           },
         });
 
-        if (!sourcing_session) {
-          throw new Error('No sourcing session found');
-        }
+        invariant(sourcing_session, 'No sourcing session found');
+
+        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
           const cappedData = data.slice(0, 50);

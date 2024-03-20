@@ -967,6 +967,7 @@ model SourcingSession {
   preparation_details     String
   vendor_requirement      String
   task_id                 String
+  task_canceled_at        DateTime?
   biotech_id              String                 @db.Uuid
   biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
   sourcing_subspecialties SourcingSubspecialty[]

@@ -157,6 +157,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
         },
         data: {
           task_id: response.data.id,
+          task_canceled_at: null,
         }
       });
 
@@ -208,6 +209,7 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       },
       data: {
         task_id: response.data.id,
+        task_canceled_at: null,
       }
     });
 
@@ -233,10 +235,44 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
   }
 }
 
+type RevokeAiTaskArgs = {
+  task_id: string;
+  sourcing_session_id: string;
+};
+
+export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) => {
+  const { task_id, sourcing_session_id } = args;
+
+  const response = await axios({
+    method: "post",
+    url: `${app_env.AI_SERVER_URL}/task/revoke/`,
+    data: {
+      task_id,
+    },
+  });
+
+  if (response.data.id === task_id) {
+    await ctx.prisma.sourcingSession.update({
+      where: {
+        id: sourcing_session_id,
+      },
+      data: {
+        task_canceled_at: new Date(),
+      },
+    });
+  }
+
+  return {
+    sourcing_session_id,
+    ...response.data,
+  };
+};
+
 const sourcererService = {
   extractPdfToRfp,
   sourceRfpSpecialties,
   sourceCros,
+  revokeAiTask,
 };
 
 export default sourcererService;
