@@ -4,7 +4,7 @@ import { Context } from "../../types/context";
 import sourcererService from "../../services/sourcerer/sourcerer.service";
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
-import { getSignedUrl } from "../../helper/awsS3";
+import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { formatBytes } from "../../helper/filesize";
 import { PublicError } from "../errors/PublicError";
 
@@ -304,14 +304,27 @@ const resolvers: Resolvers<Context> = {
     confirmRemoveSourcingSession: async (_, args, context) => {
       const { sourcing_session_id } = args;
 
-      const deletedSourcingSession =
-        await context.prisma.sourcingSession.delete({
+      return await context.prisma.$transaction(async (trx) => {
+        const sourcingAttachments = await trx.sourcingAttachment.findMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+
+        const deletedSourcingSession = await trx.sourcingSession.delete({
           where: {
             id: sourcing_session_id,
           },
         });
 
-      return deletedSourcingSession;
+        const deleteS3Tasks = sourcingAttachments.map((attachment) => {
+          return deleteObject(attachment.key);
+        });
+
+        await Promise.all(deleteS3Tasks);
+
+        return deletedSourcingSession;
+      });
     },
   },
   Subscription: {
