@@ -984,7 +984,7 @@ model SourcingSubspecialty {
   name String
 
   sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
 
   @@map("sourcing_subspecialties")
 }
@@ -998,7 +998,7 @@ model SourcingAttachment {
   created_at   DateTime @default(now())
 
   sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
   uploader_id         String          @db.Uuid
   uploader            User            @relation(fields: [uploader_id], references: [id])
 
@@ -1013,7 +1013,7 @@ model SourcedCro {
   cro_db_id      String  @db.Uuid
 
   sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
 
   @@map("sourced_cros")
 }
