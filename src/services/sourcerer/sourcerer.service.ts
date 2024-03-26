@@ -250,7 +250,7 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
 
   const response = await axios({
     method: "post",
-    url: `${app_env.AI_SERVER_URL}/task/revoke/`,
+    url: `${app_env.AI_SERVER_URL}/task-revoke/`,
     data: {
       task_id,
     },
