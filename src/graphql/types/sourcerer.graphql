@@ -65,12 +65,14 @@ type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
   sourcing_session_id: String
   data: SourcingSession
+  status: String!
 }
 
 type SourceCroSubscriptionPayload {
   task_id: String
   sourcing_session_id: String
   data: SourcingSession
+  status: String!
 }
 
 type Query {

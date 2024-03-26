@@ -5,6 +5,7 @@ import { ServiceContext } from '../../types/context';
 import { InputMaybe } from '../../graphql/generated';
 import storeUpload from '../../helper/storeUpload';
 import { deleteObject } from '../../helper/awsS3';
+import { PublicError } from '../../graphql/errors/PublicError';
 
 export type ExtractPdfToRfpArgs = {
   sourcing_session_id?: string;
@@ -54,6 +55,10 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
       url: `${app_env.AI_SERVER_URL}/extract-rfp/`,
       data: { pdf_string: pdfString },
     });
+
+    if (response.data === 'EMPTY') {
+      throw new PublicError("Encountered an issue proccessing the file. Please try again with a different document.")
+    }
 
     const { project_title, project_desc, preparation_details, vendor_requirement } = JSON.parse(response.data);
     const { filename, key, filesize } = await storeUpload(

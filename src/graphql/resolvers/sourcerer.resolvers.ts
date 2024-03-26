@@ -331,7 +331,7 @@ const resolvers: Resolvers<Context> = {
     sourceRfpSpecialties: {
       // @ts-ignore
       subscribe: withFilter(
-        () => pubsub.asyncIterator<any>(["SOURCE_RFP_SPECIALTIES"]),
+        () => pubsub.asyncIterator(["SOURCE_RFP_SPECIALTIES"]),
         (payload, variables) => {
           return payload.sourceRfpSpecialties.task_id === variables.task_id;
         }

@@ -1863,6 +1863,7 @@ export type SourceCroSubscriptionPayload = {
   __typename?: 'SourceCroSubscriptionPayload';
   data?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
+  status: Scalars['String'];
   task_id?: Maybe<Scalars['String']>;
 };
 
@@ -1870,6 +1871,7 @@ export type SourceRfpSpecialtySubscriptionPayload = {
   __typename?: 'SourceRfpSpecialtySubscriptionPayload';
   data?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
+  status: Scalars['String'];
   task_id?: Maybe<Scalars['String']>;
 };
 
@@ -3380,6 +3382,7 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
 export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
   data?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -3387,6 +3390,7 @@ export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType 
 export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload'] = ResolversParentTypes['SourceRfpSpecialtySubscriptionPayload']> = ResolversObject<{
   data?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
