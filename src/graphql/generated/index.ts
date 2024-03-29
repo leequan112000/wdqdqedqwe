@@ -1904,6 +1904,7 @@ export type SourcingSession = {
   __typename?: 'SourcingSession';
   biotech?: Maybe<Biotech>;
   biotech_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   preparation_details?: Maybe<Scalars['String']>;
   project_desc?: Maybe<Scalars['String']>;
@@ -3423,6 +3424,7 @@ export type SourcingAttachmentResolvers<ContextType = any, ParentType extends Re
 export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
