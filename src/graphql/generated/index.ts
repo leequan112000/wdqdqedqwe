@@ -569,6 +569,7 @@ export type Mutation = {
   confirmEditSourcingDetails?: Maybe<SourcingSession>;
   confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
   confirmRemoveSourcingSession?: Maybe<SourcingSession>;
+  /** @deprecated Deprecated feature. */
   createBiotechInviteVendor?: Maybe<BiotechInviteVendor>;
   createBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   createCertificationTag?: Maybe<CertificationTag>;
