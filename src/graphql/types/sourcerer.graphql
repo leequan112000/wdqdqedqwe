@@ -11,6 +11,7 @@ type SourcingSession {
   sourcing_attachments: [SourcingAttachment]
   sourced_cros: [SourcedCro]
   updated_at: Date
+  created_at: Date
 }
 
 type SourcingSubspecialty {

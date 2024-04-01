@@ -145,7 +145,7 @@ const resolvers: Resolvers<Context> = {
           biotech_id: customer.biotech_id,
         },
         orderBy: {
-          updated_at: "desc",
+          created_at: "desc",
         },
       });
 
