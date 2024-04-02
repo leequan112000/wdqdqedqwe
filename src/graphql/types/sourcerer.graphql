@@ -5,7 +5,8 @@ type SourcingSession {
   preparation_details: String
   vendor_requirement: String
   task_id: String
-  biotech_id: String
+  user_id: String
+  user: User
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
