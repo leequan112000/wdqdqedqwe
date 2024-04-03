@@ -9,7 +9,6 @@ import { PublicError } from '../../graphql/errors/PublicError';
 
 export type ExtractPdfToRfpArgs = {
   sourcing_session_id?: string;
-  biotech_id: string;
   user_id: string;
   file: {
     filename: string;
@@ -31,7 +30,7 @@ const extractAndAppendPdfText = async (content: any) => {
 };
 
 export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceContext) => {
-  const { file, biotech_id, user_id, sourcing_session_id } = args;
+  const { file, user_id, sourcing_session_id } = args;
   const { createReadStream } = file;
   const stream = createReadStream();
   let buffer = Buffer.from([]);
@@ -107,7 +106,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
           project_desc,
           preparation_details,
           vendor_requirement,
-          biotech_id: biotech_id,
+          user_id,
         }
       });
 
@@ -138,7 +137,7 @@ export type SourceRfpSpecialtiesArgs = {
   project_desc: string;
   preparation_details: string;
   vendor_requirement: string;
-  biotech_id: string;
+  user_id: string;
   num_specialties: number;
   sourcing_session_id?: InputMaybe<string> | undefined;
 }
@@ -179,7 +178,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
         project_desc: args.project_desc,
         preparation_details: args.preparation_details,
         vendor_requirement: args.vendor_requirement,
-        biotech_id: args.biotech_id,
+        user_id: args.user_id,
       }
     });
 

@@ -1904,7 +1904,6 @@ export type SourcingAttachment = {
 export type SourcingSession = {
   __typename?: 'SourcingSession';
   biotech?: Maybe<Biotech>;
-  biotech_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['Date']>;
   id?: Maybe<Scalars['String']>;
   preparation_details?: Maybe<Scalars['String']>;
@@ -1915,6 +1914,8 @@ export type SourcingSession = {
   sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
   task_id?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['Date']>;
+  user?: Maybe<User>;
+  user_id?: Maybe<Scalars['String']>;
   vendor_requirement?: Maybe<Scalars['String']>;
 };
 
@@ -3424,7 +3425,6 @@ export type SourcingAttachmentResolvers<ContextType = any, ParentType extends Re
 
 export type SourcingSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSession'] = ResolversParentTypes['SourcingSession']> = ResolversObject<{
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
-  biotech_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3435,6 +3435,8 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
   sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

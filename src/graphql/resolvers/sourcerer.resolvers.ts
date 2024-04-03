@@ -10,11 +10,11 @@ import { PublicError } from "../errors/PublicError";
 
 const resolvers: Resolvers<Context> = {
   SourcingSession: {
-    biotech: async (parent, _, context) => {
-      invariant(parent.biotech_id, "Missing biotech id.");
-      return await context.prisma.biotech.findUnique({
+    user: async (parent, _, context) => {
+      invariant(parent.user_id, "Missing user id.");
+      return await context.prisma.user.findUnique({
         where: {
-          id: parent.biotech_id,
+          id: parent.user_id,
         },
       });
     },
@@ -109,18 +109,10 @@ const resolvers: Resolvers<Context> = {
   Query: {
     sourcingSession: async (_, args, context) => {
       const { id } = args;
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
-
       const sourcingSession = await context.prisma.sourcingSession.findFirst({
         where: {
           id,
-          biotech_id: customer.biotech_id,
+          user_id: context.req.user_id,
         },
       });
 
@@ -132,17 +124,9 @@ const resolvers: Resolvers<Context> = {
       return sourcingSession;
     },
     sourcingSessions: async (_, __, context) => {
-      const customer = await context.prisma.customer.findUnique({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
-
       const sessions = await context.prisma.sourcingSession.findMany({
         where: {
-          biotech_id: customer.biotech_id,
+          user_id: context.req.user_id,
         },
         orderBy: {
           created_at: "desc",
@@ -154,13 +138,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     extractPdfRfp: async (_, args, context) => {
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
+      invariant(context.req.user_id, new PublicError("User not found."));
 
       const { file, sourcing_session_id } = args;
       const data = await file;
@@ -168,39 +146,25 @@ const resolvers: Resolvers<Context> = {
       return await sourcererService.extractPdfToRfp(
         {
           file: data,
-          user_id: customer.user_id,
-          biotech_id: customer.biotech_id,
+          user_id: context.req.user_id,
           sourcing_session_id: sourcing_session_id as string,
         },
         context
       );
     },
     sourceRfpSpecialties: async (_, args, context) => {
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
-
+      invariant(context.req.user_id, new PublicError("User not found."));
       return await sourcererService.sourceRfpSpecialties(
         {
           ...args,
           num_specialties: 5,
-          biotech_id: customer.biotech_id,
+          user_id: context.req.user_id,
         },
         context
       );
     },
     sourceCros: async (_, args, context) => {
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
+      invariant(context.req.user_id, new PublicError("User not found."));
 
       return await sourcererService.sourceCros(
         {
@@ -211,13 +175,7 @@ const resolvers: Resolvers<Context> = {
     },
     shortlistSourcedCro: async (_, args, context) => {
       const { sourcing_session_id, sourced_cro_id } = args;
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
+      invariant(context.req.user_id, new PublicError("User not found."));
 
       return await context.prisma.sourcedCro.update({
         where: {
@@ -231,13 +189,7 @@ const resolvers: Resolvers<Context> = {
     },
     removeSourcedCroFromShortlist: async (_, args, context) => {
       const { sourcing_session_id, sourced_cro_id } = args;
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      invariant(customer, new PublicError("Customer not found."));
+      invariant(context.req.user_id, new PublicError("User not found."));
 
       return await context.prisma.sourcedCro.update({
         where: {

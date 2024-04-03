@@ -42,6 +42,7 @@ model User {
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
   availability                        Availability[]
+  sourcing_sessions                   SourcingSession[]
 
   @@map("users")
 }
@@ -124,7 +125,6 @@ model Biotech {
   biotech_invoices        BiotechInvoice[]
   purchase_orders         PurchaseOrder[]
   blanket_purchase_orders BlanketPurchaseOrder[]
-  sourcing_sessions       SourcingSession[]
 
   @@map("biotechs")
 }
@@ -968,8 +968,8 @@ model SourcingSession {
   vendor_requirement      String
   task_id                 String
   task_canceled_at        DateTime?
-  biotech_id              String                 @db.Uuid
-  biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
+  user_id                 String                 @db.Uuid
+  user                    User                   @relation(fields: [user_id], references: [id])
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
   sourcing_attachments    SourcingAttachment[]
