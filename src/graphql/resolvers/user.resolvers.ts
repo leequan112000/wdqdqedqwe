@@ -496,9 +496,6 @@ const resolvers: Resolvers<Context> = {
     },
     changePassword: async (_, args, context) => {
       const { old_password, new_password } = args;
-      invariant(old_password, new InternalError("Missing argument: old_password"));
-      invariant(new_password, new InternalError("Missing argument: new_password"));
-
       const user = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id
