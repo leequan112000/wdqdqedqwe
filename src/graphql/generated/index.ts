@@ -566,6 +566,7 @@ export type Mutation = {
   addProjectCollaborator?: Maybe<User>;
   answerInvitation?: Maybe<SubmitAttendanceResp>;
   cancelAiTask?: Maybe<SourcingTask>;
+  changePassword?: Maybe<Scalars['Boolean']>;
   confirmEditSourcingDetails?: Maybe<SourcingSession>;
   confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
   confirmRemoveSourcingSession?: Maybe<SourcingSession>;
@@ -691,6 +692,12 @@ export type MutationAnswerInvitationArgs = {
 export type MutationCancelAiTaskArgs = {
   sourcing_session_id: Scalars['String'];
   task_id: Scalars['String'];
+};
+
+
+export type MutationChangePasswordArgs = {
+  new_password?: InputMaybe<Scalars['String']>;
+  old_password?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2939,6 +2946,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
   cancelAiTask?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationCancelAiTaskArgs, 'sourcing_session_id' | 'task_id'>>;
+  changePassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationChangePasswordArgs>>;
   confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
   confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
   confirmRemoveSourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmRemoveSourcingSessionArgs, 'sourcing_session_id'>>;
