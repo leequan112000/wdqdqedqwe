@@ -613,7 +613,7 @@ const resolvers: Resolvers<Context> = {
         await chatService.createSystemMessage(
           {
             chat_id: chat.id,
-            content: "You've matched! Start your conversation by typing in the chat box for quick start!"
+            content: "You've found a match! Start a conversation with your partner to kick off your project."
           },
           { prisma: trx }
         )

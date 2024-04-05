@@ -494,6 +494,37 @@ const resolvers: Resolvers<Context> = {
       });
       return true;
     },
+    changePassword: async (_, args, context) => {
+      const { old_password, new_password } = args;
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id
+        },
+      });
+
+      invariant(user, new PublicError("Current user not found."));
+      
+      const isPasswordMatched = await checkPassword(
+        old_password,
+        user,
+        context
+      );
+
+      invariant(
+        isPasswordMatched === true,
+        new PublicError("Old password is invalid.")
+      );
+
+      await context.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          encrypted_password: await hashPassword(new_password),
+        },
+      });
+      return true;
+    },
     updateUserInfo: async (_, args, context) => {
       const lowerCaseEmail = args.email.toLowerCase();
       const user = await context.prisma.user.update({
