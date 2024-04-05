@@ -10,8 +10,7 @@ input InviteCollaboratorInput {
 
 type Mutation {
   inviteCollaborator(
-    first_name: String!
-    last_name: String!
+    name: String!
     email: String!
     custom_message: String
     role: String

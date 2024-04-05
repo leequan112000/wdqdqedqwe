@@ -807,7 +807,7 @@ const resolvers: Resolvers<Context> = {
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
-      const { project_connection_id, email, first_name, last_name, custom_message, role } = args;
+      const { project_connection_id, email, name, custom_message, role } = args;
       const castedRole = (role as CompanyCollaboratorRoleType) || CompanyCollaboratorRoleType.USER;
 
       invariant(currentUserId, 'Current user id not found.');
@@ -868,11 +868,14 @@ const resolvers: Resolvers<Context> = {
       // 2. Create customer/vendor member connection
       // 3. Send invitation email
       return await context.prisma.$transaction(async (trx) => {
+        const splitName = args.name.split(' ');
+        const firstName = splitName[0];
+        const lastName = splitName.length === 1 ? '' : splitName[splitName.length - 1];
 
         const newUser = await trx.user.create({
           data: {
-            first_name,
-            last_name,
+            first_name: firstName,
+            last_name: lastName,
             email,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),

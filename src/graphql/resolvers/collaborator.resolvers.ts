@@ -132,11 +132,14 @@ const resolvers: Resolvers<Context> = {
       const isVendor = !!currentUser.vendor_member;
 
       const newUser = await context.prisma.$transaction(async (trx) => {
+        const splitName = args.name.split(' ');
+        const firstName = splitName[0];
+        const lastName = splitName.length === 1 ? '' : splitName[splitName.length - 1];
         // Create new user
         const newUser = await trx.user.create({
           data: {
-            first_name: args.first_name,
-            last_name: args.last_name,
+            first_name: firstName,
+            last_name: lastName,
             email: lowerCaseEmail,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
