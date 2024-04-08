@@ -240,6 +240,8 @@ export type CompanyAttachmentUploadResult = {
   success: Scalars['Boolean'];
 };
 
+export type CompanyProfile = Biotech | VendorCompany;
+
 export type CreateMilestoneInput = {
   amount: Scalars['Float'];
   description?: InputMaybe<Scalars['String']>;
@@ -636,6 +638,7 @@ export type Mutation = {
   transferBiotechOwnership?: Maybe<User>;
   transferVendorCompanyOwnership?: Maybe<User>;
   updateBiotech?: Maybe<Biotech>;
+  updateBiotechProfile?: Maybe<Biotech>;
   updateBlanketPurchaseOrder?: Maybe<BlanketPurchaseOrder>;
   updateCollaboratorRole?: Maybe<User>;
   updateCustomer: Customer;
@@ -647,6 +650,7 @@ export type Mutation = {
   updateVendorCompany?: Maybe<VendorCompany>;
   updateVendorCompanyCertificationTags?: Maybe<VendorCompany>;
   updateVendorCompanyLabSpecializations?: Maybe<VendorCompany>;
+  updateVendorCompanyProfile?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
   uploadBiotechInvoicePaymentReceipt?: Maybe<BiotechInvoice>;
   uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
@@ -1151,6 +1155,21 @@ export type MutationUpdateBiotechArgs = {
 };
 
 
+export type MutationUpdateBiotechProfileArgs = {
+  about?: InputMaybe<Scalars['String']>;
+  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
+  website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationUpdateBlanketPurchaseOrderArgs = {
   amount: Scalars['Float'];
   id: Scalars['String'];
@@ -1248,6 +1267,27 @@ export type MutationUpdateVendorCompanyCertificationTagsArgs = {
 export type MutationUpdateVendorCompanyLabSpecializationsArgs = {
   lab_specialization_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   new_lab_specialization_names?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationUpdateVendorCompanyProfileArgs = {
+  address?: InputMaybe<Scalars['String']>;
+  address1?: InputMaybe<Scalars['String']>;
+  address2?: InputMaybe<Scalars['String']>;
+  certification_tag_ids?: InputMaybe<Array<Scalars['String']>>;
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  founded_year?: InputMaybe<Scalars['String']>;
+  lab_specialization_ids?: InputMaybe<Array<Scalars['String']>>;
+  name?: InputMaybe<Scalars['String']>;
+  new_certification_tag_names?: InputMaybe<Array<Scalars['String']>>;
+  new_lab_specialization_names?: InputMaybe<Array<Scalars['String']>>;
+  project_completed_per_year?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
+  team_size?: InputMaybe<Scalars['String']>;
+  website?: InputMaybe<Scalars['String']>;
+  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1552,6 +1592,7 @@ export type Query = {
   blanketPurchaseOrders?: Maybe<Array<Maybe<BlanketPurchaseOrder>>>;
   casbinPermission?: Maybe<Scalars['String']>;
   collaborators?: Maybe<Array<Maybe<User>>>;
+  companyProfile?: Maybe<CompanyProfile>;
   croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
   croDbSpecialty?: Maybe<CroDbSpecialty>;
   croDbSubspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
@@ -2218,6 +2259,7 @@ export type ResolversTypes = ResolversObject<{
   Chat: ResolverTypeWrapper<Chat>;
   CompanyAttachment: ResolverTypeWrapper<CompanyAttachment>;
   CompanyAttachmentUploadResult: ResolverTypeWrapper<CompanyAttachmentUploadResult>;
+  CompanyProfile: ResolversTypes['Biotech'] | ResolversTypes['VendorCompany'];
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: ResolverTypeWrapper<CroDbSpecialty>;
   CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
@@ -2333,6 +2375,7 @@ export type ResolversParentTypes = ResolversObject<{
   Chat: Chat;
   CompanyAttachment: CompanyAttachment;
   CompanyAttachmentUploadResult: CompanyAttachmentUploadResult;
+  CompanyProfile: ResolversParentTypes['Biotech'] | ResolversParentTypes['VendorCompany'];
   CreateMilestoneInput: CreateMilestoneInput;
   CroDbSpecialty: CroDbSpecialty;
   CroDbSubspecialtiesFilterInput: CroDbSubspecialtiesFilterInput;
@@ -2637,6 +2680,10 @@ export type CompanyAttachmentUploadResultResolvers<ContextType = any, ParentType
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CompanyProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['CompanyProfile'] = ResolversParentTypes['CompanyProfile']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'Biotech' | 'VendorCompany', ParentType, ContextType>;
 }>;
 
 export type CroDbSpecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CroDbSpecialty'] = ResolversParentTypes['CroDbSpecialty']> = ResolversObject<{
@@ -3011,6 +3058,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   transferBiotechOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipArgs, 'biotech_id' | 'user_id'>>;
   transferVendorCompanyOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipArgs, 'user_id' | 'vendor_company_id'>>;
   updateBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechArgs>>;
+  updateBiotechProfile?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationUpdateBiotechProfileArgs>>;
   updateBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['BlanketPurchaseOrder']>, ParentType, ContextType, RequireFields<MutationUpdateBlanketPurchaseOrderArgs, 'amount' | 'id' | 'name' | 'po_number'>>;
   updateCollaboratorRole?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateCollaboratorRoleArgs, 'role_type' | 'user_id'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, Partial<MutationUpdateCustomerArgs>>;
@@ -3022,6 +3070,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyArgs>>;
   updateVendorCompanyCertificationTags?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyCertificationTagsArgs>>;
   updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
+  updateVendorCompanyProfile?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyProfileArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   uploadBiotechInvoicePaymentReceipt?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<MutationUploadBiotechInvoicePaymentReceiptArgs, 'file' | 'id'>>;
   uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
@@ -3275,6 +3324,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   blanketPurchaseOrders?: Resolver<Maybe<Array<Maybe<ResolversTypes['BlanketPurchaseOrder']>>>, ParentType, ContextType>;
   casbinPermission?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryCollaboratorsArgs>>;
+  companyProfile?: Resolver<Maybe<ResolversTypes['CompanyProfile']>, ParentType, ContextType>;
   croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
   croDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<QueryCroDbSpecialtyArgs, 'name'>>;
   croDbSubspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSubspecialty']>>>, ParentType, ContextType, Partial<QueryCroDbSubspecialtiesArgs>>;
@@ -3645,6 +3695,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Chat?: ChatResolvers<ContextType>;
   CompanyAttachment?: CompanyAttachmentResolvers<ContextType>;
   CompanyAttachmentUploadResult?: CompanyAttachmentUploadResultResolvers<ContextType>;
+  CompanyProfile?: CompanyProfileResolvers<ContextType>;
   CroDbSpecialty?: CroDbSpecialtyResolvers<ContextType>;
   CroDbSubspecialty?: CroDbSubspecialtyResolvers<ContextType>;
   CroDbVendorCompany?: CroDbVendorCompanyResolvers<ContextType>;
