@@ -584,10 +584,13 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        // Remove any meeting that organized by the deactivated user.
+        // Remove any active meeting that organized by the deactivated user.
         const organizedMeetingEvents = await trx.meetingEvent.findMany({
           where: {
             organizer_id: user_id,
+            end_time: {
+              gt: new Date(),
+            },
           },
         });
         const removeMeetingTasks = organizedMeetingEvents.map(async (event) => {
@@ -610,6 +613,9 @@ const resolvers: Resolvers<Context> = {
             },
             id: {
               notIn: removedMeetingIds,
+            },
+            end_time: {
+              gt: new Date(),
             },
           },
           include: {
