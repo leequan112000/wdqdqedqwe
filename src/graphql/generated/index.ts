@@ -566,6 +566,7 @@ export type Mutation = {
   addProjectCollaborator?: Maybe<User>;
   answerInvitation?: Maybe<SubmitAttendanceResp>;
   cancelAiTask?: Maybe<SourcingTask>;
+  cancelInvitation?: Maybe<User>;
   changePassword?: Maybe<Scalars['Boolean']>;
   confirmEditSourcingDetails?: Maybe<SourcingSession>;
   confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
@@ -692,6 +693,11 @@ export type MutationAnswerInvitationArgs = {
 export type MutationCancelAiTaskArgs = {
   sourcing_session_id: Scalars['String'];
   task_id: Scalars['String'];
+};
+
+
+export type MutationCancelInvitationArgs = {
+  user_id: Scalars['String'];
 };
 
 
@@ -2944,6 +2950,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addProjectCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddProjectCollaboratorArgs, 'project_connection_id' | 'user_id'>>;
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
   cancelAiTask?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationCancelAiTaskArgs, 'sourcing_session_id' | 'task_id'>>;
+  cancelInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationCancelInvitationArgs, 'user_id'>>;
   changePassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'new_password' | 'old_password'>>;
   confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
   confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
