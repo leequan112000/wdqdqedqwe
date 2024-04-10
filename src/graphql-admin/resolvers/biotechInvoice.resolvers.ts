@@ -89,7 +89,14 @@ const resolvers: Resolvers<Context> = {
           biotech_id: biotechInvoice.biotech_id,
           role: CompanyCollaboratorRoleType.OWNER,
           user: {
-            is_active: true,
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
           },
         },
         include: {

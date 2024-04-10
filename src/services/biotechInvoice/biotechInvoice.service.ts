@@ -69,7 +69,14 @@ export const createBiotechInvoice = async (args: CreateBiotechInvoiceArgs, conte
         in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
       },
       user: {
-        is_active: true,
+        OR: [
+          { deactivated_at: null },
+          {
+            deactivated_at: {
+              gt: new Date(),
+            },
+          },
+        ],
       },
     },
     include: {

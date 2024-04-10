@@ -1,5 +1,5 @@
 type User {
-  id: String
+  id: String!
   email: String
   first_name: String
   last_name: String
@@ -14,11 +14,13 @@ type User {
   has_setup_profile: Boolean
   company_name: String
   company_collaborator_role: String
-  is_active: Boolean
+  is_active: Boolean @deprecated(reason: "Use `deactivated_at`.")
   country_code: String
   phone_number: String
   is_connected_microsoft: Boolean
   is_connected_google: Boolean
+  deactivated_at: Date
+  status: String
 }
 
 type AuthResponse {

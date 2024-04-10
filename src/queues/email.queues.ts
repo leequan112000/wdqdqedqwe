@@ -223,7 +223,14 @@ emailQueue.process(async (job, done) => {
                   in: projectConnection.customer_connections.map(cc => cc.customer_id),
                 }
               },
-              is_active: true,
+              OR: [
+                { deactivated_at: null },
+                {
+                  deactivated_at: {
+                    gt: new Date(),
+                  },
+                },
+              ],
             },
           });
 
@@ -340,7 +347,14 @@ emailQueue.process(async (job, done) => {
                 in: milestone.quote.project_connection.customer_connections.map(cc => cc.customer_id),
               }
             },
-            is_active: true,
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
           },
         });
 
@@ -374,7 +388,7 @@ emailQueue.process(async (job, done) => {
           },
         });
         invariant(receiver, 'Receiver not found.');
-        if (receiver.is_active === false) {
+        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
           done(null, 'Deactivated');
           break;
         }
@@ -402,7 +416,7 @@ emailQueue.process(async (job, done) => {
           },
         });
         invariant(receiver, 'Receiver not found.');
-        if (receiver.is_active === false) {
+        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
           done(null, 'Deactivated');
           break;
         }
@@ -429,7 +443,7 @@ emailQueue.process(async (job, done) => {
           },
         });
         invariant(receiver, 'Receiver not found.');
-        if (receiver.is_active === false) {
+        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
           done(null, 'Deactivated');
           break;
         }
@@ -462,7 +476,14 @@ emailQueue.process(async (job, done) => {
               in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
             },
             user: {
-              is_active: true,
+              OR: [
+                { deactivated_at: null },
+                {
+                  deactivated_at: {
+                    gt: new Date(),
+                  },
+                },
+              ],
             },
           },
           include: {
@@ -500,7 +521,14 @@ emailQueue.process(async (job, done) => {
               in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
             },
             user: {
-              is_active: true,
+              OR: [
+                { deactivated_at: null },
+                {
+                  deactivated_at: {
+                    gt: new Date(),
+                  },
+                },
+              ],
             },
           },
           include: {
@@ -543,7 +571,14 @@ emailQueue.process(async (job, done) => {
               in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
             },
             user: {
-              is_active: true,
+              OR: [
+                { deactivated_at: null },
+                {
+                  deactivated_at: {
+                    gt: new Date(),
+                  },
+                },
+              ],
             },
           },
           include: {
@@ -584,7 +619,7 @@ emailQueue.process(async (job, done) => {
           },
         });
         invariant(receiver, 'Receiver not found.');
-        if (receiver.is_active === false) {
+        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
           done(null, 'Deactivated');
           break;
         }
@@ -611,7 +646,7 @@ emailQueue.process(async (job, done) => {
           },
         });
         invariant(receiver, 'Receiver not found.');
-        if (receiver.is_active === false) {
+        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
           done(null, 'Deactivated');
           break;
         }

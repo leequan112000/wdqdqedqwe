@@ -46,7 +46,14 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
             equals: true
           }
         },
-        is_active: true,
+        OR: [
+          { deactivated_at: null },
+          {
+            deactivated_at: {
+              gt: new Date(),
+            },
+          },
+        ],
       }
     });
   } else {
@@ -70,7 +77,14 @@ export const getReceiversByProjectConnection = async (projectConnectionId: strin
             not: null
           }
         },
-        is_active: true,
+        OR: [
+          { deactivated_at: null },
+          {
+            deactivated_at: {
+              gt: new Date(),
+            },
+          },
+        ],
       }
     });
   }
