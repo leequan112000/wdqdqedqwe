@@ -333,7 +333,7 @@ model ProjectRequestCollaborator {
   project_connection ProjectRequest @relation(fields: [project_request_id], references: [id])
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@unique([project_request_id, customer_id])
   @@index([project_request_id])
