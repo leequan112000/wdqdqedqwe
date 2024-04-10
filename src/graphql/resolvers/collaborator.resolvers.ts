@@ -413,6 +413,35 @@ const resolvers: Resolvers<Context> = {
 
       throw new InternalError('User not found.');
     },
+    cancelInvitation: async (_, args, context) => {
+      const { user_id } = args;
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+      });
+
+      // Abort if user already sign up.
+      invariant(
+        !user?.encrypted_password,
+        new PublicError(
+          "Unable to cancel. Please contact support for assistance."
+        )
+      );
+
+      await context.prisma.$transaction(async (trx) => {
+        try {
+          await collaboratorService.deleteNewUser({ user_id }, { prisma: trx });
+        } catch (error) {
+          throw new PublicError(
+            "Unable to cancel. Please contact support for assistance."
+          );
+        }
+      });
+
+      return user;
+    },
     updateCollaboratorRole: async (parent, args, context) => {
       const { role_type, user_id } = args;
       const castedRole = (role_type as CompanyCollaboratorRoleType);
@@ -555,10 +584,13 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        // Remove any meeting that organized by the deactivated user.
+        // Remove any active meeting that organized by the deactivated user.
         const organizedMeetingEvents = await trx.meetingEvent.findMany({
           where: {
             organizer_id: user_id,
+            end_time: {
+              gt: new Date(),
+            },
           },
         });
         const removeMeetingTasks = organizedMeetingEvents.map(async (event) => {
@@ -581,6 +613,9 @@ const resolvers: Resolvers<Context> = {
             },
             id: {
               notIn: removedMeetingIds,
+            },
+            end_time: {
+              gt: new Date(),
             },
           },
           include: {
