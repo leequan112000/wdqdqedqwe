@@ -5,7 +5,7 @@ type DecreaseSubscriptionQuantityArgs = {
 };
 
 const decreaseSubscriptionQuantity = async (
-  args: DecreaseSubscriptionQuantityArgs,
+  args: DecreaseSubscriptionQuantityArgs
 ) => {
   const { stripe_sub_id } = args;
   const stripe = await getStripeInstance();
@@ -20,7 +20,7 @@ const decreaseSubscriptionQuantity = async (
 
   await stripe.subscriptions.update(stripe_sub_id, {
     items: updatedSubscriptionItemParams,
-    proration_behavior: "none",
+    proration_behavior: "none", // no proration refund
   });
 };
 
@@ -29,7 +29,7 @@ type IncreaseSubscriptionQuantityArgs = {
 };
 
 const increaseSubscriptionQuantity = async (
-  args: IncreaseSubscriptionQuantityArgs,
+  args: IncreaseSubscriptionQuantityArgs
 ) => {
   const { stripe_sub_id } = args;
   const stripe = await getStripeInstance();
@@ -44,6 +44,7 @@ const increaseSubscriptionQuantity = async (
 
   await stripe.subscriptions.update(stripe_sub_id, {
     items: updatedSubscriptionItemParams,
+    proration_behavior: "always_invoice", // bill immediately
   });
 };
 
