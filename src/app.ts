@@ -174,8 +174,11 @@ export async function startServer() {
             }
           });
 
-          if (currentUser?.is_active === false) {
-            throw new GraphQLError('Session expired.', {
+          if (
+            currentUser?.deactivated_at &&
+            currentUser.deactivated_at <= new Date()
+          ) {
+            throw new GraphQLError("Session expired.", {
               extensions: {
                 code: GqlErrorCode.SESSION_EXPIRED,
                 http: { status: 401 },

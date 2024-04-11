@@ -4,7 +4,6 @@ import {
   checkPassword,
   createTokens,
   hashPassword,
-  createResetPasswordToken,
 } from "../../helper/auth";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
@@ -14,11 +13,13 @@ import {
   CasbinRole,
   CompanyCollaboratorRoleType,
   OauthProvider,
+  UserStatus,
   UserType,
 } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
+import subscriptionService from "../../services/subscription/subscription.service";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -284,6 +285,35 @@ const resolvers: Resolvers<Context> = {
       return !!oauth;
       // TODO: properly check token validity
     },
+    status: async (parent, _, context) => {
+      const userId = parent.id;
+
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) return null;
+
+      const { deactivated_at, encrypted_password } = user;
+      const now = new Date();
+
+      switch (true) {
+        case deactivated_at && deactivated_at <= now: {
+          return UserStatus.DEACTIVATED;
+        }
+        case deactivated_at && deactivated_at > now: {
+          return UserStatus.PENDING_DEACTIVATION;
+        }
+        case encrypted_password !== null: {
+          return UserStatus.JOINED;
+        }
+        default: {
+          return UserStatus.PENDING_INVITATION;
+        }
+      }
+    },
   },
   Query: {
     user: async (_, __, context) => {
@@ -302,7 +332,7 @@ const resolvers: Resolvers<Context> = {
         const user = await trx.user.findFirst({
           where: {
             email: {
-              mode: 'insensitive',
+              mode: "insensitive",
               equals: lowerCaseEmail,
             },
           },
@@ -353,7 +383,7 @@ const resolvers: Resolvers<Context> = {
       let foundUser = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: email,
           },
         },
@@ -369,8 +399,8 @@ const resolvers: Resolvers<Context> = {
       );
 
       invariant(
-        foundUser.is_active === true,
-        new PublicError("Your account has been suspended.")
+        foundUser.deactivated_at && foundUser.deactivated_at > new Date(),
+        new PublicError("Your account has been deactivated.")
       );
 
       const isPasswordMatched = await checkPassword(
@@ -434,7 +464,7 @@ const resolvers: Resolvers<Context> = {
       const user = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: lowerCaseEmail,
           },
         },
@@ -482,7 +512,7 @@ const resolvers: Resolvers<Context> = {
         new PublicError("The reset password link is expired.")
       );
 
-      await context.prisma.user.update({
+      const updatedUser = await context.prisma.user.update({
         where: {
           reset_password_token: args.reset_token,
         },
@@ -491,19 +521,47 @@ const resolvers: Resolvers<Context> = {
           reset_password_token: null,
           reset_password_expiration: null,
         },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+            },
+          },
+        },
       });
+
+      /**
+       * User is consider invited if their password is not yet set.
+       */
+      const isNewInvited = user.encrypted_password === null;
+      if (isNewInvited && updatedUser.customer) {
+        try {
+          await subscriptionService.increaseSubscriptionQuantity({
+            stripe_sub_id:
+              updatedUser.customer.biotech.subscriptions[0]
+                .stripe_subscription_id,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
       return true;
     },
     changePassword: async (_, args, context) => {
       const { old_password, new_password } = args;
       const user = await context.prisma.user.findFirst({
         where: {
-          id: context.req.user_id
+          id: context.req.user_id,
         },
       });
 
       invariant(user, new PublicError("Current user not found."));
-      
+
       const isPasswordMatched = await checkPassword(
         old_password,
         user,

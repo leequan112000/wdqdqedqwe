@@ -51,6 +51,7 @@ describe('collaborator.service', () => {
             created_at: new Date(),
             updated_at: new Date(),
           },
+          deactivated_at: null,
         };
 
         mockCtx.prisma.user.findFirst.mockResolvedValueOnce(user);
@@ -97,6 +98,7 @@ describe('collaborator.service', () => {
             created_at: new Date(),
             updated_at: new Date(),
           },
+          deactivated_at: null,
         };
 
         mockCtx.prisma.user.findFirst.mockResolvedValueOnce(user);
@@ -143,6 +145,7 @@ describe('collaborator.service', () => {
             created_at: new Date(),
             updated_at: new Date(),
           },
+          deactivated_at: null,
         };
 
         mockCtx.prisma.user.findFirst.mockResolvedValueOnce(user);
@@ -189,6 +192,7 @@ describe('collaborator.service', () => {
             created_at: new Date(),
             updated_at: new Date(),
           },
+          deactivated_at: null,
         };
 
         mockCtx.prisma.user.findFirst.mockResolvedValueOnce(user);

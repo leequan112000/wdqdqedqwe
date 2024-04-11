@@ -47,7 +47,14 @@ const resolver: Resolvers<Context> = {
           biotech_id: parent.id,
           role: CompanyCollaboratorRoleType.OWNER,
           user: {
-            is_active: true,
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
           }
         },
         include: {
@@ -64,8 +71,15 @@ const resolver: Resolvers<Context> = {
           biotech_id: parent.id,
           role: CompanyCollaboratorRoleType.ADMIN,
           user: {
-            is_active: true,
-          }
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
+          },
         },
         include: {
           user: true,

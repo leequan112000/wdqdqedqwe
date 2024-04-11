@@ -358,3 +358,10 @@ export enum CroDbVendorCompanyType {
   CDMO = 'CDMO',
   NON_PROFIT = 'Non-profit research org'
 }
+
+export enum UserStatus {
+  DEACTIVATED = 'deactivated',
+  PENDING_DEACTIVATION = 'pending_deactivation',
+  JOINED = 'joined',
+  PENDING_INVITATION = 'pending_invitation',
+}

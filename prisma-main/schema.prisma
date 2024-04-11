@@ -22,9 +22,10 @@ model User {
   remember_created_at       DateTime?
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
-  is_active                 Boolean   @default(true)
+  is_active                 Boolean   @default(true) /// deprecated, use deactivated_at to track user activation
   phone_number              String?
   country_code              String?
+  deactivated_at            DateTime?
 
   customer                            Customer?
   vendor_member                       VendorMember?

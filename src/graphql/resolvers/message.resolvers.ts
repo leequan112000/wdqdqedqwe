@@ -11,13 +11,17 @@ const resolvers: Resolvers<Context> = {
     user: async (parent, _, context) => {
       const userId = parent.user_id;
       if (userId) {
-        return await context.prisma.user.findUnique({
+        const user =  await context.prisma.user.findUnique({
           where: {
             id: userId,
           },
         });
+
+        if (user) return user;
+        return null;
       }
       return {
+        id: 'cromatic-admin',
         first_name: 'Cromatic',
         last_name: 'Admin',
         is_active: true,
