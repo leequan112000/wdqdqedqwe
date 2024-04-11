@@ -47,9 +47,23 @@ const increaseSubscriptionQuantity = async (
   });
 };
 
+type GetNextBillingDateArgs = {
+  stripe_sub_id: string;
+};
+
+const getNextBillingDate = async (
+  args: GetNextBillingDateArgs
+) => {
+  const { stripe_sub_id } = args;
+  const stripe = await getStripeInstance();
+  const stripeSubscription = await stripe.subscriptions.retrieve(stripe_sub_id);
+  return stripeSubscription.current_period_end;
+};
+
 const subscriptionService = {
   decreaseSubscriptionQuantity,
   increaseSubscriptionQuantity,
+  getNextBillingDate,
 };
 
 export default subscriptionService;

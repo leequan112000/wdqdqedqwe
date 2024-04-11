@@ -8,7 +8,7 @@ import { Resolvers } from "../generated";
 import { customerInvitationEmail } from "../../mailer/customer";
 import { addRoleForUser, hasPermission } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
-import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { BiotechAccountType, CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
 import subscriptionService from "../../services/subscription/subscription.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
@@ -562,24 +562,43 @@ const resolvers: Resolvers<Context> = {
       }
 
       const deactivatedUser = await context.prisma.$transaction(async (trx) => {
-        const deactivatedUser = await trx.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            is_active: false,
-            deactivated_at: moment().endOf('month').toDate(),
-          },
-        });
-
-        if (!!user.customer?.biotech) {
+        // Update subscription quantity for biotech with new subscription plans
+        if (
+          user.customer?.biotech &&
+          user.customer.biotech.account_type !== BiotechAccountType.STARDARD
+        ) {
+          const stripeSubId =
+            user.customer.biotech.subscriptions[0].stripe_subscription_id;
+          const billingCycleAnchor =
+            await subscriptionService.getNextBillingDate({
+              stripe_sub_id: stripeSubId,
+            });
+          const nextBillingDate = moment.unix(billingCycleAnchor).toDate();
+          const deactivatedUser = await trx.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              is_active: false,
+              deactivated_at: nextBillingDate,
+            },
+          });
           await subscriptionService.decreaseSubscriptionQuantity({
-            stripe_sub_id:
-              user.customer.biotech.subscriptions[0].stripe_subscription_id,
+            stripe_sub_id: stripeSubId,
+          });
+          return deactivatedUser;
+        } else {
+          // Vendor company and biotech with standard plan (legacy) will deactivate immediately.
+          return await trx.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              is_active: false,
+              deactivated_at: new Date(),
+            },
           });
         }
-
-        return deactivatedUser;
       });
 
       return deactivatedUser;
@@ -660,11 +679,15 @@ const resolvers: Resolvers<Context> = {
             }
           });
 
-
-          if (!!activatedUser.customer?.biotech) {
+          if (
+            activatedUser.customer?.biotech &&
+            activatedUser.customer.biotech.account_type !==
+              BiotechAccountType.STARDARD
+          ) {
             await subscriptionService.increaseSubscriptionQuantity({
               stripe_sub_id:
-              activatedUser.customer.biotech.subscriptions[0].stripe_subscription_id,
+                activatedUser.customer.biotech.subscriptions[0]
+                  .stripe_subscription_id,
             });
           }
 
