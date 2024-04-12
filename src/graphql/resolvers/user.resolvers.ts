@@ -399,7 +399,7 @@ const resolvers: Resolvers<Context> = {
       );
 
       invariant(
-        foundUser.deactivated_at && foundUser.deactivated_at > new Date(),
+        foundUser.deactivated_at === null || foundUser.deactivated_at > new Date(),
         new PublicError("Your account has been deactivated.")
       );
 
