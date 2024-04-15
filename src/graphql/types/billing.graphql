@@ -19,4 +19,5 @@ type BillingInvoice {
 type Query {
   billingInfo: BillingInfo
   billingInvoices: [BillingInvoice]
+  billingPortalUrl(return_url: String!): String
 }

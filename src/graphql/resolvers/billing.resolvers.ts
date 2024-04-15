@@ -171,6 +171,41 @@ const resolvers: Resolvers<Context> = {
         invoice_url: d.hosted_invoice_url,
       }));
     },
+    billingPortalUrl: async (_, args, context) => {
+      const { return_url } = args;
+      const userId = context.req.user_id;
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      invariant(
+        user?.customer?.biotech?.subscriptions,
+        "Subscription not found."
+      );
+
+      const stripe = await getStripeInstance();
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.customer.biotech.subscriptions[0].stripe_customer_id,
+        return_url,
+      });
+
+      return session.url;
+    },
   },
 };
 

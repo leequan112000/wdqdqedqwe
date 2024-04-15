@@ -1612,6 +1612,7 @@ export type Query = {
   availableDateTimeSlots?: Maybe<Array<Maybe<DateWithTimeSlots>>>;
   billingInfo?: Maybe<BillingInfo>;
   billingInvoices?: Maybe<Array<Maybe<BillingInvoice>>>;
+  billingPortalUrl?: Maybe<Scalars['String']>;
   bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
@@ -1676,6 +1677,11 @@ export type QueryAvailableDateTimeSlotsArgs = {
   meeting_event_id?: InputMaybe<Scalars['String']>;
   timezone: Scalars['String'];
   to: Scalars['String'];
+};
+
+
+export type QueryBillingPortalUrlArgs = {
+  return_url: Scalars['String'];
 };
 
 
@@ -3374,6 +3380,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   availableDateTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['DateWithTimeSlots']>>>, ParentType, ContextType, RequireFields<QueryAvailableDateTimeSlotsArgs, 'duration_in_min' | 'from' | 'timezone' | 'to'>>;
   billingInfo?: Resolver<Maybe<ResolversTypes['BillingInfo']>, ParentType, ContextType>;
   billingInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BillingInvoice']>>>, ParentType, ContextType>;
+  billingPortalUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryBillingPortalUrlArgs, 'return_url'>>;
   bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
