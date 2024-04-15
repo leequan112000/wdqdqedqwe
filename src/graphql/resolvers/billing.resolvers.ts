@@ -35,16 +35,18 @@ const getBillCycleName = (interval: string) => {
 
 const getPaymentMethodName = (paymentMethod: Stripe.PaymentMethod.Type) => {
   switch (paymentMethod) {
-    case 'card':
+    case "card":
       return "Credit Card";
     default:
       return paymentMethod;
   }
-}
+};
 
-const isStripeCus = (cus: Stripe.Customer | Stripe.DeletedCustomer): cus is Stripe.Customer => {
+const isStripeCus = (
+  cus: Stripe.Customer | Stripe.DeletedCustomer
+): cus is Stripe.Customer => {
   return cus.deleted !== true;
-}
+};
 
 const resolvers: Resolvers<Context> = {
   Query: {
