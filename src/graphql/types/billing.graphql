@@ -1,0 +1,23 @@
+type BillingInfo {
+  plan: String
+  active_user_counts: Int
+  payment_method: String
+  bill_cycle: String
+  upcoming_bill_date: Date
+  upcoming_bill_amount: Float
+}
+
+type BillingInvoice {
+  number: String
+  date: Date
+  description: String
+  amount: Float
+  status: String
+  invoice_url: String
+}
+
+type Query {
+  billingInfo: BillingInfo
+  billingInvoices: [BillingInvoice]
+  billingPortalUrl(return_url: String!): String
+}

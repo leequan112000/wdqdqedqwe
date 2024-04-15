@@ -41,6 +41,26 @@ export type AvailabilityRuleInput = {
   intervals: Array<RuleIntervalInput>;
 };
 
+export type BillingInfo = {
+  __typename?: 'BillingInfo';
+  active_user_counts?: Maybe<Scalars['Int']>;
+  bill_cycle?: Maybe<Scalars['String']>;
+  payment_method?: Maybe<Scalars['String']>;
+  plan?: Maybe<Scalars['String']>;
+  upcoming_bill_amount?: Maybe<Scalars['Float']>;
+  upcoming_bill_date?: Maybe<Scalars['Date']>;
+};
+
+export type BillingInvoice = {
+  __typename?: 'BillingInvoice';
+  amount?: Maybe<Scalars['Float']>;
+  date?: Maybe<Scalars['Date']>;
+  description?: Maybe<Scalars['String']>;
+  invoice_url?: Maybe<Scalars['String']>;
+  number?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+};
+
 export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
@@ -1590,6 +1610,9 @@ export type Query = {
   __typename?: 'Query';
   availability?: Maybe<Availability>;
   availableDateTimeSlots?: Maybe<Array<Maybe<DateWithTimeSlots>>>;
+  billingInfo?: Maybe<BillingInfo>;
+  billingInvoices?: Maybe<Array<Maybe<BillingInvoice>>>;
+  billingPortalUrl?: Maybe<Scalars['String']>;
   bioInvitedProjectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
   biotech?: Maybe<Biotech>;
   biotechInviteVendors?: Maybe<Array<Maybe<BiotechInviteVendor>>>;
@@ -1654,6 +1677,11 @@ export type QueryAvailableDateTimeSlotsArgs = {
   meeting_event_id?: InputMaybe<Scalars['String']>;
   timezone: Scalars['String'];
   to: Scalars['String'];
+};
+
+
+export type QueryBillingPortalUrlArgs = {
+  return_url: Scalars['String'];
 };
 
 
@@ -2253,6 +2281,8 @@ export type ResolversTypes = ResolversObject<{
   Availability: ResolverTypeWrapper<Availability>;
   AvailabilityRule: ResolverTypeWrapper<AvailabilityRule>;
   AvailabilityRuleInput: AvailabilityRuleInput;
+  BillingInfo: ResolverTypeWrapper<BillingInfo>;
+  BillingInvoice: ResolverTypeWrapper<BillingInvoice>;
   Biotech: ResolverTypeWrapper<Biotech>;
   BiotechInviteVendor: ResolverTypeWrapper<BiotechInviteVendor>;
   BiotechInvoice: ResolverTypeWrapper<BiotechInvoice>;
@@ -2369,6 +2399,8 @@ export type ResolversParentTypes = ResolversObject<{
   Availability: Availability;
   AvailabilityRule: AvailabilityRule;
   AvailabilityRuleInput: AvailabilityRuleInput;
+  BillingInfo: BillingInfo;
+  BillingInvoice: BillingInvoice;
   Biotech: Biotech;
   BiotechInviteVendor: BiotechInviteVendor;
   BiotechInvoice: BiotechInvoice;
@@ -2495,6 +2527,26 @@ export type AvailabilityResolvers<ContextType = any, ParentType extends Resolver
 export type AvailabilityRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['AvailabilityRule'] = ResolversParentTypes['AvailabilityRule']> = ResolversObject<{
   day?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   intervals?: Resolver<Array<ResolversTypes['RuleInterval']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BillingInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInfo'] = ResolversParentTypes['BillingInfo']> = ResolversObject<{
+  active_user_counts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  upcoming_bill_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  upcoming_bill_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type BillingInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInvoice'] = ResolversParentTypes['BillingInvoice']> = ResolversObject<{
+  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  invoice_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3326,6 +3378,9 @@ export type PurchaseOrderResolvers<ContextType = any, ParentType extends Resolve
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   availability?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType>;
   availableDateTimeSlots?: Resolver<Maybe<Array<Maybe<ResolversTypes['DateWithTimeSlots']>>>, ParentType, ContextType, RequireFields<QueryAvailableDateTimeSlotsArgs, 'duration_in_min' | 'from' | 'timezone' | 'to'>>;
+  billingInfo?: Resolver<Maybe<ResolversTypes['BillingInfo']>, ParentType, ContextType>;
+  billingInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BillingInvoice']>>>, ParentType, ContextType>;
+  billingPortalUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryBillingPortalUrlArgs, 'return_url'>>;
   bioInvitedProjectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, RequireFields<QueryBioInvitedProjectConnectionsArgs, 'project_request_id'>>;
   biotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType>;
   biotechInviteVendors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInviteVendor']>>>, ParentType, ContextType, Partial<QueryBiotechInviteVendorsArgs>>;
@@ -3693,6 +3748,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AuthResponse?: AuthResponseResolvers<ContextType>;
   Availability?: AvailabilityResolvers<ContextType>;
   AvailabilityRule?: AvailabilityRuleResolvers<ContextType>;
+  BillingInfo?: BillingInfoResolvers<ContextType>;
+  BillingInvoice?: BillingInvoiceResolvers<ContextType>;
   Biotech?: BiotechResolvers<ContextType>;
   BiotechInviteVendor?: BiotechInviteVendorResolvers<ContextType>;
   BiotechInvoice?: BiotechInvoiceResolvers<ContextType>;

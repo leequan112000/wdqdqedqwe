@@ -10,6 +10,7 @@ import { Request } from "express";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
 import {
+  BiotechAccountType,
   CasbinRole,
   CompanyCollaboratorRoleType,
   OauthProvider,
@@ -538,7 +539,12 @@ const resolvers: Resolvers<Context> = {
        * User is consider invited if their password is not yet set.
        */
       const isNewInvited = user.encrypted_password === null;
-      if (isNewInvited && updatedUser.customer) {
+      if (
+        isNewInvited &&
+        updatedUser.customer &&
+        updatedUser.customer.biotech.account_type !==
+          BiotechAccountType.STARDARD
+      ) {
         try {
           await subscriptionService.increaseSubscriptionQuantity({
             stripe_sub_id:
