@@ -22,9 +22,10 @@ model User {
   remember_created_at       DateTime?
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
-  is_active                 Boolean   @default(true)
+  is_active                 Boolean   @default(true) /// deprecated, use deactivated_at to track user activation
   phone_number              String?
   country_code              String?
+  deactivated_at            DateTime?
 
   customer                            Customer?
   vendor_member                       VendorMember?
@@ -56,7 +57,7 @@ model Customer {
   updated_at        DateTime @updatedAt
 
   user_id String @unique @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
@@ -186,7 +187,7 @@ model VendorMember {
   updated_at DateTime @updatedAt
 
   user_id String @unique @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   vendor_company_id String         @db.Uuid
   vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
@@ -301,7 +302,7 @@ model VendorMemberConnection {
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   vendor_member_id String       @db.Uuid
-  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
+  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id], onDelete: Cascade)
 
   @@unique([project_connection_id, vendor_member_id])
   @@index([project_connection_id])
@@ -317,7 +318,7 @@ model CustomerConnection {
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@unique([project_connection_id, customer_id])
   @@index([project_connection_id])
@@ -333,7 +334,7 @@ model ProjectRequestCollaborator {
   project_connection ProjectRequest @relation(fields: [project_request_id], references: [id])
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@unique([project_request_id, customer_id])
   @@index([project_request_id])
@@ -403,7 +404,7 @@ model Notification {
   updated_at        DateTime  @updatedAt
 
   recipient_id String  @db.Uuid
-  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
+  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id], onDelete: Cascade)
   sender_id    String? @db.Uuid
   sender       User?   @relation("SenderNotifications", fields: [sender_id], references: [id])
 
@@ -463,7 +464,7 @@ model MeetingAttendeeConnection {
   meeting_event_id String       @db.Uuid
   meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
   user_id          String       @db.Uuid
-  user             User         @relation(fields: [user_id], references: [id])
+  user             User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("meeting_attendee_connections")
 }

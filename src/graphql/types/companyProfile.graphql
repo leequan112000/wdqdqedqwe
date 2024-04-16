@@ -1,0 +1,41 @@
+union CompanyProfile = Biotech | VendorCompany
+
+type Query {
+  companyProfile: CompanyProfile
+}
+
+type Mutation {
+  updateBiotechProfile(
+    name: String
+    team_size: String
+    address: String
+    address1: String
+    address2: String
+    city: String
+    state: String
+    country: String
+    zipcode: String
+    website: String
+    about: String
+  ): Biotech
+
+  updateVendorCompanyProfile(
+    name: String
+    website: String
+    address: String
+    address1: String
+    address2: String
+    city: String
+    state: String
+    country: String
+    zipcode: String
+    description: String
+    team_size: String
+    founded_year: String
+    project_completed_per_year: String
+    certification_tag_ids: [String!]
+    new_certification_tag_names: [String!]
+    lab_specialization_ids: [String!]
+    new_lab_specialization_names: [String!]
+  ): VendorCompany
+}

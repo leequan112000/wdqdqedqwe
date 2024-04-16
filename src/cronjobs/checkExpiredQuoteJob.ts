@@ -50,7 +50,7 @@ async function main() {
   expiredQuotes.forEach((quote) => {
     quote.project_connection.customer_connections.forEach((cc) => {
       const userId = cc.customer.user_id;
-      if (cc.customer.user.is_active === true) {
+      if (cc.customer.user.deactivated_at === null || cc.customer.user.deactivated_at > new Date()) {
         if (!expiredQuotesGroupByUserId[userId]) {
           expiredQuotesGroupByUserId[userId] = { quotes: [], userData: cc.customer.user };
         }

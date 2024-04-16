@@ -1,5 +1,5 @@
 import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { hasPermission, updateRoleForUser } from "../../helper/casbin";
+import { hasPermission, updateRoleForUser, deleteRolesForUser } from "../../helper/casbin";
 import { PermissionDeniedError } from "../../graphql/errors/PermissionDeniedError";
 import invariant from "../../helper/invariant";
 import { InternalError } from "../../graphql/errors/InternalError";
@@ -292,6 +292,26 @@ const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => 
   }
 }
 
+type DeleteNewUserArgs = {
+  user_id: string;
+};
+
+/**
+ * Delete a newly invited user that hasn't complete the account creation.
+ */
+const deleteNewUser = async (
+  args: DeleteNewUserArgs,
+  ctx: ServiceContext
+) => {
+  await ctx.prisma.user.delete({
+    where: {
+      id: args.user_id,
+    },
+  });
+
+  await deleteRolesForUser(args.user_id);
+};
+
 const collaboratorService = {
   setCustomerAsAdmin,
   setCustomerAsUser,
@@ -301,6 +321,7 @@ const collaboratorService = {
   setVendorMemberAsOwner,
   checkPermissionToEditRole,
   updateUserRole,
+  deleteNewUser,
 }
 
 export default collaboratorService;

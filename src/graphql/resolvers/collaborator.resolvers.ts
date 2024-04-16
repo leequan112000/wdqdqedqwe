@@ -1,3 +1,4 @@
+import moment from "moment";
 import { vendorMemberInvitationByUserEmail } from "../../mailer";
 import { createResetPasswordToken } from "../../helper/auth";
 import { Context } from "../../types/context";
@@ -7,9 +8,9 @@ import { Resolvers } from "../generated";
 import { customerInvitationEmail } from "../../mailer/customer";
 import { addRoleForUser, hasPermission } from "../../helper/casbin";
 import invariant from "../../helper/invariant";
-import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
+import { BiotechAccountType, CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
 import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
+import subscriptionService from "../../services/subscription/subscription.service";
 import collaboratorService from "../../services/collaborator/collaborator.service";
 import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
 import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission } from "../../helper/accessControl";
@@ -45,10 +46,12 @@ const resolvers: Resolvers<Context> = {
             customer: {
               biotech_id: user.customer.biotech_id,
             },
-            ...(active_only ? { is_active: true } : {})
+            ...(active_only
+              ? { NOT: { deactivated_at: { lte: new Date() } } }
+              : {}),
           },
           orderBy: {
-            created_at: 'asc'
+            created_at: "asc",
           },
         });
       }
@@ -132,11 +135,14 @@ const resolvers: Resolvers<Context> = {
       const isVendor = !!currentUser.vendor_member;
 
       const newUser = await context.prisma.$transaction(async (trx) => {
+        const splitName = args.name.split(' ');
+        const firstName = splitName[0];
+        const lastName = splitName.length === 1 ? '' : splitName[splitName.length - 1];
         // Create new user
         const newUser = await trx.user.create({
           data: {
-            first_name: args.first_name,
-            last_name: args.last_name,
+            first_name: firstName,
+            last_name: lastName,
             email: lowerCaseEmail,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
@@ -410,6 +416,35 @@ const resolvers: Resolvers<Context> = {
 
       throw new InternalError('User not found.');
     },
+    cancelInvitation: async (_, args, context) => {
+      const { user_id } = args;
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: user_id,
+        },
+      });
+
+      // Abort if user already sign up.
+      invariant(
+        !user?.encrypted_password,
+        new PublicError(
+          "Unable to cancel. Please contact support for assistance."
+        )
+      );
+
+      await context.prisma.$transaction(async (trx) => {
+        try {
+          await collaboratorService.deleteNewUser({ user_id }, { prisma: trx });
+        } catch (error) {
+          throw new PublicError(
+            "Unable to cancel. Please contact support for assistance."
+          );
+        }
+      });
+
+      return user;
+    },
     updateCollaboratorRole: async (parent, args, context) => {
       const { role_type, user_id } = args;
       const castedRole = (role_type as CompanyCollaboratorRoleType);
@@ -482,7 +517,15 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           vendor_member: true,
-          customer: true,
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true
+                },
+              },
+            },
+          },
         },
       });
 
@@ -514,94 +557,48 @@ const resolvers: Resolvers<Context> = {
         }
       }
 
-      if (user.is_active !== true) {
+      if (user.deactivated_at !== null) {
         return user;
       }
 
       const deactivatedUser = await context.prisma.$transaction(async (trx) => {
-        const deactivatedUser = await trx.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            is_active: false,
-          },
-        });
-
-        await trx.projectRequestCollaborator.deleteMany({
-          where: {
-            customer: {
-              user_id,
+        // Update subscription quantity for biotech with new subscription plans
+        if (
+          user.customer?.biotech &&
+          user.customer.biotech.account_type !== BiotechAccountType.STARDARD
+        ) {
+          const stripeSubId =
+            user.customer.biotech.subscriptions[0].stripe_subscription_id;
+          const billingCycleAnchor =
+            await subscriptionService.getNextBillingDate({
+              stripe_sub_id: stripeSubId,
+            });
+          const nextBillingDate = moment.unix(billingCycleAnchor).toDate();
+          const deactivatedUser = await trx.user.update({
+            where: {
+              id: user.id,
             },
-          },
-        });
-
-        await trx.customerConnection.deleteMany({
-          where: {
-            customer: {
-              user_id,
+            data: {
+              is_active: false,
+              deactivated_at: nextBillingDate,
             },
-          },
-        });
-
-        await trx.vendorMemberConnection.deleteMany({
-          where: {
-            vendor_member: {
-              user_id,
-            },
-          },
-        });
-
-        // Remove any meeting that organized by the deactivated user.
-        const organizedMeetingEvents = await trx.meetingEvent.findMany({
-          where: {
-            organizer_id: user_id,
-          },
-        });
-        const removeMeetingTasks = organizedMeetingEvents.map(async (event) => {
-          return await meetingEventService.removeMeetingEvent(
-            { meeting_event_id: event.id, current_user_id: currentUserId },
-            { prisma: trx },
-          );
-        });
-
-        const removedMeetingEvents = await Promise.all(removeMeetingTasks);
-        const removedMeetingIds = removedMeetingEvents.map((e) => e.id);
-
-        // Remove deactivated user from meeting events' guest list
-        const targetedMeetingEvents = await trx.meetingEvent.findMany({
-          where: {
-            meetingAttendeeConnections: {
-              some: {
-                user_id,
-              }
-            },
-            id: {
-              notIn: removedMeetingIds,
-            },
-          },
-          include: {
-            meetingAttendeeConnections: {
-              include: {
-                user: true,
-              },
-            },
-          },
-        });
-
-        const updateMeetingEventTasks = targetedMeetingEvents.map(async (e) => {
-          return await meetingEventService.removeCromaticParticipant({
-            meeting_event_id: e.id,
-            organizer_user_id: e.organizer_id,
-            user_id,
-          }, {
-            prisma: trx
           });
-        });
-
-        await Promise.all(updateMeetingEventTasks);
-
-        return deactivatedUser;
+          await subscriptionService.decreaseSubscriptionQuantity({
+            stripe_sub_id: stripeSubId,
+          });
+          return deactivatedUser;
+        } else {
+          // Vendor company and biotech with standard plan (legacy) will deactivate immediately.
+          return await trx.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              is_active: false,
+              deactivated_at: new Date(),
+            },
+          });
+        }
       });
 
       return deactivatedUser;
@@ -659,15 +656,43 @@ const resolvers: Resolvers<Context> = {
         }
       }
 
-      if (user.is_active === false) {
-        const activatedUser = await context.prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            is_active: true,
-          },
-        });
+      if (user.deactivated_at && user.deactivated_at <= new Date()) {
+        const activatedUser = await context.prisma.$transaction(async (trx) => {
+          const activatedUser = await trx.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              is_active: true,
+              deactivated_at: null,
+            },
+            include: {
+              customer: {
+                include: {
+                  biotech: {
+                    include: {
+                      subscriptions: true,
+                    },
+                  },
+                },
+              }
+            }
+          });
+
+          if (
+            activatedUser.customer?.biotech &&
+            activatedUser.customer.biotech.account_type !==
+              BiotechAccountType.STARDARD
+          ) {
+            await subscriptionService.increaseSubscriptionQuantity({
+              stripe_sub_id:
+                activatedUser.customer.biotech.subscriptions[0]
+                  .stripe_subscription_id,
+            });
+          }
+
+          return activatedUser;
+        })
 
         return activatedUser;
       }

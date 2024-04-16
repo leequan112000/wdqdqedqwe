@@ -160,9 +160,10 @@ export enum MeetingPlatform {
 }
 
 export enum BiotechAccountType {
+  SOURCING_PLAN = 'sourcing_plan',
+  PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
+  WHITE_GLOVE_PLAN = 'white_glove_plan',
   STARDARD = 'standard',
-  PREMIUM = 'premium',
-  ENTERPRISE = 'enterprise',
 }
 
 export enum EmailType {
@@ -357,4 +358,11 @@ export enum CroDbVendorCompanyType {
   CMO = 'CMO',
   CDMO = 'CDMO',
   NON_PROFIT = 'Non-profit research org'
+}
+
+export enum UserStatus {
+  DEACTIVATED = 'deactivated',
+  PENDING_DEACTIVATION = 'pending_deactivation',
+  JOINED = 'joined',
+  PENDING_INVITATION = 'pending_invitation',
 }
