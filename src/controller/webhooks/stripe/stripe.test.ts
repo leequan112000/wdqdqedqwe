@@ -98,7 +98,6 @@ beforeEach(() => {
     has_setup_profile: true,
     legal_name: 'Legal Name',
     linkedin_url: null,
-    number_of_reqs_allowed_without_subscription: 0,
     skip_cda: false,
     team_size: '1-10',
     twitter_url: null,

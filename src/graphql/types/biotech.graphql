@@ -15,7 +15,6 @@ type Biotech {
   zipcode: String
   website: String
   about: String
-  number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   owner: User
   admins: [User]
