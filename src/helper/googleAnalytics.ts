@@ -1,12 +1,25 @@
-import ReactGA from "react-ga4";
-import { GA4 } from "react-ga4/types/ga4";
+import Sentry from "../sentry";
 
-const ga4 = (): GA4 => {
-  if (process.env.GA_MEASUREMENT_ID) {
-    ReactGA.initialize(process.env.GA_MEASUREMENT_ID!);
+const trackEvent = async (event: string, client_id: string, params: any) => {
+  const MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID;
+  const API_SECRET = process.env.GA_API_SECRET;
+
+  try {
+    await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`, {
+      method: "POST",
+      body: JSON.stringify({
+        client_id,
+        events: [{
+          name: event,
+          params: params,
+        }]
+      })
+    });
+  } catch (error) {
+    Sentry.captureException(error);
   }
-
-  return ReactGA;
 };
 
-export const ga = ga4();
+export const ga = {
+  trackEvent,
+};
