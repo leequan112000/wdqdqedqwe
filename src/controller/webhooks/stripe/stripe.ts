@@ -46,11 +46,15 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 }
               });
 
-              ga.gtag('event', 'purchase', {
-                transaction_id: checkoutSession.subscription,
-                value: (checkoutSession.amount_total ?? 0) / 100,
-                currency: checkoutSession.currency?.toUpperCase(),
-              });
+              await ga.trackEvent(
+                'purchase',
+                checkoutSession?.metadata?.client_id ?? 'unknown',
+                {
+                  transaction_id: checkoutSession.subscription,
+                  value: (checkoutSession.amount_total ?? 0) / 100,
+                  currency: checkoutSession.currency?.toUpperCase(),
+                }
+              );
             }
             console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
             return { status: 200, message: 'OK' };
