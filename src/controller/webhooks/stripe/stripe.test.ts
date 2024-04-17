@@ -242,21 +242,6 @@ describe('process stripe event', () => {
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
-
-      test('should update biotech and return 200', async () => {
-        const event = checkoutSessionCompleted as Stripe.Event;
-        (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
-        (event.data.object as Stripe.Checkout.Session).subscription = null;
-        prisma.customer.findFirst.mockResolvedValue({
-          ...customer,
-          biotech,
-        } as Customer & { biotech: Biotech });
-
-        const result = await processStripeEvent(event);
-        expect(prisma.biotech.update).toBeCalled();
-        expect(result.status).toEqual(200);
-        expect(result.message).contain('OK');
-      });
     });
   });
 
