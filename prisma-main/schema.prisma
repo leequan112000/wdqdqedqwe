@@ -59,8 +59,8 @@ model Customer {
   user_id String @unique @db.Uuid
   user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  biotech_id String?  @db.Uuid
-  biotech    Biotech? @relation(fields: [biotech_id], references: [id])
+  biotech_id String  @db.Uuid
+  biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   project_requests              ProjectRequest[]
   customer_connections          CustomerConnection[]
