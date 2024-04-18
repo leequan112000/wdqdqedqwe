@@ -107,7 +107,6 @@ model Biotech {
   cda_pandadoc_signer                         String?
   cda_signed_at                               DateTime?
   skip_cda                                    Boolean   @default(false)
-  number_of_reqs_allowed_without_subscription Int       @default(0)
   account_type                                String?
   legal_name                                  String?
   upload_limit                                Int       @default(1048576)

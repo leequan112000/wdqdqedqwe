@@ -3,8 +3,9 @@ import moment from 'moment';
 import { prisma } from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import milestoneService from '../../../services/milestone/milestone.service';
-import { InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import { InvoicePaymentStatus, MilestonePaymentStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
+import { ga } from '../../../helper/googleAnalytics';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
 import { createInvoicePaymentNoticeEmailJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
@@ -44,17 +45,16 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   biotech_id: customer.biotech_id
                 }
               });
-            } else {
-              // Increment number_of_reqs_allowed_without_subscription by 1
-              const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
-              await prisma.biotech.update({
-                where: {
-                  id: customer.biotech_id
-                },
-                data: {
-                  number_of_reqs_allowed_without_subscription: incremented_number_of_request
+
+              await ga.trackEvent(
+                'purchase',
+                checkoutSession?.metadata?.client_id ?? 'unknown',
+                {
+                  transaction_id: checkoutSession.subscription,
+                  value: (checkoutSession.amount_total ?? 0) / 100,
+                  currency: checkoutSession.currency?.toUpperCase(),
                 }
-              })
+              );
             }
             console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
             return { status: 200, message: 'OK' };

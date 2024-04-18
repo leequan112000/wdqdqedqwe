@@ -83,7 +83,6 @@ export type Biotech = {
   id?: Maybe<Scalars['String']>;
   linkedin_url?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
-  number_of_reqs_allowed_without_subscription?: Maybe<Scalars['Int']>;
   owner?: Maybe<User>;
   purchase_orders?: Maybe<Array<Maybe<PurchaseOrder>>>;
   state?: Maybe<Scalars['String']>;
@@ -2571,7 +2570,6 @@ export type BiotechResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  number_of_reqs_allowed_without_subscription?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   owner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   purchase_orders?: Resolver<Maybe<Array<Maybe<ResolversTypes['PurchaseOrder']>>>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

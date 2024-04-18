@@ -98,7 +98,6 @@ beforeEach(() => {
     has_setup_profile: true,
     legal_name: 'Legal Name',
     linkedin_url: null,
-    number_of_reqs_allowed_without_subscription: 0,
     skip_cda: false,
     team_size: '1-10',
     twitter_url: null,
@@ -240,21 +239,6 @@ describe('process stripe event', () => {
 
         const result = await processStripeEvent(event);
         expect(prisma.subscription.create).toBeCalled();
-        expect(result.status).toEqual(200);
-        expect(result.message).contain('OK');
-      });
-
-      test('should update biotech and return 200', async () => {
-        const event = checkoutSessionCompleted as Stripe.Event;
-        (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
-        (event.data.object as Stripe.Checkout.Session).subscription = null;
-        prisma.customer.findFirst.mockResolvedValue({
-          ...customer,
-          biotech,
-        } as Customer & { biotech: Biotech });
-
-        const result = await processStripeEvent(event);
-        expect(prisma.biotech.update).toBeCalled();
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
