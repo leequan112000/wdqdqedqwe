@@ -238,7 +238,7 @@ describe('process stripe event', () => {
         prisma.customer.findFirst.mockResolvedValue(customer);
 
         const result = await processStripeEvent(event);
-        expect(prisma.subscription.create).toBeCalled();
+        expect(prisma.customerSubscription.create).toBeCalled();
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
