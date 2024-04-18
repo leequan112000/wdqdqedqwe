@@ -19,3 +19,18 @@ export const availabilitiesCreateData = (
     timezone: tz,
   }));
 };
+
+export const availabilityCreateManyUserInputs = (tz: string) => {
+  return [
+    AvailabilityDay.MONDAY,
+    AvailabilityDay.TUESDAY,
+    AvailabilityDay.WEDNESDAY,
+    AvailabilityDay.THURSDAY,
+    AvailabilityDay.FRIDAY,
+  ].map((day) => ({
+    day_of_week: day,
+    start_time: "9:00am",
+    end_time: "5:00pm",
+    timezone: tz,
+  }));
+};

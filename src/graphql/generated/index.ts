@@ -624,6 +624,7 @@ export type Mutation = {
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
   onboardBiotech?: Maybe<Biotech>;
+  onboardCustomerPersonalInfo?: Maybe<Customer>;
   payByBlanketPurchaseOrder?: Maybe<Milestone>;
   payByPurchaseOrder?: Maybe<Milestone>;
   reactivateCollaborator?: Maybe<User>;
@@ -648,6 +649,7 @@ export type Mutation = {
   shortlistSourcedCro?: Maybe<SourcedCro>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
+  signUpUserLegacy: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   sourceCros?: Maybe<SourcingTask>;
@@ -977,6 +979,15 @@ export type MutationOnboardBiotechArgs = {
 };
 
 
+export type MutationOnboardCustomerPersonalInfoArgs = {
+  first_name: Scalars['String'];
+  job_title: Scalars['String'];
+  last_name: Scalars['String'];
+  phone_number?: InputMaybe<Scalars['String']>;
+  team: Scalars['String'];
+};
+
+
 export type MutationPayByBlanketPurchaseOrderArgs = {
   blanket_purchase_order_id: Scalars['String'];
   id: Scalars['String'];
@@ -1100,6 +1111,14 @@ export type MutationSignInUserArgs = {
 
 
 export type MutationSignUpUserArgs = {
+  company_name: Scalars['String'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+  timezone: Scalars['String'];
+};
+
+
+export type MutationSignUpUserLegacyArgs = {
   company_name: Scalars['String'];
   country_code: Scalars['String'];
   email: Scalars['String'];
@@ -1658,6 +1677,8 @@ export type Query = {
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
+  subscriptionCheckoutSessionURL?: Maybe<Scalars['String']>;
+  subscriptionPlans: Array<SubscriptionPlan>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
@@ -1843,6 +1864,12 @@ export type QuerySearchLabSpecializationsArgs = {
 
 export type QuerySourcingSessionArgs = {
   id: Scalars['String'];
+};
+
+
+export type QuerySubscriptionCheckoutSessionUrlArgs = {
+  ga_client_id?: InputMaybe<Scalars['String']>;
+  price_id: Scalars['String'];
 };
 
 
@@ -2092,6 +2119,32 @@ export type SubscriptionSourceCrosArgs = {
 
 export type SubscriptionSourceRfpSpecialtiesArgs = {
   task_id: Scalars['String'];
+};
+
+export type SubscriptionFeature = {
+  __typename?: 'SubscriptionFeature';
+  items: Array<SubscriptionFeatureItem>;
+  name: Scalars['String'];
+};
+
+export type SubscriptionFeatureItem = {
+  __typename?: 'SubscriptionFeatureItem';
+  description: Scalars['String'];
+};
+
+export type SubscriptionPlan = {
+  __typename?: 'SubscriptionPlan';
+  features: Array<SubscriptionFeature>;
+  id: Scalars['String'];
+  name: Scalars['String'];
+  prices: Array<SubscriptionPrice>;
+};
+
+export type SubscriptionPrice = {
+  __typename?: 'SubscriptionPrice';
+  amount_per_month: Scalars['Int'];
+  id: Scalars['String'];
+  interval: Scalars['String'];
 };
 
 export type SubspecialtyNameWithWeight = {
@@ -2382,6 +2435,10 @@ export type ResolversTypes = ResolversObject<{
   StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
   SubmitAttendanceResp: ResolverTypeWrapper<SubmitAttendanceResp>;
   Subscription: ResolverTypeWrapper<{}>;
+  SubscriptionFeature: ResolverTypeWrapper<SubscriptionFeature>;
+  SubscriptionFeatureItem: ResolverTypeWrapper<SubscriptionFeatureItem>;
+  SubscriptionPlan: ResolverTypeWrapper<SubscriptionPlan>;
+  SubscriptionPrice: ResolverTypeWrapper<SubscriptionPrice>;
   SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
@@ -2500,6 +2557,10 @@ export type ResolversParentTypes = ResolversObject<{
   StripeExternalAccountData: StripeExternalAccountData;
   SubmitAttendanceResp: SubmitAttendanceResp;
   Subscription: {};
+  SubscriptionFeature: SubscriptionFeature;
+  SubscriptionFeatureItem: SubscriptionFeatureItem;
+  SubscriptionPlan: SubscriptionPlan;
+  SubscriptionPrice: SubscriptionPrice;
   SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
   Upload: Scalars['Upload'];
@@ -3084,6 +3145,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
   onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
+  onboardCustomerPersonalInfo?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationOnboardCustomerPersonalInfoArgs, 'first_name' | 'job_title' | 'last_name' | 'team'>>;
   payByBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByBlanketPurchaseOrderArgs, 'blanket_purchase_order_id' | 'id'>>;
   payByPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByPurchaseOrderArgs, 'id' | 'po_number'>>;
   reactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationReactivateCollaboratorArgs, 'user_id'>>;
@@ -3107,7 +3169,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
-  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
+  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'password' | 'timezone'>>;
+  signUpUserLegacy?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserLegacyArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   sourceCros?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceCrosArgs, 'names' | 'sourcing_session_id'>>;
@@ -3425,6 +3488,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subscriptionCheckoutSessionURL?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'price_id'>>;
+  subscriptionPlans?: Resolver<Array<ResolversTypes['SubscriptionPlan']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
@@ -3640,6 +3705,32 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   sourceRfpSpecialties?: SubscriptionResolver<Maybe<ResolversTypes['SourceRfpSpecialtySubscriptionPayload']>, "sourceRfpSpecialties", ParentType, ContextType, RequireFields<SubscriptionSourceRfpSpecialtiesArgs, 'task_id'>>;
 }>;
 
+export type SubscriptionFeatureResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionFeature'] = ResolversParentTypes['SubscriptionFeature']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['SubscriptionFeatureItem']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SubscriptionFeatureItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionFeatureItem'] = ResolversParentTypes['SubscriptionFeatureItem']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SubscriptionPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPlan'] = ResolversParentTypes['SubscriptionPlan']> = ResolversObject<{
+  features?: Resolver<Array<ResolversTypes['SubscriptionFeature']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  prices?: Resolver<Array<ResolversTypes['SubscriptionPrice']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SubscriptionPriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPrice'] = ResolversParentTypes['SubscriptionPrice']> = ResolversObject<{
+  amount_per_month?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  interval?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -3834,6 +3925,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StripeExternalAccountData?: StripeExternalAccountDataResolvers<ContextType>;
   SubmitAttendanceResp?: SubmitAttendanceRespResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
+  SubscriptionFeature?: SubscriptionFeatureResolvers<ContextType>;
+  SubscriptionFeatureItem?: SubscriptionFeatureItemResolvers<ContextType>;
+  SubscriptionPlan?: SubscriptionPlanResolvers<ContextType>;
+  SubscriptionPrice?: SubscriptionPriceResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   UploadResult?: UploadResultResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

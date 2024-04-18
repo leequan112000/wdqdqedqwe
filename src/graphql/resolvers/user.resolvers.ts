@@ -1,10 +1,6 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import {
-  checkPassword,
-  createTokens,
-  hashPassword,
-} from "../../helper/auth";
+import { checkPassword, createTokens, hashPassword } from "../../helper/auth";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { Resolvers } from "../generated";
@@ -21,6 +17,7 @@ import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
 import subscriptionService from "../../services/subscription/subscription.service";
+import { availabilityCreateManyUserInputs } from "../../helper/availability";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -326,7 +323,7 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    signUpUser: async (_, args, context) => {
+    signUpUserLegacy: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
         const lowerCaseEmail = args.email.toLowerCase();
 
@@ -379,6 +376,67 @@ const resolvers: Resolvers<Context> = {
         };
       });
     },
+    signUpUser: async (_, args, context) => {
+      const { email, password, company_name, timezone } = args;
+      const lowerCaseEmail = email.toLowerCase();
+
+      const user = await context.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      invariant(!user, new PublicError("User already exists."));
+
+      const hashedPassword = await hashPassword(password);
+
+      const availabilityCreateInputs = availabilityCreateManyUserInputs(timezone);
+
+      const biotech = await context.prisma.biotech.create({
+        data: {
+          name: company_name,
+          customers: {
+            create: {
+              user: {
+                create: {
+                  email: lowerCaseEmail,
+                  encrypted_password: hashedPassword,
+                  availability: {
+                    createMany: {
+                      data: availabilityCreateInputs,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        include: {
+          customers: {
+            include: {
+              user: true,
+            },
+            where: {
+              user: {
+                email: lowerCaseEmail,
+              },
+            },
+          },
+        },
+      });
+
+      const newUser = biotech.customers[0].user;
+
+      await addRoleForUser(newUser.id, CasbinRole.OWNER);
+
+      // Genereate tokens
+      const tokens = createTokens({ id: newUser.id });
+
+      return {
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      };
+    },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
@@ -400,7 +458,8 @@ const resolvers: Resolvers<Context> = {
       );
 
       invariant(
-        foundUser.deactivated_at === null || foundUser.deactivated_at > new Date(),
+        foundUser.deactivated_at === null ||
+          foundUser.deactivated_at > new Date(),
         new PublicError("Your account has been deactivated.")
       );
 

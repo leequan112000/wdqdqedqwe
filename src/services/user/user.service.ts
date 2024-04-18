@@ -21,7 +21,7 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
 
   invariant(user, 'User not found.');
 
-  if (!user?.first_name.includes('[TEST]') && user?.first_name !== 'Cypress') {
+  if (!user?.first_name?.includes('[TEST]') && user?.first_name !== 'Cypress') {
     throw new PublicError('The user is not a test user. Abort deletion.');
   }
 
