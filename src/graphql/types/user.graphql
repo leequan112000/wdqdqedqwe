@@ -33,15 +33,6 @@ type Query {
 }
 
 type Mutation {
-  signUpUserLegacy(
-    email: String!
-    first_name: String!
-    last_name: String!
-    password: String!
-    company_name: String!
-    phone_number: String!
-    country_code: String!
-  ): AuthResponse!
   signUpUser(
     email: String!
     password: String!

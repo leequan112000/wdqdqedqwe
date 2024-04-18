@@ -649,7 +649,6 @@ export type Mutation = {
   shortlistSourcedCro?: Maybe<SourcedCro>;
   signInUser: AuthResponse;
   signUpUser: AuthResponse;
-  signUpUserLegacy: AuthResponse;
   skipAddCertificationTag?: Maybe<VendorCompany>;
   skipAddLabSpecialization?: Maybe<VendorCompany>;
   sourceCros?: Maybe<SourcingTask>;
@@ -1115,17 +1114,6 @@ export type MutationSignUpUserArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
   timezone: Scalars['String'];
-};
-
-
-export type MutationSignUpUserLegacyArgs = {
-  company_name: Scalars['String'];
-  country_code: Scalars['String'];
-  email: Scalars['String'];
-  first_name: Scalars['String'];
-  last_name: Scalars['String'];
-  password: Scalars['String'];
-  phone_number: Scalars['String'];
 };
 
 
@@ -3170,7 +3158,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
   signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'password' | 'timezone'>>;
-  signUpUserLegacy?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserLegacyArgs, 'company_name' | 'country_code' | 'email' | 'first_name' | 'last_name' | 'password' | 'phone_number'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   sourceCros?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceCrosArgs, 'names' | 'sourcing_session_id'>>;

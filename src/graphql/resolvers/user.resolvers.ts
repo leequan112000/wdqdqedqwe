@@ -323,59 +323,6 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Mutation: {
-    signUpUserLegacy: async (_, args, context) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const lowerCaseEmail = args.email.toLowerCase();
-
-        const user = await trx.user.findFirst({
-          where: {
-            email: {
-              mode: "insensitive",
-              equals: lowerCaseEmail,
-            },
-          },
-        });
-
-        invariant(!user, new PublicError("User already exists."));
-
-        const newBiotech = await trx.biotech.create({
-          data: {
-            name: args.company_name,
-          },
-        });
-
-        const hashedPassword = await hashPassword(args.password);
-
-        const newCreatedUser = await trx.user.create({
-          data: {
-            email: lowerCaseEmail,
-            first_name: args.first_name,
-            last_name: args.last_name,
-            encrypted_password: hashedPassword,
-            phone_number: args.phone_number,
-            country_code: args.country_code,
-          },
-        });
-
-        await trx.customer.create({
-          data: {
-            user_id: newCreatedUser.id,
-            biotech_id: newBiotech.id,
-            role: CompanyCollaboratorRoleType.OWNER,
-          },
-        });
-
-        await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
-
-        // Genereate tokens
-        const tokens = createTokens({ id: newCreatedUser.id });
-
-        return {
-          access_token: tokens.accessToken,
-          refresh_token: tokens.refreshToken,
-        };
-      });
-    },
     signUpUser: async (_, args, context) => {
       const { email, password, company_name, timezone } = args;
       const lowerCaseEmail = email.toLowerCase();
