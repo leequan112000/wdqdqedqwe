@@ -63,6 +63,7 @@ export type BillingInvoice = {
 export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
+  account_type?: Maybe<Scalars['String']>;
   address?: Maybe<Scalars['String']>;
   address1?: Maybe<Scalars['String']>;
   address2?: Maybe<Scalars['String']>;
@@ -2576,6 +2577,7 @@ export type BillingInvoiceResolvers<ContextType = any, ParentType extends Resolv
 
 export type BiotechResolvers<ContextType = any, ParentType extends ResolversParentTypes['Biotech'] = ResolversParentTypes['Biotech']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  account_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

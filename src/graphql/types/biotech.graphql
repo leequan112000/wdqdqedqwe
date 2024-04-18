@@ -30,6 +30,7 @@ type Biotech {
   biotech_invoices: [BiotechInvoice]
   purchase_orders: [PurchaseOrder]
   blanket_purchase_orders: [BlanketPurchaseOrder]
+  account_type: String
 }
 
 type Query {
