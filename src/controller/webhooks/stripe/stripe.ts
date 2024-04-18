@@ -282,7 +282,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
-        invariant(subItem, '[Stripe Webhook] Missing subscription item.');
+        invariant(subItem, "[Stripe Webhook] Missing subscription item.");
         const { plan } = subItem;
         const stripe = await getStripeInstance();
         const product = await stripe.products.retrieve(plan.product as string);
@@ -294,9 +294,14 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
           },
         });
 
-        invariant(subcription, '[Stripe Webhook] Missing biotech subscription data.');
+        if (subcription === null) {
+          return { status: 200, message: "Skipped webhook: reason=subscription_not_found" };
+        }
 
-        invariant(account_type, '[Stripe Webhook] Missing metadata: account_type.');
+        invariant(
+          account_type,
+          "[Stripe Webhook] Missing metadata: account_type."
+        );
 
         await prisma.biotech.update({
           where: {
@@ -307,7 +312,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
           },
         });
 
-        return { status: 200, message: 'OK' };
+        return { status: 200, message: "OK" };
       }
 
       case 'customer.subscription.deleted': {

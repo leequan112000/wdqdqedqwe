@@ -5,8 +5,8 @@ export function createResetPasswordUrl(token: string) {
 }
 
 export function getUserFullName(user: {
-  first_name: string;
-  last_name: string;
+  first_name?: string | null;
+  last_name?: string | null;
 }) {
   const { first_name, last_name } = user;
   return `${first_name} ${last_name}`;

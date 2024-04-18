@@ -1,0 +1,9 @@
+type Mutation {
+  onboardCustomerPersonalInfo(
+    first_name: String!
+    last_name: String!
+    team: String!
+    job_title: String!
+    phone_number: String
+  ): Customer
+}
