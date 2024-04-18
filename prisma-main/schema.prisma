@@ -64,6 +64,7 @@ model Customer {
 
   project_requests              ProjectRequest[]
   customer_connections          CustomerConnection[]
+  customer_subscriptions        CustomerSubscription[]
   project_request_collaborators ProjectRequestCollaborator[]
 
   role String @default("user")
@@ -211,6 +212,22 @@ model Subscription {
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   @@map("subscriptions")
+}
+
+model CustomerSubscription {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stripe_subscription_id String
+  stripe_customer_id     String
+  plan_name              String
+  status                 String
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  ended_at               DateTime?
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@map("customer_subscriptions")
 }
 
 model ProjectRequest {
