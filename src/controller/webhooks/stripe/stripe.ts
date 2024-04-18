@@ -324,23 +324,41 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
-        const subscription = await prisma.subscription.findFirst({
+        const customerSubscription = await prisma.customerSubscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
           },
         });
 
-        invariant(subscription, '[Stripe Webhook] Missing biotech subscription data.');
+        if (customerSubscription) {
+          await prisma.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
-        await prisma.subscription.update({
+        const biotechSubscription = await prisma.subscription.findFirst({
           where: {
-            id: subscription.id,
-          },
-          data: {
-            status,
-            ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            stripe_customer_id: stripeCustomerId,
           },
         });
+
+        if (biotechSubscription) {
+          await prisma.subscription.update({
+            where: {
+              id: biotechSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
         return { status: 200, message: 'OK' };
       }
