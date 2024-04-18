@@ -97,6 +97,10 @@ const resolvers: Resolvers<Context> = {
       invariant(customerId, 'Missing customer ID.')
 
       const stripe = await getStripeInstance();
+      const price = await stripe.prices.retrieve(price_id);
+      const product = await stripe.products.retrieve(price.product.toString());
+      const { plan_name } = product.metadata;
+
       const session = await stripe.checkout.sessions.create({
         client_reference_id: customerId,
         line_items: [
@@ -109,6 +113,7 @@ const resolvers: Resolvers<Context> = {
         success_url: `${app_env.APP_URL}/onboarding?success=true`,
         cancel_url: `${app_env.APP_URL}/onboarding?cancel=true`,
         metadata: {
+          plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),
         },
       });
