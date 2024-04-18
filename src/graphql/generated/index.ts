@@ -43,7 +43,6 @@ export type AvailabilityRuleInput = {
 
 export type BillingInfo = {
   __typename?: 'BillingInfo';
-  active_user_counts?: Maybe<Scalars['Int']>;
   bill_cycle?: Maybe<Scalars['String']>;
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
@@ -623,7 +622,6 @@ export type Mutation = {
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
-  onboardBiotech?: Maybe<Biotech>;
   onboardCustomerPersonalInfo?: Maybe<Customer>;
   payByBlanketPurchaseOrder?: Maybe<Milestone>;
   payByPurchaseOrder?: Maybe<Milestone>;
@@ -955,26 +953,6 @@ export type MutationMarkNotificationsInProjectAsReadArgs = {
 
 export type MutationMarkQuoteNotificationsAsReadArgs = {
   quote_id: Scalars['String'];
-};
-
-
-export type MutationOnboardBiotechArgs = {
-  about?: InputMaybe<Scalars['String']>;
-  address?: InputMaybe<Scalars['String']>;
-  address1?: InputMaybe<Scalars['String']>;
-  address2?: InputMaybe<Scalars['String']>;
-  biotech_extra_info?: InputMaybe<Scalars['String']>;
-  city?: InputMaybe<Scalars['String']>;
-  country?: InputMaybe<Scalars['String']>;
-  facebook_url?: InputMaybe<Scalars['String']>;
-  founded_year?: InputMaybe<Scalars['String']>;
-  linkedin_url?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  state?: InputMaybe<Scalars['String']>;
-  team_size?: InputMaybe<Scalars['String']>;
-  twitter_url?: InputMaybe<Scalars['String']>;
-  website?: InputMaybe<Scalars['String']>;
-  zipcode?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2578,7 +2556,6 @@ export type AvailabilityRuleResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type BillingInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInfo'] = ResolversParentTypes['BillingInfo']> = ResolversObject<{
-  active_user_counts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3131,7 +3108,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
-  onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardCustomerPersonalInfo?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationOnboardCustomerPersonalInfoArgs, 'first_name' | 'job_title' | 'last_name' | 'team'>>;
   payByBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByBlanketPurchaseOrderArgs, 'blanket_purchase_order_id' | 'id'>>;
   payByPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByPurchaseOrderArgs, 'id' | 'po_number'>>;
