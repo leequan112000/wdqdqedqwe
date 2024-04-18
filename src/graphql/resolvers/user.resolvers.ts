@@ -338,26 +338,40 @@ const resolvers: Resolvers<Context> = {
 
       const availabilityCreateInputs = availabilityCreateManyUserInputs(timezone);
 
-      const customer = await context.prisma.customer.create({
+      const biotech = await context.prisma.biotech.create({
         data: {
-          user: {
+          name: "",
+          customers: {
             create: {
-              email: lowerCaseEmail,
-              encrypted_password: hashedPassword,
-              availability: {
-                createMany: {
-                  data: availabilityCreateInputs,
+              user: {
+                create: {
+                  email: lowerCaseEmail,
+                  encrypted_password: hashedPassword,
+                  availability: {
+                    createMany: {
+                      data: availabilityCreateInputs,
+                    },
+                  },
                 },
               },
             },
           },
         },
         include: {
-          user: true,
+          customers: {
+            include: {
+              user: true,
+            },
+            where: {
+              user: {
+                email: lowerCaseEmail,
+              },
+            },
+          },
         },
       });
 
-      const newUser = customer.user;
+      const newUser = biotech.customers[0].user;
 
       // [LEGACY]
       await addRoleForUser(newUser.id, CasbinRole.OWNER);
@@ -505,7 +519,7 @@ const resolvers: Resolvers<Context> = {
         new PublicError("The reset password link is expired.")
       );
 
-      const updatedUser = await context.prisma.user.update({
+      await context.prisma.user.update({
         where: {
           reset_password_token: args.reset_token,
         },
