@@ -1,6 +1,5 @@
 type BillingInfo {
   plan: String
-  active_user_counts: Int
   payment_method: String
   bill_cycle: String
   upcoming_bill_date: Date

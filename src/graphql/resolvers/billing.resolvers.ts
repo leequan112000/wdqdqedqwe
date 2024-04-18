@@ -1,7 +1,7 @@
 import moment from "moment";
 import currency from "currency.js";
 import Stripe from "stripe";
-import { BiotechAccountType } from "../../helper/constant";
+import { CustomerSubscriptionPlanName } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { getStripeInstance } from "../../helper/stripe";
 import { Context } from "../../types/context";
@@ -9,14 +9,12 @@ import { Resolvers } from "../generated";
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
-    case BiotechAccountType.PROJECT_MANAGEMENT_PLAN:
+    case CustomerSubscriptionPlanName.PROJECT_MANAGEMENT_PLAN:
       return "Project Management Plan";
-    case BiotechAccountType.SOURCING_PLAN:
+    case CustomerSubscriptionPlanName.SOURCING_PLAN:
       return "Sourcing Pro Plan";
-    case BiotechAccountType.WHITE_GLOVE_PLAN:
+    case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
       return "White Glove Plan";
-    case BiotechAccountType.STARDARD:
-    case null:
     default:
       return "Standard Plan";
   }
@@ -60,40 +58,26 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true,
-                  customers: {
-                    where: {
-                      user: {
-                        OR: [
-                          { deactivated_at: null },
-                          { deactivated_at: { gt: new Date() } },
-                        ],
-                      },
-                    },
-                  },
-                },
+                  subscriptions: true
+                }
               },
+              customer_subscriptions: true
             },
           },
         },
       });
 
-      invariant(
-        user?.customer?.biotech.subscriptions,
-        "No subscription data found."
-      );
+      const stripe_subscription_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id || user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const plan_name = user?.customer?.biotech?.account_type || user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
+
+      if (!stripe_subscription_id) {
+        return null;
+      }
 
       const stripe = await getStripeInstance();
-      const stripeSub = await stripe.subscriptions.retrieve(
-        user.customer.biotech.subscriptions[0].stripe_subscription_id
-      );
-
-      const activeUserCounts = user.customer.biotech.customers.length;
+      const stripeSub = await stripe.subscriptions.retrieve(stripe_subscription_id);
       const subItem = stripeSub.items.data[0];
-
-      const stripeCus = await stripe.customers.retrieve(
-        user.customer.biotech.subscriptions[0].stripe_customer_id
-      );
+      const stripeCus = await stripe.customers.retrieve(stripe_subscription_id);
 
       const defaultPaymentMethodId = isStripeCus(stripeCus)
         ? stripeCus.invoice_settings.default_payment_method
@@ -114,8 +98,7 @@ const resolvers: Resolvers<Context> = {
       const upcomingBillDate = moment.unix(upcomingInvoice.period_end);
 
       return {
-        plan: getPlanName(user.customer.biotech.account_type),
-        active_user_counts: activeUserCounts,
+        plan: getPlanName(plan_name),
         bill_cycle: getBillCycleName(subItem.plan.interval),
         payment_method: paymentMethod,
         upcoming_bill_amount: currency(upcomingInvoice.amount_due, {
@@ -134,41 +117,32 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true,
-                  customers: {
-                    where: {
-                      user: {
-                        OR: [
-                          { deactivated_at: null },
-                          { deactivated_at: { gt: new Date() } },
-                        ],
-                      },
-                    },
-                  },
-                },
+                  subscriptions: true
+                }
               },
+              customer_subscriptions: true
             },
           },
         },
       });
 
-      invariant(
-        user?.customer?.biotech.subscriptions,
-        "No subscription data found."
-      );
-      const stripeSubId =
-        user.customer.biotech.subscriptions[0].stripe_subscription_id;
+      const stripe_subscription_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id || user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const plan_name = user?.customer?.biotech?.account_type || user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
+
+      if (!stripe_subscription_id) {
+        return null;
+      }
 
       const stripe = await getStripeInstance();
       const resp = await stripe.invoices.list({
-        subscription: stripeSubId,
+        subscription: stripe_subscription_id,
       });
 
       return resp.data.map((d) => ({
         number: d.number,
         amount: currency(d.amount_due, { fromCents: true }).dollars(),
         date: moment.unix(d.period_end),
-        description: getPlanName(user.customer!.biotech.account_type),
+        description: getPlanName(plan_name),
         status: d.status,
         invoice_url: d.hosted_invoice_url,
       }));
@@ -176,8 +150,7 @@ const resolvers: Resolvers<Context> = {
     billingPortalUrl: async (_, args, context) => {
       const { return_url } = args;
       const userId = context.req.user_id;
-
-      const user = await context.prisma.user.findFirst({
+      const user = await context.prisma.user.findUnique({
         where: {
           id: userId,
         },
@@ -186,23 +159,25 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true,
-                },
+                  subscriptions: true
+                }
               },
+              customer_subscriptions: true
             },
           },
         },
       });
 
-      invariant(
-        user?.customer?.biotech?.subscriptions,
-        "Subscription not found."
-      );
+      const stripe_customer_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id || user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
+      
+      if (!stripe_customer_id) {
+        return null;
+      }
 
       const stripe = await getStripeInstance();
 
       const session = await stripe.billingPortal.sessions.create({
-        customer: user.customer.biotech.subscriptions[0].stripe_customer_id,
+        customer: stripe_customer_id,
         return_url,
       });
 
