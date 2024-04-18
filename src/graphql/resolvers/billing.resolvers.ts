@@ -68,16 +68,17 @@ const resolvers: Resolvers<Context> = {
       });
 
       const stripe_subscription_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id || user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const stripe_customer_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id || user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
       const plan_name = user?.customer?.biotech?.account_type || user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
 
-      if (!stripe_subscription_id) {
+      if (!stripe_subscription_id || !stripe_customer_id) {
         return null;
       }
 
       const stripe = await getStripeInstance();
       const stripeSub = await stripe.subscriptions.retrieve(stripe_subscription_id);
       const subItem = stripeSub.items.data[0];
-      const stripeCus = await stripe.customers.retrieve(stripe_subscription_id);
+      const stripeCus = await stripe.customers.retrieve(stripe_customer_id);
 
       const defaultPaymentMethodId = isStripeCus(stripeCus)
         ? stripeCus.invoice_settings.default_payment_method
