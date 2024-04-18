@@ -37,18 +37,23 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
               return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
             }
             if (checkoutSession.subscription) {
-              await prisma.subscription.create({
+              if (!checkoutSession.metadata?.plan_name) {
+                Sentry.captureMessage("[Stripe Webhook] Missing plan name metadata.");
+              }
+
+              await prisma.customerSubscription.create({
                 data: {
                   stripe_subscription_id: checkoutSession.subscription as string,
                   stripe_customer_id: checkoutSession.customer as string,
                   status: SubscriptionStatus.ACTIVE,
-                  biotech_id: customer.biotech_id
+                  plan_name: checkoutSession.metadata?.plan_name as string,
+                  customer_id: customer.id
                 }
               });
 
               await ga.trackEvent(
                 'purchase',
-                checkoutSession?.metadata?.client_id ?? 'unknown',
+                checkoutSession?.metadata?.ga_client_id ?? 'unknown',
                 {
                   transaction_id: checkoutSession.subscription,
                   value: (checkoutSession.amount_total ?? 0) / 100,
