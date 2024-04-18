@@ -8,7 +8,6 @@ import { InternalError } from "../errors/InternalError";
 import {
   BiotechAccountType,
   CasbinRole,
-  CompanyCollaboratorRoleType,
   OauthProvider,
   UserStatus,
   UserType,
@@ -102,7 +101,7 @@ const resolvers: Resolvers<Context> = {
 
       if (
         result?.customer &&
-        result.customer.biotech.subscriptions.length === 0
+        result.customer?.biotech?.subscriptions.length === 0
       ) {
         return false;
       }
@@ -200,7 +199,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (customer?.biotech.name) {
+      if (customer?.biotech?.name) {
         return customer.biotech.name;
       }
 
@@ -324,7 +323,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     signUpUser: async (_, args, context) => {
-      const { email, password, company_name, timezone } = args;
+      const { email, password, timezone } = args;
       const lowerCaseEmail = email.toLowerCase();
 
       const user = await context.prisma.user.findFirst({
@@ -339,41 +338,28 @@ const resolvers: Resolvers<Context> = {
 
       const availabilityCreateInputs = availabilityCreateManyUserInputs(timezone);
 
-      const biotech = await context.prisma.biotech.create({
+      const customer = await context.prisma.customer.create({
         data: {
-          name: company_name,
-          customers: {
+          user: {
             create: {
-              user: {
-                create: {
-                  email: lowerCaseEmail,
-                  encrypted_password: hashedPassword,
-                  availability: {
-                    createMany: {
-                      data: availabilityCreateInputs,
-                    },
-                  },
+              email: lowerCaseEmail,
+              encrypted_password: hashedPassword,
+              availability: {
+                createMany: {
+                  data: availabilityCreateInputs,
                 },
               },
             },
           },
         },
         include: {
-          customers: {
-            include: {
-              user: true,
-            },
-            where: {
-              user: {
-                email: lowerCaseEmail,
-              },
-            },
-          },
+          user: true,
         },
       });
 
-      const newUser = biotech.customers[0].user;
+      const newUser = customer.user;
 
+      // [LEGACY]
       await addRoleForUser(newUser.id, CasbinRole.OWNER);
 
       // Genereate tokens
@@ -406,7 +392,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(
         foundUser.deactivated_at === null ||
-          foundUser.deactivated_at > new Date(),
+        foundUser.deactivated_at > new Date(),
         new PublicError("Your account has been deactivated.")
       );
 
@@ -540,28 +526,6 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-
-      /**
-       * User is consider invited if their password is not yet set.
-       */
-      const isNewInvited = user.encrypted_password === null;
-      if (
-        isNewInvited &&
-        updatedUser.customer &&
-        updatedUser.customer.biotech.account_type !==
-          BiotechAccountType.STARDARD
-      ) {
-        try {
-          await subscriptionService.increaseSubscriptionQuantity({
-            stripe_sub_id:
-              updatedUser.customer.biotech.subscriptions[0]
-                .stripe_subscription_id,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-
       return true;
     },
     changePassword: async (_, args, context) => {
