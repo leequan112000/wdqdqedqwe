@@ -58,6 +58,7 @@ const resolvers: Resolvers<Context> = {
                   subscriptions: true,
                 },
               },
+              customer_subscriptions: true,
             },
           },
           vendor_member: {
@@ -101,7 +102,8 @@ const resolvers: Resolvers<Context> = {
 
       if (
         result?.customer &&
-        result.customer?.biotech?.subscriptions.length === 0
+        result.customer.biotech.subscriptions.length === 0 &&
+        result.customer.customer_subscriptions.length === 0
       ) {
         return false;
       }
@@ -199,8 +201,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (customer?.biotech?.name) {
-        return customer.biotech.name;
+      if (customer) {
+        return customer?.biotech?.name ?? null;
       }
 
       const vendorMember = await context.prisma.vendorMember.findUnique({
@@ -220,7 +222,7 @@ const resolvers: Resolvers<Context> = {
         return vendorMember.vendor_company.name;
       }
 
-      throw new InternalError("Missing user.");
+      return null;
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
@@ -336,7 +338,8 @@ const resolvers: Resolvers<Context> = {
 
       const hashedPassword = await hashPassword(password);
 
-      const availabilityCreateInputs = availabilityCreateManyUserInputs(timezone);
+      const availabilityCreateInputs =
+        availabilityCreateManyUserInputs(timezone);
 
       const biotech = await context.prisma.biotech.create({
         data: {
@@ -406,7 +409,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(
         foundUser.deactivated_at === null ||
-        foundUser.deactivated_at > new Date(),
+          foundUser.deactivated_at > new Date(),
         new PublicError("Your account has been deactivated.")
       );
 
