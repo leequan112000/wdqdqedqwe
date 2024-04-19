@@ -958,6 +958,7 @@ export type MutationMarkQuoteNotificationsAsReadArgs = {
 
 
 export type MutationOnboardCustomerPersonalInfoArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   first_name: Scalars['String'];
   job_title: Scalars['String'];
   last_name: Scalars['String'];
