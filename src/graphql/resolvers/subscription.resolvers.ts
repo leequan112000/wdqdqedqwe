@@ -53,7 +53,7 @@ const resolvers: Resolvers<Context> = {
               interval: "month",
             },
             {
-              id: "sourcerer-matching:yearly",
+              id: sourcererYearlyPriceId,
               amount_per_month: currency(sourcererYearlyPrice.unit_amount, {
                 fromCents: true,
               })
