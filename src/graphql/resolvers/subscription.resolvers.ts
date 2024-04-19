@@ -103,6 +103,7 @@ const resolvers: Resolvers<Context> = {
 
       const session = await stripe.checkout.sessions.create({
         client_reference_id: customerId,
+        customer_email: user.email,
         line_items: [
           {
             price: price_id,
