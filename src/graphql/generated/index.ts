@@ -1644,7 +1644,7 @@ export type Query = {
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
-  subscriptionCheckoutSessionURL?: Maybe<Scalars['String']>;
+  subscriptionCheckoutSessionUrl?: Maybe<Scalars['String']>;
   subscriptionPlans: Array<SubscriptionPlan>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -3453,7 +3453,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  subscriptionCheckoutSessionURL?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'price_id'>>;
+  subscriptionCheckoutSessionUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'price_id'>>;
   subscriptionPlans?: Resolver<Array<ResolversTypes['SubscriptionPlan']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;

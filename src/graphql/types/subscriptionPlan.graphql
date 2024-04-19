@@ -23,5 +23,5 @@ type SubscriptionPlan {
 type Query {
   stripePricingTableId: String
   subscriptionPlans: [SubscriptionPlan!]!
-  subscriptionCheckoutSessionURL(price_id: String!, ga_client_id: String): String
+  subscriptionCheckoutSessionUrl(price_id: String!, ga_client_id: String): String
 }

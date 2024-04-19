@@ -79,7 +79,7 @@ const resolvers: Resolvers<Context> = {
         },
       ];
     },
-    subscriptionCheckoutSessionURL: async (_, args, context) => {
+    subscriptionCheckoutSessionUrl: async (_, args, context) => {
       const userId = context.req.user_id;
       const { price_id, ga_client_id } = args;
 
