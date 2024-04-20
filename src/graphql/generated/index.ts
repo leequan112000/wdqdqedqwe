@@ -46,6 +46,7 @@ export type BillingInfo = {
   bill_cycle?: Maybe<Scalars['String']>;
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
+  plan_id?: Maybe<Scalars['String']>;
   upcoming_bill_amount?: Maybe<Scalars['Float']>;
   upcoming_bill_date?: Maybe<Scalars['Date']>;
 };
@@ -2109,9 +2110,9 @@ export type SubscriptionPlan = {
 
 export type SubscriptionPrice = {
   __typename?: 'SubscriptionPrice';
-  amount_per_month: Scalars['Int'];
+  amount_per_month?: Maybe<Scalars['Int']>;
   id: Scalars['String'];
-  interval: Scalars['String'];
+  interval?: Maybe<Scalars['String']>;
 };
 
 export type SubspecialtyNameWithWeight = {
@@ -2561,6 +2562,7 @@ export type BillingInfoResolvers<ContextType = any, ParentType extends Resolvers
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  plan_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcoming_bill_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   upcoming_bill_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3690,9 +3692,9 @@ export type SubscriptionPlanResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type SubscriptionPriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPrice'] = ResolversParentTypes['SubscriptionPrice']> = ResolversObject<{
-  amount_per_month?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  amount_per_month?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  interval?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

@@ -1,33 +1,21 @@
 import moment from "moment";
 import currency from "currency.js";
 import Stripe from "stripe";
-import { CustomerSubscriptionPlanName } from "../../helper/constant";
-import invariant from "../../helper/invariant";
 import { getStripeInstance } from "../../helper/stripe";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
+import { CustomerSubscriptionPlanName } from "../../helper/constant";
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
     case CustomerSubscriptionPlanName.PROJECT_MANAGEMENT_PLAN:
-      return "Project Management Plan";
+      return 'Project Management Plan';
     case CustomerSubscriptionPlanName.SOURCING_PLAN:
-      return "Sourcing Pro Plan";
+      return 'Sourcing Pro Plan';
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
-      return "White Glove Plan";
+      return 'White Glove Plan';
     default:
-      return "Standard Plan";
-  }
-};
-
-const getBillCycleName = (interval: string) => {
-  switch (interval) {
-    case "month":
-      return "Monthly";
-    case "year":
-      return "Yearly";
-    default:
-      return interval;
+      return 'Standard Plan';
   }
 };
 
@@ -99,8 +87,9 @@ const resolvers: Resolvers<Context> = {
       const upcomingBillDate = moment.unix(upcomingInvoice.period_end);
 
       return {
+        plan_id: plan_name,
         plan: getPlanName(plan_name),
-        bill_cycle: getBillCycleName(subItem.plan.interval),
+        bill_cycle: subItem.plan.interval,
         payment_method: paymentMethod,
         upcoming_bill_amount: currency(upcomingInvoice.amount_due, {
           fromCents: true,
@@ -170,7 +159,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const stripe_customer_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id || user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
-      
+
       if (!stripe_customer_id) {
         return null;
       }

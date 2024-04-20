@@ -1,4 +1,5 @@
 type BillingInfo {
+  plan_id: String
   plan: String
   payment_method: String
   bill_cycle: String
