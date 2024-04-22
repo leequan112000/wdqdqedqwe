@@ -1,10 +1,12 @@
 type BillingInfo {
+  id: String!
   plan_id: String
   plan: String
   payment_method: String
   bill_cycle: String
   upcoming_bill_date: Date
   upcoming_bill_amount: Float
+  is_pending_cancel: Boolean
 }
 
 type BillingInvoice {
@@ -20,4 +22,9 @@ type Query {
   billingInfo: BillingInfo
   billingInvoices: [BillingInvoice]
   billingPortalUrl(return_url: String!): String
+}
+
+type Mutation {
+  cancelSubscription: Boolean
+  resumeSubscription: Boolean
 }

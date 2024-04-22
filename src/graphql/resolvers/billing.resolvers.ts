@@ -1,10 +1,12 @@
 import moment from "moment";
 import currency from "currency.js";
-import Stripe from "stripe";
+import Stripe  from "stripe";
 import { getStripeInstance } from "../../helper/stripe";
+import invariant from "../../helper/invariant";
+import { CustomerSubscriptionPlanName } from "../../helper/constant";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
-import { CustomerSubscriptionPlanName } from "../../helper/constant";
+import Sentry from "../../sentry";
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
@@ -34,6 +36,26 @@ const isStripeCus = (
   return cus.deleted !== true;
 };
 
+const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
+  try {
+    return await stripe.invoices.retrieveUpcoming({
+      subscription: stripeSubId,
+    });
+  } catch (error) {
+    /**
+     * Handle if user has no upcoming invoice.
+     */
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === "invoice_upcoming_none") {
+        console.log('No upcoming invoice')
+        return null;
+      }
+    }
+    Sentry.captureException(new Error("Failed to retreive upcoming invoice."));
+    return null;
+  }
+};
+
 const resolvers: Resolvers<Context> = {
   Query: {
     billingInfo: async (_, __, context) => {
@@ -55,13 +77,20 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const stripe_subscription_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id || user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
-      const stripe_customer_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id || user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
-      const plan_name = user?.customer?.biotech?.account_type || user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
+      const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
+      const customerSubscription = user?.customer?.customer_subscriptions?.[0];
 
-      if (!stripe_subscription_id || !stripe_customer_id) {
+      if (!biotechSubscription && !customerSubscription) {
         return null;
       }
+
+      const stripe_subscription_id = (biotechSubscription?.stripe_subscription_id || customerSubscription?.stripe_subscription_id) as string;
+      const stripe_customer_id = (biotechSubscription?.stripe_customer_id || customerSubscription?.stripe_customer_id) as string;
+      const plan_name = (user?.customer?.biotech?.account_type || customerSubscription?.plan_name) as string;
+
+      const now = new Date();
+      const isPendingCancelation = (biotechSubscription?.ended_at ? biotechSubscription.ended_at > now : false)
+        || (customerSubscription?.ended_at ? customerSubscription.ended_at > now : false);
 
       const stripe = await getStripeInstance();
       const stripeSub = await stripe.subscriptions.retrieve(stripe_subscription_id);
@@ -80,21 +109,26 @@ const resolvers: Resolvers<Context> = {
         paymentMethod = getPaymentMethodName(stripePaymentMethod.type);
       }
 
-      const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-        subscription: stripeSub.id,
-      });
+      const upcomingInvoice = await getUpcomingInvoice(stripeSub.id, stripe);
 
-      const upcomingBillDate = moment.unix(upcomingInvoice.period_end);
+      const upcomingBillAmount = upcomingInvoice
+        ? currency(upcomingInvoice.amount_due, {
+            fromCents: true,
+          }).dollars()
+        : null;
+      const upcomingBillDate = upcomingInvoice
+        ? moment.unix(upcomingInvoice.period_end)
+        : null;
 
       return {
+        id: 'billing-info-id', // Dummy ID for client to cache the result.
         plan_id: plan_name,
         plan: getPlanName(plan_name),
         bill_cycle: subItem.plan.interval,
         payment_method: paymentMethod,
-        upcoming_bill_amount: currency(upcomingInvoice.amount_due, {
-          fromCents: true,
-        }).dollars(),
+        upcoming_bill_amount: upcomingBillAmount,
         upcoming_bill_date: upcomingBillDate,
+        is_pending_cancel: isPendingCancelation,
       };
     },
     billingInvoices: async (_, __, context) => {
@@ -172,6 +206,153 @@ const resolvers: Resolvers<Context> = {
       });
 
       return session.url;
+    },
+  },
+  Mutation: {
+    cancelSubscription: async (_, __, context) => {
+      const userId = context.req.user_id;
+
+      const stripe = await getStripeInstance();
+
+      const biotechSubscription = await context.prisma.subscription.findFirst({
+        where: {
+          biotech: {
+            customers: {
+              some: {
+                user_id: userId,
+              },
+            },
+          },
+        },
+      });
+
+      const customerSubscription =
+        await context.prisma.customerSubscription.findFirst({
+          where: {
+            customer: {
+              user_id: userId,
+            },
+          },
+        });
+
+      // Get Stripe subscription end date.
+      const stripeSubId =
+        biotechSubscription?.stripe_subscription_id ||
+        customerSubscription?.stripe_subscription_id;
+      invariant(stripeSubId, "No Stripe subscription ID found.");
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
+      const stripeSubPeriodEnd = stripeSub.current_period_end;
+      const subscriptionEndDate = moment.unix(stripeSubPeriodEnd).toDate();
+
+      /**
+       * Update subscription end date to current Stripe subscription period end.
+       * Then, set Stripe subscription to cancel at period end.
+       */
+      await context.prisma.$transaction(async (trx) => {
+        if (biotechSubscription) {
+          await trx.subscription.update({
+            where: {
+              id: biotechSubscription.id,
+            },
+            data: {
+              ended_at: subscriptionEndDate,
+            },
+          });
+          await stripe.subscriptions.update(
+            biotechSubscription.stripe_subscription_id,
+            {
+              cancel_at_period_end: true,
+            }
+          );
+        }
+
+        if (customerSubscription) {
+          await trx.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              ended_at: subscriptionEndDate,
+            },
+          });
+          await stripe.subscriptions.update(
+            customerSubscription.stripe_subscription_id,
+            {
+              cancel_at_period_end: true,
+            }
+          );
+        }
+      });
+
+      return true;
+    },
+    resumeSubscription: async (_, __, context) => {
+      const userId = context.req.user_id;
+
+      const stripe = await getStripeInstance();
+
+      const biotechSubscription = await context.prisma.subscription.findFirst({
+        where: {
+          biotech: {
+            customers: {
+              some: {
+                user_id: userId,
+              },
+            },
+          },
+        },
+      });
+
+      const customerSubscription =
+        await context.prisma.customerSubscription.findFirst({
+          where: {
+            customer: {
+              user_id: userId,
+            },
+          },
+        });
+
+      /**
+       * Update subscription end date to current Stripe subscription period end.
+       * Then, set Stripe subscription to cancel at period end.
+       */
+      await context.prisma.$transaction(async (trx) => {
+        if (biotechSubscription) {
+          await trx.subscription.update({
+            where: {
+              id: biotechSubscription.id,
+            },
+            data: {
+              ended_at: null,
+            },
+          });
+          await stripe.subscriptions.update(
+            biotechSubscription.stripe_subscription_id,
+            {
+              cancel_at_period_end: false,
+            }
+          );
+        }
+
+        if (customerSubscription) {
+          await trx.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              ended_at: null,
+            },
+          });
+          await stripe.subscriptions.update(
+            customerSubscription.stripe_subscription_id,
+            {
+              cancel_at_period_end: false,
+            }
+          );
+        }
+      });
+
+      return true;
     },
   },
 };
