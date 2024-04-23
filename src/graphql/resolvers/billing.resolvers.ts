@@ -133,14 +133,14 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true
-                }
+                  subscriptions: true,
+                },
               },
-              customer_subscriptions: true
+              customer_subscriptions: true,
             },
           },
         },
-      })
+      });
 
       const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
       const customerSubscription = user?.customer?.customer_subscriptions?.[0];
@@ -179,10 +179,10 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true
-                }
+                  subscriptions: true,
+                },
               },
-              customer_subscriptions: true
+              customer_subscriptions: true,
             },
           },
         },
@@ -253,19 +253,22 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true
-                }
+                  subscriptions: true,
+                },
               },
-              customer_subscriptions: true
+              customer_subscriptions: true,
             },
           },
         },
       });
 
-      const biotechStripeSubId = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id;
+      const biotechStripeSubId =
+        user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id;
       const biotechSubPlanName = user?.customer?.biotech?.account_type;
-      const customerStripeSubId = user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
-      const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
+      const customerStripeSubId =
+        user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]
+        ?.plan_name as string;
 
       if (!biotechStripeSubId && !customerStripeSubId) {
         return null;
@@ -273,10 +276,12 @@ const resolvers: Resolvers<Context> = {
 
       const stripe = await getStripeInstance();
       const biotechStripeInvoices = biotechStripeSubId
-        ? (await stripe.invoices.list({ subscription: biotechStripeSubId })).data
+        ? (await stripe.invoices.list({ subscription: biotechStripeSubId }))
+            .data
         : [];
       const customerStripeInvoice = customerStripeSubId
-        ? (await stripe.invoices.list({ subscription: customerStripeSubId })).data
+        ? (await stripe.invoices.list({ subscription: customerStripeSubId }))
+            .data
         : [];
 
       return [
@@ -284,7 +289,7 @@ const resolvers: Resolvers<Context> = {
           number: d.number,
           amount: currency(d.amount_due, { fromCents: true }).dollars(),
           date: moment.unix(d.period_end),
-          description: getPlanName(customerSubPlanName || ''),
+          description: getPlanName(customerSubPlanName || ""),
           status: d.status,
           invoice_url: d.hosted_invoice_url,
         })),
@@ -292,10 +297,10 @@ const resolvers: Resolvers<Context> = {
           number: d.number,
           amount: currency(d.amount_due, { fromCents: true }).dollars(),
           date: moment.unix(d.period_end),
-          description: getPlanName(biotechSubPlanName || ''),
+          description: getPlanName(biotechSubPlanName || ""),
           status: d.status,
           invoice_url: d.hosted_invoice_url,
-        }))
+        })),
       ];
     },
     billingPortalUrl: async (_, args, context) => {
@@ -310,16 +315,18 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true
-                }
+                  subscriptions: true,
+                },
               },
-              customer_subscriptions: true
+              customer_subscriptions: true,
             },
           },
         },
       });
 
-      const stripe_customer_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id || user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
+      const stripe_customer_id =
+        user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id ||
+        user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
 
       if (!stripe_customer_id) {
         return null;
