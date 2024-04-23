@@ -285,6 +285,7 @@ const resolvers: Resolvers<Context> = {
       // TODO: properly check token validity
     },
     status: async (parent, _, context) => {
+      if (parent.status) return parent.status;
       const userId = parent.id;
 
       const user = await context.prisma.user.findUnique({
