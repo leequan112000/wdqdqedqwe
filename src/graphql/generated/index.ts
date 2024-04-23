@@ -44,8 +44,11 @@ export type AvailabilityRuleInput = {
 export type BillingInfo = {
   __typename?: 'BillingInfo';
   bill_cycle?: Maybe<Scalars['String']>;
+  id: Scalars['String'];
+  is_pending_cancel?: Maybe<Scalars['Boolean']>;
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
+  plan_id?: Maybe<Scalars['String']>;
   upcoming_bill_amount?: Maybe<Scalars['Float']>;
   upcoming_bill_date?: Maybe<Scalars['Date']>;
 };
@@ -588,6 +591,7 @@ export type Mutation = {
   answerInvitation?: Maybe<SubmitAttendanceResp>;
   cancelAiTask?: Maybe<SourcingTask>;
   cancelInvitation?: Maybe<User>;
+  cancelSubscription?: Maybe<Scalars['Boolean']>;
   changePassword?: Maybe<Scalars['Boolean']>;
   confirmEditSourcingDetails?: Maybe<SourcingSession>;
   confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
@@ -641,6 +645,7 @@ export type Mutation = {
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
+  resumeSubscription?: Maybe<Scalars['Boolean']>;
   saveAvailabilityRules?: Maybe<Availability>;
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
@@ -2109,9 +2114,9 @@ export type SubscriptionPlan = {
 
 export type SubscriptionPrice = {
   __typename?: 'SubscriptionPrice';
-  amount_per_month: Scalars['Int'];
+  amount_per_month?: Maybe<Scalars['Int']>;
   id: Scalars['String'];
-  interval: Scalars['String'];
+  interval?: Maybe<Scalars['String']>;
 };
 
 export type SubspecialtyNameWithWeight = {
@@ -2559,8 +2564,11 @@ export type AvailabilityRuleResolvers<ContextType = any, ParentType extends Reso
 
 export type BillingInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInfo'] = ResolversParentTypes['BillingInfo']> = ResolversObject<{
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  is_pending_cancel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  plan_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcoming_bill_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   upcoming_bill_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3079,6 +3087,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
   cancelAiTask?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationCancelAiTaskArgs, 'sourcing_session_id' | 'task_id'>>;
   cancelInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationCancelInvitationArgs, 'user_id'>>;
+  cancelSubscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   changePassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'new_password' | 'old_password'>>;
   confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
   confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
@@ -3129,6 +3138,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
+  resumeSubscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   saveAvailabilityRules?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType, RequireFields<MutationSaveAvailabilityRulesArgs, 'input'>>;
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
@@ -3690,9 +3700,9 @@ export type SubscriptionPlanResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type SubscriptionPriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPrice'] = ResolversParentTypes['SubscriptionPrice']> = ResolversObject<{
-  amount_per_month?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  amount_per_month?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  interval?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

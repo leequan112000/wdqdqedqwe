@@ -3,6 +3,7 @@ import { getStripeInstance } from "../../helper/stripe";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
+import { CustomerSubscriptionPlanName } from "../../helper/constant";
 import { app_env } from "../../environment";
 
 const resolvers: Resolvers<Context> = {
@@ -42,7 +43,7 @@ const resolvers: Resolvers<Context> = {
 
       return [
         {
-          id: "sourcerer-matching-plan",
+          id: CustomerSubscriptionPlanName.SOURCING_PLAN,
           name: "Sourcerer™ Matching",
           prices: [
             {
@@ -77,6 +78,25 @@ const resolvers: Resolvers<Context> = {
             },
           ],
         },
+        {
+          id: CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
+          name: "White Glove Service",
+          prices: [],
+          features: [
+            {
+              name: "Sourcerer™ Matchmaker",
+              items: [
+                { description: "Unlimited outsourcing requests" },
+                { description: "Analyzes RFPs for vendor match" },
+                { description: "Comprehensive vendor discovery platform" },
+              ],
+            },
+            {
+              name: "Sourcerer Lite",
+              items: [{ description: "Search with single service" }],
+            },
+          ],
+        },
       ];
     },
     subscriptionCheckoutSessionUrl: async (_, args, context) => {
@@ -94,7 +114,7 @@ const resolvers: Resolvers<Context> = {
 
       const customerId = user?.customer?.id;
 
-      invariant(customerId, 'Missing customer ID.')
+      invariant(customerId, "Missing customer ID.");
 
       const stripe = await getStripeInstance();
       const price = await stripe.prices.retrieve(price_id);
