@@ -3,7 +3,7 @@ import currency from "currency.js";
 import Stripe  from "stripe";
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
-import { CustomerSubscriptionPlanName } from "../../helper/constant";
+import { CustomerSubscriptionPlanName, SubscriptionStatus, BillingInfoStatus, BiotechAccountType } from "../../helper/constant";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
@@ -47,7 +47,6 @@ const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
      */
     if (error instanceof Stripe.errors.StripeError) {
       if (error.code === "invoice_upcoming_none") {
-        console.log('No upcoming invoice')
         return null;
       }
     }
@@ -57,6 +56,118 @@ const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
 };
 
 const resolvers: Resolvers<Context> = {
+  BillingInfo: {
+    id: () => "billing-info-id",
+    has_active_sourcerer_plan: async (_, __, context) => {
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: {
+            include: {
+              customer_subscriptions: {
+                where: {
+                  plan_name: CustomerSubscriptionPlanName.SOURCING_PLAN,
+                  status: SubscriptionStatus.ACTIVE,
+                  OR: [
+                    { ended_at: null },
+                    {
+                      ended_at: {
+                        gt: new Date(),
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return user?.customer?.customer_subscriptions
+        ? user?.customer?.customer_subscriptions.length > 0
+        : null;
+    },
+    has_active_legacy_plan: async (_, __, context) => {
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: {
+                    where: {
+                      status: SubscriptionStatus.ACTIVE,
+                      OR: [
+                        { ended_at: null },
+                        {
+                          ended_at: {
+                            gt: new Date(),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return user?.customer?.biotech?.subscriptions
+        ? user?.customer?.biotech?.subscriptions.length > 0
+        : null;
+    },
+    status: async (_, __, context) => {
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true
+                }
+              },
+              customer_subscriptions: true
+            },
+          },
+        },
+      })
+
+      const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
+      const customerSubscription = user?.customer?.customer_subscriptions?.[0];
+
+      const endedAt =
+        (customerSubscription?.ended_at || biotechSubscription?.ended_at) ??
+        null;
+      const subscriptionStatus =
+        customerSubscription?.status || biotechSubscription?.status;
+      const now = new Date();
+      let status: string | null = null;
+
+      if (subscriptionStatus === SubscriptionStatus.ACTIVE) {
+        if (endedAt === null) {
+          status = BillingInfoStatus.ACTIVE;
+        } else if (endedAt && endedAt > now) {
+          status = BillingInfoStatus.PENDING_CANCEL;
+        } else if (endedAt && endedAt <= now) {
+          status = BillingInfoStatus.CANCELED;
+        }
+      } else if (subscriptionStatus === SubscriptionStatus.CANCELED) {
+        status = BillingInfoStatus.CANCELED;
+      }
+
+      return status;
+    },
+  },
   Query: {
     billingInfo: async (_, __, context) => {
       const user = await context.prisma.user.findUnique({
@@ -84,16 +195,18 @@ const resolvers: Resolvers<Context> = {
         return null;
       }
 
-      const stripe_subscription_id = (biotechSubscription?.stripe_subscription_id || customerSubscription?.stripe_subscription_id) as string;
-      const stripe_customer_id = (biotechSubscription?.stripe_customer_id || customerSubscription?.stripe_customer_id) as string;
-      const plan_name = (user?.customer?.biotech?.account_type || customerSubscription?.plan_name) as string;
-
-      const now = new Date();
-      const isPendingCancelation = (biotechSubscription?.ended_at ? biotechSubscription.ended_at > now : false)
-        || (customerSubscription?.ended_at ? customerSubscription.ended_at > now : false);
+      const stripe_subscription_id =
+        (customerSubscription?.stripe_subscription_id ||
+          biotechSubscription?.stripe_subscription_id) as string;
+      const stripe_customer_id = (customerSubscription?.stripe_customer_id ||
+        biotechSubscription?.stripe_customer_id) as string;
+      const plan_name = (customerSubscription?.plan_name ||
+        user?.customer?.biotech?.account_type) as string;
 
       const stripe = await getStripeInstance();
-      const stripeSub = await stripe.subscriptions.retrieve(stripe_subscription_id);
+      const stripeSub = await stripe.subscriptions.retrieve(
+        stripe_subscription_id
+      );
       const subItem = stripeSub.items.data[0];
       const stripeCus = await stripe.customers.retrieve(stripe_customer_id);
 
@@ -121,14 +234,13 @@ const resolvers: Resolvers<Context> = {
         : null;
 
       return {
-        id: 'billing-info-id', // Dummy ID for client to cache the result.
+        id: "billing-info-id", // Dummy ID for client to cache the result.
         plan_id: plan_name,
         plan: getPlanName(plan_name),
         bill_cycle: subItem.plan.interval,
         payment_method: paymentMethod,
         upcoming_bill_amount: upcomingBillAmount,
         upcoming_bill_date: upcomingBillDate,
-        is_pending_cancel: isPendingCancelation,
       };
     },
     billingInvoices: async (_, __, context) => {
@@ -150,26 +262,41 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const stripe_subscription_id = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id || user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
-      const plan_name = user?.customer?.biotech?.account_type || user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
+      const biotechStripeSubId = user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id;
+      const biotechSubPlanName = user?.customer?.biotech?.account_type;
+      const customerStripeSubId = user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]?.plan_name as string;
 
-      if (!stripe_subscription_id) {
+      if (!biotechStripeSubId && !customerStripeSubId) {
         return null;
       }
 
       const stripe = await getStripeInstance();
-      const resp = await stripe.invoices.list({
-        subscription: stripe_subscription_id,
-      });
+      const biotechStripeInvoices = biotechStripeSubId
+        ? (await stripe.invoices.list({ subscription: biotechStripeSubId })).data
+        : [];
+      const customerStripeInvoice = customerStripeSubId
+        ? (await stripe.invoices.list({ subscription: customerStripeSubId })).data
+        : [];
 
-      return resp.data.map((d) => ({
-        number: d.number,
-        amount: currency(d.amount_due, { fromCents: true }).dollars(),
-        date: moment.unix(d.period_end),
-        description: getPlanName(plan_name),
-        status: d.status,
-        invoice_url: d.hosted_invoice_url,
-      }));
+      return [
+        ...customerStripeInvoice.map((d) => ({
+          number: d.number,
+          amount: currency(d.amount_due, { fromCents: true }).dollars(),
+          date: moment.unix(d.period_end),
+          description: getPlanName(customerSubPlanName || ''),
+          status: d.status,
+          invoice_url: d.hosted_invoice_url,
+        })),
+        ...biotechStripeInvoices.map((d) => ({
+          number: d.number,
+          amount: currency(d.amount_due, { fromCents: true }).dollars(),
+          date: moment.unix(d.period_end),
+          description: getPlanName(biotechSubPlanName || ''),
+          status: d.status,
+          invoice_url: d.hosted_invoice_url,
+        }))
+      ];
     },
     billingPortalUrl: async (_, args, context) => {
       const { return_url } = args;

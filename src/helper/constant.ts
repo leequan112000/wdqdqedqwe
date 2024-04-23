@@ -7,6 +7,12 @@ export enum SubscriptionStatus {
   CANCELED = 'canceled',
 }
 
+export enum BillingInfoStatus {
+  ACTIVE = 'active',
+  CANCELED = 'canceled',
+  PENDING_CANCEL = 'pending_cancel',
+}
+
 export enum ProjectRequestStatus {
   PROCESSING = 'processing',
   MATCHED = 'matched',

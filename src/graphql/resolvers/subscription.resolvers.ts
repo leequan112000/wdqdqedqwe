@@ -4,7 +4,6 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { CustomerSubscriptionPlanName } from "../../helper/constant";
-import { app_env } from "../../environment";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -101,7 +100,7 @@ const resolvers: Resolvers<Context> = {
     },
     subscriptionCheckoutSessionUrl: async (_, args, context) => {
       const userId = context.req.user_id;
-      const { price_id, ga_client_id } = args;
+      const { price_id, ga_client_id, cancel_url, success_url } = args;
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -131,8 +130,8 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         mode: "subscription",
-        success_url: `${app_env.APP_URL}/onboarding?success=true`,
-        cancel_url: `${app_env.APP_URL}/onboarding?cancel=true`,
+        success_url,
+        cancel_url,
         metadata: {
           plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),
