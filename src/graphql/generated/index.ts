@@ -44,11 +44,13 @@ export type AvailabilityRuleInput = {
 export type BillingInfo = {
   __typename?: 'BillingInfo';
   bill_cycle?: Maybe<Scalars['String']>;
+  has_active_legacy_plan?: Maybe<Scalars['Boolean']>;
+  has_active_sourcerer_plan?: Maybe<Scalars['Boolean']>;
   id: Scalars['String'];
-  is_pending_cancel?: Maybe<Scalars['Boolean']>;
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
   plan_id?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
   upcoming_bill_amount?: Maybe<Scalars['Float']>;
   upcoming_bill_date?: Maybe<Scalars['Date']>;
 };
@@ -1840,8 +1842,10 @@ export type QuerySourcingSessionArgs = {
 
 
 export type QuerySubscriptionCheckoutSessionUrlArgs = {
+  cancel_url: Scalars['String'];
   ga_client_id?: InputMaybe<Scalars['String']>;
   price_id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -2564,11 +2568,13 @@ export type AvailabilityRuleResolvers<ContextType = any, ParentType extends Reso
 
 export type BillingInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInfo'] = ResolversParentTypes['BillingInfo']> = ResolversObject<{
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  has_active_legacy_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  has_active_sourcerer_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  is_pending_cancel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcoming_bill_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   upcoming_bill_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3463,7 +3469,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  subscriptionCheckoutSessionUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'price_id'>>;
+  subscriptionCheckoutSessionUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'cancel_url' | 'price_id' | 'success_url'>>;
   subscriptionPlans?: Resolver<Array<ResolversTypes['SubscriptionPlan']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;

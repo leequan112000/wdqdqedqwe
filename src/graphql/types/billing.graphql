@@ -6,7 +6,9 @@ type BillingInfo {
   bill_cycle: String
   upcoming_bill_date: Date
   upcoming_bill_amount: Float
-  is_pending_cancel: Boolean
+  status: String
+  has_active_sourcerer_plan: Boolean
+  has_active_legacy_plan: Boolean
 }
 
 type BillingInvoice {
