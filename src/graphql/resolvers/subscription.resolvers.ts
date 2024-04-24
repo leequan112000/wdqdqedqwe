@@ -107,22 +107,38 @@ const resolvers: Resolvers<Context> = {
           id: userId,
         },
         include: {
-          customer: true,
+          customer: {
+            include: {
+              customer_subscriptions: true,
+            },
+          },
         },
       });
 
-      const customerId = user?.customer?.id;
+      const customer = user?.customer;
 
-      invariant(customerId, "Missing customer ID.");
+      invariant(customer, "Missing customer.");
 
+      const customerId = customer.id;
       const stripe = await getStripeInstance();
       const price = await stripe.prices.retrieve(price_id);
       const product = await stripe.products.retrieve(price.product.toString());
       const { plan_name } = product.metadata;
 
+      let stripeCusId: string | null = null;
+      if (customer.customer_subscriptions.length > 0) {
+        stripeCusId = customer.customer_subscriptions[0].stripe_customer_id;
+      }
+
       const session = await stripe.checkout.sessions.create({
         client_reference_id: customerId,
-        customer_email: user.email,
+        /**
+         * Reuse Stripe customer ID to create new subscription
+         * within the same Stripe customer object.
+         */
+        ...(stripeCusId
+          ? { customer: stripeCusId }
+          : { customer_email: user.email }),
         line_items: [
           {
             price: price_id,

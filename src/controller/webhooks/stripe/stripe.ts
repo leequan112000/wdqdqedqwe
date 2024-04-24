@@ -24,11 +24,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 id: checkoutSession.client_reference_id!
               },
               include: {
-                biotech: {
-                  include: {
-                    subscriptions: true
-                  }
-                }
+                customer_subscriptions: true,
               }
             });
             if (!customer) {
@@ -41,15 +37,30 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 Sentry.captureMessage("[Stripe Webhook] Missing plan name metadata.");
               }
 
-              await prisma.customerSubscription.create({
-                data: {
-                  stripe_subscription_id: checkoutSession.subscription as string,
-                  stripe_customer_id: checkoutSession.customer as string,
-                  status: SubscriptionStatus.ACTIVE,
-                  plan_name: checkoutSession.metadata?.plan_name as string,
-                  customer_id: customer.id
-                }
-              });
+              if (customer.customer_subscriptions.length > 0) {
+                await prisma.customerSubscription.update({
+                  where: {
+                    id: customer.customer_subscriptions[0].id,
+                  },
+                  data: {
+                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_customer_id: checkoutSession.customer as string,
+                    status: SubscriptionStatus.ACTIVE,
+                    plan_name: checkoutSession.metadata?.plan_name as string,
+                    ended_at: null,
+                  }
+                })
+              } else {
+                await prisma.customerSubscription.create({
+                  data: {
+                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_customer_id: checkoutSession.customer as string,
+                    status: SubscriptionStatus.ACTIVE,
+                    plan_name: checkoutSession.metadata?.plan_name as string,
+                    customer_id: customer.id
+                  }
+                });
+              }
 
               await ga.trackEvent(
                 'purchase',
