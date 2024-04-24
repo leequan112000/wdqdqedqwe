@@ -1,4 +1,4 @@
-import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User } from '@prisma/client';
+import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User, CustomerSubscription } from '@prisma/client';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
 import Stripe from 'stripe';
 import { MockContext, createMockContext } from '../../../testContext';
@@ -57,6 +57,7 @@ const API_VERSION = "2022-08-01";
 let mockCtx: MockContext;
 let ctx: ServiceContext;
 let customer: Customer;
+let customerSubscription: CustomerSubscription;
 let biotech: Biotech;
 let invoice: Invoice;
 let quote: Quote;
@@ -77,6 +78,18 @@ beforeEach(() => {
     user_id: 'uuid',
     role: 'user',
   };
+
+  customerSubscription = {
+    id: 'uuid',
+    created_at: new Date(),
+    customer_id: 'uuid',
+    ended_at: null,
+    updated_at: new Date(),
+    plan_name: 'sourcing_plan',
+    status: 'active',
+    stripe_subscription_id: checkoutSessionCompleted.data.object.subscription,
+    stripe_customer_id: checkoutSessionCompleted.data.object.customer,
+  }
 
   biotech = {
     id: 'uuid',
@@ -237,10 +250,33 @@ describe('process stripe event', () => {
       test('should create subscription and return 200', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
-        prisma.customer.findFirst.mockResolvedValue(customer);
+        prisma.customer.findFirst.mockResolvedValue({
+          ...customer,
+          customer_subscriptions: [],
+        } as Customer & {
+          customer_subscriptions: CustomerSubscription[];
+        });
+
 
         const result = await processStripeEvent(event);
         expect(prisma.customerSubscription.create).toBeCalled();
+        expect(result.status).toEqual(200);
+        expect(result.message).contain('OK');
+      });
+
+      test('should update subscription and return 200', async () => {
+        const event = checkoutSessionCompleted as Stripe.Event;
+        (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
+        prisma.customer.findFirst.mockResolvedValue({
+          ...customer,
+          customer_subscriptions: [customerSubscription],
+        } as Customer & {
+          customer_subscriptions: CustomerSubscription[];
+        });
+
+
+        const result = await processStripeEvent(event);
+        expect(prisma.customerSubscription.update).toBeCalled();
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
