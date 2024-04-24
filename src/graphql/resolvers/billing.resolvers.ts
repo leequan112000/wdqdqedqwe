@@ -262,30 +262,30 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const biotechStripeSubId =
-        user?.customer?.biotech?.subscriptions?.[0]?.stripe_subscription_id;
+      const biotechStripeCusId =
+        user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
       const biotechSubPlanName = user?.customer?.biotech?.account_type;
-      const customerStripeSubId =
-        user?.customer?.customer_subscriptions?.[0]?.stripe_subscription_id;
+      const customerStripeCusId =
+        user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
       const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]
         ?.plan_name as string;
 
-      if (!biotechStripeSubId && !customerStripeSubId) {
+      if (!biotechStripeCusId && !customerStripeCusId) {
         return null;
       }
 
       const stripe = await getStripeInstance();
-      const biotechStripeInvoices = biotechStripeSubId
-        ? (await stripe.invoices.list({ subscription: biotechStripeSubId }))
+      const biotechStripeInvoices = biotechStripeCusId
+        ? (await stripe.invoices.list({ customer: biotechStripeCusId }))
             .data
         : [];
-      const customerStripeInvoice = customerStripeSubId
-        ? (await stripe.invoices.list({ subscription: customerStripeSubId }))
+      const customerStripeInvoices = customerStripeCusId
+        ? (await stripe.invoices.list({ customer: customerStripeCusId }))
             .data
         : [];
 
       return [
-        ...customerStripeInvoice.map((d) => ({
+        ...customerStripeInvoices.map((d) => ({
           number: d.number,
           amount: currency(d.amount_due, { fromCents: true }).dollars(),
           date: moment.unix(d.period_end),
