@@ -55,6 +55,26 @@ const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
   }
 };
 
+const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
+  try {
+    return await stripe.subscriptions.retrieve(
+      stripeSubId
+    );
+  } catch (error) {
+    /**
+     * Handle if subscription not found.
+     */
+    if (error instanceof Stripe.errors.StripeError) {
+      if (error.code === "resource_missing") {
+        Sentry.captureMessage(error.message)
+        return null;
+      }
+    }
+    Sentry.captureException(new Error("Failed to retreive subscription."));
+    return null;
+  }
+}
+
 const resolvers: Resolvers<Context> = {
   BillingInfo: {
     id: () => "billing-info-id",
@@ -204,9 +224,13 @@ const resolvers: Resolvers<Context> = {
         user?.customer?.biotech?.account_type) as string;
 
       const stripe = await getStripeInstance();
-      const stripeSub = await stripe.subscriptions.retrieve(
-        stripe_subscription_id
+      const stripeSub = await safeGetStripeSub(
+        stripe_subscription_id,
+        stripe
       );
+      if (stripeSub === null) {
+        return null;
+      }
       const subItem = stripeSub.items.data[0];
       const stripeCus = await stripe.customers.retrieve(stripe_customer_id);
 
