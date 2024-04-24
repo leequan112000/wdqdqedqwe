@@ -37,18 +37,23 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
               return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
             }
             if (checkoutSession.subscription) {
-              await prisma.subscription.create({
+              if (!checkoutSession.metadata?.plan_name) {
+                Sentry.captureMessage("[Stripe Webhook] Missing plan name metadata.");
+              }
+
+              await prisma.customerSubscription.create({
                 data: {
                   stripe_subscription_id: checkoutSession.subscription as string,
                   stripe_customer_id: checkoutSession.customer as string,
                   status: SubscriptionStatus.ACTIVE,
-                  biotech_id: customer.biotech_id
+                  plan_name: checkoutSession.metadata?.plan_name as string,
+                  customer_id: customer.id
                 }
               });
 
               await ga.trackEvent(
                 'purchase',
-                checkoutSession?.metadata?.client_id ?? 'unknown',
+                checkoutSession?.metadata?.ga_client_id ?? 'unknown',
                 {
                   transaction_id: checkoutSession.subscription,
                   value: (checkoutSession.amount_total ?? 0) / 100,
@@ -278,7 +283,13 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
       }
 
       case 'customer.subscription.updated': {
-        const { items, customer } = event.data.object as Stripe.Subscription;
+        const { items, customer, cancel_at } = event.data
+          .object as Stripe.Subscription;
+        /**
+         * Default cancel at date to null to handle remove ended_at value
+         * when customer resume the subscription.
+         */
+        const cancelAtDate = cancel_at ? moment.unix(cancel_at).toDate() : null;
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
@@ -287,30 +298,61 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const stripe = await getStripeInstance();
         const product = await stripe.products.retrieve(plan.product as string);
 
-        const { account_type } = product.metadata;
+        const { account_type, plan_name } = product.metadata;
         const subcription = await prisma.subscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
           },
         });
 
-        if (subcription === null) {
-          return { status: 200, message: "Skipped webhook: reason=subscription_not_found" };
+        const customerSubscription =
+          await prisma.customerSubscription.findFirst({
+            where: {
+              stripe_customer_id: stripeCustomerId,
+            },
+          });
+
+        if (subcription === null && customerSubscription === null) {
+          return {
+            status: 200,
+            message: "Skipped webhook: reason=subscription_not_found",
+          };
         }
 
-        invariant(
-          account_type,
-          "[Stripe Webhook] Missing metadata: account_type."
-        );
+        if (customerSubscription) {
+          invariant(plan_name, "Missing metadata: plan_name.");
+          await prisma.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              plan_name,
+              ended_at: cancelAtDate,
+            },
+          });
+        }
 
-        await prisma.biotech.update({
-          where: {
-            id: subcription.biotech_id,
-          },
-          data: {
-            account_type,
-          },
-        });
+        if (subcription) {
+          invariant(account_type, "Missing metadata: account_type.");
+          await prisma.biotech.update({
+            where: {
+              id: subcription.biotech_id,
+            },
+            data: {
+              account_type,
+              subscriptions: {
+                update: {
+                  where: {
+                    id: subcription.id,
+                  },
+                  data: {
+                    ended_at: cancelAtDate,
+                  },
+                },
+              },
+            },
+          });
+        }
 
         return { status: 200, message: "OK" };
       }
@@ -319,23 +361,41 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
-        const subscription = await prisma.subscription.findFirst({
+        const customerSubscription = await prisma.customerSubscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
           },
         });
 
-        invariant(subscription, '[Stripe Webhook] Missing biotech subscription data.');
+        if (customerSubscription) {
+          await prisma.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
-        await prisma.subscription.update({
+        const biotechSubscription = await prisma.subscription.findFirst({
           where: {
-            id: subscription.id,
-          },
-          data: {
-            status,
-            ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            stripe_customer_id: stripeCustomerId,
           },
         });
+
+        if (biotechSubscription) {
+          await prisma.subscription.update({
+            where: {
+              id: biotechSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
         return { status: 200, message: 'OK' };
       }

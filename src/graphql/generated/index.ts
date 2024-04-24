@@ -43,10 +43,14 @@ export type AvailabilityRuleInput = {
 
 export type BillingInfo = {
   __typename?: 'BillingInfo';
-  active_user_counts?: Maybe<Scalars['Int']>;
   bill_cycle?: Maybe<Scalars['String']>;
+  has_active_legacy_plan?: Maybe<Scalars['Boolean']>;
+  has_active_sourcerer_plan?: Maybe<Scalars['Boolean']>;
+  id: Scalars['String'];
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
+  plan_id?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
   upcoming_bill_amount?: Maybe<Scalars['Float']>;
   upcoming_bill_date?: Maybe<Scalars['Date']>;
 };
@@ -64,6 +68,7 @@ export type BillingInvoice = {
 export type Biotech = {
   __typename?: 'Biotech';
   about?: Maybe<Scalars['String']>;
+  account_type?: Maybe<Scalars['String']>;
   address?: Maybe<Scalars['String']>;
   address1?: Maybe<Scalars['String']>;
   address2?: Maybe<Scalars['String']>;
@@ -588,6 +593,7 @@ export type Mutation = {
   answerInvitation?: Maybe<SubmitAttendanceResp>;
   cancelAiTask?: Maybe<SourcingTask>;
   cancelInvitation?: Maybe<User>;
+  cancelSubscription?: Maybe<Scalars['Boolean']>;
   changePassword?: Maybe<Scalars['Boolean']>;
   confirmEditSourcingDetails?: Maybe<SourcingSession>;
   confirmEditSourcingSubspecialties?: Maybe<SourcingSession>;
@@ -623,7 +629,6 @@ export type Mutation = {
   markNotificationAsRead?: Maybe<Notification>;
   markNotificationsInProjectAsRead?: Maybe<Array<Maybe<Notification>>>;
   markQuoteNotificationsAsRead?: Maybe<Array<Maybe<Notification>>>;
-  onboardBiotech?: Maybe<Biotech>;
   onboardCustomerPersonalInfo?: Maybe<Customer>;
   payByBlanketPurchaseOrder?: Maybe<Milestone>;
   payByPurchaseOrder?: Maybe<Milestone>;
@@ -642,6 +647,7 @@ export type Mutation = {
   resendInvitation?: Maybe<User>;
   resendVendorMemberInviteByBiotech?: Maybe<Scalars['Boolean']>;
   resetPassword?: Maybe<Scalars['Boolean']>;
+  resumeSubscription?: Maybe<Scalars['Boolean']>;
   saveAvailabilityRules?: Maybe<Availability>;
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
@@ -958,27 +964,8 @@ export type MutationMarkQuoteNotificationsAsReadArgs = {
 };
 
 
-export type MutationOnboardBiotechArgs = {
-  about?: InputMaybe<Scalars['String']>;
-  address?: InputMaybe<Scalars['String']>;
-  address1?: InputMaybe<Scalars['String']>;
-  address2?: InputMaybe<Scalars['String']>;
-  biotech_extra_info?: InputMaybe<Scalars['String']>;
-  city?: InputMaybe<Scalars['String']>;
-  country?: InputMaybe<Scalars['String']>;
-  facebook_url?: InputMaybe<Scalars['String']>;
-  founded_year?: InputMaybe<Scalars['String']>;
-  linkedin_url?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  state?: InputMaybe<Scalars['String']>;
-  team_size?: InputMaybe<Scalars['String']>;
-  twitter_url?: InputMaybe<Scalars['String']>;
-  website?: InputMaybe<Scalars['String']>;
-  zipcode?: InputMaybe<Scalars['String']>;
-};
-
-
 export type MutationOnboardCustomerPersonalInfoArgs = {
+  country_code?: InputMaybe<Scalars['String']>;
   first_name: Scalars['String'];
   job_title: Scalars['String'];
   last_name: Scalars['String'];
@@ -1110,7 +1097,6 @@ export type MutationSignInUserArgs = {
 
 
 export type MutationSignUpUserArgs = {
-  company_name: Scalars['String'];
   email: Scalars['String'];
   password: Scalars['String'];
   timezone: Scalars['String'];
@@ -1665,7 +1651,7 @@ export type Query = {
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
-  subscriptionCheckoutSessionURL?: Maybe<Scalars['String']>;
+  subscriptionCheckoutSessionUrl?: Maybe<Scalars['String']>;
   subscriptionPlans: Array<SubscriptionPlan>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   suggestedLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
@@ -1856,8 +1842,10 @@ export type QuerySourcingSessionArgs = {
 
 
 export type QuerySubscriptionCheckoutSessionUrlArgs = {
+  cancel_url: Scalars['String'];
   ga_client_id?: InputMaybe<Scalars['String']>;
   price_id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -2130,9 +2118,9 @@ export type SubscriptionPlan = {
 
 export type SubscriptionPrice = {
   __typename?: 'SubscriptionPrice';
-  amount_per_month: Scalars['Int'];
+  amount_per_month?: Maybe<Scalars['Int']>;
   id: Scalars['String'];
-  interval: Scalars['String'];
+  interval?: Maybe<Scalars['String']>;
 };
 
 export type SubspecialtyNameWithWeight = {
@@ -2579,10 +2567,14 @@ export type AvailabilityRuleResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type BillingInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['BillingInfo'] = ResolversParentTypes['BillingInfo']> = ResolversObject<{
-  active_user_counts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  has_active_legacy_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  has_active_sourcerer_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  plan_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   upcoming_bill_amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   upcoming_bill_date?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2600,6 +2592,7 @@ export type BillingInvoiceResolvers<ContextType = any, ParentType extends Resolv
 
 export type BiotechResolvers<ContextType = any, ParentType extends ResolversParentTypes['Biotech'] = ResolversParentTypes['Biotech']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  account_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   address2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3100,6 +3093,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   answerInvitation?: Resolver<Maybe<ResolversTypes['SubmitAttendanceResp']>, ParentType, ContextType, RequireFields<MutationAnswerInvitationArgs, 'answer' | 'email' | 'meeting_token'>>;
   cancelAiTask?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationCancelAiTaskArgs, 'sourcing_session_id' | 'task_id'>>;
   cancelInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationCancelInvitationArgs, 'user_id'>>;
+  cancelSubscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   changePassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'new_password' | 'old_password'>>;
   confirmEditSourcingDetails?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingDetailsArgs, 'sourcing_session_id'>>;
   confirmEditSourcingSubspecialties?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationConfirmEditSourcingSubspecialtiesArgs, 'sourcing_session_id'>>;
@@ -3132,7 +3126,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markNotificationAsRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'id'>>;
   markNotificationsInProjectAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkNotificationsInProjectAsReadArgs, 'project_connection_id'>>;
   markQuoteNotificationsAsRead?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, RequireFields<MutationMarkQuoteNotificationsAsReadArgs, 'quote_id'>>;
-  onboardBiotech?: Resolver<Maybe<ResolversTypes['Biotech']>, ParentType, ContextType, Partial<MutationOnboardBiotechArgs>>;
   onboardCustomerPersonalInfo?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<MutationOnboardCustomerPersonalInfoArgs, 'first_name' | 'job_title' | 'last_name' | 'team'>>;
   payByBlanketPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByBlanketPurchaseOrderArgs, 'blanket_purchase_order_id' | 'id'>>;
   payByPurchaseOrder?: Resolver<Maybe<ResolversTypes['Milestone']>, ParentType, ContextType, RequireFields<MutationPayByPurchaseOrderArgs, 'id' | 'po_number'>>;
@@ -3151,13 +3144,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resendInvitation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationResendInvitationArgs, 'user_id'>>;
   resendVendorMemberInviteByBiotech?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInviteByBiotechArgs, 'biotech_invite_vendor_id'>>;
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
+  resumeSubscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   saveAvailabilityRules?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType, RequireFields<MutationSaveAvailabilityRulesArgs, 'input'>>;
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;
-  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'company_name' | 'email' | 'password' | 'timezone'>>;
+  signUpUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpUserArgs, 'email' | 'password' | 'timezone'>>;
   skipAddCertificationTag?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   skipAddLabSpecialization?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   sourceCros?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceCrosArgs, 'names' | 'sourcing_session_id'>>;
@@ -3475,7 +3469,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  subscriptionCheckoutSessionURL?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'price_id'>>;
+  subscriptionCheckoutSessionUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'cancel_url' | 'price_id' | 'success_url'>>;
   subscriptionPlans?: Resolver<Array<ResolversTypes['SubscriptionPlan']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
   suggestedLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType>;
@@ -3712,9 +3706,9 @@ export type SubscriptionPlanResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type SubscriptionPriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPrice'] = ResolversParentTypes['SubscriptionPrice']> = ResolversObject<{
-  amount_per_month?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  amount_per_month?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  interval?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

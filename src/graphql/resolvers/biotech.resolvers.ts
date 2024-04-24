@@ -5,7 +5,6 @@ import { Resolvers } from "../generated";
 import UploadLimitTracker from "../../helper/uploadLimitTracker";
 import invariant from "../../helper/invariant";
 import { toDollar } from "../../helper/money";
-import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
 
 const resolver: Resolvers<Context> = {
   Biotech: {
@@ -19,7 +18,20 @@ const resolver: Resolvers<Context> = {
         }
       });
 
-      return subscriptions.length > 0 ? true : false;
+      const customer = await context.prisma.customer.findFirst({
+        where: {
+          user_id: context.req.user_id
+        }
+      });
+
+      const customerSubscriptions = await context.prisma.customerSubscription.findMany({
+        where: {
+          customer_id: customer?.id,
+          status: SubscriptionStatus.ACTIVE
+        }
+      });
+
+      return subscriptions.length > 0 || customerSubscriptions.length > 0;
     },
     stripe_customer_id: async (parent, _, context) => {
       invariant(parent.id, 'Missing biotech id.');
@@ -155,60 +167,6 @@ const resolver: Resolvers<Context> = {
     },
   },
   Mutation: {
-    onboardBiotech: async (_, args, context) => {
-      await checkAllowEditCompanyInfoPermission(context);
-      return await context.prisma.$transaction(async (trx) => {
-        const user = await trx.user.findFirstOrThrow({
-          where: {
-            id: context.req.user_id,
-          },
-          include: {
-            customer: {
-              include: {
-                biotech: true
-              }
-            }
-          }
-        });
-
-        invariant(user.customer, new PublicError('Customer not found.'));
-
-        if (args.name && args.name !== user?.customer?.biotech?.name) {
-          const existingBiotech = await trx.biotech.findFirst({
-            where: {
-              name: args.name
-            }
-          });
-
-          invariant(!existingBiotech, new PublicError('Biotech name already exists.'));
-        }
-
-        return await context.prisma.biotech.update({
-          where: {
-            id: user.customer.biotech_id
-          },
-          data: {
-            about: args.about,
-            website: args.website,
-            address: args.address,
-            address1: args.address1,
-            address2: args.address2,
-            city: args.city,
-            state: args.state,
-            country: args.country,
-            zipcode: args.zipcode,
-            founded_year: args.founded_year,
-            team_size: args.team_size,
-            linkedin_url: args.linkedin_url,
-            twitter_url: args.twitter_url,
-            facebook_url: args.facebook_url,
-            biotech_extra_info: args.biotech_extra_info,
-            has_setup_profile: true,
-            ...(args.name !== null ? { name: args.name } : {}),
-          }
-        })
-      });
-    },
     updateBiotech: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
         const customer = await trx.customer.findFirst({

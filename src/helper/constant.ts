@@ -7,6 +7,12 @@ export enum SubscriptionStatus {
   CANCELED = 'canceled',
 }
 
+export enum BillingInfoStatus {
+  ACTIVE = 'active',
+  CANCELED = 'canceled',
+  PENDING_CANCEL = 'pending_cancel',
+}
+
 export enum ProjectRequestStatus {
   PROCESSING = 'processing',
   MATCHED = 'matched',
@@ -160,10 +166,13 @@ export enum MeetingPlatform {
 }
 
 export enum BiotechAccountType {
+  STARDARD = 'standard',
+}
+
+export enum CustomerSubscriptionPlanName {
   SOURCING_PLAN = 'sourcing_plan',
   PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
   WHITE_GLOVE_PLAN = 'white_glove_plan',
-  STARDARD = 'standard',
 }
 
 export enum EmailType {

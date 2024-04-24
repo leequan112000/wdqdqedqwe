@@ -64,6 +64,7 @@ model Customer {
 
   project_requests              ProjectRequest[]
   customer_connections          CustomerConnection[]
+  customer_subscriptions        CustomerSubscription[]
   project_request_collaborators ProjectRequestCollaborator[]
 
   role String @default("user")
@@ -89,33 +90,33 @@ model Admin {
 }
 
 model Biotech {
-  id                                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                        String
-  created_at                                  DateTime  @default(now())
-  updated_at                                  DateTime  @updatedAt
-  has_setup_profile                           Boolean   @default(false)
-  address                                     String?
-  address1                                    String?
-  address2                                    String?
-  city                                        String?
-  state                                       String?
-  country                                     String?
-  zipcode                                     String?
-  website                                     String?
-  about                                       String?
-  cda_pandadoc_file_id                        String?
-  cda_pandadoc_signer                         String?
-  cda_signed_at                               DateTime?
-  skip_cda                                    Boolean   @default(false)
-  account_type                                String?
-  legal_name                                  String?
-  upload_limit                                Int       @default(1048576)
-  founded_year                                String?
-  team_size                                   String?
-  linkedin_url                                String?
-  twitter_url                                 String?
-  facebook_url                                String?
-  biotech_extra_info                          String?
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  has_setup_profile    Boolean   @default(false)
+  address              String?
+  address1             String?
+  address2             String?
+  city                 String?
+  state                String?
+  country              String?
+  zipcode              String?
+  website              String?
+  about                String?
+  cda_pandadoc_file_id String?
+  cda_pandadoc_signer  String?
+  cda_signed_at        DateTime?
+  skip_cda             Boolean   @default(false)
+  account_type         String?
+  legal_name           String?
+  upload_limit         Int       @default(1048576)
+  founded_year         String?
+  team_size            String?
+  linkedin_url         String?
+  twitter_url          String?
+  facebook_url         String?
+  biotech_extra_info   String?
 
   customers               Customer[]
   subscriptions           Subscription[]
@@ -211,6 +212,22 @@ model Subscription {
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   @@map("subscriptions")
+}
+
+model CustomerSubscription {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stripe_subscription_id String
+  stripe_customer_id     String
+  plan_name              String
+  status                 String
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  ended_at               DateTime?
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@map("customer_subscriptions")
 }
 
 model ProjectRequest {

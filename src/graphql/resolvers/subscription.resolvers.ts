@@ -3,7 +3,7 @@ import { getStripeInstance } from "../../helper/stripe";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
-import { app_env } from "../../environment";
+import { CustomerSubscriptionPlanName } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -42,7 +42,7 @@ const resolvers: Resolvers<Context> = {
 
       return [
         {
-          id: "sourcerer-matching-plan",
+          id: CustomerSubscriptionPlanName.SOURCING_PLAN,
           name: "Sourcerer™ Matching",
           prices: [
             {
@@ -53,7 +53,7 @@ const resolvers: Resolvers<Context> = {
               interval: "month",
             },
             {
-              id: "sourcerer-matching:yearly",
+              id: sourcererYearlyPriceId,
               amount_per_month: currency(sourcererYearlyPrice.unit_amount, {
                 fromCents: true,
               })
@@ -77,11 +77,30 @@ const resolvers: Resolvers<Context> = {
             },
           ],
         },
+        {
+          id: CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
+          name: "White Glove Service",
+          prices: [],
+          features: [
+            {
+              name: "Sourcerer™ Matchmaker",
+              items: [
+                { description: "Unlimited outsourcing requests" },
+                { description: "Analyzes RFPs for vendor match" },
+                { description: "Comprehensive vendor discovery platform" },
+              ],
+            },
+            {
+              name: "Sourcerer Lite",
+              items: [{ description: "Search with single service" }],
+            },
+          ],
+        },
       ];
     },
-    subscriptionCheckoutSessionURL: async (_, args, context) => {
+    subscriptionCheckoutSessionUrl: async (_, args, context) => {
       const userId = context.req.user_id;
-      const { price_id, ga_client_id } = args;
+      const { price_id, ga_client_id, cancel_url, success_url } = args;
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -94,11 +113,16 @@ const resolvers: Resolvers<Context> = {
 
       const customerId = user?.customer?.id;
 
-      invariant(customerId, 'Missing customer ID.')
+      invariant(customerId, "Missing customer ID.");
 
       const stripe = await getStripeInstance();
+      const price = await stripe.prices.retrieve(price_id);
+      const product = await stripe.products.retrieve(price.product.toString());
+      const { plan_name } = product.metadata;
+
       const session = await stripe.checkout.sessions.create({
         client_reference_id: customerId,
+        customer_email: user.email,
         line_items: [
           {
             price: price_id,
@@ -106,9 +130,10 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         mode: "subscription",
-        success_url: `${app_env.APP_URL}/onboarding?success=true`,
-        cancel_url: `${app_env.APP_URL}/onboarding?cancel=true`,
+        success_url,
+        cancel_url,
         metadata: {
+          plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),
         },
       });

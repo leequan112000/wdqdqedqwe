@@ -8,7 +8,6 @@ import { InternalError } from "../errors/InternalError";
 import {
   BiotechAccountType,
   CasbinRole,
-  CompanyCollaboratorRoleType,
   OauthProvider,
   UserStatus,
   UserType,
@@ -59,6 +58,7 @@ const resolvers: Resolvers<Context> = {
                   subscriptions: true,
                 },
               },
+              customer_subscriptions: true,
             },
           },
           vendor_member: {
@@ -102,7 +102,8 @@ const resolvers: Resolvers<Context> = {
 
       if (
         result?.customer &&
-        result.customer.biotech.subscriptions.length === 0
+        result.customer.biotech.subscriptions.length === 0 &&
+        result.customer.customer_subscriptions.length === 0
       ) {
         return false;
       }
@@ -200,8 +201,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (customer?.biotech.name) {
-        return customer.biotech.name;
+      if (customer) {
+        return customer?.biotech?.name ?? null;
       }
 
       const vendorMember = await context.prisma.vendorMember.findUnique({
@@ -221,7 +222,7 @@ const resolvers: Resolvers<Context> = {
         return vendorMember.vendor_company.name;
       }
 
-      throw new InternalError("Missing user.");
+      return null;
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
@@ -284,6 +285,7 @@ const resolvers: Resolvers<Context> = {
       // TODO: properly check token validity
     },
     status: async (parent, _, context) => {
+      if (parent.status) return parent.status;
       const userId = parent.id;
 
       const user = await context.prisma.user.findUnique({
@@ -324,7 +326,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     signUpUser: async (_, args, context) => {
-      const { email, password, company_name, timezone } = args;
+      const { email, password, timezone } = args;
       const lowerCaseEmail = email.toLowerCase();
 
       const user = await context.prisma.user.findFirst({
@@ -337,11 +339,12 @@ const resolvers: Resolvers<Context> = {
 
       const hashedPassword = await hashPassword(password);
 
-      const availabilityCreateInputs = availabilityCreateManyUserInputs(timezone);
+      const availabilityCreateInputs =
+        availabilityCreateManyUserInputs(timezone);
 
       const biotech = await context.prisma.biotech.create({
         data: {
-          name: company_name,
+          name: "",
           customers: {
             create: {
               user: {
@@ -374,6 +377,7 @@ const resolvers: Resolvers<Context> = {
 
       const newUser = biotech.customers[0].user;
 
+      // [LEGACY]
       await addRoleForUser(newUser.id, CasbinRole.OWNER);
 
       // Genereate tokens
@@ -519,7 +523,7 @@ const resolvers: Resolvers<Context> = {
         new PublicError("The reset password link is expired.")
       );
 
-      const updatedUser = await context.prisma.user.update({
+      await context.prisma.user.update({
         where: {
           reset_password_token: args.reset_token,
         },
@@ -540,28 +544,6 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-
-      /**
-       * User is consider invited if their password is not yet set.
-       */
-      const isNewInvited = user.encrypted_password === null;
-      if (
-        isNewInvited &&
-        updatedUser.customer &&
-        updatedUser.customer.biotech.account_type !==
-          BiotechAccountType.STARDARD
-      ) {
-        try {
-          await subscriptionService.increaseSubscriptionQuantity({
-            stripe_sub_id:
-              updatedUser.customer.biotech.subscriptions[0]
-                .stripe_subscription_id,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-
       return true;
     },
     changePassword: async (_, args, context) => {

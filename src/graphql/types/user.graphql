@@ -36,7 +36,6 @@ type Mutation {
   signUpUser(
     email: String!
     password: String!
-    company_name: String!
     timezone: String!
   ): AuthResponse!
   signInUser(email: String!, password: String!): AuthResponse!
