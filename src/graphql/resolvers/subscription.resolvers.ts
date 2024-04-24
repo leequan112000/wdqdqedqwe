@@ -152,6 +152,7 @@ const resolvers: Resolvers<Context> = {
           plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),
         },
+        payment_method_types: ["card"],
       });
 
       return session.url;
