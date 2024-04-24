@@ -60,6 +60,31 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   currency: checkoutSession.currency?.toUpperCase(),
                 }
               );
+
+              /**
+               * Update most recent card (payment method) as
+               * default payment method.
+               * Prevent error from breaking.
+               */
+              try {
+                const stripe = await getStripeInstance();
+                const { data } = await stripe.paymentMethods.list({
+                  customer: checkoutSession.customer as string,
+                  type: 'card',
+                });
+                if (data.length > 0) {
+                  await stripe.customers.update(
+                    checkoutSession.customer as string,
+                    {
+                      invoice_settings: {
+                        default_payment_method: data[0].id,
+                      }
+                    }
+                  )
+                }
+              } catch (error) {
+                Sentry.captureException(error);
+              }
             }
             console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
             return { status: 200, message: 'OK' };
