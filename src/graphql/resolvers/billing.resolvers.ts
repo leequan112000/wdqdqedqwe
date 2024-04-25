@@ -5,8 +5,20 @@ import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
 import { CustomerSubscriptionPlanName, SubscriptionStatus, BillingInfoStatus, BiotechAccountType } from "../../helper/constant";
 import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { BillingInfo, Resolvers } from "../generated";
 import Sentry from "../../sentry";
+
+const HARDCODED_BILLING_INFO_ID = 'billing-info-id';
+
+const NO_BILLING_INFO: BillingInfo = {
+  id: HARDCODED_BILLING_INFO_ID,
+  bill_cycle: null,
+  plan: null,
+  plan_id: null,
+  upcoming_bill_amount: null,
+  upcoming_bill_date: null,
+  payment_method: null,
+}
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
@@ -66,7 +78,7 @@ const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
      */
     if (error instanceof Stripe.errors.StripeError) {
       if (error.code === "resource_missing") {
-        Sentry.captureMessage(error.message)
+        Sentry.captureMessage(error.message, 'warning');
         return null;
       }
     }
@@ -212,7 +224,7 @@ const resolvers: Resolvers<Context> = {
       const customerSubscription = user?.customer?.customer_subscriptions?.[0];
 
       if (!biotechSubscription && !customerSubscription) {
-        return null;
+        return NO_BILLING_INFO;
       }
 
       const stripe_subscription_id =
@@ -229,7 +241,11 @@ const resolvers: Resolvers<Context> = {
         stripe
       );
       if (stripeSub === null) {
-        return null;
+        return {
+          ...NO_BILLING_INFO,
+          plan_id: plan_name,
+          plan: getPlanName(plan_name),
+        };
       }
       const subItem = stripeSub.items.data[0];
       const stripeCus = await stripe.customers.retrieve(stripe_customer_id);
@@ -258,7 +274,7 @@ const resolvers: Resolvers<Context> = {
         : null;
 
       return {
-        id: "billing-info-id", // Dummy ID for client to cache the result.
+        id: HARDCODED_BILLING_INFO_ID, // Dummy ID for client to cache the result.
         plan_id: plan_name,
         plan: getPlanName(plan_name),
         bill_cycle: subItem.plan.interval,
