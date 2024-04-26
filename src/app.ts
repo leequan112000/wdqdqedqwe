@@ -23,6 +23,7 @@ import { ApolloServerPluginSentryMonitor, operationWhitelist } from './helper/gr
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
+import sentryMiddleware from './middlewares/sentry';
 import Sentry from './sentry';
 import { GqlErrorCode } from './helper/constant';
 
@@ -161,6 +162,7 @@ export async function startServer() {
     cors<cors.CorsRequest>(corsConfig),
     json(),
     authMiddleware,
+    sentryMiddleware,
     expressMiddleware<Context>(apolloServer, {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
