@@ -46,6 +46,7 @@ export type BillingInfo = {
   bill_cycle?: Maybe<Scalars['String']>;
   has_active_legacy_plan?: Maybe<Scalars['Boolean']>;
   has_active_sourcerer_plan?: Maybe<Scalars['Boolean']>;
+  has_active_white_glove_plan?: Maybe<Scalars['Boolean']>;
   id: Scalars['String'];
   payment_method?: Maybe<Scalars['String']>;
   plan?: Maybe<Scalars['String']>;
@@ -651,6 +652,7 @@ export type Mutation = {
   saveAvailabilityRules?: Maybe<Availability>;
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
+  sendSourcingShortlist?: Maybe<Scalars['Boolean']>;
   setProjectRequestPublic?: Maybe<ProjectRequest>;
   shortlistSourcedCro?: Maybe<SourcedCro>;
   signInUser: AuthResponse;
@@ -1076,6 +1078,11 @@ export type MutationSendGuestReminderArgs = {
 export type MutationSendMessageArgs = {
   content: Scalars['String'];
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationSendSourcingShortlistArgs = {
+  sourcing_session_id: Scalars['String'];
 };
 
 
@@ -2570,6 +2577,7 @@ export type BillingInfoResolvers<ContextType = any, ParentType extends Resolvers
   bill_cycle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   has_active_legacy_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_active_sourcerer_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  has_active_white_glove_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3148,6 +3156,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   saveAvailabilityRules?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType, RequireFields<MutationSaveAvailabilityRulesArgs, 'input'>>;
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
+  sendSourcingShortlist?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendSourcingShortlistArgs, 'sourcing_session_id'>>;
   setProjectRequestPublic?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationSetProjectRequestPublicArgs, 'project_request_id'>>;
   shortlistSourcedCro?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType, RequireFields<MutationShortlistSourcedCroArgs, 'sourced_cro_id' | 'sourcing_session_id'>>;
   signInUser?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignInUserArgs, 'email' | 'password'>>;

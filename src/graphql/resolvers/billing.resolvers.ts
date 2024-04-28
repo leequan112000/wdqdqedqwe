@@ -155,6 +155,37 @@ const resolvers: Resolvers<Context> = {
         ? user?.customer?.biotech?.subscriptions.length > 0
         : null;
     },
+    has_active_white_glove_plan: async (_, __, context) => {
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: {
+            include: {
+              customer_subscriptions: {
+                where: {
+                  plan_name: CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
+                  status: SubscriptionStatus.ACTIVE,
+                  OR: [
+                    { ended_at: null },
+                    {
+                      ended_at: {
+                        gt: new Date(),
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return user?.customer?.customer_subscriptions === undefined
+        ? null
+        : user?.customer?.customer_subscriptions.length > 0;
+    },
     status: async (_, __, context) => {
       const user = await context.prisma.user.findFirst({
         where: {

@@ -8,6 +8,7 @@ import {
   adminGeneralNoticeTemplate,
   adminBiotechInviteVendorNoticeTemplate,
   adminBiotechInvoicePaymentNoticeTemplate,
+  adminShortlistSubmissionTemplate,
 } from "./templates";
 import { Admin } from "@prisma/client";
 import {
@@ -169,4 +170,19 @@ type BulkAdminBiotechInvoicePaymentNoticeData = BulkEmailJobData<AdminBiotechInv
 export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (data: BulkAdminBiotechInvoicePaymentNoticeData) => {
   const bulks = createBulkEmailJobData(data, adminBiotechInvoicePaymentNoticeTemplate)
   createBulkSendMailJobs(bulks)
+}
+
+type AdminShortlistSubmissionNotificationData = {
+  admin_name: string;
+  sourcing_session_id: string;
+  project_title: string;
+  shortlisted_vendors: Array<{ id: string; company_name: string; }>;
+  button_url: string;
+}
+
+type BulkAdminShortlistSubmissionNotificationData = BulkEmailJobData<AdminShortlistSubmissionNotificationData>;
+
+export const sendAdminShortlistSubmissionNotificationEmail = async (data: BulkAdminShortlistSubmissionNotificationData) => {
+  const bulks = createBulkEmailJobData(data, adminShortlistSubmissionTemplate);
+  await createBulkSendMailJobs(bulks);
 }
