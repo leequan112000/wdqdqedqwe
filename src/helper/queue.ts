@@ -31,8 +31,13 @@ export function createQueue<T = any>(name: string) {
   });
 }
 
-export function createBulkEmailJobData(
-  data: { emailData: { [x: string]: string }, receiverEmail: string }[],
+export type BulkEmailJobData<T> = {
+  emailData: T,
+  receiverEmail: string;
+}[]
+
+export function createBulkEmailJobData<T = { [x: string]: any }>(
+  data: BulkEmailJobData<T>,
   templateId: string
 ) {
   return data.map((d) => ({ emailData: d.emailData, templateId, receiverEmail: d.receiverEmail }))

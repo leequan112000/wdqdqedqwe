@@ -20,7 +20,7 @@ import {
 } from "./types";
 import { CROMATIC_ADMIN_EMAIL } from "../helper/constant";
 import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
-import { createBulkEmailJobData } from "../helper/queue";
+import { createBulkEmailJobData, type BulkEmailJobData } from "../helper/queue";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
   const mailData = createMailData({
@@ -164,12 +164,9 @@ export const adminBiotechInvoicePaymentNoticeEmail = (
   });
 };
 
-type BulkAdminBiotechInvoicePaymentNoticeData = {
-  emailData: AdminBiotechInvoicePaymentNoticeData;
-  receiverEmail: string;
-}
+type BulkAdminBiotechInvoicePaymentNoticeData = BulkEmailJobData<AdminBiotechInvoicePaymentNoticeData>;
 
-export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (data: BulkAdminBiotechInvoicePaymentNoticeData[]) => {
+export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (data: BulkAdminBiotechInvoicePaymentNoticeData) => {
   const bulks = createBulkEmailJobData(data, adminBiotechInvoicePaymentNoticeTemplate)
   createBulkSendMailJobs(bulks)
 }
