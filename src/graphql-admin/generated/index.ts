@@ -633,6 +633,7 @@ export type Query = {
   _dummy?: Maybe<Scalars['String']>;
   biotechInvoice?: Maybe<BiotechInvoice>;
   paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
+  signedUrl?: Maybe<Scalars['String']>;
   vendorSurveyAttachmentSignedUrl?: Maybe<Scalars['String']>;
   verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
 };
@@ -640,6 +641,11 @@ export type Query = {
 
 export type QueryBiotechInvoiceArgs = {
   id: Scalars['String'];
+};
+
+
+export type QuerySignedUrlArgs = {
+  key: Scalars['String'];
 };
 
 
@@ -1069,6 +1075,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   _dummy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
   paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
+  signedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySignedUrlArgs, 'key'>>;
   vendorSurveyAttachmentSignedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorSurveyAttachmentSignedUrlArgs, 'key'>>;
   verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
