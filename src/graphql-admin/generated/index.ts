@@ -159,6 +159,7 @@ export type Mutation = {
   createNews?: Maybe<News>;
   createPerk?: Maybe<Perk>;
   createPerkCategory?: Maybe<PerkCategory>;
+  createProjectRequest?: Maybe<ProjectRequest>;
   createVendorCompany?: Maybe<VendorCompany>;
   deactivatePerk?: Maybe<Perk>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
@@ -310,6 +311,13 @@ export type MutationCreatePerkArgs = {
 export type MutationCreatePerkCategoryArgs = {
   description: Scalars['String'];
   name: Scalars['String'];
+};
+
+
+export type MutationCreateProjectRequestArgs = {
+  objective_description?: InputMaybe<Scalars['String']>;
+  title: Scalars['String'];
+  vendor_requirement?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -628,6 +636,14 @@ export type PerkCategory = {
   updated_at?: Maybe<Scalars['Date']>;
 };
 
+export type ProjectRequest = {
+  __typename?: 'ProjectRequest';
+  id: Scalars['String'];
+  objective_description?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  vendor_requirement?: Maybe<Scalars['String']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   _dummy?: Maybe<Scalars['String']>;
@@ -801,6 +817,7 @@ export type ResolversTypes = ResolversObject<{
   News: ResolverTypeWrapper<News>;
   Perk: ResolverTypeWrapper<Perk>;
   PerkCategory: ResolverTypeWrapper<PerkCategory>;
+  ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
   Query: ResolverTypeWrapper<{}>;
   ReviewQuestion: ResolverTypeWrapper<ReviewQuestion>;
   ReviewQuestionOption: ResolverTypeWrapper<ReviewQuestionOption>;
@@ -835,6 +852,7 @@ export type ResolversParentTypes = ResolversObject<{
   News: News;
   Perk: Perk;
   PerkCategory: PerkCategory;
+  ProjectRequest: ProjectRequest;
   Query: {};
   ReviewQuestion: ReviewQuestion;
   ReviewQuestionOption: ReviewQuestionOption;
@@ -995,6 +1013,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationCreateNewsArgs, 'title'>>;
   createPerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationCreatePerkArgs, 'description' | 'how_to_redeem' | 'image' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
   createPerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationCreatePerkCategoryArgs, 'description' | 'name'>>;
+  createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'title'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   deactivatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationDeactivatePerkArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
@@ -1068,6 +1087,14 @@ export type PerkCategoryResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   perks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Perk']>>>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequest'] = ResolversParentTypes['ProjectRequest']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objective_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1160,6 +1187,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   News?: NewsResolvers<ContextType>;
   Perk?: PerkResolvers<ContextType>;
   PerkCategory?: PerkCategoryResolvers<ContextType>;
+  ProjectRequest?: ProjectRequestResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   ReviewQuestion?: ReviewQuestionResolvers<ContextType>;
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;

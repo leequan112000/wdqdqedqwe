@@ -1,0 +1,14 @@
+type ProjectRequest {
+  id: String!
+  title: String
+  vendor_requirement: String
+  objective_description: String
+}
+
+type Mutation {
+  createProjectRequest(
+    title: String!
+    vendor_requirement: String
+    objective_description: String
+  ): ProjectRequest
+}
