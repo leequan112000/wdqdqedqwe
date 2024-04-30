@@ -121,6 +121,8 @@ const resolvers: Resolvers<Context> = {
       });
     },
     cro_db_vendor_company: async (parent, _, context) => {
+      if (parent.cro_db_vendor_company) return parent.cro_db_vendor_company;
+
       invariant(parent.cro_db_id, "Missing CRO DB id.");
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
