@@ -13,8 +13,8 @@ datasource db {
 model User {
   id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email                     String    @unique
-  first_name                String
-  last_name                 String
+  first_name                String?
+  last_name                 String?
   encrypted_password        String?
   reset_password_token      String?   @unique
   reset_password_expiration DateTime?
@@ -22,9 +22,10 @@ model User {
   remember_created_at       DateTime?
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
-  is_active                 Boolean   @default(true)
+  is_active                 Boolean   @default(true) /// deprecated, use deactivated_at to track user activation
   phone_number              String?
   country_code              String?
+  deactivated_at            DateTime?
 
   customer                            Customer?
   vendor_member                       VendorMember?
@@ -34,13 +35,15 @@ model User {
   meetingAttendeeConnections          MeetingAttendeeConnection[]
   meetingEvents                       MeetingEvent[]
   project_attachments                 ProjectAttachment[]
-  CompanyAttachment                   CompanyAttachment[]
+  company_attachments                 CompanyAttachment[]
+  sourcing_attachments                SourcingAttachment[]
   biotech_invite_vendors              BiotechInviteVendor[]
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
   availability                        Availability[]
+  sourcing_sessions                   SourcingSession[]
 
   @@map("users")
 }
@@ -54,13 +57,14 @@ model Customer {
   updated_at        DateTime @updatedAt
 
   user_id String @unique @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   project_requests              ProjectRequest[]
   customer_connections          CustomerConnection[]
+  customer_subscriptions        CustomerSubscription[]
   project_request_collaborators ProjectRequestCollaborator[]
 
   role String @default("user")
@@ -86,34 +90,33 @@ model Admin {
 }
 
 model Biotech {
-  id                                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                                        String
-  created_at                                  DateTime  @default(now())
-  updated_at                                  DateTime  @updatedAt
-  has_setup_profile                           Boolean   @default(false)
-  address                                     String?
-  address1                                    String?
-  address2                                    String?
-  city                                        String?
-  state                                       String?
-  country                                     String?
-  zipcode                                     String?
-  website                                     String?
-  about                                       String?
-  cda_pandadoc_file_id                        String?
-  cda_pandadoc_signer                         String?
-  cda_signed_at                               DateTime?
-  skip_cda                                    Boolean   @default(false)
-  number_of_reqs_allowed_without_subscription Int       @default(0)
-  account_type                                String?
-  legal_name                                  String?
-  upload_limit                                Int       @default(1048576)
-  founded_year                                String?
-  team_size                                   String?
-  linkedin_url                                String?
-  twitter_url                                 String?
-  facebook_url                                String?
-  biotech_extra_info                          String?
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  has_setup_profile    Boolean   @default(false)
+  address              String?
+  address1             String?
+  address2             String?
+  city                 String?
+  state                String?
+  country              String?
+  zipcode              String?
+  website              String?
+  about                String?
+  cda_pandadoc_file_id String?
+  cda_pandadoc_signer  String?
+  cda_signed_at        DateTime?
+  skip_cda             Boolean   @default(false)
+  account_type         String?
+  legal_name           String?
+  upload_limit         Int       @default(1048576)
+  founded_year         String?
+  team_size            String?
+  linkedin_url         String?
+  twitter_url          String?
+  facebook_url         String?
+  biotech_extra_info   String?
 
   customers               Customer[]
   subscriptions           Subscription[]
@@ -123,7 +126,6 @@ model Biotech {
   biotech_invoices        BiotechInvoice[]
   purchase_orders         PurchaseOrder[]
   blanket_purchase_orders BlanketPurchaseOrder[]
-  sourcing_sessions       SourcingSession[]
 
   @@map("biotechs")
 }
@@ -185,7 +187,7 @@ model VendorMember {
   updated_at DateTime @updatedAt
 
   user_id String @unique @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   vendor_company_id String         @db.Uuid
   vendor_company    VendorCompany? @relation(fields: [vendor_company_id], references: [id])
@@ -210,6 +212,22 @@ model Subscription {
   biotech    Biotech @relation(fields: [biotech_id], references: [id])
 
   @@map("subscriptions")
+}
+
+model CustomerSubscription {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stripe_subscription_id String
+  stripe_customer_id     String
+  plan_name              String
+  status                 String
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  ended_at               DateTime?
+
+  customer_id String   @db.Uuid
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@map("customer_subscriptions")
 }
 
 model ProjectRequest {
@@ -300,7 +318,7 @@ model VendorMemberConnection {
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   vendor_member_id String       @db.Uuid
-  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id])
+  vendor_member    VendorMember @relation(fields: [vendor_member_id], references: [id], onDelete: Cascade)
 
   @@unique([project_connection_id, vendor_member_id])
   @@index([project_connection_id])
@@ -316,7 +334,7 @@ model CustomerConnection {
   project_connection    ProjectConnection @relation(fields: [project_connection_id], references: [id])
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@unique([project_connection_id, customer_id])
   @@index([project_connection_id])
@@ -332,7 +350,7 @@ model ProjectRequestCollaborator {
   project_connection ProjectRequest @relation(fields: [project_request_id], references: [id])
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@unique([project_request_id, customer_id])
   @@index([project_request_id])
@@ -402,7 +420,7 @@ model Notification {
   updated_at        DateTime  @updatedAt
 
   recipient_id String  @db.Uuid
-  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id])
+  recipient    User    @relation("ReceiverNotifications", fields: [recipient_id], references: [id], onDelete: Cascade)
   sender_id    String? @db.Uuid
   sender       User?   @relation("SenderNotifications", fields: [sender_id], references: [id])
 
@@ -462,7 +480,7 @@ model MeetingAttendeeConnection {
   meeting_event_id String       @db.Uuid
   meeting_event    MeetingEvent @relation(fields: [meeting_event_id], references: [id], onDelete: Cascade)
   user_id          String       @db.Uuid
-  user             User         @relation(fields: [user_id], references: [id])
+  user             User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("meeting_attendee_connections")
 }
@@ -966,10 +984,12 @@ model SourcingSession {
   preparation_details     String
   vendor_requirement      String
   task_id                 String
-  biotech_id              String                 @db.Uuid
-  biotech                 Biotech                @relation(fields: [biotech_id], references: [id])
+  task_canceled_at        DateTime?
+  user_id                 String                 @db.Uuid
+  user                    User                   @relation(fields: [user_id], references: [id])
   sourcing_subspecialties SourcingSubspecialty[]
   sourced_cros            SourcedCro[]
+  sourcing_attachments    SourcingAttachment[]
   created_at              DateTime               @default(now())
   updated_at              DateTime               @default(now()) @updatedAt
 
@@ -981,9 +1001,25 @@ model SourcingSubspecialty {
   name String
 
   sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
 
   @@map("sourcing_subspecialties")
+}
+
+model SourcingAttachment {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key          String   @unique
+  filename     String
+  content_type String?
+  byte_size    BigInt
+  created_at   DateTime @default(now())
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
+  uploader_id         String          @db.Uuid
+  uploader            User            @relation(fields: [uploader_id], references: [id])
+
+  @@map("sourcing_attachments")
 }
 
 model SourcedCro {
@@ -994,7 +1030,7 @@ model SourcedCro {
   cro_db_id      String  @db.Uuid
 
   sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id])
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
 
   @@map("sourced_cros")
 }

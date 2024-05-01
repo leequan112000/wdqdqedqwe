@@ -1,3 +1,32 @@
+type SubscriptionPrice {
+  id: String!
+  amount_per_month: Int
+  interval: String
+}
+
+type SubscriptionFeatureItem {
+  description: String!
+}
+
+type SubscriptionFeature {
+  name: String!
+  items: [SubscriptionFeatureItem!]!
+}
+
+type SubscriptionPlan {
+  id: String!
+  name: String!
+  prices: [SubscriptionPrice!]!
+  features: [SubscriptionFeature!]!
+}
+
 type Query {
   stripePricingTableId: String
+  subscriptionPlans: [SubscriptionPlan!]!
+  subscriptionCheckoutSessionUrl(
+    price_id: String!
+    ga_client_id: String
+    success_url: String!
+    cancel_url: String!
+  ): String
 }

@@ -5,16 +5,31 @@ type SourcingSession {
   preparation_details: String
   vendor_requirement: String
   task_id: String
-  biotech_id: String
+  user_id: String
+  user: User
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
+  sourcing_attachments: [SourcingAttachment]
   sourced_cros: [SourcedCro]
   updated_at: Date
+  created_at: Date
 }
 
 type SourcingSubspecialty {
   id: String
   name: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+}
+
+type SourcingAttachment {
+  id: String
+  key: String
+  filename: String
+  byte_size: Float
+  created_at: Date
+  signed_url: String
+  formatted_filesize: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
 }
@@ -31,6 +46,7 @@ type SourcedCro {
 }
 
 type ExtractedRfp {
+  sourcing_session_id: String
   project_title: String
   project_desc: String
   preparation_details: String
@@ -51,12 +67,14 @@ type SourceRfpSpecialtySubscriptionPayload {
   task_id: String
   sourcing_session_id: String
   data: SourcingSession
+  status: String!
 }
 
 type SourceCroSubscriptionPayload {
   task_id: String
   sourcing_session_id: String
   data: SourcingSession
+  status: String!
 }
 
 type Query {
@@ -65,7 +83,10 @@ type Query {
 }
 
 type Mutation {
-  extractPdfRfp(file: Upload!): ExtractedRfp
+  extractPdfRfp(
+    file: Upload!
+    sourcing_session_id: String
+  ): ExtractedRfp
   sourceRfpSpecialties(
     project_title: String!
     project_desc: String!
@@ -75,6 +96,10 @@ type Mutation {
   ): SourcingTask
   sourceCros(
     names: [String!]!
+    sourcing_session_id: String!
+  ): SourcingTask
+  cancelAiTask(
+    task_id: String!
     sourcing_session_id: String!
   ): SourcingTask
   shortlistSourcedCro(
@@ -87,6 +112,7 @@ type Mutation {
   ): SourcedCro
   confirmEditSourcingDetails(sourcing_session_id: String!): SourcingSession
   confirmEditSourcingSubspecialties(sourcing_session_id: String!): SourcingSession
+  confirmRemoveSourcingSession(sourcing_session_id: String!): SourcingSession
 }
 
 type Subscription {

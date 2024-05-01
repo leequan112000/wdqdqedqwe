@@ -1,7 +1,10 @@
 import crypto from "crypto";
 import { Request, Response } from 'express';
+
+import { SourceCroSubscriptionPayload, SourceRfpSpecialtySubscriptionPayload } from '../../graphql/generated/index';
 import { prisma } from '../../prisma';
 import { pubsub } from "../../helper/pubsub";
+import invariant from "../../helper/invariant";
 
 const verifySignature = (req: Request, signature: string): boolean => {
   // Sort keys alphabetically before stringifying the payload
@@ -41,9 +44,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
           },
         });
 
-        if (!sourcing_session) {
-          throw new Error('No sourcing session found');
-        }
+        invariant(sourcing_session, 'No sourcing session found');
+
+        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
           // Clear up existing records
@@ -73,8 +76,33 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          pubsub.publish("SOURCE_RFP_SPECIALTIES", { sourceRfpSpecialties: { task_id, sourcing_session_id: sourcing_session?.id, data: sourcing_session } });
+          pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+            "SOURCE_RFP_SPECIALTIES",
+            {
+              sourceRfpSpecialties: {
+                task_id,
+                sourcing_session_id: sourcing_session?.id,
+                data: sourcing_session,
+                status: 'SUCCESS',
+              },
+            }
+          );
         });
+        break;
+      }
+      case 'source_rfp_specialties_failed': {
+        console.log('failed')
+        pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+          "SOURCE_RFP_SPECIALTIES",
+          {
+            sourceRfpSpecialties: {
+              task_id,
+              sourcing_session_id: null,
+              data: null,
+              status: 'FAILED',
+            },
+          }
+        );
         break;
       }
       case "source_cros": {
@@ -84,9 +112,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
           },
         });
 
-        if (!sourcing_session) {
-          throw new Error('No sourcing session found');
-        }
+        invariant(sourcing_session, 'No sourcing session found');
+
+        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
           const cappedData = data.slice(0, 50);
@@ -104,7 +132,25 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          pubsub.publish("SOURCE_CROS", { sourceCros: { task_id, sourcing_session_id: sourcing_session.id, data: sourcing_session } });
+          pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+            sourceCros: {
+              task_id,
+              sourcing_session_id: sourcing_session.id,
+              data: sourcing_session,
+              status: 'SUCCESS',
+            },
+          });
+        });
+        break;
+      }
+      case "source_cros_failed": {
+        pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+          sourceCros: {
+            task_id,
+            sourcing_session_id: null,
+            data: null,
+            status: 'FAILED',
+          },
         });
         break;
       }

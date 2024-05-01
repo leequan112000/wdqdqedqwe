@@ -5,6 +5,7 @@ import Sentry from "../sentry";
 export const operationWhitelist = [
   'signInUserMutation',
   'signUpCustomerMutation',
+  'Public_SignUpCustomerMutation',
   'ResetPassword_Mutation',
   'ForgotPassword_Mutation',
   'SubmitCroInterest',

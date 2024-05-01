@@ -3,7 +3,7 @@ import { createQueue } from "../helper/queue";
 import { createMailData, sendMail } from "../mailer/config";
 
 type SendMailJob = {
-  emailData: { [s: string]: string };
+  emailData: { [s: string]: unknown };
   templateId: string;
   receiverEmail: string;
   attachments?: Attachment[];

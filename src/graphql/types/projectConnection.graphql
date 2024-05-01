@@ -41,8 +41,7 @@ type Mutation {
   addProjectCollaborator(user_id: String!, project_connection_id: String!): User
   removeProjectCollaborator(user_id: String!, project_connection_id: String!): User
   inviteProjectCollaboratorViaEmail(
-    first_name: String!
-    last_name: String!
+    name: String!
     email: String!
     custom_message: String,
     project_connection_id: String!

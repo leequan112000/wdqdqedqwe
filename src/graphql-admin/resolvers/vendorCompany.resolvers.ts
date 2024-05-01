@@ -87,7 +87,14 @@ const resolvers: Resolvers<Context> = {
                     in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
                   },
                   user: {
-                    is_active: true,
+                    OR: [
+                      { deactivated_at: null },
+                      {
+                        deactivated_at: {
+                          gt: new Date(),
+                        },
+                      },
+                    ],
                   }
                 },
               });

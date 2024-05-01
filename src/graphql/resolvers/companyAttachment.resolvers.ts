@@ -6,41 +6,7 @@ import { Readable } from 'stream';
 import { PublicError } from '../errors/PublicError';
 import { CompanyAttachmentDocumentType, COMPANY_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
 import invariant from "../../helper/invariant";
-
-function formatBytes(bytes: number, decimals = 2) {
-  if (!+bytes) return '0 B'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-}
-
-async function getBuffer(stream: Readable): Promise<{ buffer: Buffer, byteSize: number }> {
-  let byteSize = 0;
-  const chunks: any[] = [];
-
-  return new Promise((resolve, reject) => {
-    stream.on('data', (chunk: Buffer) => {
-      byteSize += chunk.length;
-      chunks.push(chunk);
-    });
-
-    stream.on('end', () => {
-      resolve({
-        buffer: Buffer.concat(chunks),
-        byteSize,
-      })
-    });
-
-    stream.on('error', (err: Error) => {
-      reject(err);
-    });
-  })
-}
+import { formatBytes } from "../../helper/filesize";
 
 const resolvers: Resolvers<Context> = {
   CompanyAttachment: {

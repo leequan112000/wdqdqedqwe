@@ -7,6 +7,12 @@ export enum SubscriptionStatus {
   CANCELED = 'canceled',
 }
 
+export enum BillingInfoStatus {
+  ACTIVE = 'active',
+  CANCELED = 'canceled',
+  PENDING_CANCEL = 'pending_cancel',
+}
+
 export enum ProjectRequestStatus {
   PROCESSING = 'processing',
   MATCHED = 'matched',
@@ -161,8 +167,12 @@ export enum MeetingPlatform {
 
 export enum BiotechAccountType {
   STARDARD = 'standard',
-  PREMIUM = 'premium',
-  ENTERPRISE = 'enterprise',
+}
+
+export enum CustomerSubscriptionPlanName {
+  SOURCING_PLAN = 'sourcing_plan',
+  PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
+  WHITE_GLOVE_PLAN = 'white_glove_plan',
 }
 
 export enum EmailType {
@@ -357,4 +367,11 @@ export enum CroDbVendorCompanyType {
   CMO = 'CMO',
   CDMO = 'CDMO',
   NON_PROFIT = 'Non-profit research org'
+}
+
+export enum UserStatus {
+  DEACTIVATED = 'deactivated',
+  PENDING_DEACTIVATION = 'pending_deactivation',
+  JOINED = 'joined',
+  PENDING_INVITATION = 'pending_invitation',
 }

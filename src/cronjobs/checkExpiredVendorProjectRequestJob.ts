@@ -44,7 +44,7 @@ async function main() {
   expiredProjectConnections.forEach((pc) => {
     pc.vendor_member_connections.forEach((vmc) => {
       const userId = vmc.vendor_member.user_id;
-      if (vmc.vendor_member.user.is_active === true) {
+      if (vmc.vendor_member.user.deactivated_at === null || vmc.vendor_member.user.deactivated_at < new Date()) {
         if (!expiredProjectConnectionsGroupByUserId[userId]) {
           expiredProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
         }

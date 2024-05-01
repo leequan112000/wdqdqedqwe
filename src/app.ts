@@ -23,6 +23,7 @@ import { ApolloServerPluginSentryMonitor, operationWhitelist } from './helper/gr
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
+import sentryMiddleware from './middlewares/sentry';
 import Sentry from './sentry';
 import { GqlErrorCode } from './helper/constant';
 import { redis } from './redis';
@@ -162,6 +163,7 @@ export async function startServer() {
     cors<cors.CorsRequest>(corsConfig),
     json(),
     authMiddleware,
+    sentryMiddleware,
     expressMiddleware<Context>(apolloServer, {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
@@ -175,8 +177,11 @@ export async function startServer() {
             }
           });
 
-          if (currentUser?.is_active === false) {
-            throw new GraphQLError('Session expired.', {
+          if (
+            currentUser?.deactivated_at &&
+            currentUser.deactivated_at <= new Date()
+          ) {
+            throw new GraphQLError("Session expired.", {
               extensions: {
                 code: GqlErrorCode.SESSION_EXPIRED,
                 http: { status: 401 },

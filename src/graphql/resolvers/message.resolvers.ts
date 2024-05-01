@@ -4,24 +4,30 @@ import { PublicError } from "../errors/PublicError";
 import { Resolvers, MessageEdge } from "../generated";
 import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
 import invariant from "../../helper/invariant";
-import { UserType } from "../../helper/constant";
+import { UserStatus, UserType } from "../../helper/constant";
 
 const resolvers: Resolvers<Context> = {
   Message: {
     user: async (parent, _, context) => {
       const userId = parent.user_id;
       if (userId) {
-        return await context.prisma.user.findUnique({
+        const user = await context.prisma.user.findUnique({
           where: {
             id: userId,
           },
         });
+
+        if (user) return user;
+        return null;
       }
       return {
+        id: 'cromatic-admin',
         first_name: 'Cromatic',
         last_name: 'Admin',
         is_active: true,
         user_type: UserType.CROMATIC_ADMIN,
+        company_name: 'Cromatic',
+        status: UserStatus.JOINED,
       };
     },
   },

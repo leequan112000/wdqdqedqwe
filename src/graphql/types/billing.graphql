@@ -1,0 +1,33 @@
+type BillingInfo {
+  id: String!
+  plan_id: String
+  plan: String
+  payment_method: String
+  bill_cycle: String
+  upcoming_bill_date: Date
+  upcoming_bill_amount: Float
+  status: String
+  has_active_sourcerer_plan: Boolean
+  has_active_legacy_plan: Boolean
+  has_active_white_glove_plan: Boolean
+}
+
+type BillingInvoice {
+  number: String
+  date: Date
+  description: String
+  amount: Float
+  status: String
+  invoice_url: String
+}
+
+type Query {
+  billingInfo: BillingInfo
+  billingInvoices: [BillingInvoice]
+  billingPortalUrl(return_url: String!): String
+}
+
+type Mutation {
+  cancelSubscription: Boolean
+  resumeSubscription: Boolean
+}

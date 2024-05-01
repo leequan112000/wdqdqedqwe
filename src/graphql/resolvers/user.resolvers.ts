@@ -1,24 +1,22 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import {
-  checkPassword,
-  createTokens,
-  hashPassword,
-  createResetPasswordToken,
-} from "../../helper/auth";
+import { checkPassword, createTokens, hashPassword } from "../../helper/auth";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
 import {
+  BiotechAccountType,
   CasbinRole,
-  CompanyCollaboratorRoleType,
   OauthProvider,
+  UserStatus,
   UserType,
 } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
+import subscriptionService from "../../services/subscription/subscription.service";
+import { availabilityCreateManyUserInputs } from "../../helper/availability";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -60,6 +58,7 @@ const resolvers: Resolvers<Context> = {
                   subscriptions: true,
                 },
               },
+              customer_subscriptions: true,
             },
           },
           vendor_member: {
@@ -103,7 +102,8 @@ const resolvers: Resolvers<Context> = {
 
       if (
         result?.customer &&
-        result.customer.biotech.subscriptions.length === 0
+        result.customer.biotech.subscriptions.length === 0 &&
+        result.customer.customer_subscriptions.length === 0
       ) {
         return false;
       }
@@ -201,8 +201,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (customer?.biotech.name) {
-        return customer.biotech.name;
+      if (customer) {
+        return customer?.biotech?.name ?? null;
       }
 
       const vendorMember = await context.prisma.vendorMember.findUnique({
@@ -222,7 +222,7 @@ const resolvers: Resolvers<Context> = {
         return vendorMember.vendor_company.name;
       }
 
-      throw new InternalError("Missing user.");
+      return null;
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
@@ -284,6 +284,36 @@ const resolvers: Resolvers<Context> = {
       return !!oauth;
       // TODO: properly check token validity
     },
+    status: async (parent, _, context) => {
+      if (parent.status) return parent.status;
+      const userId = parent.id;
+
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) return null;
+
+      const { deactivated_at, encrypted_password } = user;
+      const now = new Date();
+
+      switch (true) {
+        case deactivated_at && deactivated_at <= now: {
+          return UserStatus.DEACTIVATED;
+        }
+        case deactivated_at && deactivated_at > now: {
+          return UserStatus.PENDING_DEACTIVATION;
+        }
+        case encrypted_password !== null: {
+          return UserStatus.JOINED;
+        }
+        default: {
+          return UserStatus.PENDING_INVITATION;
+        }
+      }
+    },
   },
   Query: {
     user: async (_, __, context) => {
@@ -296,64 +326,74 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     signUpUser: async (_, args, context) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const lowerCaseEmail = args.email.toLowerCase();
+      const { email, password, timezone } = args;
+      const lowerCaseEmail = email.toLowerCase();
 
-        const user = await trx.user.findFirst({
-          where: {
-            email: {
-              mode: 'insensitive',
-              equals: lowerCaseEmail,
+      const user = await context.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      invariant(!user, new PublicError("User already exists."));
+
+      const hashedPassword = await hashPassword(password);
+
+      const availabilityCreateInputs =
+        availabilityCreateManyUserInputs(timezone);
+
+      const biotech = await context.prisma.biotech.create({
+        data: {
+          name: "",
+          customers: {
+            create: {
+              user: {
+                create: {
+                  email: lowerCaseEmail,
+                  encrypted_password: hashedPassword,
+                  availability: {
+                    createMany: {
+                      data: availabilityCreateInputs,
+                    },
+                  },
+                },
+              },
             },
           },
-        });
-
-        invariant(!user, new PublicError("User already exists."));
-
-        const newBiotech = await trx.biotech.create({
-          data: {
-            name: args.company_name,
+        },
+        include: {
+          customers: {
+            include: {
+              user: true,
+            },
+            where: {
+              user: {
+                email: lowerCaseEmail,
+              },
+            },
           },
-        });
-
-        const hashedPassword = await hashPassword(args.password);
-
-        const newCreatedUser = await trx.user.create({
-          data: {
-            email: lowerCaseEmail,
-            first_name: args.first_name,
-            last_name: args.last_name,
-            encrypted_password: hashedPassword,
-            phone_number: args.phone_number,
-            country_code: args.country_code,
-          },
-        });
-
-        await trx.customer.create({
-          data: {
-            user_id: newCreatedUser.id,
-            biotech_id: newBiotech.id,
-            role: CompanyCollaboratorRoleType.OWNER,
-          },
-        });
-
-        await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
-
-        // Genereate tokens
-        const tokens = createTokens({ id: newCreatedUser.id });
-
-        return {
-          access_token: tokens.accessToken,
-          refresh_token: tokens.refreshToken,
-        };
+        },
       });
+
+      const newUser = biotech.customers[0].user;
+
+      // [LEGACY]
+      await addRoleForUser(newUser.id, CasbinRole.OWNER);
+
+      // Genereate tokens
+      const tokens = createTokens({ id: newUser.id });
+
+      return {
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      };
     },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: email,
           },
         },
@@ -369,8 +409,9 @@ const resolvers: Resolvers<Context> = {
       );
 
       invariant(
-        foundUser.is_active === true,
-        new PublicError("Your account has been suspended.")
+        foundUser.deactivated_at === null ||
+          foundUser.deactivated_at > new Date(),
+        new PublicError("Your account has been deactivated.")
       );
 
       const isPasswordMatched = await checkPassword(
@@ -434,7 +475,7 @@ const resolvers: Resolvers<Context> = {
       const user = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: lowerCaseEmail,
           },
         },
@@ -490,6 +531,48 @@ const resolvers: Resolvers<Context> = {
           encrypted_password: await hashPassword(args.new_password),
           reset_password_token: null,
           reset_password_expiration: null,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return true;
+    },
+    changePassword: async (_, args, context) => {
+      const { old_password, new_password } = args;
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+      });
+
+      invariant(user, new PublicError("Current user not found."));
+
+      const isPasswordMatched = await checkPassword(
+        old_password,
+        user,
+        context
+      );
+
+      invariant(
+        isPasswordMatched === true,
+        new PublicError("Old password is invalid.")
+      );
+
+      await context.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          encrypted_password: await hashPassword(new_password),
         },
       });
       return true;
