@@ -249,7 +249,6 @@ model ProjectRequest {
   updated_at                          DateTime  @updatedAt
   initial_assigned_at                 DateTime?
   is_private                          Boolean   @default(false)
-  is_white_glove                      Boolean   @default(false)
 
   biotech_id String  @db.Uuid
   biotech    Biotech @relation(fields: [biotech_id], references: [id])

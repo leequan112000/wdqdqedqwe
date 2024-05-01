@@ -37,7 +37,6 @@ const resolvers: Resolvers<Context> = {
           objective_description: args.objective_description || "-",
           in_contact_with_vendor: false,
           vendor_search_timeframe: "-",
-          is_white_glove: true,
         },
       });
 
