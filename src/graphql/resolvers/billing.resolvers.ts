@@ -28,6 +28,8 @@ const getPlanName = (accType: string | null) => {
       return 'Sourcing Pro Plan';
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
       return 'White Glove Plan';
+    case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
+      return 'Cromatic Consultant';
     default:
       return 'Standard Plan';
   }

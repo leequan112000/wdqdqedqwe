@@ -173,6 +173,7 @@ export enum CustomerSubscriptionPlanName {
   SOURCING_PLAN = 'sourcing_plan',
   PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
   WHITE_GLOVE_PLAN = 'white_glove_plan',
+  CROMATIC_CONSULTANT = 'cromatic_consultant'
 }
 
 export enum EmailType {
