@@ -44,6 +44,30 @@ const resolvers: Resolvers<Context> = {
 
       return projectRequest;
     },
+    connectCustomerToProject: async (_, args, context) => {
+      const { customer_id, project_connection_id } = args;
+
+      await context.prisma.customerConnection.upsert({
+        where: {
+          project_connection_id_customer_id: {
+            customer_id,
+            project_connection_id,
+          },
+        },
+        create: {
+          customer_id,
+          project_connection_id,
+        },
+        update: {
+          customer_id,
+          project_connection_id,
+        },
+      });
+
+      // TODO: notify customer about the connection
+
+      return true;
+    },
   },
 };
 

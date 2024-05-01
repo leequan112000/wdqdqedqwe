@@ -14,4 +14,8 @@ type Mutation {
     preparation_description: String
     sourcing_session_id: String
   ): ProjectRequest
+  connectCustomerToProject(
+    project_connection_id: String!
+    customer_id: String!
+  ): Boolean
 }

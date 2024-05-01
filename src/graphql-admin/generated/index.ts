@@ -149,6 +149,7 @@ export type Mutation = {
   addReviewQuestionOption?: Maybe<ReviewQuestionOption>;
   addReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   approveVendorSurvey?: Maybe<Scalars['Boolean']>;
+  connectCustomerToProject?: Maybe<Scalars['Boolean']>;
   createAdmin?: Maybe<Admin>;
   createCertificationTag?: Maybe<CertificationTag>;
   createCertificationTagConnection?: Maybe<CertificationTagConnection>;
@@ -233,6 +234,12 @@ export type MutationAddReviewQuestionSetArgs = {
 
 export type MutationApproveVendorSurveyArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationConnectCustomerToProjectArgs = {
+  customer_id: Scalars['String'];
+  project_connection_id: Scalars['String'];
 };
 
 
@@ -1006,6 +1013,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionOptionArgs, 'option_text' | 'review_question_id'>>;
   addReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionSetArgs, 'name'>>;
   approveVendorSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationApproveVendorSurveyArgs, 'id'>>;
+  connectCustomerToProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationConnectCustomerToProjectArgs, 'customer_id' | 'project_connection_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;
   createCertificationTagConnection?: Resolver<Maybe<ResolversTypes['CertificationTagConnection']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagConnectionArgs, 'certification_tag_id' | 'vendor_company_id'>>;
