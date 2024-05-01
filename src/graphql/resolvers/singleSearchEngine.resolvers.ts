@@ -89,7 +89,7 @@ const resolvers: Resolvers<Context> = {
       }));
 
       return {
-        edges: isPaidUser ? edges : edges.slice(0, 1),
+        edges: isPaidUser ? edges : edges.slice(0, 25),
         pageInfo: {
           endCursor: "",
           hasNextPage: false,
