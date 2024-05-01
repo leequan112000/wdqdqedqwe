@@ -316,6 +316,8 @@ export type MutationCreatePerkCategoryArgs = {
 
 export type MutationCreateProjectRequestArgs = {
   objective_description?: InputMaybe<Scalars['String']>;
+  preparation_description?: InputMaybe<Scalars['String']>;
+  sourcing_session_id?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
   vendor_requirement?: InputMaybe<Scalars['String']>;
 };
@@ -640,6 +642,7 @@ export type ProjectRequest = {
   __typename?: 'ProjectRequest';
   id: Scalars['String'];
   objective_description?: Maybe<Scalars['String']>;
+  preparation_description?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   vendor_requirement?: Maybe<Scalars['String']>;
 };
@@ -1093,6 +1096,7 @@ export type PerkCategoryResolvers<ContextType = any, ParentType extends Resolver
 export type ProjectRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProjectRequest'] = ResolversParentTypes['ProjectRequest']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objective_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  preparation_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

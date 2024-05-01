@@ -3,6 +3,7 @@ type ProjectRequest {
   title: String
   vendor_requirement: String
   objective_description: String
+  preparation_description: String
 }
 
 type Mutation {
@@ -10,5 +11,7 @@ type Mutation {
     title: String!
     vendor_requirement: String
     objective_description: String
+    preparation_description: String
+    sourcing_session_id: String
   ): ProjectRequest
 }

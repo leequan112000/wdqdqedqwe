@@ -35,8 +35,10 @@ const resolvers: Resolvers<Context> = {
           title: args.title,
           vendor_requirement: args.vendor_requirement || "-",
           objective_description: args.objective_description || "-",
+          preparation_description: args.preparation_description || "-",
           in_contact_with_vendor: false,
           vendor_search_timeframe: "-",
+          sourcing_session_id: args.sourcing_session_id,
         },
       });
 
