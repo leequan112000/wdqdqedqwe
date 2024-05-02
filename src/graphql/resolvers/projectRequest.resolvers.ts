@@ -119,72 +119,62 @@ const resolvers: Resolvers<Context> = {
     projectRequests: async (_, args, context) => {
       const customer = await context.prisma.customer.findFirstOrThrow({
         where: {
-          user_id: context.req.user_id
-        }
+          user_id: context.req.user_id,
+        },
       });
 
-      let data = [];
-      if (customer.role === CompanyCollaboratorRoleType.OWNER || customer.role === CompanyCollaboratorRoleType.ADMIN) {
-        data = await context.prisma.projectRequest.findMany({
-          where: {
-            ...(args.status && args.status.length > 0 ? {
-              status: {
-                in: args.status.filter(nonNullable),
+      const data = await context.prisma.projectRequest.findMany({
+        where: {
+          ...(args.status && args.status.length > 0
+            ? {
+                status: {
+                  in: args.status.filter(nonNullable),
+                },
               }
-            } : {}),
-            OR: [{
-              biotech_id: customer.biotech_id
-            }],
-          },
-          orderBy: [
-            // Sort by status to grouped matched experiments first
-            { status: 'asc' },
-            { updated_at: 'desc' },
-          ]
-        });
-      } else {
-        data = await context.prisma.projectRequest.findMany({
-          where: {
-            ...(args.status && args.status.length > 0 ? {
-              status: {
-                in: args.status.filter(nonNullable),
-              }
-            } : {}),
-            OR: [
-              // by project connection collaborator
-              {
-                project_connections: {
-                  some: {
-                    customer_connections: {
-                      some: {
-                        customer_id: customer.id,
-                      },
+            : {}),
+          OR: [
+            // owner and admin are allow to view all project within the company
+            ...(customer.role === CompanyCollaboratorRoleType.OWNER ||
+            customer.role === CompanyCollaboratorRoleType.ADMIN
+              ? [
+                  {
+                    biotech_id: customer.biotech_id,
+                  },
+                ]
+              : [{}]),
+            // by project connection collaborator
+            {
+              project_connections: {
+                some: {
+                  customer_connections: {
+                    some: {
+                      customer_id: customer.id,
                     },
                   },
                 },
               },
-              // by project request collaborator
-              {
-                project_request_collaborators: {
-                  some: {
-                    customer_id: customer.id,
-                  }
-                }
+            },
+            // by project request collaborator
+            {
+              project_request_collaborators: {
+                some: {
+                  customer_id: customer.id,
+                },
               },
-            ],
-          },
-          orderBy: [
-            // Sort by status to grouped matched experiments first
-            { status: 'asc' },
-            { updated_at: 'desc' },
-          ]
-        });
-      }
+            },
+          ],
+        },
+        orderBy: [
+          // Sort by status to grouped matched experiments first
+          { status: "asc" },
+          { updated_at: "desc" },
+        ],
+      });
 
       const processed: ProjectRequest[] = data.map((d) => ({
         ...d,
         max_budget: d.max_budget?.toNumber() || 0,
-      }))
+      }));
 
       return processed;
     },
