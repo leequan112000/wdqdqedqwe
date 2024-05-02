@@ -162,6 +162,11 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
         data: {
           task_id: response.data.id,
           task_canceled_at: null,
+          project_title: args.project_title,
+          project_desc: args.project_desc,
+          preparation_details: args.preparation_details,
+          vendor_requirement: args.vendor_requirement,
+          user_id: args.user_id,
         }
       });
 
