@@ -77,7 +77,7 @@ const resolvers: Resolvers<Context> = {
 
       const vendors = (subspecialtiesWithVendor || []).map(
         (v) => v.vendor_company
-      );
+      ).filter((v) => v.company_description !== null && v.company_ipo_status !== null);
 
       vendors.sort((a, b) => {
         return extractTeamSize(a) - extractTeamSize(b);
