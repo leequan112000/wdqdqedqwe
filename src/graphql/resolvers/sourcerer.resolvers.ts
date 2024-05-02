@@ -45,7 +45,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourced_cros: async (parent, _, context) => {
       invariant(parent.id, "Missing session id.");
-      return await context.prisma.sourcingSession
+      const sourcedCros = await context.prisma.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
@@ -54,6 +54,29 @@ const resolvers: Resolvers<Context> = {
         .sourced_cros({
           orderBy: [{ score: "desc" }],
         });
+
+      if (sourcedCros) {
+        return await Promise.all(sourcedCros.map(
+          async (sourcedCro) => {
+            const vendorCompany = await context.prismaCRODb.vendorCompany.findUnique({
+              where: {
+                id: sourcedCro.cro_db_id,
+                NOT: {
+                  company_description: null,
+                  company_ipo_status: null,
+                }
+              },
+            });
+
+            if (vendorCompany) {
+              return { ...sourcedCro, cro_db_vendor_company: vendorCompany }
+            }
+            return null;
+          }
+        ).filter(Boolean));
+      }
+
+      return [];
     },
   },
   SourcingSubspecialty: {
@@ -98,6 +121,8 @@ const resolvers: Resolvers<Context> = {
       });
     },
     cro_db_vendor_company: async (parent, _, context) => {
+      if (parent.cro_db_vendor_company) return parent.cro_db_vendor_company;
+
       invariant(parent.cro_db_id, "Missing CRO DB id.");
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
