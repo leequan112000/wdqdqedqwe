@@ -18,8 +18,7 @@ export const operationWhitelist = [
   'Public_FormInitialValue_Query',
   'Public_VendorSurveyPage_Query',
   'Public_SubmitSurvey_Mutation',
-  'Public_SingleVendorSearch_Query',
-  `Public_SingleVendorSearchService_Query`,
+  'Public_SearchVendorByService_Query',
   `Public_SourcererLiteSearchServices_Query`
 ];
 

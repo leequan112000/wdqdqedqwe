@@ -2,7 +2,7 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
 
-function extractTeamSize(vendor: { company_size: string | null }) {
+const extractTeamSize = (vendor: { company_size: string | null }) => {
   const teamSizeRange = vendor.company_size || "0-0";
   const [min, max] = teamSizeRange.replace(/,/g, "").split(/—|-/).map(Number);
   return (min + max) / 2; // Use the average value for comparison
@@ -13,7 +13,7 @@ const RATE_LIMIT_MAX_COUNTS = 15;
 
 const resolvers: Resolvers<Context> = {
   Query: {
-    singleVendorSearch: async (_, args, context) => {
+    searchVendorByService: async (_, args, context) => {
       const { keyword, fingerprint, ip_address } = args;
       const userId = context.req.user_id;
 

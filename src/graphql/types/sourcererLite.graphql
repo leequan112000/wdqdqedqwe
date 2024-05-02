@@ -1,0 +1,20 @@
+type SearchVendorByServiceResultEdge {
+  cursor: String!
+  node: CroDbVendorCompany
+}
+
+type SearchVendorByServiceResultPageInfo {
+  endCursor: String!
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  total_matched: Int
+}
+
+type SearchVendorByServicePaginatedResult {
+  edges: [SearchVendorByServiceResultEdge]
+  pageInfo: SearchVendorByServiceResultPageInfo
+}
+
+type Query {
+  searchVendorByService(keyword: String!, after: String, fingerprint: String, ip_address: String): SearchVendorByServicePaginatedResult
+}
