@@ -1,5 +1,8 @@
+import { app_env } from "../../environment";
 import { ProjectRequestStatus } from "../../helper/constant";
 import invariant from "../../helper/invariant";
+import { sendVendorAcceptProjectNoticeEmail } from "../../mailer/projectRequest";
+import { sendVendorAcceptProjectAppNotification } from "../../notification/projectRequestNotification";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 
@@ -47,24 +50,59 @@ const resolvers: Resolvers<Context> = {
     connectCustomerToProject: async (_, args, context) => {
       const { customer_id, project_connection_id } = args;
 
-      await context.prisma.customerConnection.upsert({
-        where: {
-          project_connection_id_customer_id: {
+      const customerConnection = await context.prisma.customerConnection.upsert(
+        {
+          where: {
+            project_connection_id_customer_id: {
+              customer_id,
+              project_connection_id,
+            },
+          },
+          create: {
             customer_id,
             project_connection_id,
           },
-        },
-        create: {
-          customer_id,
-          project_connection_id,
-        },
-        update: {
-          customer_id,
-          project_connection_id,
-        },
-      });
+          update: {
+            customer_id,
+            project_connection_id,
+          },
+          include: {
+            project_connection: {
+              include: {
+                project_request: true,
+                vendor_company: true,
+              },
+            },
+            customer: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        }
+      );
 
-      // TODO: notify customer about the connection
+      const projectConnection = customerConnection.project_connection;
+      const customerUser = customerConnection.customer.user;
+      const vendorCompany =
+        customerConnection.project_connection.vendor_company;
+
+      await sendVendorAcceptProjectNoticeEmail(
+        {
+          login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}`,
+          project_title: projectConnection.project_request.title,
+          receiver_full_name: `${customerUser.first_name} ${customerUser.last_name}`,
+          vendor_company_name: vendorCompany.name,
+        },
+        customerUser.email
+      );
+
+      await sendVendorAcceptProjectAppNotification({
+        project_connection_id: projectConnection.id,
+        project_title: projectConnection.project_request.title,
+        recipient_id: customerUser.id,
+        vendor_company_name: vendorCompany.name,
+      });
 
       return true;
     },
