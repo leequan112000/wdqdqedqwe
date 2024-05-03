@@ -56,7 +56,7 @@ const resolvers: Resolvers<Context> = {
         });
 
       if (sourcedCros) {
-        return await Promise.all(sourcedCros.map(
+        const result = await Promise.all(sourcedCros.map(
           async (sourcedCro) => {
             const vendorCompany = await context.prismaCRODb.vendorCompany.findUnique({
               where: {
@@ -73,7 +73,9 @@ const resolvers: Resolvers<Context> = {
             }
             return null;
           }
-        ).filter(Boolean));
+        ));
+
+        return result.filter(Boolean);
       }
 
       return [];
