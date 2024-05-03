@@ -53,7 +53,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       return companySize
-        ? companySize.replace('-', ' — ')
+        ? companySize.replace('-', ' - ')
         : null;
     }
   },
