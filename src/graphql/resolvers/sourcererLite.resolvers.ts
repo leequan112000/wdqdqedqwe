@@ -80,7 +80,7 @@ const resolvers: Resolvers<Context> = {
       ).filter((v) => v.company_description !== null && v.company_ipo_status !== null);
 
       vendors.sort((a, b) => {
-        return extractTeamSize(a) - extractTeamSize(b);
+        return extractTeamSize(b) - extractTeamSize(a);
       });
 
       const edges = vendors.map((v) => ({
