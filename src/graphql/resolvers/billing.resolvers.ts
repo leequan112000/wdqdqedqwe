@@ -28,6 +28,8 @@ const getPlanName = (accType: string | null) => {
       return 'Sourcing Pro Plan';
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
       return 'White Glove Plan';
+    case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
+      return 'Cromatic Consultant';
     default:
       return 'Standard Plan';
   }
@@ -207,12 +209,12 @@ const resolvers: Resolvers<Context> = {
 
       const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
       const customerSubscription = user?.customer?.customer_subscriptions?.[0];
-
-      const endedAt =
-        (customerSubscription?.ended_at || biotechSubscription?.ended_at) ??
-        null;
-      const subscriptionStatus =
-        customerSubscription?.status || biotechSubscription?.status;
+      const endedAt = customerSubscription
+        ? customerSubscription.ended_at
+        : biotechSubscription?.ended_at ?? null;
+      const subscriptionStatus = customerSubscription
+        ? customerSubscription.status
+        : biotechSubscription?.status ?? null;
       const now = new Date();
       let status: string | null = null;
 

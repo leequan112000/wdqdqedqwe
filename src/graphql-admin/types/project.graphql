@@ -1,0 +1,21 @@
+type ProjectRequest {
+  id: String!
+  title: String
+  vendor_requirement: String
+  objective_description: String
+  preparation_description: String
+}
+
+type Mutation {
+  createProjectRequest(
+    title: String!
+    vendor_requirement: String
+    objective_description: String
+    preparation_description: String
+    sourcing_session_id: String
+  ): ProjectRequest
+  connectCustomerToProject(
+    project_connection_id: String!
+    customer_id: String!
+  ): Boolean
+}

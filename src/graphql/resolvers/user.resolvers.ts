@@ -6,8 +6,8 @@ import { Request } from "express";
 import { Resolvers } from "../generated";
 import { InternalError } from "../errors/InternalError";
 import {
-  BiotechAccountType,
   CasbinRole,
+  CompanyCollaboratorRoleType,
   OauthProvider,
   UserStatus,
   UserType,
@@ -15,7 +15,6 @@ import {
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
-import subscriptionService from "../../services/subscription/subscription.service";
 import { availabilityCreateManyUserInputs } from "../../helper/availability";
 
 const resolvers: Resolvers<Context> = {
@@ -358,6 +357,7 @@ const resolvers: Resolvers<Context> = {
                   },
                 },
               },
+              role: CompanyCollaboratorRoleType.OWNER,
             },
           },
         },

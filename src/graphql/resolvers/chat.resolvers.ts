@@ -132,7 +132,7 @@ const resolvers: Resolvers<Context> = {
 
         chatService.createAdminMessage({
           chat_id: chat.id,
-          content: `Hello ${biotechName} & ${vendorCompanyName}!\nYou are now connected on Cromatic. Introduce yourselves and start collaborating!`,
+          content: 'You are now connected on Cromatic. Introduce yourselves and start collaborating!',
         }, { prisma: context.prisma })
 
         return true;

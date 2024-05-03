@@ -256,6 +256,9 @@ model ProjectRequest {
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
+  sourcing_session_id String?          @db.Uuid
+  sourcing_session    SourcingSession? @relation(fields: [sourcing_session_id], references: [id])
+
   project_request_comments      ProjectRequestComment[]
   project_connections           ProjectConnection[]
   project_request_collaborators ProjectRequestCollaborator[]
@@ -992,6 +995,7 @@ model SourcingSession {
   sourcing_attachments    SourcingAttachment[]
   created_at              DateTime               @default(now())
   updated_at              DateTime               @default(now()) @updatedAt
+  ProjectRequest          ProjectRequest[]
 
   @@map("sourcing_sessions")
 }

@@ -4,7 +4,7 @@ import { prisma } from "../prisma";
 import { sendAdminNewCroInterestNoticeEmail, sendAdminNewProjectRequestCommentEmail, sendAdminNewProjectRequestEmail, sendAdminZeroAcceptedProjectNoticeEmail } from "../mailer/admin";
 import { app_env } from "../environment";
 import { sendNewMessageNoticeEmail } from "../mailer/message";
-import { sendAcceptProjectRequestEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
+import { sendVendorAcceptProjectNoticeEmail, sendVendorProjectRequestExpiredEmail, sendVendorProjectRequestExpiringEmail } from "../mailer/projectRequest";
 import createAcceptRequestNotification from "../notification/acceptRequestNotification";
 import createMessageNotification from "../notification/messageNotification";
 import createQuoteNotification from "../notification/quoteNotification";
@@ -236,7 +236,7 @@ emailQueue.process(async (job, done) => {
 
           await Promise.all(
             receivers.map(async (receiver) => {
-              await sendAcceptProjectRequestEmail(
+              await sendVendorAcceptProjectNoticeEmail(
                 {
                   login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
                   receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,

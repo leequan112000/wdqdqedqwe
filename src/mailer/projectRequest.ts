@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import {
   acceptProjectRequestNoticeTemplate,
   privateProjectRequestSubmissionTemplate,
@@ -5,10 +6,10 @@ import {
   vendorRequestExpiredNoticeTemplate,
   vendorRequestExpiringNoticeTemplate,
 } from "./templates";
-import { AcceptProjectRequestNoticeData, VendorProjectRequestExpiredNoticeData, VendorProjectRequestExpiringNoticeData } from "./types";
+import { VendorProjectRequestExpiredNoticeData, VendorProjectRequestExpiringNoticeData } from "./types";
 import { app_env } from "../environment";
 import { createMailData, sendMail } from "./config";
-import { User } from "@prisma/client";
+import { createSendMailJob } from "../queues/sendMail.queues";
 
 export const sendProjectRequestSubmissionEmail = (receiver: User) => {
   const mailData = createMailData({
@@ -34,19 +35,22 @@ export const sendPrivateProjectRequestSubmissionEmail = (receiver: User) => {
   sendMail(mailData);
 };
 
-export const sendAcceptProjectRequestEmail = async (emailData: AcceptProjectRequestNoticeData, receiverEmail: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: acceptProjectRequestNoticeTemplate,
-    dynamicTemplateData: {
-      login_url: emailData.login_url,
-      vendor_company_name: emailData.vendor_company_name,
-      project_title: emailData.project_title,
-      receiver_full_name: emailData.receiver_full_name,
-    },
-  });
+type AcceptProjectRequestNoticeData = {
+  login_url: string;
+  vendor_company_name: string;
+  project_title: string;
+  receiver_full_name: string;
+};
 
-  await sendMail(mailData);
+export const sendVendorAcceptProjectNoticeEmail = async (
+  emailData: AcceptProjectRequestNoticeData,
+  receiverEmail: string
+) => {
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: acceptProjectRequestNoticeTemplate,
+  });
 };
 
 export const sendVendorProjectRequestExpiringEmail = async (emailData: VendorProjectRequestExpiringNoticeData, receiverEmail: string) => {
