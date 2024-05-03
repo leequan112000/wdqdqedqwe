@@ -83,16 +83,17 @@ const resolvers: Resolvers<Context> = {
           prices: [],
           features: [
             {
-              name: "Sourcerer™ Matchmaker",
-              items: [
-                { description: "RFP analysis for vendor matching" },
-                { description: "Unlimited search requests" },
-                { description: "Comprehensive vendor discovery platform" },
-              ],
+              name: "Sourcerer™ Search plan",
+              items: [],
             },
             {
-              name: "Sourcerer™ Lite Search",
-              items: [{ description: "Unlimited search requests for a single service" }],
+              name: "Custom vendor management services",
+              items: [
+                { description: "RFP review" },
+                { description: "Streamlined quoting process" },
+                { description: "Price negotiations" },
+                { description: "Vendor team selection" },
+              ],
             },
           ],
         },
