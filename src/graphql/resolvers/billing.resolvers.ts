@@ -364,7 +364,7 @@ const resolvers: Resolvers<Context> = {
           date: moment.unix(d.period_end),
           description: getPlanName(customerSubPlanName || ""),
           status: d.status,
-          invoice_url: d.hosted_invoice_url,
+          invoice_url: d.invoice_pdf,
         })),
         ...biotechStripeInvoices.map((d) => ({
           number: d.number,
@@ -372,7 +372,7 @@ const resolvers: Resolvers<Context> = {
           date: moment.unix(d.period_end),
           description: getPlanName(biotechSubPlanName || ""),
           status: d.status,
-          invoice_url: d.hosted_invoice_url,
+          invoice_url: d.invoice_pdf,
         })),
       ];
     },
