@@ -45,14 +45,6 @@ type SourcedCro {
   cro_db_vendor_company: CroDbVendorCompany
 }
 
-type ExtractedRfp {
-  sourcing_session_id: String
-  project_title: String
-  project_desc: String
-  preparation_details: String
-  vendor_requirement: String
-}
-
 type SourcingTask {
   id: String
   sourcing_session_id: String
@@ -86,7 +78,7 @@ type Mutation {
   extractPdfRfp(
     file: Upload!
     sourcing_session_id: String
-  ): ExtractedRfp
+  ): SourcingSession
   sourceRfpSpecialties(
     project_title: String!
     project_desc: String!
