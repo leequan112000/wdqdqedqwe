@@ -65,7 +65,6 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
       'sourcerer_rfp',
     );
 
-    let session_id = sourcing_session_id;
     if (sourcing_session_id) {
       const existingRfp = await ctx.prisma.sourcingAttachment.findFirst({
         where: {
@@ -87,7 +86,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
         await deleteObject(existingRfp.key);
       }
 
-      await ctx.prisma.sourcingSession.update({
+      return await ctx.prisma.sourcingSession.update({
         where: {
           id: sourcing_session_id,
         },
@@ -96,37 +95,30 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
           project_desc,
           preparation_details,
           vendor_requirement,
-        }
+        },
       });
     } else {
-      const session = await ctx.prisma.sourcingSession.create({
+      return await ctx.prisma.sourcingSession.create({
         data: {
-          task_id: '',
+          task_id: "",
           project_title,
           project_desc,
           preparation_details,
           vendor_requirement,
           user_id,
-        }
-      });
 
-      session_id = session.id;
-
-      await ctx.prisma.sourcingAttachment.create({
-        data: {
-          byte_size: filesize,
-          filename,
-          key,
-          sourcing_session_id: session.id,
-          uploader_id: user_id,
+          sourcing_attachments: {
+            create: {
+              byte_size: filesize,
+              filename,
+              key,
+              uploader_id: user_id,
+            },
+          },
         },
       });
     }
 
-    return {
-      sourcing_session_id: session_id,
-      ...JSON.parse(response.data)
-    };
   } catch (error) {
     throw error;
   }

@@ -422,15 +422,6 @@ export type ExternalParticipantInput = {
   name?: InputMaybe<Scalars['String']>;
 };
 
-export type ExtractedRfp = {
-  __typename?: 'ExtractedRfp';
-  preparation_details?: Maybe<Scalars['String']>;
-  project_desc?: Maybe<Scalars['String']>;
-  project_title?: Maybe<Scalars['String']>;
-  sourcing_session_id?: Maybe<Scalars['String']>;
-  vendor_requirement?: Maybe<Scalars['String']>;
-};
-
 export type InitialVendorSurveyData = {
   __typename?: 'InitialVendorSurveyData';
   countries?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -617,7 +608,7 @@ export type Mutation = {
   declinedProjectConnection?: Maybe<ProjectConnection>;
   disconnectOauth2?: Maybe<Scalars['Boolean']>;
   draftQuoteReview?: Maybe<Array<Maybe<ReviewAnswer>>>;
-  extractPdfRfp?: Maybe<ExtractedRfp>;
+  extractPdfRfp?: Maybe<SourcingSession>;
   forgotPassword?: Maybe<Scalars['Boolean']>;
   inviteCollaborator?: Maybe<User>;
   inviteCollaborators?: Maybe<Array<Maybe<User>>>;
@@ -2380,7 +2371,6 @@ export type ResolversTypes = ResolversObject<{
   DateWithTimeSlots: ResolverTypeWrapper<DateWithTimeSlots>;
   ExternalGuest: ResolverTypeWrapper<ExternalGuest>;
   ExternalParticipantInput: ExternalParticipantInput;
-  ExtractedRfp: ResolverTypeWrapper<ExtractedRfp>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   InitialVendorSurveyData: ResolverTypeWrapper<InitialVendorSurveyData>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -2505,7 +2495,6 @@ export type ResolversParentTypes = ResolversObject<{
   DateWithTimeSlots: DateWithTimeSlots;
   ExternalGuest: ExternalGuest;
   ExternalParticipantInput: ExternalParticipantInput;
-  ExtractedRfp: ExtractedRfp;
   Float: Scalars['Float'];
   InitialVendorSurveyData: InitialVendorSurveyData;
   Int: Scalars['Int'];
@@ -2968,15 +2957,6 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ExtractedRfpResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtractedRfp'] = ResolversParentTypes['ExtractedRfp']> = ResolversObject<{
-  preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type InitialVendorSurveyDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitialVendorSurveyData'] = ResolversParentTypes['InitialVendorSurveyData']> = ResolversObject<{
   countries?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   has_submitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -3158,7 +3138,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;
   disconnectOauth2?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisconnectOauth2Args, 'provider'>>;
   draftQuoteReview?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewAnswer']>>>, ParentType, ContextType, RequireFields<MutationDraftQuoteReviewArgs, 'quote_id'>>;
-  extractPdfRfp?: Resolver<Maybe<ResolversTypes['ExtractedRfp']>, ParentType, ContextType, RequireFields<MutationExtractPdfRfpArgs, 'file'>>;
+  extractPdfRfp?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationExtractPdfRfpArgs, 'file'>>;
   forgotPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationForgotPasswordArgs>>;
   inviteCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'email' | 'name'>>;
   inviteCollaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<MutationInviteCollaboratorsArgs, 'collaborators'>>;
@@ -3913,7 +3893,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Date?: GraphQLScalarType;
   DateWithTimeSlots?: DateWithTimeSlotsResolvers<ContextType>;
   ExternalGuest?: ExternalGuestResolvers<ContextType>;
-  ExtractedRfp?: ExtractedRfpResolvers<ContextType>;
   InitialVendorSurveyData?: InitialVendorSurveyDataResolvers<ContextType>;
   Invoice?: InvoiceResolvers<ContextType>;
   InvoiceItem?: InvoiceItemResolvers<ContextType>;
