@@ -33,7 +33,7 @@ const getPlanName = (accType: string | null) => {
     case CustomerSubscriptionPlanName.SOURCING_PLAN:
       return "Sourcerer™ Search";
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
-      return "White Glove Plan";
+      return "White Glove Service";
     case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
       return "Cromatic Consultant";
     default:
