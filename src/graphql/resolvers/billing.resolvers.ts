@@ -1,9 +1,14 @@
 import moment from "moment";
 import currency from "currency.js";
-import Stripe  from "stripe";
+import Stripe from "stripe";
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
-import { CustomerSubscriptionPlanName, SubscriptionStatus, BillingInfoStatus, BiotechAccountType } from "../../helper/constant";
+import {
+  CustomerSubscriptionPlanName,
+  SubscriptionStatus,
+  BillingInfoStatus,
+  BillingInvoiceStatus,
+} from "../../helper/constant";
 import { Context } from "../../types/context";
 import { BillingInfo, Resolvers } from "../generated";
 import Sentry from "../../sentry";
@@ -18,7 +23,7 @@ const NO_BILLING_INFO: BillingInfo = {
   upcoming_bill_amount: null,
   upcoming_bill_date: null,
   payment_method: null,
-}
+};
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
@@ -87,7 +92,39 @@ const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
     Sentry.captureException(new Error("Failed to retreive subscription."));
     return null;
   }
-}
+};
+
+const isPaymentIntentObj = (
+  paymentIntent: string | Stripe.PaymentIntent | null
+): paymentIntent is Stripe.PaymentIntent => {
+  return paymentIntent !== null && typeof paymentIntent !== 'string';
+};
+
+const processStripeInvoice = (invoices: Stripe.Invoice[], planName: string) => {
+  return invoices
+    .map((d) => {
+      const paymentIntentObj = isPaymentIntentObj(d.payment_intent)
+        ? d.payment_intent
+        : null;
+      const hasLastPaymentError = !!paymentIntentObj?.last_payment_error;
+      const status = (() => {
+        if (paymentIntentObj === null) return d.status;
+        else if (hasLastPaymentError) return BillingInvoiceStatus.FAILED;
+        else if (d.status === "paid") return BillingInvoiceStatus.PAID;
+        return BillingInvoiceStatus.OPEN;
+      })();
+      return {
+        number: d.number,
+        amount: currency(d.amount_due, { fromCents: true }).dollars(),
+        date: moment.unix(d.period_end),
+        description: getPlanName(planName),
+        status,
+        invoice_url: d.invoice_pdf,
+      };
+    })
+    // Remove draft invoice
+    .filter((d) => d.status !== "draft");
+};
 
 const resolvers: Resolvers<Context> = {
   BillingInfo: {
@@ -340,8 +377,8 @@ const resolvers: Resolvers<Context> = {
       const biotechSubPlanName = user?.customer?.biotech?.account_type;
       const customerStripeCusId =
         user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
-      const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]
-        ?.plan_name as string;
+      const customerSubPlanName =
+        user?.customer?.customer_subscriptions?.[0]?.plan_name;
 
       if (!biotechStripeCusId && !customerStripeCusId) {
         return null;
@@ -349,31 +386,31 @@ const resolvers: Resolvers<Context> = {
 
       const stripe = await getStripeInstance();
       const biotechStripeInvoices = biotechStripeCusId
-        ? (await stripe.invoices.list({ customer: biotechStripeCusId }))
-            .data
+        ? (
+            await stripe.invoices.list({
+              customer: biotechStripeCusId,
+              expand: ["data.payment_intent"],
+            })
+          ).data
         : [];
       const customerStripeInvoices = customerStripeCusId
-        ? (await stripe.invoices.list({ customer: customerStripeCusId }))
-            .data
+        ? (
+            await stripe.invoices.list({
+              customer: customerStripeCusId,
+              expand: ["data.payment_intent"],
+            })
+          ).data
         : [];
 
       return [
-        ...customerStripeInvoices.map((d) => ({
-          number: d.number,
-          amount: currency(d.amount_due, { fromCents: true }).dollars(),
-          date: moment.unix(d.period_end),
-          description: getPlanName(customerSubPlanName || ""),
-          status: d.status,
-          invoice_url: d.invoice_pdf,
-        })),
-        ...biotechStripeInvoices.map((d) => ({
-          number: d.number,
-          amount: currency(d.amount_due, { fromCents: true }).dollars(),
-          date: moment.unix(d.period_end),
-          description: getPlanName(biotechSubPlanName || ""),
-          status: d.status,
-          invoice_url: d.invoice_pdf,
-        })),
+        ...processStripeInvoice(
+          customerStripeInvoices,
+          customerSubPlanName || ""
+        ),
+        ...processStripeInvoice(
+          biotechStripeInvoices,
+          biotechSubPlanName || ""
+        ),
       ];
     },
     billingPortalUrl: async (_, args, context) => {
