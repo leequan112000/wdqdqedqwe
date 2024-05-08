@@ -8,6 +8,7 @@ import {
   SubscriptionStatus,
   BillingInfoStatus,
   BillingInvoiceStatus,
+  CompanyCollaboratorRoleType,
 } from "../../helper/constant";
 import { Context } from "../../types/context";
 import { BillingInfo, Resolvers } from "../generated";
@@ -100,30 +101,68 @@ const isPaymentIntentObj = (
   return paymentIntent !== null && typeof paymentIntent !== 'string';
 };
 
-const processStripeInvoice = (invoices: Stripe.Invoice[], planName: string) => {
-  return invoices
-    .map((d) => {
-      const paymentIntentObj = isPaymentIntentObj(d.payment_intent)
-        ? d.payment_intent
-        : null;
-      const hasLastPaymentError = !!paymentIntentObj?.last_payment_error;
-      const status = (() => {
-        if (paymentIntentObj === null) return d.status;
-        else if (hasLastPaymentError) return BillingInvoiceStatus.FAILED;
-        else if (d.status === "paid") return BillingInvoiceStatus.PAID;
-        return BillingInvoiceStatus.OPEN;
-      })();
-      return {
-        number: d.number,
-        amount: currency(d.amount_due, { fromCents: true }).dollars(),
-        date: moment.unix(d.period_end),
-        description: getPlanName(planName),
-        status,
-        invoice_url: d.invoice_pdf,
-      };
-    })
-    // Remove draft invoice
-    .filter((d) => d.status !== "draft");
+const isProductId = (
+  product: string | Stripe.Product | Stripe.DeletedProduct | null | undefined
+): product is string => {
+  return typeof product === "string";
+};
+
+const processStripeInvoice = async (
+  invoices: Stripe.Invoice[],
+  stripe: Stripe
+) => {
+  const asyncTasks = invoices.map(async (d) => {
+    const paymentIntentObj = isPaymentIntentObj(d.payment_intent)
+      ? d.payment_intent
+      : null;
+    const hasLastPaymentError = !!paymentIntentObj?.last_payment_error;
+    const status = (() => {
+      if (paymentIntentObj === null) return d.status;
+      else if (hasLastPaymentError) return BillingInvoiceStatus.FAILED;
+      else if (d.status === "paid") return BillingInvoiceStatus.PAID;
+      return BillingInvoiceStatus.OPEN;
+    })();
+    const description = await (async () => {
+      if (d.billing_reason === "subscription_create") {
+        const productId = isProductId(d.lines.data[0].plan?.product)
+          ? d.lines.data[0].plan?.product
+          : null;
+
+        const product = productId ? await stripe.products.retrieve(productId) : null;
+
+        return product
+          ? `Subscribed to ${product.name}`
+          : 'New subscription';
+      }
+      else if (d.billing_reason === "subscription_cycle") {
+        return 'Subscription renewal';
+      }
+      else if (d.billing_reason === "subscription_update") {
+        const productId = isProductId(d.lines.data?.[1]?.plan?.product)
+          ? d.lines.data[1].plan?.product
+          : null;
+
+        const product = productId ? await stripe.products.retrieve(productId) : null;
+        return product
+          ? `Updated subscription to ${product.name}`
+          : 'Subscription update';
+      }
+      return 'Invoice';
+    })();
+    return {
+      number: d.number,
+      amount: currency(d.amount_due, { fromCents: true }).dollars(),
+      date: moment.unix(d.period_end),
+      description,
+      status,
+      invoice_url: d.invoice_pdf,
+    };
+  });
+  return (
+    (await Promise.all(asyncTasks))
+      // Remove draft invoice
+      .filter((d) => d.status !== "draft")
+  );
 };
 
 const resolvers: Resolvers<Context> = {
@@ -376,11 +415,8 @@ const resolvers: Resolvers<Context> = {
 
       const biotechStripeCusId =
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
-      const biotechSubPlanName = user?.customer?.biotech?.account_type;
       const customerStripeCusId =
         user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
-      const customerSubPlanName =
-        user?.customer?.customer_subscriptions?.[0]?.plan_name;
 
       if (!biotechStripeCusId && !customerStripeCusId) {
         return null;
@@ -404,15 +440,18 @@ const resolvers: Resolvers<Context> = {
           ).data
         : [];
 
+      const processedCustomerInvoices = await processStripeInvoice(
+        customerStripeInvoices,
+        stripe
+      );
+      const processedBiotechInvoices = await processStripeInvoice(
+        biotechStripeInvoices,
+        stripe
+      );
+
       return [
-        ...processStripeInvoice(
-          customerStripeInvoices,
-          customerSubPlanName || ""
-        ),
-        ...processStripeInvoice(
-          biotechStripeInvoices,
-          biotechSubPlanName || ""
-        ),
+        ...processedCustomerInvoices,
+        ...processedBiotechInvoices,
       ];
     },
     billingPortalUrl: async (_, args, context) => {
