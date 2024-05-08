@@ -23,15 +23,15 @@ const NO_BILLING_INFO: BillingInfo = {
 const getPlanName = (accType: string | null) => {
   switch (accType) {
     case CustomerSubscriptionPlanName.PROJECT_MANAGEMENT_PLAN:
-      return 'Project Management Plan';
+      return "Project Management Plan";
     case CustomerSubscriptionPlanName.SOURCING_PLAN:
-      return 'Sourcing Pro Plan';
+      return "Sourcerer™ Search";
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
-      return 'White Glove Plan';
+      return "White Glove Plan";
     case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
-      return 'Cromatic Consultant';
+      return "Cromatic Consultant";
     default:
-      return 'Standard Plan';
+      return "Standard Plan";
   }
 };
 
