@@ -372,6 +372,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const isOwner = user?.customer?.role === CompanyCollaboratorRoleType.OWNER;
+
       const biotechStripeCusId =
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
       const biotechSubPlanName = user?.customer?.biotech?.account_type;
@@ -385,7 +387,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       const stripe = await getStripeInstance();
-      const biotechStripeInvoices = biotechStripeCusId
+      const biotechStripeInvoices = isOwner && biotechStripeCusId
         ? (
             await stripe.invoices.list({
               customer: biotechStripeCusId,
