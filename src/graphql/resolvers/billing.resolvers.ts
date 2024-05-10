@@ -1,9 +1,15 @@
 import moment from "moment";
 import currency from "currency.js";
-import Stripe  from "stripe";
+import Stripe from "stripe";
 import { getStripeInstance } from "../../helper/stripe";
 import invariant from "../../helper/invariant";
-import { CustomerSubscriptionPlanName, SubscriptionStatus, BillingInfoStatus, BiotechAccountType } from "../../helper/constant";
+import {
+  CustomerSubscriptionPlanName,
+  SubscriptionStatus,
+  BillingInfoStatus,
+  BillingInvoiceStatus,
+  CompanyCollaboratorRoleType,
+} from "../../helper/constant";
 import { Context } from "../../types/context";
 import { BillingInfo, Resolvers } from "../generated";
 import Sentry from "../../sentry";
@@ -18,20 +24,20 @@ const NO_BILLING_INFO: BillingInfo = {
   upcoming_bill_amount: null,
   upcoming_bill_date: null,
   payment_method: null,
-}
+};
 
 const getPlanName = (accType: string | null) => {
   switch (accType) {
     case CustomerSubscriptionPlanName.PROJECT_MANAGEMENT_PLAN:
-      return 'Project Management Plan';
+      return "Project Management Plan";
     case CustomerSubscriptionPlanName.SOURCING_PLAN:
-      return 'Sourcing Pro Plan';
+      return "Sourcerer™ Search";
     case CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN:
-      return 'White Glove Plan';
+      return "White Glove Service";
     case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
-      return 'Cromatic Consultant';
+      return "Cromatic Consultant";
     default:
-      return 'Standard Plan';
+      return "Standard Plan";
   }
 };
 
@@ -87,7 +93,77 @@ const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
     Sentry.captureException(new Error("Failed to retreive subscription."));
     return null;
   }
-}
+};
+
+const isPaymentIntentObj = (
+  paymentIntent: string | Stripe.PaymentIntent | null
+): paymentIntent is Stripe.PaymentIntent => {
+  return paymentIntent !== null && typeof paymentIntent !== 'string';
+};
+
+const isProductId = (
+  product: string | Stripe.Product | Stripe.DeletedProduct | null | undefined
+): product is string => {
+  return typeof product === "string";
+};
+
+const processStripeInvoice = async (
+  invoices: Stripe.Invoice[],
+  stripe: Stripe
+) => {
+  const asyncTasks = invoices.map(async (d) => {
+    const paymentIntentObj = isPaymentIntentObj(d.payment_intent)
+      ? d.payment_intent
+      : null;
+    const hasLastPaymentError = !!paymentIntentObj?.last_payment_error;
+    const status = (() => {
+      if (paymentIntentObj === null) return d.status;
+      else if (hasLastPaymentError) return BillingInvoiceStatus.FAILED;
+      else if (d.status === "paid") return BillingInvoiceStatus.PAID;
+      return BillingInvoiceStatus.OPEN;
+    })();
+    const description = await (async () => {
+      if (d.billing_reason === "subscription_create") {
+        const productId = isProductId(d.lines.data[0].plan?.product)
+          ? d.lines.data[0].plan?.product
+          : null;
+
+        const product = productId ? await stripe.products.retrieve(productId) : null;
+
+        return product
+          ? `Subscribed to ${product.name}`
+          : 'New subscription';
+      }
+      else if (d.billing_reason === "subscription_cycle") {
+        return 'Subscription renewal';
+      }
+      else if (d.billing_reason === "subscription_update") {
+        const productId = isProductId(d.lines.data?.[1]?.plan?.product)
+          ? d.lines.data[1].plan?.product
+          : null;
+
+        const product = productId ? await stripe.products.retrieve(productId) : null;
+        return product
+          ? `Updated subscription to ${product.name}`
+          : 'Subscription update';
+      }
+      return 'Invoice';
+    })();
+    return {
+      number: d.number,
+      amount: currency(d.amount_due, { fromCents: true }).dollars(),
+      date: moment.unix(d.period_end),
+      description,
+      status,
+      invoice_url: d.invoice_pdf,
+    };
+  });
+  return (
+    (await Promise.all(asyncTasks))
+      // Remove draft invoice
+      .filter((d) => d.status !== "draft")
+  );
+};
 
 const resolvers: Resolvers<Context> = {
   BillingInfo: {
@@ -335,45 +411,47 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
+      const isOwner = user?.customer?.role === CompanyCollaboratorRoleType.OWNER;
+
       const biotechStripeCusId =
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
-      const biotechSubPlanName = user?.customer?.biotech?.account_type;
       const customerStripeCusId =
         user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
-      const customerSubPlanName = user?.customer?.customer_subscriptions?.[0]
-        ?.plan_name as string;
 
       if (!biotechStripeCusId && !customerStripeCusId) {
         return null;
       }
 
       const stripe = await getStripeInstance();
-      const biotechStripeInvoices = biotechStripeCusId
-        ? (await stripe.invoices.list({ customer: biotechStripeCusId }))
-            .data
+      const biotechStripeInvoices = isOwner && biotechStripeCusId
+        ? (
+            await stripe.invoices.list({
+              customer: biotechStripeCusId,
+              expand: ["data.payment_intent"],
+            })
+          ).data
         : [];
       const customerStripeInvoices = customerStripeCusId
-        ? (await stripe.invoices.list({ customer: customerStripeCusId }))
-            .data
+        ? (
+            await stripe.invoices.list({
+              customer: customerStripeCusId,
+              expand: ["data.payment_intent"],
+            })
+          ).data
         : [];
 
+      const processedCustomerInvoices = await processStripeInvoice(
+        customerStripeInvoices,
+        stripe
+      );
+      const processedBiotechInvoices = await processStripeInvoice(
+        biotechStripeInvoices,
+        stripe
+      );
+
       return [
-        ...customerStripeInvoices.map((d) => ({
-          number: d.number,
-          amount: currency(d.amount_due, { fromCents: true }).dollars(),
-          date: moment.unix(d.period_end),
-          description: getPlanName(customerSubPlanName || ""),
-          status: d.status,
-          invoice_url: d.invoice_pdf,
-        })),
-        ...biotechStripeInvoices.map((d) => ({
-          number: d.number,
-          amount: currency(d.amount_due, { fromCents: true }).dollars(),
-          date: moment.unix(d.period_end),
-          description: getPlanName(biotechSubPlanName || ""),
-          status: d.status,
-          invoice_url: d.invoice_pdf,
-        })),
+        ...processedCustomerInvoices,
+        ...processedBiotechInvoices,
       ];
     },
     billingPortalUrl: async (_, args, context) => {

@@ -165,10 +165,6 @@ export enum MeetingPlatform {
   CUSTOM = 'custom',
 }
 
-export enum BiotechAccountType {
-  STARDARD = 'standard',
-}
-
 export enum CustomerSubscriptionPlanName {
   SOURCING_PLAN = 'sourcing_plan',
   PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
@@ -375,4 +371,10 @@ export enum UserStatus {
   PENDING_DEACTIVATION = 'pending_deactivation',
   JOINED = 'joined',
   PENDING_INVITATION = 'pending_invitation',
+}
+
+export enum BillingInvoiceStatus {
+  PAID = "paid",
+  OPEN = "open",
+  FAILED = "failed",
 }
