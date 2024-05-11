@@ -607,6 +607,7 @@ describe('process stripe event', () => {
               },
               data: {
                 ended_at: null,
+                status: 'active',
               },
             },
           },
@@ -672,6 +673,7 @@ describe('process stripe event', () => {
         data: {
           plan_name: 'sourcerer',
           ended_at: null,
+          status: 'active',
         },
       });
       expect(message).toEqual('OK');
@@ -733,7 +735,8 @@ describe('process stripe event', () => {
         },
         data: {
           plan_name: 'sourcerer',
-          ended_at: new Date(event.data.object.cancel_at * 1000)
+          ended_at: new Date(event.data.object.cancel_at * 1000),
+          status: 'canceled',
         },
       });
       expect(message).toEqual('OK');
