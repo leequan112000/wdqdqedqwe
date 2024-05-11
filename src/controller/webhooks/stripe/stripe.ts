@@ -3,7 +3,7 @@ import moment from 'moment';
 import { prisma } from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import milestoneService from '../../../services/milestone/milestone.service';
-import { InvoicePaymentStatus, MilestonePaymentStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import { CompanyCollaboratorRoleType, CustomerSubscriptionPlanName, InvoicePaymentStatus, MilestonePaymentStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
 import { ga } from '../../../helper/googleAnalytics';
 import { getStripeInstance } from '../../../helper/stripe';
@@ -319,7 +319,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
       }
 
       case 'customer.subscription.updated': {
-        const { items, customer, cancel_at } = event.data
+        const { items, customer, cancel_at, status } = event.data
           .object as Stripe.Subscription;
         /**
          * Default cancel at date to null to handle remove ended_at value
@@ -335,9 +335,20 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const product = await stripe.products.retrieve(plan.product as string);
 
         const { account_type, plan_name } = product.metadata;
-        const subcription = await prisma.subscription.findFirst({
+        const subscription = await prisma.subscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
+          },
+          include: {
+            biotech: {
+              include: {
+                customers: {
+                  where: {
+                    role: CompanyCollaboratorRoleType.OWNER,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -348,46 +359,78 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             },
           });
 
-        if (subcription === null && customerSubscription === null) {
+        if (subscription === null && customerSubscription === null) {
           return {
             status: 200,
             message: "Skipped webhook: reason=subscription_not_found",
           };
         }
 
-        if (customerSubscription) {
-          invariant(plan_name, "Missing metadata: plan_name.");
-          await prisma.customerSubscription.update({
-            where: {
-              id: customerSubscription.id,
-            },
-            data: {
-              plan_name,
-              ended_at: cancelAtDate,
-            },
-          });
-        }
+        /**
+         * Move legacy customer's subscription to customer_subscriptions table.
+         * This logic can be safely remove if all customer has been migrated.
+         */
+        const isUpgradingLegacyCustomer = customerSubscription === null
+          && !!subscription
+          && [
+            CustomerSubscriptionPlanName.SOURCING_PLAN,
+            CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN
+          ].includes(plan_name as CustomerSubscriptionPlanName);
+        if (isUpgradingLegacyCustomer) {
+          const firstOwner = subscription.biotech.customers[0];
+          await prisma.$transaction(async (trx) => {
+            await trx.customerSubscription.create({
+              data: {
+                plan_name,
+                status,
+                stripe_customer_id: subscription.stripe_customer_id,
+                stripe_subscription_id: subscription.stripe_subscription_id,
+                customer_id: firstOwner.id,
+              },
+            });
+            await trx.subscription.delete({
+              where: {
+                id: subscription.id,
+              },
+            });
+          })
+        } else {
+          if (customerSubscription) {
+            invariant(plan_name, "Missing metadata: plan_name.");
+            await prisma.customerSubscription.update({
+              where: {
+                id: customerSubscription.id,
+              },
+              data: {
+                plan_name,
+                ended_at: cancelAtDate,
+                status,
+              },
+            });
+          }
 
-        if (subcription) {
-          invariant(account_type, "Missing metadata: account_type.");
-          await prisma.biotech.update({
-            where: {
-              id: subcription.biotech_id,
-            },
-            data: {
-              account_type,
-              subscriptions: {
-                update: {
-                  where: {
-                    id: subcription.id,
-                  },
-                  data: {
-                    ended_at: cancelAtDate,
+          if (subscription) {
+            invariant(account_type, "Missing metadata: account_type.");
+            await prisma.biotech.update({
+              where: {
+                id: subscription.biotech_id,
+              },
+              data: {
+                account_type,
+                subscriptions: {
+                  update: {
+                    where: {
+                      id: subscription.id,
+                    },
+                    data: {
+                      ended_at: cancelAtDate,
+                      status,
+                    },
                   },
                 },
               },
-            },
-          });
+            });
+          }
         }
 
         return { status: 200, message: "OK" };

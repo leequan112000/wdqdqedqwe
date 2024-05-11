@@ -107,6 +107,21 @@ const isProductId = (
   return typeof product === "string";
 };
 
+const mapReadableStripeBillingReason = (
+  billingReason: Stripe.Invoice.BillingReason | null
+): string => {
+  switch (billingReason) {
+    case "subscription_create":
+      return "New subscription created";
+    case "subscription_cycle":
+      return "Subscription renewal";
+    case "subscription_update":
+      return "Subscription update";
+    default:
+      return "invoice";
+  }
+};
+
 const processStripeInvoice = async (
   invoices: Stripe.Invoice[],
   stripe: Stripe
@@ -122,32 +137,21 @@ const processStripeInvoice = async (
       else if (d.status === "paid") return BillingInvoiceStatus.PAID;
       return BillingInvoiceStatus.OPEN;
     })();
+
+    /**
+     * Display the product name as the invoice description.
+     * Use stripe billing reason for
+     */
     const description = await (async () => {
-      if (d.billing_reason === "subscription_create") {
-        const productId = isProductId(d.lines.data[0].plan?.product)
-          ? d.lines.data[0].plan?.product
-          : null;
-
-        const product = productId ? await stripe.products.retrieve(productId) : null;
-
-        return product
-          ? `Subscribed to ${product.name}`
-          : 'New subscription';
+      const productId = isProductId(d.lines.data[0].plan?.product)
+        ? d.lines.data[0].plan?.product
+        : null;
+      const product = productId ? await stripe.products.retrieve(productId) : null;
+      if (product) {
+        return product.name;
       }
-      else if (d.billing_reason === "subscription_cycle") {
-        return 'Subscription renewal';
-      }
-      else if (d.billing_reason === "subscription_update") {
-        const productId = isProductId(d.lines.data?.[1]?.plan?.product)
-          ? d.lines.data[1].plan?.product
-          : null;
 
-        const product = productId ? await stripe.products.retrieve(productId) : null;
-        return product
-          ? `Updated subscription to ${product.name}`
-          : 'Subscription update';
-      }
-      return 'Invoice';
+      return mapReadableStripeBillingReason(d.billing_reason);
     })();
     return {
       number: d.number,
@@ -304,6 +308,8 @@ const resolvers: Resolvers<Context> = {
         }
       } else if (subscriptionStatus === SubscriptionStatus.CANCELED) {
         status = BillingInfoStatus.CANCELED;
+      } else if (subscriptionStatus === SubscriptionStatus.PAST_DUE) {
+        status = BillingInfoStatus.PAST_DUE;
       }
 
       return status;
