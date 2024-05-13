@@ -49,11 +49,18 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
-          // Clear up existing records
+          // Clear up existing extracted services
           await trx.sourcingSubspecialty.deleteMany({
             where: {
               sourcing_session_id: sourcing_session.id,
             }
+          });
+
+          // Clear up existing matched result
+          await trx.sourcedCro.deleteMany({
+            where: {
+              sourcing_session_id: sourcing_session.id,
+            },
           });
 
           // Filter subspecialty below 0.7 weight threshold
