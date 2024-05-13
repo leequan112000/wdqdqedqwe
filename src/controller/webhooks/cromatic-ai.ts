@@ -124,8 +124,15 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
+          // Clear up existing matched result
+          await trx.sourcedCro.deleteMany({
+            where: {
+              sourcing_session_id: sourcing_session.id,
+            },
+          });
+
           const cappedData = data.slice(0, 50);
-          const sourcedCros = await Promise.all(
+          await Promise.all(
             cappedData.map(async (cro: { cro_name: string, cro_id: string, score: string }) => {
               return await trx.sourcedCro.create({
                 data: {
