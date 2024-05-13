@@ -514,6 +514,7 @@ const resolvers: Resolvers<Context> = {
               },
             },
           },
+          status: SubscriptionStatus.ACTIVE,
         },
       });
 
@@ -523,17 +524,15 @@ const resolvers: Resolvers<Context> = {
             customer: {
               user_id: userId,
             },
+            status: SubscriptionStatus.ACTIVE,
           },
         });
 
       // Get Stripe subscription end date.
-      const stripeSubId =
-        biotechSubscription?.stripe_subscription_id ||
-        customerSubscription?.stripe_subscription_id;
-      invariant(stripeSubId, "No Stripe subscription ID found.");
-      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
-      const stripeSubPeriodEnd = stripeSub.current_period_end;
-      const subscriptionEndDate = moment.unix(stripeSubPeriodEnd).toDate();
+      invariant(
+        biotechSubscription !== null || customerSubscription !== null,
+        "No active Stripe subscription found."
+      );
 
       /**
        * Update subscription end date to current Stripe subscription period end.
@@ -541,6 +540,11 @@ const resolvers: Resolvers<Context> = {
        */
       await context.prisma.$transaction(async (trx) => {
         if (biotechSubscription) {
+          const stripeSub = await stripe.subscriptions.retrieve(
+            biotechSubscription.stripe_subscription_id
+          );
+          const stripeSubPeriodEnd = stripeSub.current_period_end;
+          const subscriptionEndDate = moment.unix(stripeSubPeriodEnd).toDate();
           await trx.subscription.update({
             where: {
               id: biotechSubscription.id,
@@ -549,6 +553,11 @@ const resolvers: Resolvers<Context> = {
               ended_at: subscriptionEndDate,
             },
           });
+          // Release any schedule
+          if (stripeSub.schedule) {
+            const scheduleId = stripeSub.schedule as string;
+            await stripe.subscriptionSchedules.release(scheduleId);
+          }
           await stripe.subscriptions.update(
             biotechSubscription.stripe_subscription_id,
             {
@@ -558,6 +567,11 @@ const resolvers: Resolvers<Context> = {
         }
 
         if (customerSubscription) {
+          const stripeSub = await stripe.subscriptions.retrieve(
+            customerSubscription.stripe_subscription_id
+          );
+          const stripeSubPeriodEnd = stripeSub.current_period_end;
+          const subscriptionEndDate = moment.unix(stripeSubPeriodEnd).toDate();
           await trx.customerSubscription.update({
             where: {
               id: customerSubscription.id,
@@ -566,6 +580,11 @@ const resolvers: Resolvers<Context> = {
               ended_at: subscriptionEndDate,
             },
           });
+          // Release any schedule
+          if (stripeSub.schedule) {
+            const scheduleId = stripeSub.schedule as string;
+            await stripe.subscriptionSchedules.release(scheduleId);
+          }
           await stripe.subscriptions.update(
             customerSubscription.stripe_subscription_id,
             {
