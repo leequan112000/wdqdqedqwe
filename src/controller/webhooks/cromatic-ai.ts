@@ -25,9 +25,9 @@ const verifySignature = (req: Request, signature: string): boolean => {
 }
 
 // Check cancel flag.
-const invariantNoCancelFlag = async (taskId: string) => {
+const invariantNoCancelFlag = async (sourcingSessiongId: string) => {
     const cancelFlag = await redis.multi()
-      .get(`cancel-ai-task:${taskId}`)
+      .get(`cancel-ai-task:${sourcingSessiongId}`)
       .exec();
     const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
     invariant(count === 0, 'Task is revoked. Skipping...');
@@ -91,7 +91,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          await invariantNoCancelFlag(task_id);
+          await invariantNoCancelFlag(sourcing_session.id);
 
           await pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
             "SOURCE_RFP_SPECIALTIES",
@@ -158,7 +158,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             },
           });
 
-          await invariantNoCancelFlag(task_id);
+          await invariantNoCancelFlag(sourcing_session.id);
 
           await pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
             sourceCros: {

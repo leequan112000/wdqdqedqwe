@@ -270,11 +270,6 @@ const resolvers: Resolvers<Context> = {
     cancelAiTask: async (_, args, context) => {
       const { task_id, sourcing_session_id } = args;
 
-      await context.redis
-        .multi()
-        .set(`cancel-ai-task:${task_id}`, 1, "EX", 120)
-        .exec();
-
       const resp = await sourcererService.revokeAiTask(
         {
           task_id,
