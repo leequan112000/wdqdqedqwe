@@ -244,7 +244,17 @@ type RevokeAiTaskArgs = {
 export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) => {
   const { task_id, sourcing_session_id } = args;
 
-  const response = await axios({
+  // Set canceled flag ASAP so that webhook could skip DB update.
+  const updateSourcingSessionPromise = ctx.prisma.sourcingSession.update({
+    where: {
+      id: sourcing_session_id,
+    },
+    data: {
+      task_canceled_at: new Date(),
+    },
+  });
+
+  const taskRemovePromise = axios({
     method: "post",
     url: `${app_env.AI_SERVER_URL}/task-revoke/`,
     data: {
@@ -252,20 +262,14 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
     },
   });
 
-  if (response.data.id === task_id) {
-    await ctx.prisma.sourcingSession.update({
-      where: {
-        id: sourcing_session_id,
-      },
-      data: {
-        task_canceled_at: new Date(),
-      },
-    });
-  }
+  const results = await Promise.all([
+    updateSourcingSessionPromise,
+    taskRemovePromise,
+  ])
 
   return {
+    id: results?.[1]?.data?.id as string | undefined,
     sourcing_session_id,
-    ...response.data,
   };
 };
 
