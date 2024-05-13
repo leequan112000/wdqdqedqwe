@@ -5,12 +5,14 @@ export const CROMATIC_ADMIN_EMAIL = 'admin@cromatic.bio'
 export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELED = 'canceled',
+  PAST_DUE = 'past_due',
 }
 
 export enum BillingInfoStatus {
   ACTIVE = 'active',
   CANCELED = 'canceled',
   PENDING_CANCEL = 'pending_cancel',
+  PAST_DUE = 'past_due',
 }
 
 export enum ProjectRequestStatus {

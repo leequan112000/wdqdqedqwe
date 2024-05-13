@@ -172,7 +172,7 @@
       "quantity": 1,
       "schedule": null,
       "start_date": 1713575296,
-      "status": "active",
+      "status": "canceled",
       "test_clock": null,
       "transfer_data": null,
       "trial_end": null,
