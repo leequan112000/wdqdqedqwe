@@ -93,7 +93,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
           await invariantNoCancelFlag(task_id);
 
-          pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+          await pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
             "SOURCE_RFP_SPECIALTIES",
             {
               sourceRfpSpecialties: {
@@ -108,8 +108,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         break;
       }
       case 'source_rfp_specialties_failed': {
-        console.log('failed')
-        pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+        await pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
           "SOURCE_RFP_SPECIALTIES",
           {
             sourceRfpSpecialties: {
@@ -161,7 +160,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
           await invariantNoCancelFlag(task_id);
 
-          pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+          await pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
             sourceCros: {
               task_id,
               sourcing_session_id: sourcing_session.id,
@@ -173,7 +172,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         break;
       }
       case "source_cros_failed": {
-        pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+        await pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
           sourceCros: {
             task_id,
             sourcing_session_id: null,
