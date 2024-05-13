@@ -6,6 +6,7 @@ import { InputMaybe } from '../../graphql/generated';
 import storeUpload from '../../helper/storeUpload';
 import { deleteObject } from '../../helper/awsS3';
 import { PublicError } from '../../graphql/errors/PublicError';
+import { redis } from '../../redis';
 
 export type ExtractPdfToRfpArgs = {
   sourcing_session_id?: string;
@@ -147,6 +148,8 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
     });
 
     if (sourcing_session_id) {
+      await redis.del(`cancel-ai-task:${sourcing_session_id}`);
+
       await ctx.prisma.sourcingSession.update({
         where: {
           id: sourcing_session_id,
@@ -214,6 +217,8 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       }
     });
 
+    await redis.del(`cancel-ai-task:${sourcing_session_id}`);
+
     await ctx.prisma.sourcingSubspecialty.deleteMany({
       where: {
         sourcing_session_id,
@@ -244,7 +249,22 @@ type RevokeAiTaskArgs = {
 export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) => {
   const { task_id, sourcing_session_id } = args;
 
-  const response = await axios({
+  await redis
+    .multi()
+    .set(`cancel-ai-task:${sourcing_session_id}`, 1, "EX", 120)
+    .exec();
+
+  // Set canceled flag ASAP so that webhook could skip DB update.
+  const updateSourcingSessionPromise = ctx.prisma.sourcingSession.update({
+    where: {
+      id: sourcing_session_id,
+    },
+    data: {
+      task_canceled_at: new Date(),
+    },
+  });
+
+  const taskRemovePromise = axios({
     method: "post",
     url: `${app_env.AI_SERVER_URL}/task-revoke/`,
     data: {
@@ -252,20 +272,14 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
     },
   });
 
-  if (response.data.id === task_id) {
-    await ctx.prisma.sourcingSession.update({
-      where: {
-        id: sourcing_session_id,
-      },
-      data: {
-        task_canceled_at: new Date(),
-      },
-    });
-  }
+  const results = await Promise.all([
+    updateSourcingSessionPromise,
+    taskRemovePromise,
+  ])
 
   return {
+    id: results?.[1]?.data?.id as string | undefined,
     sourcing_session_id,
-    ...response.data,
   };
 };
 

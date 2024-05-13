@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 
 import { SourceCroSubscriptionPayload, SourceRfpSpecialtySubscriptionPayload } from '../../graphql/generated/index';
 import { prisma } from '../../prisma';
+import { redis } from "../../redis";
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
 
@@ -21,6 +22,15 @@ const verifySignature = (req: Request, signature: string): boolean => {
   } else {
     return false;
   }
+}
+
+// Check cancel flag.
+const invariantNoCancelFlag = async (sourcingSessiongId: string) => {
+    const cancelFlag = await redis.multi()
+      .get(`cancel-ai-task:${sourcingSessiongId}`)
+      .exec();
+    const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
+    invariant(count === 0, 'Task is revoked. Skipping...');
 }
 
 export const cromaticAiWebhook = async (req: Request, res: Response): Promise<void> => {
@@ -46,9 +56,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
-
-        prisma.$transaction(async (trx) => {
+        await prisma.$transaction(async (trx) => {
           // Clear up existing extracted services
           await trx.sourcingSubspecialty.deleteMany({
             where: {
@@ -83,7 +91,9 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
             })
           );
 
-          pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+          await invariantNoCancelFlag(sourcing_session.id);
+
+          await pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
             "SOURCE_RFP_SPECIALTIES",
             {
               sourceRfpSpecialties: {
@@ -98,8 +108,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         break;
       }
       case 'source_rfp_specialties_failed': {
-        console.log('failed')
-        pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
+        await pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
           "SOURCE_RFP_SPECIALTIES",
           {
             sourceRfpSpecialties: {
@@ -121,25 +130,37 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
+        await prisma.$transaction(async (trx) => {
+          // Clear up existing matched result
+          await trx.sourcedCro.deleteMany({
+            where: {
+              sourcing_session_id: sourcing_session.id,
+            },
+          });
 
-        prisma.$transaction(async (trx) => {
-          const cappedData = data.slice(0, 50);
-          const sourcedCros = await Promise.all(
-            cappedData.map(async (cro: { cro_name: string, cro_id: string, score: string }) => {
-              return await trx.sourcedCro.create({
-                data: {
-                  name: cro.cro_name,
-                  cro_db_id: cro.cro_id,
-                  score: parseFloat(cro.score),
-                  is_shortlisted: false,
-                  sourcing_session_id: sourcing_session.id,
-                }
-              })
-            })
-          );
+          const cappedData: Array<{ cro_name: string, cro_id: string, score: string }> = data.slice(0, 50);
 
-          pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+          await trx.sourcingSession.update({
+            where: {
+              id: sourcing_session.id,
+            },
+            data: {
+              sourced_cros: {
+                createMany: {
+                  data: cappedData.map((cro) => ({
+                    name: cro.cro_name,
+                    cro_db_id: cro.cro_id,
+                    score: parseFloat(cro.score),
+                    is_shortlisted: false,
+                  })),
+                },
+              },
+            },
+          });
+
+          await invariantNoCancelFlag(sourcing_session.id);
+
+          await pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
             sourceCros: {
               task_id,
               sourcing_session_id: sourcing_session.id,
@@ -151,7 +172,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         break;
       }
       case "source_cros_failed": {
-        pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
+        await pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
           sourceCros: {
             task_id,
             sourcing_session_id: null,
