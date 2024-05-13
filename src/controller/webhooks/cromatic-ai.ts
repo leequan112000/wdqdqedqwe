@@ -24,6 +24,15 @@ const verifySignature = (req: Request, signature: string): boolean => {
   }
 }
 
+// Check cancel flag.
+const invariantNoCancelFlag = async (taskId: string) => {
+    const cancelFlag = await redis.multi()
+      .get(`cancel-ai-task:${taskId}`)
+      .exec();
+    const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
+    invariant(count === 0, 'Task is revoked. Skipping...');
+}
+
 export const cromaticAiWebhook = async (req: Request, res: Response): Promise<void> => {
   const signature = req.query.signature;
   if (!verifySignature(req, signature as string)) {
@@ -37,14 +46,6 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
   const event_name = payload.event_name;
 
   try {
-    // Check cancel flag.
-    const cancelFlag = await redis.multi()
-      .get(`cancel-ai-task:${task_id}`)
-      .ttl(`cancel-ai-task:${task_id}`)
-      .exec();
-    const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
-    invariant(count === 0, 'Task is revoked. Skipping...');
-
     switch (event_name) {
       case "source_rfp_specialties": {
         const sourcing_session = await prisma.sourcingSession.findFirst({
@@ -55,7 +56,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        prisma.$transaction(async (trx) => {
+        await prisma.$transaction(async (trx) => {
           // Clear up existing extracted services
           await trx.sourcingSubspecialty.deleteMany({
             where: {
@@ -89,6 +90,8 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
               });
             })
           );
+
+          await invariantNoCancelFlag(task_id);
 
           pubsub.publish<{ sourceRfpSpecialties: SourceRfpSpecialtySubscriptionPayload }>(
             "SOURCE_RFP_SPECIALTIES",
@@ -128,7 +131,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        prisma.$transaction(async (trx) => {
+        await prisma.$transaction(async (trx) => {
           // Clear up existing matched result
           await trx.sourcedCro.deleteMany({
             where: {
@@ -155,6 +158,8 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
               },
             },
           });
+
+          await invariantNoCancelFlag(task_id);
 
           pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
             sourceCros: {
