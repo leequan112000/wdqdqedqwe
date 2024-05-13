@@ -37,6 +37,14 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
   const event_name = payload.event_name;
 
   try {
+    // Check cancel flag.
+    const cancelFlag = await redis.multi()
+      .get(`cancel-ai-task:${task_id}`)
+      .ttl(`cancel-ai-task:${task_id}`)
+      .exec();
+    const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
+    invariant(count === 0, 'Task is revoked. Skipping...');
+
     switch (event_name) {
       case "source_rfp_specialties": {
         const sourcing_session = await prisma.sourcingSession.findFirst({
@@ -46,15 +54,6 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         });
 
         invariant(sourcing_session, 'No sourcing session found');
-
-        const cancelFlag = await redis.multi()
-          .get(`cancel-ai-task:${task_id}`)
-          .ttl(`cancel-ai-task:${task_id}`)
-          .exec();
-
-        const count = parseInt((cancelFlag?.[0][1] as string) || "0", 10);
-
-        invariant(count === 0, 'Task is revoked. Skipping...');
 
         prisma.$transaction(async (trx) => {
           // Clear up existing extracted services
@@ -129,10 +128,6 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        await
-
-        invariant(sourcing_session.task_canceled_at === null, 'Task is revoked. Skipping...');
-
         prisma.$transaction(async (trx) => {
           // Clear up existing matched result
           await trx.sourcedCro.deleteMany({
@@ -143,7 +138,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
           const cappedData: Array<{ cro_name: string, cro_id: string, score: string }> = data.slice(0, 50);
 
-          trx.sourcingSession.update({
+          await trx.sourcingSession.update({
             where: {
               id: sourcing_session.id,
             },
@@ -160,19 +155,6 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
               },
             },
           });
-          // await Promise.all(
-          //   cappedData.map(async (cro) => {
-          //     return await trx.sourcedCro.create({
-          //       data: {
-          //         name: cro.cro_name,
-          //         cro_db_id: cro.cro_id,
-          //         score: parseFloat(cro.score),
-          //         is_shortlisted: false,
-          //         sourcing_session_id: sourcing_session.id,
-          //       }
-          //     })
-          //   })
-          // );
 
           pubsub.publish<{ sourceCros: SourceCroSubscriptionPayload }>("SOURCE_CROS", {
             sourceCros: {
