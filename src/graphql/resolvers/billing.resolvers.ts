@@ -159,7 +159,7 @@ const processStripeInvoice = async (
       date: moment.unix(d.period_end),
       description,
       status,
-      invoice_url: d.invoice_pdf,
+      invoice_url: d.hosted_invoice_url,
     };
   });
   return (
