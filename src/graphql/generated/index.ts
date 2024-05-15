@@ -1997,6 +1997,25 @@ export type SourcedCro = {
   sourcing_session_id?: Maybe<Scalars['String']>;
 };
 
+export type SourcedCroConnection = {
+  __typename?: 'SourcedCroConnection';
+  edges?: Maybe<Array<Maybe<SourcedCroEdge>>>;
+  page_info?: Maybe<SourcedCroPageInfo>;
+};
+
+export type SourcedCroEdge = {
+  __typename?: 'SourcedCroEdge';
+  cursor: Scalars['String'];
+  node?: Maybe<SourcedCro>;
+};
+
+export type SourcedCroPageInfo = {
+  __typename?: 'SourcedCroPageInfo';
+  end_cursor: Scalars['String'];
+  has_next_page?: Maybe<Scalars['Boolean']>;
+  total_count?: Maybe<Scalars['Int']>;
+};
+
 export type SourcingAttachment = {
   __typename?: 'SourcingAttachment';
   byte_size?: Maybe<Scalars['Float']>;
@@ -2018,7 +2037,8 @@ export type SourcingSession = {
   preparation_details?: Maybe<Scalars['String']>;
   project_desc?: Maybe<Scalars['String']>;
   project_title?: Maybe<Scalars['String']>;
-  sourced_cros?: Maybe<Array<Maybe<SourcedCro>>>;
+  shortlisted_cros?: Maybe<Array<Maybe<SourcedCro>>>;
+  sourced_cros?: Maybe<SourcedCroConnection>;
   sourcing_attachments?: Maybe<Array<Maybe<SourcingAttachment>>>;
   sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
   task_id?: Maybe<Scalars['String']>;
@@ -2026,6 +2046,12 @@ export type SourcingSession = {
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']>;
   vendor_requirement?: Maybe<Scalars['String']>;
+};
+
+
+export type SourcingSessionSourced_CrosArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
 };
 
 export type SourcingSubspecialty = {
@@ -2427,6 +2453,9 @@ export type ResolversTypes = ResolversObject<{
   SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourcedCro: ResolverTypeWrapper<SourcedCro>;
+  SourcedCroConnection: ResolverTypeWrapper<SourcedCroConnection>;
+  SourcedCroEdge: ResolverTypeWrapper<SourcedCroEdge>;
+  SourcedCroPageInfo: ResolverTypeWrapper<SourcedCroPageInfo>;
   SourcingAttachment: ResolverTypeWrapper<SourcingAttachment>;
   SourcingSession: ResolverTypeWrapper<SourcingSession>;
   SourcingSubspecialty: ResolverTypeWrapper<SourcingSubspecialty>;
@@ -2551,6 +2580,9 @@ export type ResolversParentTypes = ResolversObject<{
   SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourcedCro: SourcedCro;
+  SourcedCroConnection: SourcedCroConnection;
+  SourcedCroEdge: SourcedCroEdge;
+  SourcedCroPageInfo: SourcedCroPageInfo;
   SourcingAttachment: SourcingAttachment;
   SourcingSession: SourcingSession;
   SourcingSubspecialty: SourcingSubspecialty;
@@ -3620,6 +3652,25 @@ export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SourcedCroConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCroConnection'] = ResolversParentTypes['SourcedCroConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCroEdge']>>>, ParentType, ContextType>;
+  page_info?: Resolver<Maybe<ResolversTypes['SourcedCroPageInfo']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcedCroEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCroEdge'] = ResolversParentTypes['SourcedCroEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['SourcedCro']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcedCroPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCroPageInfo'] = ResolversParentTypes['SourcedCroPageInfo']> = ResolversObject<{
+  end_cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  has_next_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  total_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SourcingAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingAttachment'] = ResolversParentTypes['SourcingAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -3640,7 +3691,8 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
   preparation_details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  sourced_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  shortlisted_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
+  sourced_cros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<SourcingSessionSourced_CrosArgs, 'first'>>;
   sourcing_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingAttachment']>>>, ParentType, ContextType>;
   sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3941,6 +3993,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourcedCro?: SourcedCroResolvers<ContextType>;
+  SourcedCroConnection?: SourcedCroConnectionResolvers<ContextType>;
+  SourcedCroEdge?: SourcedCroEdgeResolvers<ContextType>;
+  SourcedCroPageInfo?: SourcedCroPageInfoResolvers<ContextType>;
   SourcingAttachment?: SourcingAttachmentResolvers<ContextType>;
   SourcingSession?: SourcingSessionResolvers<ContextType>;
   SourcingSubspecialty?: SourcingSubspecialtyResolvers<ContextType>;
