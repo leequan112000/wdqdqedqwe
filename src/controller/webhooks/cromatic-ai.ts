@@ -140,23 +140,25 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
           const cappedData: Array<{ cro_name: string, cro_id: string, score: string }> = data.slice(0, 50);
 
-          await trx.sourcingSession.update({
-            where: {
-              id: sourcing_session.id,
-            },
-            data: {
-              sourced_cros: {
-                createMany: {
-                  data: cappedData.map((cro) => ({
+          await Promise.all(
+            cappedData.map(
+              async (cro: {
+                cro_name: string;
+                cro_id: string;
+                score: string;
+              }) => {
+                return await trx.sourcedCro.create({
+                  data: {
                     name: cro.cro_name,
                     cro_db_id: cro.cro_id,
                     score: parseFloat(cro.score),
                     is_shortlisted: false,
-                  })),
-                },
-              },
-            },
-          });
+                    sourcing_session_id: sourcing_session.id,
+                  },
+                });
+              }
+            )
+          );
 
           await invariantNoCancelFlag(sourcing_session.id);
 
