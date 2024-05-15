@@ -43,8 +43,17 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
       }));
     },
-    sourced_cros: async (parent, _, context) => {
+    sourced_cros: async (parent, args, context) => {
       invariant(parent.id, "Missing session id.");
+      const { first, after } = args;
+
+      const total_count = await context.prisma.sourcedCro
+        .count({
+          where: {
+            sourcing_session_id: parent.id,
+          },
+        });
+
       const sourcedCros = await context.prisma.sourcingSession
         .findUnique({
           where: {
@@ -52,33 +61,53 @@ const resolvers: Resolvers<Context> = {
           },
         })
         .sourced_cros({
-          orderBy: [{ score: "desc" }],
-        });
+          take: first,
+          skip: after ? 1 : undefined, // Skip the cursor
+          cursor: after
+            ? { id: after }
+            : undefined,
+          orderBy: {
+            score: 'desc',
+          },
+        }) || [];
 
-      if (sourcedCros) {
-        const result = await Promise.all(sourcedCros.map(
-          async (sourcedCro) => {
-            const vendorCompany = await context.prismaCRODb.vendorCompany.findUnique({
-              where: {
-                id: sourcedCro.cro_db_id,
-                NOT: {
-                  company_description: null,
-                  company_ipo_status: null,
-                }
-              },
-            });
+      const edges = sourcedCros.map((c) => ({
+        cursor: c.id,
+        node: c,
+      }));
 
-            if (vendorCompany) {
-              return { ...sourcedCro, cro_db_vendor_company: vendorCompany }
-            }
-            return null;
-          }
-        ));
+      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
 
-        return result.filter(Boolean);
+      if (endCursor) {
+        const nextSourcedCros = await context.prisma.sourcingSession
+          .findUnique({
+            where: {
+              id: parent.id,
+            },
+          })
+          .sourced_cros({
+            take: first,
+            skip: after ? 1 : undefined, // Skip the cursor
+            cursor: after
+              ? { id: after }
+              : undefined,
+            orderBy: {
+              score: 'desc',
+            },
+          }) || [];
+
+        hasNextPage = nextSourcedCros.length > 0;
       }
 
-      return [];
+      return {
+        edges,
+        page_info: {
+          end_cursor: endCursor || '',
+          has_next_page: hasNextPage,
+          total_count,
+        },
+      };
     },
   },
   SourcingSubspecialty: {

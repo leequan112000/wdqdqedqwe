@@ -10,9 +10,25 @@ type SourcingSession {
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
-  sourced_cros: [SourcedCro]
+  sourced_cros(first: Int = 5, after: String): SourcedCroConnection
   updated_at: Date
   created_at: Date
+}
+
+type SourcedCroEdge {
+  cursor: String!
+  node: SourcedCro
+}
+
+type SourcedCroPageInfo {
+  end_cursor: String!
+  has_next_page: Boolean
+  total_count: Int
+}
+
+type SourcedCroConnection {
+  edges: [SourcedCroEdge]
+  page_info: SourcedCroPageInfo
 }
 
 type SourcingSubspecialty {
