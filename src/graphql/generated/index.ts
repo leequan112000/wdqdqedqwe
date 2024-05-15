@@ -1838,6 +1838,7 @@ export type QuerySearchLabSpecializationsArgs = {
 export type QuerySearchVendorByServiceArgs = {
   after?: InputMaybe<Scalars['String']>;
   fingerprint?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
   ip_address?: InputMaybe<Scalars['String']>;
   keyword: Scalars['String'];
 };
@@ -1952,7 +1953,7 @@ export type SaveAvailabilityRulesInput = {
 export type SearchVendorByServicePaginatedResult = {
   __typename?: 'SearchVendorByServicePaginatedResult';
   edges?: Maybe<Array<Maybe<SearchVendorByServiceResultEdge>>>;
-  pageInfo?: Maybe<SearchVendorByServiceResultPageInfo>;
+  page_info?: Maybe<SearchVendorByServiceResultPageInfo>;
 };
 
 export type SearchVendorByServiceResultEdge = {
@@ -1963,10 +1964,9 @@ export type SearchVendorByServiceResultEdge = {
 
 export type SearchVendorByServiceResultPageInfo = {
   __typename?: 'SearchVendorByServiceResultPageInfo';
-  endCursor: Scalars['String'];
-  hasNextPage?: Maybe<Scalars['Boolean']>;
-  hasPreviousPage?: Maybe<Scalars['Boolean']>;
-  total_matched?: Maybe<Scalars['Int']>;
+  end_cursor?: Maybe<Scalars['String']>;
+  has_next_page?: Maybe<Scalars['Boolean']>;
+  total_count?: Maybe<Scalars['Int']>;
 };
 
 export type SourceCroSubscriptionPayload = {
@@ -3490,7 +3490,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
-  searchVendorByService?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServiceArgs, 'keyword'>>;
+  searchVendorByService?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServiceArgs, 'first' | 'keyword'>>;
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3574,7 +3574,7 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
 
 export type SearchVendorByServicePaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchVendorByServicePaginatedResult'] = ResolversParentTypes['SearchVendorByServicePaginatedResult']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SearchVendorByServiceResultEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<Maybe<ResolversTypes['SearchVendorByServiceResultPageInfo']>, ParentType, ContextType>;
+  page_info?: Resolver<Maybe<ResolversTypes['SearchVendorByServiceResultPageInfo']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3585,10 +3585,9 @@ export type SearchVendorByServiceResultEdgeResolvers<ContextType = any, ParentTy
 }>;
 
 export type SearchVendorByServiceResultPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchVendorByServiceResultPageInfo'] = ResolversParentTypes['SearchVendorByServiceResultPageInfo']> = ResolversObject<{
-  endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  total_matched?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  end_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  has_next_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  total_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
