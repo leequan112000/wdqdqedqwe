@@ -11,6 +11,7 @@ type SourcingSession {
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
   sourced_cros(first: Int = 5, after: String): SourcedCroConnection
+  shortlisted_cros: [SourcedCro]
   updated_at: Date
   created_at: Date
 }

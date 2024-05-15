@@ -43,6 +43,23 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
       }));
     },
+    shortlisted_cros: async (parent, _, context) => {
+      invariant(parent.id, "Missing session id.");
+      return await context.prisma.sourcingSession
+        .findUnique({
+          where: {
+            id: parent.id,
+          },
+        })
+        .sourced_cros({
+          where: {
+            is_shortlisted: true,
+          },
+          orderBy: {
+            score: 'desc',
+          },
+        }) || [];
+    },
     sourced_cros: async (parent, args, context) => {
       invariant(parent.id, "Missing session id.");
       const { first, after } = args;
