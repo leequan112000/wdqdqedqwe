@@ -388,3 +388,10 @@ export enum CountryRegion {
   LATAM = 'LATAM',
   APAC = 'APAC',
 }
+
+export enum SourcingResultSortBy {
+  BEST_MATCH = 'Best match',
+  TEAM_SIZE = 'Team size',
+  REVENUE = 'Revenue',
+  ALPHABETICAL = 'A - Z',
+}
