@@ -2,7 +2,7 @@ import { withFilter } from "graphql-subscriptions";
 import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import sourcererService from "../../services/sourcerer/sourcerer.service";
-import { CountryRegion } from "../../helper/constant";
+import { CountryRegion, SourcingResultSortBy } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { formatBytes } from "../../helper/filesize";
 import { countryRegionMap, getRegionByCountryCode } from "../../helper/country";
@@ -66,7 +66,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourced_cros: async (parent, args, context) => {
       invariant(parent.id, "Missing session id.");
-      const { first, after, filterCountryBy } = args;
+      const { first, after, sortBy, filterCountryBy } = args;
 
       const sourcedCroFilter: Prisma.SourcedCroWhereInput = {
         vendor_company: {
@@ -106,6 +106,20 @@ const resolvers: Resolvers<Context> = {
 
       const total_count = sourcingSession!._count.sourced_cros;
 
+      const sourcedCroSorting: Prisma.SourcedCroOrderByWithRelationInput = (() => {
+        switch (sortBy) {
+          case SourcingResultSortBy.ALPHABETICAL:
+            return { name: 'asc' };
+          case SourcingResultSortBy.REVENUE:
+            return { vendor_company: { company_revenue_value: 'desc' } };
+          case SourcingResultSortBy.TEAM_SIZE:
+            return { vendor_company: { company_average_size: 'desc' } };
+          case SourcingResultSortBy.BEST_MATCH:
+          default:
+            return { score: 'desc' };
+        }
+      })();
+
       const sourcedCros = await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
@@ -118,9 +132,7 @@ const resolvers: Resolvers<Context> = {
           cursor: after
             ? { id: after }
             : undefined,
-          orderBy: {
-            score: 'desc',
-          },
+          orderBy: sourcedCroSorting,
           where: sourcedCroFilter,
         }) || [];
 
@@ -145,9 +157,7 @@ const resolvers: Resolvers<Context> = {
             cursor: after
               ? { id: after }
               : undefined,
-            orderBy: {
-              score: 'desc',
-            },
+            orderBy: sourcedCroSorting,
             where: sourcedCroFilter,
           }) || [];
 

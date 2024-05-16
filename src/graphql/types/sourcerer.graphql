@@ -13,6 +13,7 @@ type SourcingSession {
   sourced_cros(
     first: Int = 5,
     after: String
+    sortBy: String
     filterCountryBy: String
   ): SourcedCroConnection
   shortlisted_cros: [SourcedCro]
