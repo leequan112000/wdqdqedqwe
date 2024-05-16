@@ -7,6 +7,7 @@ import invariant from "../../helper/invariant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { formatBytes } from "../../helper/filesize";
 import { PublicError } from "../errors/PublicError";
+import { Prisma } from "../../../prisma-cro/generated/client";
 
 const resolvers: Resolvers<Context> = {
   SourcingSession: {
@@ -58,24 +59,46 @@ const resolvers: Resolvers<Context> = {
           orderBy: {
             score: 'desc',
           },
+
         }) || [];
     },
     sourced_cros: async (parent, args, context) => {
       invariant(parent.id, "Missing session id.");
       const { first, after } = args;
 
-      const total_count = await context.prismaCRODb.sourcedCro
-        .count({
-          where: {
-            sourcing_session_id: parent.id,
+      const sourcedCroFilter: Prisma.SourcedCroWhereInput = {
+        vendor_company: {
+          NOT: {
+            company_description: null,
+            company_ipo_status: null,
           },
-        });
+          is_active: true,
+        },
+      };
+
+      const sourcingSession = await context.prismaCRODb.sourcingSession.findUnique({
+        where: {
+          id: parent.id,
+        },
+        include: {
+          _count: {
+            select: {
+              sourced_cros: {
+                where: sourcedCroFilter,
+              },
+            },
+          },
+        },
+      });
+
+      const total_count = sourcingSession!._count.sourced_cros;
 
       const sourcedCros = await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
           },
+
         })
         .sourced_cros({
           take: first,
@@ -86,6 +109,7 @@ const resolvers: Resolvers<Context> = {
           orderBy: {
             score: 'desc',
           },
+          where: sourcedCroFilter,
         }) || [];
 
       const edges = sourcedCros.map((c) => ({
@@ -112,6 +136,7 @@ const resolvers: Resolvers<Context> = {
             orderBy: {
               score: 'desc',
             },
+            where: sourcedCroFilter,
           }) || [];
 
         hasNextPage = nextSourcedCros.length > 0;
