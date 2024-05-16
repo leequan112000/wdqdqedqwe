@@ -2,10 +2,12 @@ import { withFilter } from "graphql-subscriptions";
 import { Resolvers } from "../generated";
 import { Context } from "../../types/context";
 import sourcererService from "../../services/sourcerer/sourcerer.service";
-import { pubsub } from "../../helper/pubsub";
-import invariant from "../../helper/invariant";
+import { CountryRegion } from "../../helper/constant";
 import { deleteObject, getSignedUrl } from "../../helper/awsS3";
 import { formatBytes } from "../../helper/filesize";
+import { countryRegionMap, getRegionByCountryCode } from "../../helper/country";
+import invariant from "../../helper/invariant";
+import { pubsub } from "../../helper/pubsub";
 import { PublicError } from "../errors/PublicError";
 import { Prisma } from "../../../prisma-cro/generated/client";
 
@@ -64,7 +66,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourced_cros: async (parent, args, context) => {
       invariant(parent.id, "Missing session id.");
-      const { first, after } = args;
+      const { first, after, filterCountryBy } = args;
 
       const sourcedCroFilter: Prisma.SourcedCroWhereInput = {
         vendor_company: {
@@ -73,6 +75,16 @@ const resolvers: Resolvers<Context> = {
             company_ipo_status: null,
           },
           is_active: true,
+          vendor_company_locations:
+            filterCountryBy === CountryRegion.ALL ? {} : {
+              some: {
+                country: {
+                  in: Object.keys(countryRegionMap).filter(
+                    (countryCode) => getRegionByCountryCode(countryCode) === filterCountryBy
+                  )
+                }
+              }
+            }
         },
       };
 
@@ -98,7 +110,6 @@ const resolvers: Resolvers<Context> = {
           where: {
             id: parent.id,
           },
-
         })
         .sourced_cros({
           take: first,

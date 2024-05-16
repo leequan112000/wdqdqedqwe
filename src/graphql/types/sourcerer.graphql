@@ -10,7 +10,11 @@ type SourcingSession {
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
-  sourced_cros(first: Int = 5, after: String): SourcedCroConnection
+  sourced_cros(
+    first: Int = 5,
+    after: String
+    filterCountryBy: String
+  ): SourcedCroConnection
   shortlisted_cros: [SourcedCro]
   updated_at: Date
   created_at: Date
