@@ -3,12 +3,6 @@ import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
 import { Prisma } from "../../../prisma-cro/generated/client";
 
-const extractTeamSize = (vendor: { company_size: string | null }) => {
-  const teamSizeRange = vendor.company_size || "0-0";
-  const [min, max] = teamSizeRange.replace(/,/g, "").split(/—|-/).map(Number);
-  return (min + max) / 2; // Use the average value for comparison
-};
-
 const RATE_LIMIT_FIXED_WINDOW = 60; // in second
 const RATE_LIMIT_MAX_COUNTS = 15;
 
@@ -77,7 +71,7 @@ const resolvers: Resolvers<Context> = {
           company_ipo_status: null,
         },
         is_active: true,
-      }
+      };
 
       const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
         where: vendorCompanyFilter,
@@ -87,21 +81,18 @@ const resolvers: Resolvers<Context> = {
         where: vendorCompanyFilter,
         take: first,
         skip: after ? 1 : undefined,
-        cursor: after
-          ? { id: after }
-          : undefined,
+        cursor: after ? { id: after } : undefined,
+        orderBy: {
+          company_average_size: "desc",
+        },
       });
-
-      // TODO: Sort company by team size.
-      // vendors.sort((a, b) => {
-      //   return extractTeamSize(b) - extractTeamSize(a);
-      // });
 
       const edges = vendors.map((v) => ({
         cursor: v.id,
         node: v,
       }));
-      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
       let hasNextPage = false;
 
       if (endCursor) {
@@ -109,9 +100,10 @@ const resolvers: Resolvers<Context> = {
           where: vendorCompanyFilter,
           take: first,
           skip: after ? 1 : undefined,
-          cursor: endCursor
-            ? { id: endCursor }
-            : undefined,
+          cursor: endCursor ? { id: endCursor } : undefined,
+          orderBy: {
+            company_average_size: "desc",
+          },
         });
 
         hasNextPage = nextVendors.length > 0;
