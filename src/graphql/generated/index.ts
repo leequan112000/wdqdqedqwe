@@ -2051,7 +2051,9 @@ export type SourcingSession = {
 
 export type SourcingSessionSourced_CrosArgs = {
   after?: InputMaybe<Scalars['String']>;
+  filterCountryBy?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
+  sortBy?: InputMaybe<Scalars['String']>;
 };
 
 export type SourcingSubspecialty = {
