@@ -1,6 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
+import { Prisma } from "../../../prisma-cro/generated/client";
 
 const extractTeamSize = (vendor: { company_size: string | null }) => {
   const teamSizeRange = vendor.company_size || "0-0";
@@ -63,48 +64,27 @@ const resolvers: Resolvers<Context> = {
         }));
       }
 
-      const subspecialtiesWithVendor = await context.prismaCRODb.subspecialty
-        .findFirst({
-          where: {
-            name: keyword,
-          },
-        })
-        .vendor_company_subspecialties({
-          include: {
-            vendor_company: true,
-          },
-          where: {
-            vendor_company: {
-              NOT: {
-                company_description: null,
-                company_ipo_status: null,
-              },
-            },
-          },
-        });
-
-      const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
-        where: {
-          vendor_company_subspecialties: {
-            some: {
-              subspecialty: {
-                name: keyword,
-              },
+      const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
+        vendor_company_subspecialties: {
+          some: {
+            subspecialty: {
+              name: keyword,
             },
           },
         },
+        NOT: {
+          company_description: null,
+          company_ipo_status: null,
+        },
+        is_active: true,
+      }
+
+      const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
+        where: vendorCompanyFilter,
       });
 
       const vendors = await context.prismaCRODb.vendorCompany.findMany({
-        where: {
-          vendor_company_subspecialties: {
-            some: {
-              subspecialty: {
-                name: keyword,
-              },
-            },
-          },
-        },
+        where: vendorCompanyFilter,
         take: first,
         skip: after ? 1 : undefined,
         cursor: after
@@ -112,6 +92,7 @@ const resolvers: Resolvers<Context> = {
           : undefined,
       });
 
+      // TODO: Sort company by team size.
       // vendors.sort((a, b) => {
       //   return extractTeamSize(b) - extractTeamSize(a);
       // });
@@ -125,15 +106,7 @@ const resolvers: Resolvers<Context> = {
 
       if (endCursor) {
         const nextVendors = await context.prismaCRODb.vendorCompany.findMany({
-          where: {
-            vendor_company_subspecialties: {
-              some: {
-                subspecialty: {
-                  name: keyword,
-                },
-              },
-            },
-          },
+          where: vendorCompanyFilter,
           take: first,
           skip: after ? 1 : undefined,
           cursor: endCursor
