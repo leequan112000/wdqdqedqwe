@@ -75,7 +75,7 @@ const resolvers: Resolvers<Context> = {
             company_ipo_status: null,
           },
           is_active: true,
-          ...(filterCountryBy === CountryRegion.ALL ? {} : {
+          ...((!filterCountryBy || filterCountryBy === CountryRegion.ALL) ? {} : {
             vendor_company_locations: {
               some: {
                 country: {
