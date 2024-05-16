@@ -20,7 +20,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourcing_subspecialties: async (parent, _, context) => {
       invariant(parent.id, "Missing session id.");
-      return await context.prisma.sourcingSession
+      return await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
@@ -30,7 +30,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourcing_attachments: async (parent, _, context) => {
       invariant(parent.id, "Missing session id.");
-      const attachments = await context.prisma.sourcingSession
+      const attachments = await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
@@ -45,7 +45,7 @@ const resolvers: Resolvers<Context> = {
     },
     shortlisted_cros: async (parent, _, context) => {
       invariant(parent.id, "Missing session id.");
-      return await context.prisma.sourcingSession
+      return await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
@@ -64,14 +64,14 @@ const resolvers: Resolvers<Context> = {
       invariant(parent.id, "Missing session id.");
       const { first, after } = args;
 
-      const total_count = await context.prisma.sourcedCro
+      const total_count = await context.prismaCRODb.sourcedCro
         .count({
           where: {
             sourcing_session_id: parent.id,
           },
         });
 
-      const sourcedCros = await context.prisma.sourcingSession
+      const sourcedCros = await context.prismaCRODb.sourcingSession
         .findUnique({
           where: {
             id: parent.id,
@@ -97,7 +97,7 @@ const resolvers: Resolvers<Context> = {
       let hasNextPage = false;
 
       if (endCursor) {
-        const nextSourcedCros = await context.prisma.sourcingSession
+        const nextSourcedCros = await context.prismaCRODb.sourcingSession
           .findUnique({
             where: {
               id: parent.id,
@@ -130,7 +130,7 @@ const resolvers: Resolvers<Context> = {
   SourcingSubspecialty: {
     sourcing_session: async (parent, _, context) => {
       invariant(parent.sourcing_session_id, "Missing session id.");
-      return await context.prisma.sourcingSession.findUnique({
+      return await context.prismaCRODb.sourcingSession.findUnique({
         where: {
           id: parent.sourcing_session_id,
         },
@@ -150,7 +150,7 @@ const resolvers: Resolvers<Context> = {
     },
     sourcing_session: async (parent, _, context) => {
       if (parent.sourcing_session_id) {
-        return await context.prisma.sourcingSession.findUnique({
+        return await context.prismaCRODb.sourcingSession.findUnique({
           where: {
             id: parent.sourcing_session_id,
           },
@@ -162,19 +162,19 @@ const resolvers: Resolvers<Context> = {
   SourcedCro: {
     sourcing_session: async (parent, _, context) => {
       invariant(parent.sourcing_session_id, "Missing session id.");
-      return await context.prisma.sourcingSession.findUnique({
+      return await context.prismaCRODb.sourcingSession.findUnique({
         where: {
           id: parent.sourcing_session_id,
         },
       });
     },
-    cro_db_vendor_company: async (parent, _, context) => {
-      if (parent.cro_db_vendor_company) return parent.cro_db_vendor_company;
+    vendor_company: async (parent, _, context) => {
+      if (parent.vendor_company) return parent.vendor_company;
 
-      invariant(parent.cro_db_id, "Missing CRO DB id.");
+      invariant(parent.vendor_company_id, "Missing vendor company id.");
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
-          id: parent.cro_db_id,
+          id: parent.vendor_company_id,
         },
       });
     },
@@ -182,7 +182,7 @@ const resolvers: Resolvers<Context> = {
   Query: {
     sourcingSession: async (_, args, context) => {
       const { id } = args;
-      const sourcingSession = await context.prisma.sourcingSession.findFirst({
+      const sourcingSession = await context.prismaCRODb.sourcingSession.findFirst({
         where: {
           id,
           user_id: context.req.user_id,
@@ -197,7 +197,7 @@ const resolvers: Resolvers<Context> = {
       return sourcingSession;
     },
     sourcingSessions: async (_, __, context) => {
-      const sessions = await context.prisma.sourcingSession.findMany({
+      const sessions = await context.prismaCRODb.sourcingSession.findMany({
         where: {
           user_id: context.req.user_id,
         },
@@ -250,7 +250,7 @@ const resolvers: Resolvers<Context> = {
       const { sourcing_session_id, sourced_cro_id } = args;
       invariant(context.req.user_id, new PublicError("User not found."));
 
-      return await context.prisma.sourcedCro.update({
+      return await context.prismaCRODb.sourcedCro.update({
         where: {
           id: sourced_cro_id,
           sourcing_session_id,
@@ -264,7 +264,7 @@ const resolvers: Resolvers<Context> = {
       const { sourcing_session_id, sourced_cro_id } = args;
       invariant(context.req.user_id, new PublicError("User not found."));
 
-      return await context.prisma.sourcedCro.update({
+      return await context.prismaCRODb.sourcedCro.update({
         where: {
           id: sourced_cro_id,
           sourcing_session_id,
@@ -276,7 +276,7 @@ const resolvers: Resolvers<Context> = {
     },
     confirmEditSourcingDetails: async (_, args, context) => {
       const { sourcing_session_id } = args;
-      return await context.prisma.$transaction(async (trx) => {
+      return await context.prismaCRODb.$transaction(async (trx) => {
         await trx.sourcingSubspecialty.deleteMany({
           where: {
             sourcing_session_id: sourcing_session_id,
@@ -299,7 +299,7 @@ const resolvers: Resolvers<Context> = {
     confirmEditSourcingSubspecialties: async (_, args, context) => {
       const { sourcing_session_id } = args;
 
-      return await context.prisma.$transaction(async (trx) => {
+      return await context.prismaCRODb.$transaction(async (trx) => {
         await trx.sourcedCro.deleteMany({
           where: {
             sourcing_session_id,
@@ -329,7 +329,7 @@ const resolvers: Resolvers<Context> = {
     confirmRemoveSourcingSession: async (_, args, context) => {
       const { sourcing_session_id } = args;
 
-      return await context.prisma.$transaction(async (trx) => {
+      return await context.prismaCRODb.$transaction(async (trx) => {
         const sourcingAttachments = await trx.sourcingAttachment.findMany({
           where: {
             sourcing_session_id,

@@ -56,10 +56,10 @@ type SourcedCro {
   name: String
   score: Float
   is_shortlisted: Boolean
-  cro_db_id: String
+  vendor_company_id: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
-  cro_db_vendor_company: CroDbVendorCompany
+  vendor_company: CroDbVendorCompany
 }
 
 type SourcingTask {
