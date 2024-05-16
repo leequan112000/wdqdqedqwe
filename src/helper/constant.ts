@@ -380,3 +380,11 @@ export enum BillingInvoiceStatus {
   OPEN = "open",
   FAILED = "failed",
 }
+
+export enum CountryRegion {
+  ALL = 'All',
+  NORTH_AMERICA = 'NA',
+  EMEA = 'EMEA',
+  LATAM = 'LATAM',
+  APAC = 'APAC',
+}
