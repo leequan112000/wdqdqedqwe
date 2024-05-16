@@ -153,14 +153,11 @@ const resolvers: Resolvers<Context> = {
           })
           .sourced_cros({
             take: first,
-            skip: after ? 1 : undefined, // Skip the cursor
-            cursor: after
-              ? { id: after }
-              : undefined,
+            skip: 1,
+            cursor: { id: endCursor },
             orderBy: sourcedCroSorting,
             where: sourcedCroFilter,
           }) || [];
-
         hasNextPage = nextSourcedCros.length > 0;
       }
 
