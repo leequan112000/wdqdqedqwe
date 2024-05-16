@@ -1987,14 +1987,14 @@ export type SourceRfpSpecialtySubscriptionPayload = {
 
 export type SourcedCro = {
   __typename?: 'SourcedCro';
-  cro_db_id?: Maybe<Scalars['String']>;
-  cro_db_vendor_company?: Maybe<CroDbVendorCompany>;
   id?: Maybe<Scalars['String']>;
   is_shortlisted?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
   score?: Maybe<Scalars['Float']>;
   sourcing_session?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
+  vendor_company?: Maybe<CroDbVendorCompany>;
+  vendor_company_id?: Maybe<Scalars['String']>;
 };
 
 export type SourcedCroConnection = {
@@ -3640,14 +3640,14 @@ export type SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType = any, Pa
 }>;
 
 export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCro'] = ResolversParentTypes['SourcedCro']> = ResolversObject<{
-  cro_db_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  cro_db_vendor_company?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_shortlisted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_company?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
+  vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

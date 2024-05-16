@@ -67,13 +67,13 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
     );
 
     if (sourcing_session_id) {
-      const existingRfp = await ctx.prisma.sourcingAttachment.findFirst({
+      const existingRfp = await ctx.prismaCRODb!.sourcingAttachment.findFirst({
         where: {
           sourcing_session_id,
         },
       });
       if (existingRfp) {
-        await ctx.prisma.sourcingAttachment.update({
+        await ctx.prismaCRODb!.sourcingAttachment.update({
           data: {
             byte_size: filesize,
             filename,
@@ -87,7 +87,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
         await deleteObject(existingRfp.key);
       }
 
-      return await ctx.prisma.sourcingSession.update({
+      return await ctx.prismaCRODb!.sourcingSession.update({
         where: {
           id: sourcing_session_id,
         },
@@ -99,7 +99,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
         },
       });
     } else {
-      return await ctx.prisma.sourcingSession.create({
+      return await ctx.prismaCRODb!.sourcingSession.create({
         data: {
           task_id: "",
           project_title,
@@ -113,7 +113,6 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
               byte_size: filesize,
               filename,
               key,
-              uploader_id: user_id,
             },
           },
         },
@@ -150,7 +149,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
     if (sourcing_session_id) {
       await redis.del(`cancel-ai-task:${sourcing_session_id}`);
 
-      await ctx.prisma.sourcingSession.update({
+      await ctx.prismaCRODb!.sourcingSession.update({
         where: {
           id: sourcing_session_id,
         },
@@ -171,7 +170,7 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
       };
     }
 
-    const session = await ctx.prisma.sourcingSession.create({
+    const session = await ctx.prismaCRODb!.sourcingSession.create({
       data: {
         task_id: response.data.id,
         project_title: args.project_title,
@@ -207,7 +206,7 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       },
     });
 
-    await ctx.prisma.sourcingSession.update({
+    await ctx.prismaCRODb!.sourcingSession.update({
       where: {
         id: sourcing_session_id,
       },
@@ -219,13 +218,13 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
 
     await redis.del(`cancel-ai-task:${sourcing_session_id}`);
 
-    await ctx.prisma.sourcingSubspecialty.deleteMany({
+    await ctx.prismaCRODb!.sourcingSubspecialty.deleteMany({
       where: {
         sourcing_session_id,
       }
     });
 
-    await ctx.prisma.sourcingSubspecialty.createMany({
+    await ctx.prismaCRODb!.sourcingSubspecialty.createMany({
       data: names.map(name => ({
         sourcing_session_id,
         name,
@@ -255,7 +254,7 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
     .exec();
 
   // Set canceled flag ASAP so that webhook could skip DB update.
-  const updateSourcingSessionPromise = ctx.prisma.sourcingSession.update({
+  const updateSourcingSessionPromise = ctx.prismaCRODb!.sourcingSession.update({
     where: {
       id: sourcing_session_id,
     },

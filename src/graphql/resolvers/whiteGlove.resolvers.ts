@@ -7,7 +7,7 @@ const resolvers: Resolvers<Context> = {
   Mutation: {
     sendSourcingShortlist: async (_, args, context) => {
       const { sourcing_session_id } = args;
-      const sourcingSession = await context.prisma.sourcingSession.findFirst({
+      const sourcingSession = await context.prismaCRODb.sourcingSession.findFirst({
         where: {
           id: sourcing_session_id,
         },
@@ -30,7 +30,7 @@ const resolvers: Resolvers<Context> = {
             admin_name: admin.username,
             project_title: sourcingSession.project_title,
             shortlisted_vendors: sourcingSession.sourced_cros.map((vendor) => ({
-              id: vendor.cro_db_id,
+              id: vendor.vendor_company_id,
               company_name: vendor.name,
             })),
             sourcing_session_id,

@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { Request, Response } from 'express';
 
 import { SourceCroSubscriptionPayload, SourceRfpSpecialtySubscriptionPayload } from '../../graphql/generated/index';
-import { prisma } from '../../prisma';
+import { prismaCRODb } from '../../prisma';
 import { redis } from "../../redis";
 import { pubsub } from "../../helper/pubsub";
 import invariant from "../../helper/invariant";
@@ -48,7 +48,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
   try {
     switch (event_name) {
       case "source_rfp_specialties": {
-        const sourcing_session = await prisma.sourcingSession.findFirst({
+        const sourcing_session = await prismaCRODb.sourcingSession.findFirst({
           where: {
             task_id,
           },
@@ -56,7 +56,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        await prisma.$transaction(async (trx) => {
+        await prismaCRODb.$transaction(async (trx) => {
           // Clear up existing extracted services
           await trx.sourcingSubspecialty.deleteMany({
             where: {
@@ -122,7 +122,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
         break;
       }
       case "source_cros": {
-        const sourcing_session = await prisma.sourcingSession.findFirst({
+        const sourcing_session = await prismaCRODb.sourcingSession.findFirst({
           where: {
             task_id,
           },
@@ -130,7 +130,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
 
         invariant(sourcing_session, 'No sourcing session found');
 
-        await prisma.$transaction(async (trx) => {
+        await prismaCRODb.$transaction(async (trx) => {
           // Clear up existing matched result
           await trx.sourcedCro.deleteMany({
             where: {
@@ -150,7 +150,7 @@ export const cromaticAiWebhook = async (req: Request, res: Response): Promise<vo
                 return await trx.sourcedCro.create({
                   data: {
                     name: cro.cro_name,
-                    cro_db_id: cro.cro_id,
+                    vendor_company_id: cro.cro_id,
                     score: parseFloat(cro.score),
                     is_shortlisted: false,
                     sourcing_session_id: sourcing_session.id,
