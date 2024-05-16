@@ -4,17 +4,22 @@ type SearchVendorByServiceResultEdge {
 }
 
 type SearchVendorByServiceResultPageInfo {
-  endCursor: String!
-  hasNextPage: Boolean
-  hasPreviousPage: Boolean
-  total_matched: Int
+  end_cursor: String
+  has_next_page: Boolean
+  total_count: Int
 }
 
 type SearchVendorByServicePaginatedResult {
   edges: [SearchVendorByServiceResultEdge]
-  pageInfo: SearchVendorByServiceResultPageInfo
+  page_info: SearchVendorByServiceResultPageInfo
 }
 
 type Query {
-  searchVendorByService(keyword: String!, after: String, fingerprint: String, ip_address: String): SearchVendorByServicePaginatedResult
+  searchVendorByService(
+    keyword: String!
+    fingerprint: String
+    ip_address: String
+    after: String
+    first: Int = 15
+  ): SearchVendorByServicePaginatedResult
 }
