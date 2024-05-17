@@ -1,12 +1,7 @@
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
-
-const extractTeamSize = (vendor: { company_size: string | null }) => {
-  const teamSizeRange = vendor.company_size || "0-0";
-  const [min, max] = teamSizeRange.replace(/,/g, "").split(/—|-/).map(Number);
-  return (min + max) / 2; // Use the average value for comparison
-}
+import { Prisma } from "../../../prisma-cro/generated/client";
 
 const RATE_LIMIT_FIXED_WINDOW = 60; // in second
 const RATE_LIMIT_MAX_COUNTS = 15;
@@ -14,7 +9,7 @@ const RATE_LIMIT_MAX_COUNTS = 15;
 const resolvers: Resolvers<Context> = {
   Query: {
     searchVendorByService: async (_, args, context) => {
-      const { keyword, fingerprint, ip_address } = args;
+      const { keyword, fingerprint, ip_address, first, after } = args;
       const userId = context.req.user_id;
 
       if (fingerprint) {
@@ -63,38 +58,63 @@ const resolvers: Resolvers<Context> = {
         }));
       }
 
-      const subspecialtiesWithVendor = await context.prismaCRODb.subspecialty
-        .findFirst({
-          where: {
-            name: keyword,
+      const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
+        vendor_company_subspecialties: {
+          some: {
+            subspecialty: {
+              name: keyword,
+            },
           },
-        })
-        .vendor_company_subspecialties({
-          include: {
-            vendor_company: true,
-          },
-        });
+        },
+        NOT: {
+          company_description: null,
+          company_ipo_status: null,
+        },
+        is_active: true,
+      };
 
-      const vendors = (subspecialtiesWithVendor || []).map(
-        (v) => v.vendor_company
-      ).filter((v) => v.company_description !== null && v.company_ipo_status !== null);
+      const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
+        where: vendorCompanyFilter,
+      });
 
-      vendors.sort((a, b) => {
-        return extractTeamSize(b) - extractTeamSize(a);
+      const vendors = await context.prismaCRODb.vendorCompany.findMany({
+        where: vendorCompanyFilter,
+        take: first,
+        skip: after ? 1 : undefined,
+        cursor: after ? { id: after } : undefined,
+        orderBy: {
+          company_average_size: "desc",
+        },
       });
 
       const edges = vendors.map((v) => ({
         cursor: v.id,
         node: v,
       }));
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
+
+      if (endCursor) {
+        const nextVendors = await context.prismaCRODb.vendorCompany.findMany({
+          where: vendorCompanyFilter,
+          take: first,
+          skip: after ? 1 : undefined,
+          cursor: endCursor ? { id: endCursor } : undefined,
+          orderBy: {
+            company_average_size: "desc",
+          },
+        });
+
+        hasNextPage = nextVendors.length > 0;
+      }
 
       return {
         edges: isPaidUser ? edges : edges.slice(0, 25),
-        pageInfo: {
-          endCursor: "",
-          hasNextPage: false,
-          hasPreviousPage: false,
-          total_matched: vendors.length,
+        page_info: {
+          end_cursor: endCursor,
+          has_next_page: hasNextPage,
+          total_count: totalVendor.length,
         },
       };
     },

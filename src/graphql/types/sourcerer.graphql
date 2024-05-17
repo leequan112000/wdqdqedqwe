@@ -10,9 +10,31 @@ type SourcingSession {
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
-  sourced_cros: [SourcedCro]
+  sourced_cros(
+    first: Int = 5,
+    after: String
+    sortBy: String
+    filterCountryBy: String
+  ): SourcedCroConnection
+  shortlisted_cros: [SourcedCro]
   updated_at: Date
   created_at: Date
+}
+
+type SourcedCroEdge {
+  cursor: String!
+  node: SourcedCro
+}
+
+type SourcedCroPageInfo {
+  end_cursor: String!
+  has_next_page: Boolean
+  total_count: Int
+}
+
+type SourcedCroConnection {
+  edges: [SourcedCroEdge]
+  page_info: SourcedCroPageInfo
 }
 
 type SourcingSubspecialty {
@@ -39,10 +61,10 @@ type SourcedCro {
   name: String
   score: Float
   is_shortlisted: Boolean
-  cro_db_id: String
+  vendor_company_id: String
   sourcing_session_id: String
   sourcing_session: SourcingSession
-  cro_db_vendor_company: CroDbVendorCompany
+  vendor_company: CroDbVendorCompany
 }
 
 type SourcingTask {

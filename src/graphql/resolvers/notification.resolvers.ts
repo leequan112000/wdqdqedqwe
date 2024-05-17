@@ -128,7 +128,7 @@ const resolvers: Resolvers<Context> = {
       if (endCursor) {
         const nextMessages = await context.prisma.notification.findMany({
           take: first,
-          skip: endCursor ? 1 : undefined, // Skip the cursor
+          skip: 1,
           cursor: endCursor
             ? { id: endCursor }
             : undefined,

@@ -12,20 +12,22 @@ datasource db {
 }
 
 model VendorCompany {
-  id                  String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_name        String
-  company_size        String?
-  company_revenue     String?
-  company_ipo_status  String?
-  company_description String?
-  website_url         String
-  linkedin_url        String
-  crunchbase_url      String
-  type                String
-  product             String?
-  logo_url            String?
-  is_active           Boolean
-  is_cromatic_vendor  Boolean
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_name          String
+  company_size          String?
+  company_average_size  Float?
+  company_revenue       String?
+  company_revenue_value Float?
+  company_ipo_status    String?
+  company_description   String?
+  website_url           String
+  linkedin_url          String
+  crunchbase_url        String
+  type                  String
+  product               String?
+  logo_url              String?
+  is_active             Boolean
+  is_cromatic_vendor    Boolean
 
   traffic_infos                 TrafficInfo[]
   linkedin_infos                LinkedinInfo[]
@@ -36,6 +38,7 @@ model VendorCompany {
   vendor_company_types          VendorCompanyType[]
   vendor_company_certifications VendorCompanyCertification[]
   vendor_survey                 VendorSurvey?
+  sourced_cros                  SourcedCro[]
 
   @@map("vendor_companies")
 }
@@ -291,4 +294,61 @@ model VendorSurvey {
   vendor_company VendorCompany @relation(fields: [vendor_company_id], references: [id])
 
   @@map("vendor_surveys")
+}
+
+model SourcingSession {
+  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_title           String
+  project_desc            String
+  preparation_details     String
+  vendor_requirement      String
+  task_id                 String
+  task_canceled_at        DateTime?
+  user_id                 String                 @db.Uuid
+  sourcing_subspecialties SourcingSubspecialty[]
+  sourced_cros            SourcedCro[]
+  sourcing_attachments    SourcingAttachment[]
+  created_at              DateTime               @default(now())
+  updated_at              DateTime               @default(now()) @updatedAt
+
+  @@map("sourcing_sessions")
+}
+
+model SourcingSubspecialty {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
+
+  @@map("sourcing_subspecialties")
+}
+
+model SourcingAttachment {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key          String   @unique
+  filename     String
+  content_type String?
+  byte_size    BigInt
+  created_at   DateTime @default(now())
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
+
+  @@map("sourcing_attachments")
+}
+
+model SourcedCro {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  score          Float
+  is_shortlisted Boolean
+
+  vendor_company_id String        @db.Uuid
+  vendor_company    VendorCompany @relation(fields: [vendor_company_id], references: [id])
+
+  sourcing_session_id String          @db.Uuid
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
+
+  @@map("sourced_cros")
 }
