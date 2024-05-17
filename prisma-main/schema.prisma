@@ -36,14 +36,12 @@ model User {
   meetingEvents                       MeetingEvent[]
   project_attachments                 ProjectAttachment[]
   company_attachments                 CompanyAttachment[]
-  sourcing_attachments                SourcingAttachment[]
   biotech_invite_vendors              BiotechInviteVendor[]
   reviews                             Review[]
   blanket_purchase_order_transactions BlanketPurchaseOrderTransaction[]
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
   availability                        Availability[]
-  sourcing_sessions                   SourcingSession[]
 
   @@map("users")
 }
@@ -977,62 +975,4 @@ model Availability {
   timezone    String
 
   @@map("availabilities")
-}
-
-model SourcingSession {
-  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  project_title           String
-  project_desc            String
-  preparation_details     String
-  vendor_requirement      String
-  task_id                 String
-  task_canceled_at        DateTime?
-  user_id                 String                 @db.Uuid
-  user                    User                   @relation(fields: [user_id], references: [id])
-  sourcing_subspecialties SourcingSubspecialty[]
-  sourced_cros            SourcedCro[]
-  sourcing_attachments    SourcingAttachment[]
-  created_at              DateTime               @default(now())
-  updated_at              DateTime               @default(now()) @updatedAt
-
-  @@map("sourcing_sessions")
-}
-
-model SourcingSubspecialty {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
-
-  sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
-
-  @@map("sourcing_subspecialties")
-}
-
-model SourcingAttachment {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  key          String   @unique
-  filename     String
-  content_type String?
-  byte_size    BigInt
-  created_at   DateTime @default(now())
-
-  sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
-  uploader_id         String          @db.Uuid
-  uploader            User            @relation(fields: [uploader_id], references: [id])
-
-  @@map("sourcing_attachments")
-}
-
-model SourcedCro {
-  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
-  score          Float
-  is_shortlisted Boolean
-  cro_db_id      String  @db.Uuid
-
-  sourcing_session_id String          @db.Uuid
-  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
-
-  @@map("sourced_cros")
 }
