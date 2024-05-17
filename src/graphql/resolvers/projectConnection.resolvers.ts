@@ -80,8 +80,10 @@ const resolvers: Resolvers<Context> = {
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
-    quotes: async (parentProjectConnection, _, context) => {
-      invariant(parentProjectConnection.id, 'Project connection id not found.');
+    quotes: async (projectConnection, _, context) => {
+      if (projectConnection.quotes) return projectConnection.quotes;
+
+      invariant(projectConnection.id, 'Project connection id not found.');
       const currentUserId = context.req.user_id;
 
       const currentUser = await context.prisma.user.findUnique({
@@ -106,7 +108,7 @@ const resolvers: Resolvers<Context> = {
 
       const quotes = await context.prisma.projectConnection.findUnique({
         where: {
-          id: parentProjectConnection.id,
+          id: projectConnection.id,
         },
       }).quotes({
         where: filter,
