@@ -8,35 +8,39 @@ const resolvers: Resolvers<Context> = {
   CroDbVendorCompany: {
     vendor_company_subspecialties: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
-      return await context.prismaCRODb.vendorCompanySubspecialty.findMany({
+      return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
-          vendor_company_id: parent.id
-        }
-      });
+          id: parent.id,
+        },
+      })
+      .vendor_company_subspecialties();
     },
     vendor_company_locations: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
-      return await context.prismaCRODb.vendorCompanyLocation.findMany({
+      return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
-          vendor_company_id: parent.id
-        }
-      });
+          id: parent.id,
+        },
+      })
+      .vendor_company_locations();
     },
     vendor_company_types: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
-      return await context.prismaCRODb.vendorCompanyType.findMany({
+      return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
-          vendor_company_id: parent.id
-        }
-      });
+          id: parent.id,
+        },
+      })
+      .vendor_company_types();
     },
     vendor_company_certifications: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
-      return await context.prismaCRODb.vendorCompanyCertification.findMany({
+      return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
-          vendor_company_id: parent.id
-        }
-      });
+          id: parent.id,
+        },
+      })
+      .vendor_company_certifications();
     },
     company_size: async (parent, _, context) => {
       let companySize = parent.company_size;
@@ -65,9 +69,9 @@ const resolvers: Resolvers<Context> = {
   CroDbVendorCompanySubspecialty: {
     subspecialty: async (parent, _, context) => {
       invariant(parent.subspecialty_id, 'Missing subspecialty id.');
-      return await context.prismaCRODb.subspecialty.findFirst({
+      return await context.prismaCRODb.subspecialty.findUnique({
         where: {
-          id: parent.subspecialty_id
+          id: parent.subspecialty_id,
         },
       });
     },
