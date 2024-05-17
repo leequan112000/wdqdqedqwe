@@ -1,3 +1,4 @@
+import { parseResolveInfo, type ResolveTree } from "graphql-parse-resolve-info";
 import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
@@ -7,7 +8,7 @@ import {
   AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
 } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
-import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";;
+import { Resolvers, ProjectRequestComment, ProjectRequestProjectConnectionFilter } from "../generated";;
 import {
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,
@@ -40,15 +41,16 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
-    project_connections: async (parentProjectRequest, args, context) => {
-      invariant(parentProjectRequest.id, 'Missing project request id.');
+    project_connections: async (projectRequest, args, context) => {
+      if (projectRequest.project_connections) return projectRequest.project_connections;
+      invariant(projectRequest.id, 'Missing project request id.');
 
       const { filter } = args;
 
       const projectConnections = await context.prisma.projectRequest
         .findUnique({
           where: {
-            id: parentProjectRequest.id,
+            id: projectRequest.id,
           },
         })
         .project_connections({
@@ -116,7 +118,22 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Query: {
-    projectRequests: async (_, args, context) => {
+    projectRequests: async (_, args, context, info) => {
+      /**
+       * Parse resolve info to find any filter args on ProjectRequest.project_connections.
+       * If exist, we will do the filter in this resolver in order to prevent
+       * problem that fetch project request with ZERO project connections.
+       */
+      const parsed = parseResolveInfo(info) as ResolveTree;
+      const projectConnectionFilter = parsed.fieldsByTypeName.ProjectRequest
+        .project_connections?.args?.filter as
+        | ProjectRequestProjectConnectionFilter
+        | undefined;
+
+      // A flag to skip ProjectRequest.project_connections resolver.
+      const willSkipProjectConnectionsResolver =
+        !!projectConnectionFilter?.collaboration_status;
+
       const customer = await context.prisma.customer.findFirstOrThrow({
         where: {
           user_id: context.req.user_id,
@@ -163,20 +180,95 @@ const resolvers: Resolvers<Context> = {
               },
             },
           ],
+          ...(projectConnectionFilter
+            ? {
+                project_connections: {
+                  some: {
+                    vendor_status: projectConnectionFilter.vendor_status,
+                  },
+                },
+              }
+            : {}),
         },
         orderBy: [
           // Sort by status to grouped matched experiments first
           { status: "asc" },
           { updated_at: "desc" },
         ],
+        include: {
+          ...(willSkipProjectConnectionsResolver
+            ? {
+                project_connections: {
+                  where: {
+                    customer_connections: {
+                      some: {
+                        customer: {
+                          user_id: context.req.user_id,
+                        },
+                      },
+                    },
+                    vendor_status: projectConnectionFilter?.vendor_status
+                      ? {
+                          equals: projectConnectionFilter.vendor_status,
+                        }
+                      : {},
+                  },
+                  orderBy: [
+                    {
+                      final_contract_uploaded_at: {
+                        sort: "desc",
+                        nulls: "last",
+                      },
+                    },
+                    { updated_at: "desc" },
+                  ],
+                  include: {
+                    quotes: {
+                      include: {
+                        milestones: true,
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+        },
       });
 
-      const processed: ProjectRequest[] = data.map((d) => ({
+      if (willSkipProjectConnectionsResolver) {
+        return data
+          .map((pr) => ({
+            ...pr,
+            project_connections: filterByCollaborationStatus(
+              // @ts-ignore
+              pr.project_connections,
+              projectConnectionFilter.collaboration_status as ProjectConnectionCollaborationStatus
+            ),
+          }))
+          // Filter out project request with ZERO project connection.
+          .filter((pr) => pr.project_connections.length > 0)
+          // Convert decimal to number.
+          .map((pr) => ({
+            ...pr,
+            max_budget: pr.max_budget?.toNumber() || 0,
+            project_connections: pr.project_connections.map((pc) => ({
+              ...pc,
+              quotes: pc.quotes.map((q) => ({
+                ...q,
+                amount: q.amount.toNumber(),
+                milestones: q.milestones.map((m) => ({
+                  ...m,
+                  amount: m.amount.toNumber(),
+                })),
+              })),
+            })),
+          }));
+      }
+
+      return data.map((d) => ({
         ...d,
         max_budget: d.max_budget?.toNumber() || 0,
       }));
-
-      return processed;
     },
     projectRequest: async (_, args, context) => {
       const vendor = await context.prisma.vendorMember.findFirst({
