@@ -57,8 +57,10 @@ jobs:
         uses: getsentry/action-release@v1
         with:
           environment: production
+          version: production
       - name: Create Sentry staging release
         if: ${{ github.ref == 'refs/heads/staging' }}
         uses: getsentry/action-release@v1
         with:
           environment: staging
+          version: staging
