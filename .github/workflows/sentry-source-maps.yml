@@ -32,7 +32,9 @@ jobs:
         run: yarn --frozen-lockfile
       - name: 👷 Build
         run: yarn build
-      - name: 🤖 Upload Source Maps
+      - name: 💉 Inject debug ids
+        run: sentry-cli sourcemaps inject --org cromatic --project octavian ./dist
+      - name: 🆙 Upload source maps
         run: |
           if [ ${{ github.ref }} == "refs/heads/master" ]; then
             yarn sentry-cli sourcemaps upload --release production --org cromatic --project octavian ./dist
