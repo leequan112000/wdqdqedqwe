@@ -143,8 +143,8 @@ const processStripeInvoice = async (
      * Use stripe billing reason for
      */
     const description = await (async () => {
-      const productId = isProductId(d.lines.data[0].plan?.product)
-        ? d.lines.data[0].plan?.product
+      const productId = isProductId(d.lines.data[0]?.plan?.product)
+        ? d.lines.data[0]?.plan?.product
         : null;
       const product = productId ? await stripe.products.retrieve(productId) : null;
       if (product) {
@@ -429,21 +429,22 @@ const resolvers: Resolvers<Context> = {
       }
 
       const stripe = await getStripeInstance();
-      const biotechStripeInvoices = isOwner && biotechStripeCusId
-        ? (
-            await stripe.invoices.list({
-              customer: biotechStripeCusId,
-              expand: ["data.payment_intent"],
-            })
-          ).data
-        : [];
+      const biotechStripeInvoices =
+        isOwner && biotechStripeCusId
+          ? (
+              await stripe.invoices.list({
+                customer: biotechStripeCusId,
+                expand: ["data.payment_intent"],
+              })
+            ).data.filter((d) => d.status !== "draft")
+          : [];
       const customerStripeInvoices = customerStripeCusId
         ? (
             await stripe.invoices.list({
               customer: customerStripeCusId,
               expand: ["data.payment_intent"],
             })
-          ).data
+          ).data.filter((d) => d.status !== "draft")
         : [];
 
       const processedCustomerInvoices = await processStripeInvoice(
