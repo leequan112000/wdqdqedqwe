@@ -77,14 +77,18 @@ const resolvers: Resolvers<Context> = {
     lab_specializations: async (parent, _, context) => {
       invariant(parent.id, 'Vendor company id not found.');
 
-      const labSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
-        where: {
-          vendor_company_id: parent.id,
-        },
-        include: {
-          lab_specialization: true
-        }
-      });
+      const labSpecializationConnections =
+        (await context.prisma.vendorCompany
+          .findUnique({
+            where: {
+              id: parent.id,
+            },
+          })
+          .lab_specialization_connections({
+            include: {
+              lab_specialization: true,
+            },
+          })) || [];
 
       const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
 
