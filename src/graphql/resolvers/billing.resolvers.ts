@@ -14,7 +14,8 @@ import { Context } from "../../types/context";
 import { BillingInfo, Resolvers } from "../generated";
 import Sentry from "../../sentry";
 
-const HARDCODED_BILLING_INFO_ID = 'billing-info-id';
+const HARDCODED_BILLING_INFO_ID = "billing-info-id";
+const HARDCODED_PAYMENT_METHOD_ID = "payment-method-id";
 
 const NO_BILLING_INFO: BillingInfo = {
   id: HARDCODED_BILLING_INFO_ID,
@@ -77,16 +78,14 @@ const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
 
 const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
   try {
-    return await stripe.subscriptions.retrieve(
-      stripeSubId
-    );
+    return await stripe.subscriptions.retrieve(stripeSubId);
   } catch (error) {
     /**
      * Handle if subscription not found.
      */
     if (error instanceof Stripe.errors.StripeError) {
       if (error.code === "resource_missing") {
-        Sentry.captureMessage(error.message, 'warning');
+        Sentry.captureMessage(error.message, "warning");
         return null;
       }
     }
@@ -98,7 +97,7 @@ const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
 const isPaymentIntentObj = (
   paymentIntent: string | Stripe.PaymentIntent | null
 ): paymentIntent is Stripe.PaymentIntent => {
-  return paymentIntent !== null && typeof paymentIntent !== 'string';
+  return paymentIntent !== null && typeof paymentIntent !== "string";
 };
 
 const isProductId = (
@@ -146,7 +145,9 @@ const processStripeInvoice = async (
       const productId = isProductId(d.lines.data[0]?.plan?.product)
         ? d.lines.data[0]?.plan?.product
         : null;
-      const product = productId ? await stripe.products.retrieve(productId) : null;
+      const product = productId
+        ? await stripe.products.retrieve(productId)
+        : null;
       if (product) {
         return product.name;
       }
@@ -167,6 +168,12 @@ const processStripeInvoice = async (
       // Remove draft invoice
       .filter((d) => d.status !== "draft")
   );
+};
+
+const isStripePaymentMethod = (
+  pm: string | Stripe.PaymentMethod | null
+): pm is Stripe.PaymentMethod => {
+  return typeof pm !== "string";
 };
 
 const resolvers: Resolvers<Context> = {
@@ -314,6 +321,50 @@ const resolvers: Resolvers<Context> = {
 
       return status;
     },
+    payment_method: async (_, __, context) => {
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: context.req.user_id,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+              customer_subscriptions: true,
+            },
+          },
+        },
+      });
+      const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
+      const customerSubscription = user?.customer?.customer_subscriptions?.[0];
+      const stripe_customer_id = (customerSubscription?.stripe_customer_id ||
+        biotechSubscription?.stripe_customer_id) as string;
+      const stripe = await getStripeInstance();
+      const stripeCus = await stripe.customers.retrieve(stripe_customer_id, {
+        expand: ["invoice_settings.default_payment_method"],
+      });
+
+      const defaultPaymentMethod =
+        isStripeCus(stripeCus) &&
+        isStripePaymentMethod(stripeCus.invoice_settings.default_payment_method)
+          ? stripeCus.invoice_settings.default_payment_method
+          : null;
+
+      if (defaultPaymentMethod === null) {
+        return null;
+      }
+
+      return {
+        id: HARDCODED_PAYMENT_METHOD_ID,
+        display_brand: defaultPaymentMethod?.card?.brand, // display_brand is not available in current stripe-node version
+        last_4: defaultPaymentMethod?.card?.last4,
+        type: defaultPaymentMethod?.type,
+      };
+    },
   },
   Query: {
     billingInfo: async (_, __, context) => {
@@ -345,16 +396,11 @@ const resolvers: Resolvers<Context> = {
       const stripe_subscription_id =
         (customerSubscription?.stripe_subscription_id ||
           biotechSubscription?.stripe_subscription_id) as string;
-      const stripe_customer_id = (customerSubscription?.stripe_customer_id ||
-        biotechSubscription?.stripe_customer_id) as string;
       const plan_name = (customerSubscription?.plan_name ||
         user?.customer?.biotech?.account_type) as string;
 
       const stripe = await getStripeInstance();
-      const stripeSub = await safeGetStripeSub(
-        stripe_subscription_id,
-        stripe
-      );
+      const stripeSub = await safeGetStripeSub(stripe_subscription_id, stripe);
       if (stripeSub === null) {
         return {
           ...NO_BILLING_INFO,
@@ -363,19 +409,6 @@ const resolvers: Resolvers<Context> = {
         };
       }
       const subItem = stripeSub.items.data[0];
-      const stripeCus = await stripe.customers.retrieve(stripe_customer_id);
-
-      const defaultPaymentMethodId = isStripeCus(stripeCus)
-        ? stripeCus.invoice_settings.default_payment_method
-        : null;
-
-      let paymentMethod: string | null = null;
-      if (defaultPaymentMethodId) {
-        const stripePaymentMethod = await stripe.paymentMethods.retrieve(
-          defaultPaymentMethodId as string
-        );
-        paymentMethod = getPaymentMethodName(stripePaymentMethod.type);
-      }
 
       const upcomingInvoice = await getUpcomingInvoice(stripeSub.id, stripe);
 
@@ -393,7 +426,6 @@ const resolvers: Resolvers<Context> = {
         plan_id: plan_name,
         plan: getPlanName(plan_name),
         bill_cycle: subItem.plan.interval,
-        payment_method: paymentMethod,
         upcoming_bill_amount: upcomingBillAmount,
         upcoming_bill_date: upcomingBillDate,
       };
@@ -417,7 +449,8 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const isOwner = user?.customer?.role === CompanyCollaboratorRoleType.OWNER;
+      const isOwner =
+        user?.customer?.role === CompanyCollaboratorRoleType.OWNER;
 
       const biotechStripeCusId =
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
@@ -456,10 +489,7 @@ const resolvers: Resolvers<Context> = {
         stripe
       );
 
-      return [
-        ...processedCustomerInvoices,
-        ...processedBiotechInvoices,
-      ];
+      return [...processedCustomerInvoices, ...processedBiotechInvoices];
     },
     billingPortalUrl: async (_, args, context) => {
       const { return_url } = args;
@@ -498,6 +528,38 @@ const resolvers: Resolvers<Context> = {
       });
 
       return session.url;
+    },
+    stripeSetupIntent: async (_, __, context) => {
+      const userId = context.req.user_id;
+
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+              customer_subscriptions: true,
+            },
+          },
+        },
+      });
+
+      const stripe_customer_id =
+        user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id ||
+        user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
+      const stripe = await getStripeInstance();
+      const setupIntent = await stripe.setupIntents.create({
+        payment_method_types: ["card"],
+        customer: stripe_customer_id,
+      });
+
+      return setupIntent.client_secret;
     },
   },
   Mutation: {

@@ -48,7 +48,7 @@ export type BillingInfo = {
   has_active_sourcerer_plan?: Maybe<Scalars['Boolean']>;
   has_active_white_glove_plan?: Maybe<Scalars['Boolean']>;
   id: Scalars['String'];
-  payment_method?: Maybe<Scalars['String']>;
+  payment_method?: Maybe<PaymentMethod>;
   plan?: Maybe<Scalars['String']>;
   plan_id?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
@@ -1395,6 +1395,14 @@ export type NotificationPageInfo = {
   hasPreviousPage?: Maybe<Scalars['Boolean']>;
 };
 
+export type PaymentMethod = {
+  __typename?: 'PaymentMethod';
+  display_brand?: Maybe<Scalars['String']>;
+  id: Scalars['String'];
+  last_4?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
 export type Perk = {
   __typename?: 'Perk';
   created_at?: Maybe<Scalars['Date']>;
@@ -1650,6 +1658,7 @@ export type Query = {
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
+  stripeSetupIntent?: Maybe<Scalars['String']>;
   subscriptionCheckoutSessionUrl?: Maybe<Scalars['String']>;
   subscriptionPlans: Array<SubscriptionPlan>;
   suggestedCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
@@ -2422,6 +2431,7 @@ export type ResolversTypes = ResolversObject<{
   NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
   NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
   NotificationPageInfo: ResolverTypeWrapper<NotificationPageInfo>;
+  PaymentMethod: ResolverTypeWrapper<PaymentMethod>;
   Perk: ResolverTypeWrapper<Perk>;
   PerkCategory: ResolverTypeWrapper<PerkCategory>;
   ProjectAttachment: ResolverTypeWrapper<ProjectAttachment>;
@@ -2549,6 +2559,7 @@ export type ResolversParentTypes = ResolversObject<{
   NotificationConnection: NotificationConnection;
   NotificationEdge: NotificationEdge;
   NotificationPageInfo: NotificationPageInfo;
+  PaymentMethod: PaymentMethod;
   Perk: Perk;
   PerkCategory: PerkCategory;
   ProjectAttachment: ProjectAttachment;
@@ -2637,7 +2648,7 @@ export type BillingInfoResolvers<ContextType = any, ParentType extends Resolvers
   has_active_sourcerer_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_active_white_glove_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  payment_method?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  payment_method?: Resolver<Maybe<ResolversTypes['PaymentMethod']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   plan_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3288,6 +3299,14 @@ export type NotificationPageInfoResolvers<ContextType = any, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PaymentMethodResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaymentMethod'] = ResolversParentTypes['PaymentMethod']> = ResolversObject<{
+  display_brand?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PerkResolvers<ContextType = any, ParentType extends ResolversParentTypes['Perk'] = ResolversParentTypes['Perk']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3528,6 +3547,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stripeSetupIntent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subscriptionCheckoutSessionUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySubscriptionCheckoutSessionUrlArgs, 'cancel_url' | 'price_id' | 'success_url'>>;
   subscriptionPlans?: Resolver<Array<ResolversTypes['SubscriptionPlan']>, ParentType, ContextType>;
   suggestedCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType>;
@@ -3966,6 +3986,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotificationConnection?: NotificationConnectionResolvers<ContextType>;
   NotificationEdge?: NotificationEdgeResolvers<ContextType>;
   NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
+  PaymentMethod?: PaymentMethodResolvers<ContextType>;
   Perk?: PerkResolvers<ContextType>;
   PerkCategory?: PerkCategoryResolvers<ContextType>;
   ProjectAttachment?: ProjectAttachmentResolvers<ContextType>;
