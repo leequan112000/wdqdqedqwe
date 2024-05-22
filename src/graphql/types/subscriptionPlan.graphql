@@ -30,3 +30,9 @@ type Query {
     cancel_url: String!
   ): String
 }
+
+type Mutation {
+  scheduleSubscriptionChange(
+    price_id: String!
+  ): Boolean
+}

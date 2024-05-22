@@ -78,7 +78,12 @@ const getUpcomingInvoice = async (stripeSubId: string, stripe: Stripe) => {
 
 const safeGetStripeSub = async (stripeSubId: string, stripe: Stripe) => {
   try {
-    return await stripe.subscriptions.retrieve(stripeSubId);
+    return await stripe.subscriptions.retrieve(
+      stripeSubId,
+      {
+        expand: ["schedule"],
+      },
+    );
   } catch (error) {
     /**
      * Handle if subscription not found.
@@ -421,6 +426,9 @@ const resolvers: Resolvers<Context> = {
         ? moment.unix(upcomingInvoice.period_end)
         : null;
 
+      const schedule = stripeSub.schedule as Stripe.SubscriptionSchedule | null;
+      const metadataTrigger = schedule?.metadata?.trigger;
+
       return {
         id: HARDCODED_BILLING_INFO_ID, // Dummy ID for client to cache the result.
         plan_id: plan_name,
@@ -428,6 +436,7 @@ const resolvers: Resolvers<Context> = {
         bill_cycle: subItem.plan.interval,
         upcoming_bill_amount: upcomingBillAmount,
         upcoming_bill_date: upcomingBillDate,
+        has_scheduled_for_interval_change: metadataTrigger === 'user',
       };
     },
     billingInvoices: async (_, __, context) => {
