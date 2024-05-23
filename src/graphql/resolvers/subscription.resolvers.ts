@@ -190,16 +190,20 @@ const resolvers: Resolvers<Context> = {
       const stripeSub = await stripe.subscriptions.retrieve(stripeSubId, {
         expand: ["schedule"],
       });
+      // Get Stripe subscription with schedule data
       let schedule = stripeSub.schedule as Stripe.SubscriptionSchedule;
       if (schedule === null) {
+        // Create subscription schedule if no schedule exist.
         schedule = await stripe.subscriptionSchedules.create({
           from_subscription: stripeSubId,
         });
       }
 
       await stripe.subscriptionSchedules.update(schedule.id, {
+        // Set to release the schedule after all the phases has completed.
         end_behavior: "release",
         phases: [
+          // Phase 0 consists of the current subscription items, start and end dates.
           {
             items: [
               {
@@ -210,6 +214,7 @@ const resolvers: Resolvers<Context> = {
             start_date: schedule.phases[0].start_date,
             end_date: schedule.phases[0].end_date,
           },
+          // Phase 1 will be the new subscription with new product (price id select from args).
           {
             items: [
               {
@@ -221,6 +226,7 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         metadata: {
+          // For billingInfo.has_scheduled_for_interval_change to track user trigger.
           trigger: "user",
         },
       });
