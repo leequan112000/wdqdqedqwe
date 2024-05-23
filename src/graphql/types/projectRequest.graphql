@@ -28,6 +28,9 @@ type ProjectRequest {
   project_connections(filter: ProjectRequestProjectConnectionFilter): [ProjectConnection]
   project_request_comments: [ProjectRequestComment]
   project_request_collaborators: [ProjectRequestCollaborator]
+
+  sourcing_session_id: String
+  is_white_glove: Boolean
 }
 
 type Query {

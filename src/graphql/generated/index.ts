@@ -1521,6 +1521,7 @@ export type ProjectRequest = {
   id?: Maybe<Scalars['String']>;
   in_contact_with_vendor: Scalars['Boolean'];
   is_private: Scalars['Boolean'];
+  is_white_glove?: Maybe<Scalars['Boolean']>;
   max_budget: Scalars['Int'];
   objective_description: Scalars['String'];
   preparation_description?: Maybe<Scalars['String']>;
@@ -1530,6 +1531,7 @@ export type ProjectRequest = {
   project_request_collaborators?: Maybe<Array<Maybe<ProjectRequestCollaborator>>>;
   project_request_comments?: Maybe<Array<Maybe<ProjectRequestComment>>>;
   project_start_time_requirement?: Maybe<Scalars['String']>;
+  sourcing_session_id?: Maybe<Scalars['String']>;
   status: Scalars['String'];
   title: Scalars['String'];
   updated_at?: Maybe<Scalars['Date']>;
@@ -3422,6 +3424,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   in_contact_with_vendor?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_private?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  is_white_glove?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   max_budget?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objective_description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   preparation_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3431,6 +3434,7 @@ export type ProjectRequestResolvers<ContextType = any, ParentType extends Resolv
   project_request_collaborators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestCollaborator']>>>, ParentType, ContextType>;
   project_request_comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectRequestComment']>>>, ParentType, ContextType>;
   project_start_time_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
