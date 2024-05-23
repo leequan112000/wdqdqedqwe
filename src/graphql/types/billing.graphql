@@ -1,8 +1,15 @@
+type PaymentMethod {
+  id: String!
+  type: String
+  last_4: String
+  display_brand: String
+}
+
 type BillingInfo {
   id: String!
   plan_id: String
   plan: String
-  payment_method: String
+  payment_method: PaymentMethod
   bill_cycle: String
   upcoming_bill_date: Date
   upcoming_bill_amount: Float
@@ -25,6 +32,7 @@ type Query {
   billingInfo: BillingInfo
   billingInvoices: [BillingInvoice]
   billingPortalUrl(return_url: String!): String
+  stripeSetupIntent: String
 }
 
 type Mutation {

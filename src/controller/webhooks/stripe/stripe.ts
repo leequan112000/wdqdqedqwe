@@ -507,6 +507,26 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         return { status: 200, message: 'OK' };
       }
 
+      case 'setup_intent.succeeded': {
+        const setupIntent = event.data.object as Stripe.SetupIntent;
+
+        const { customer, payment_method } = setupIntent;
+
+        // Set default payment method.
+        if (customer && typeof customer === "string") {
+          const stripe = await getStripeInstance();
+
+          await stripe.customers.update(customer as string, {
+            invoice_settings: {
+              default_payment_method: payment_method as string,
+            },
+          });
+        } else {
+          Sentry.captureMessage('Stripe webhook: Missing customer.');
+        }
+
+        return { status: 200, message: 'OK' };
+      }
       default: {
         console.warn(`Unhandled webhook: event type=${event.type}`);
         return { status: 400, message: 'Unhandled Event Type' };
