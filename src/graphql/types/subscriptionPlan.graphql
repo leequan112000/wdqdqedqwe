@@ -2,6 +2,7 @@ type SubscriptionPrice {
   id: String!
   amount_per_month: Int
   interval: String
+  discount_percentage: Int
 }
 
 type SubscriptionFeatureItem {

@@ -5,6 +5,7 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import invariant from "../../helper/invariant";
 import { CustomerSubscriptionPlanName } from "../../helper/constant";
+import { env } from "../../env";
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -13,18 +14,8 @@ const resolvers: Resolvers<Context> = {
     subscriptionPlans: async () => {
       const stripe = await getStripeInstance();
 
-      const sourcererMonthlyPriceId =
-        process.env.STRIPE_SOURCERER_MONTHLY_PRICE_ID;
-      const sourcererYearlyPriceId =
-        process.env.STRIPE_SOURCERER_YEARLY_PRICE_ID;
-
-      invariant(
-        sourcererMonthlyPriceId && sourcererYearlyPriceId,
-        "Price IDs not set."
-      );
-
       const sourcererMonthlyPrice = await stripe.prices.retrieve(
-        sourcererMonthlyPriceId
+        env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id
       );
 
       invariant(
@@ -33,7 +24,7 @@ const resolvers: Resolvers<Context> = {
       );
 
       const sourcererYearlyPrice = await stripe.prices.retrieve(
-        sourcererYearlyPriceId
+        env.STRIPE_SOURCERER_YEARLY_PLAN.price_id
       );
 
       invariant(
@@ -47,20 +38,24 @@ const resolvers: Resolvers<Context> = {
           name: "Sourcerer™ Search",
           prices: [
             {
-              id: sourcererMonthlyPriceId,
+              id: env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id,
               amount_per_month: currency(sourcererMonthlyPrice.unit_amount, {
                 fromCents: true,
               }).dollars(),
               interval: "month",
+              discount_percentage:
+                env.STRIPE_SOURCERER_MONTHLY_PLAN.discount_percentage,
             },
             {
-              id: sourcererYearlyPriceId,
+              id: env.STRIPE_SOURCERER_YEARLY_PLAN.price_id,
               amount_per_month: currency(sourcererYearlyPrice.unit_amount, {
                 fromCents: true,
               })
                 .divide(12)
                 .dollars(),
               interval: "year",
+              discount_percentage:
+                env.STRIPE_SOURCERER_YEARLY_PLAN.discount_percentage,
             },
           ],
           features: [

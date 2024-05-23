@@ -2192,6 +2192,7 @@ export type SubscriptionPlan = {
 export type SubscriptionPrice = {
   __typename?: 'SubscriptionPrice';
   amount_per_month?: Maybe<Scalars['Int']>;
+  discount_percentage?: Maybe<Scalars['Int']>;
   id: Scalars['String'];
   interval?: Maybe<Scalars['String']>;
 };
@@ -3838,6 +3839,7 @@ export type SubscriptionPlanResolvers<ContextType = any, ParentType extends Reso
 
 export type SubscriptionPriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPrice'] = ResolversParentTypes['SubscriptionPrice']> = ResolversObject<{
   amount_per_month?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  discount_percentage?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
