@@ -1,4 +1,5 @@
 import currency from "currency.js";
+import Stripe from "stripe";
 import { getStripeInstance } from "../../helper/stripe";
 import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
@@ -73,7 +74,11 @@ const resolvers: Resolvers<Context> = {
             },
             {
               name: "Sourcerer™ Lite Search",
-              items: [{ description: "Unlimited search requests for a single service" }],
+              items: [
+                {
+                  description: "Unlimited search requests for a single service",
+                },
+              ],
             },
           ],
         },
@@ -157,6 +162,76 @@ const resolvers: Resolvers<Context> = {
       });
 
       return session.url;
+    },
+  },
+  Mutation: {
+    scheduleSubscriptionChange: async (_, args, context) => {
+      const userId = context.req.user_id;
+
+      const subscriptions =
+        (await context.prisma.user
+          .findUnique({
+            where: {
+              id: userId,
+            },
+          })
+          .customer()
+          .customer_subscriptions()) || [];
+
+      const stripeSubId: string | undefined =
+        subscriptions?.[0]?.stripe_subscription_id;
+      const stripeCusId: string | undefined =
+        subscriptions?.[0]?.stripe_customer_id;
+
+      invariant(stripeSubId, "No Stripe subscription ID");
+      invariant(stripeCusId, "No Stripe customer ID");
+
+      const stripe = await getStripeInstance();
+      const stripeSub = await stripe.subscriptions.retrieve(stripeSubId, {
+        expand: ["schedule"],
+      });
+      // Get Stripe subscription with schedule data
+      let schedule = stripeSub.schedule as Stripe.SubscriptionSchedule;
+      if (schedule === null) {
+        // Create subscription schedule if no schedule exist.
+        schedule = await stripe.subscriptionSchedules.create({
+          from_subscription: stripeSubId,
+        });
+      }
+
+      await stripe.subscriptionSchedules.update(schedule.id, {
+        // Set to release the schedule after all the phases has completed.
+        end_behavior: "release",
+        phases: [
+          // Phase 0 consists of the current subscription items, start and end dates.
+          {
+            items: [
+              {
+                price: schedule.phases[0].items[0].price as string,
+                quantity: schedule.phases[0].items[0].quantity,
+              },
+            ],
+            start_date: schedule.phases[0].start_date,
+            end_date: schedule.phases[0].end_date,
+          },
+          // Phase 1 will be the new subscription with new product (price id select from args).
+          {
+            items: [
+              {
+                price: args.price_id,
+                quantity: 1,
+              },
+            ],
+            iterations: 1,
+          },
+        ],
+        metadata: {
+          // For billingInfo.has_scheduled_for_interval_change to track user trigger.
+          trigger: "user",
+        },
+      });
+
+      return true;
     },
   },
 };

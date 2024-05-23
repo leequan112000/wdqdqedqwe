@@ -47,6 +47,7 @@ export type BillingInfo = {
   has_active_legacy_plan?: Maybe<Scalars['Boolean']>;
   has_active_sourcerer_plan?: Maybe<Scalars['Boolean']>;
   has_active_white_glove_plan?: Maybe<Scalars['Boolean']>;
+  has_scheduled_for_interval_change?: Maybe<Scalars['Boolean']>;
   id: Scalars['String'];
   payment_method?: Maybe<PaymentMethod>;
   plan?: Maybe<Scalars['String']>;
@@ -641,6 +642,7 @@ export type Mutation = {
   resetPassword?: Maybe<Scalars['Boolean']>;
   resumeSubscription?: Maybe<Scalars['Boolean']>;
   saveAvailabilityRules?: Maybe<Availability>;
+  scheduleSubscriptionChange?: Maybe<Scalars['Boolean']>;
   sendGuestReminder?: Maybe<Scalars['Boolean']>;
   sendMessage?: Maybe<Message>;
   sendSourcingShortlist?: Maybe<Scalars['Boolean']>;
@@ -1057,6 +1059,11 @@ export type MutationResetPasswordArgs = {
 
 export type MutationSaveAvailabilityRulesArgs = {
   input: SaveAvailabilityRulesInput;
+};
+
+
+export type MutationScheduleSubscriptionChangeArgs = {
+  price_id: Scalars['String'];
 };
 
 
@@ -2647,6 +2654,7 @@ export type BillingInfoResolvers<ContextType = any, ParentType extends Resolvers
   has_active_legacy_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_active_sourcerer_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   has_active_white_glove_plan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  has_scheduled_for_interval_change?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   payment_method?: Resolver<Maybe<ResolversTypes['PaymentMethod']>, ParentType, ContextType>;
   plan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3214,6 +3222,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   resetPassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationResetPasswordArgs>>;
   resumeSubscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   saveAvailabilityRules?: Resolver<Maybe<ResolversTypes['Availability']>, ParentType, ContextType, RequireFields<MutationSaveAvailabilityRulesArgs, 'input'>>;
+  scheduleSubscriptionChange?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationScheduleSubscriptionChangeArgs, 'price_id'>>;
   sendGuestReminder?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendGuestReminderArgs, 'email' | 'meeting_event_id'>>;
   sendMessage?: Resolver<Maybe<ResolversTypes['Message']>, ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'content' | 'project_connection_id'>>;
   sendSourcingShortlist?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendSourcingShortlistArgs, 'sourcing_session_id'>>;
