@@ -116,6 +116,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    is_white_glove: (parent) => {
+      return !!parent.sourcing_session_id;
+    },
   },
   Query: {
     projectRequests: async (_, args, context, info) => {
