@@ -1,10 +1,26 @@
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
 import { VendorCompany } from "../../prisma-cro/generated/client";
 import { prismaCRODb } from "../prisma";
 
+const argv = yargs(hideBin(process.argv))
+  .option('size', {
+    describe: '(Optional) Batch size',
+    type: 'number',
+    default: 300, // Default value if the argument is not provided
+  })
+  .parseSync();
+
 const extractAndGetAvgCompanySize = (vendorCompany: VendorCompany) => {
   const companySizeRange = vendorCompany.company_size || "0-0";
-  const [min, max] = companySizeRange.replace(/,/g, "").split(/–|-/).map(Number);
-  const avg = (min + max) / 2.0;
+  const [min, max] = companySizeRange
+    .replace(/,/g, "")
+    .split(/–|-/)
+    .map(Number);
+
+  const avg = max
+    ? (min + max) / 2.0
+    : min;
   return avg; // Use the average value for comparison
 };
 
@@ -31,6 +47,43 @@ const extractRevenueValue = (revenueCode: string | null): number => {
   }
 };
 
+const BATCH_SIZE = argv.size;
+
+type Payload = {
+  id: string;
+  companyAverageSize: number;
+  companyRevenueValue: number;
+}
+
+const divideDataIntoBatches = (data: Payload[], batchSize: number) => {
+  const batches = [];
+
+  for (let i = 0; i < data.length; i += batchSize) {
+    const batch = data.slice(i, i + batchSize);
+    batches.push(batch);
+  }
+
+  return batches;
+}
+
+const processBatch = async (batch: Payload[]) => {
+  const results: VendorCompany[] = [];
+  await prismaCRODb.$transaction(async (trx) => {
+    for (const item of batch) {
+      const result = await trx.vendorCompany.update({
+        where: {
+          id: item.id,
+        },
+        data: {
+          company_average_size: item.companyAverageSize,
+          company_revenue_value: item.companyRevenueValue,
+        },
+      });
+      results.push(result);
+    }
+  })
+  return results;
+}
 
 /**
  * This script transform vendor company details:
@@ -42,7 +95,7 @@ const main = async () => {
   const vendorCompanies = await prismaCRODb.vendorCompany.findMany();
 
   console.log("Preparing update payloads...");
-  const payloads = vendorCompanies.map((vendorCompany) => {
+  const payloads: Payload[] = vendorCompanies.map((vendorCompany) => {
     const avgCompanySize = extractAndGetAvgCompanySize(vendorCompany);
     const revenueValue = extractRevenueValue(vendorCompany.company_revenue);
     return {
@@ -51,25 +104,17 @@ const main = async () => {
       companyRevenueValue: revenueValue,
     };
   });
+  const batches = divideDataIntoBatches(payloads, BATCH_SIZE);
 
   console.log("Start updating vendor companies...");
-  await prismaCRODb.$transaction(async (trx) => {
-    const updateTasks = payloads.map(async (d) => {
-      return await trx.vendorCompany.update({
-        where: {
-          id: d.id,
-        },
-        data: {
-          company_average_size: d.companyAverageSize,
-          company_revenue_value: d.companyRevenueValue,
-        },
-      });
-    });
+  const allResults: VendorCompany[] = [];
+  for (const [index, batch] of batches.entries()) {
+    console.log(`Processing batch ${index + 1}...`)
+    const batchResults = await processBatch(batch);
+    allResults.push(...batchResults);
+  }
 
-    const updated = await Promise.all(updateTasks);
-    console.log(`Successfully updated ${updated.length} vendor companies!`);
-  });
-
+  console.log(`Successfully updated ${allResults.length} vendor companies!`);
   console.log("Exiting...");
   process.exit(0);
 };
