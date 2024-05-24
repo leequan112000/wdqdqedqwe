@@ -87,7 +87,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const edges = vendors.map((v) => ({
+      let edges = vendors.map((v) => ({
         cursor: v.id,
         node: v,
       }));
@@ -109,8 +109,23 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextVendors.length > 0;
       }
 
+      if (!isPaidUser) 
+        edges = edges.slice(0, 25).map((edge, index) => {
+          if (index < 3) {
+            return edge;
+          } else {
+            return {
+              ...edge,
+              node: {
+                ...edge.node,
+                company_description: null,
+              },
+            };
+          }
+        });
+      
       return {
-        edges: isPaidUser ? edges : edges.slice(0, 25),
+        edges,
         page_info: {
           end_cursor: endCursor,
           has_next_page: hasNextPage,
