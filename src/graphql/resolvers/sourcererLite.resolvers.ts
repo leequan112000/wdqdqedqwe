@@ -103,7 +103,7 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextVendors.length > 0;
       }
 
-      if (!isPaidUser) 
+      if (!isPaidUser)
         edges = edges.slice(0, 25).map((edge, index) => {
           if (index < 3) {
             return edge;
@@ -113,11 +113,15 @@ const resolvers: Resolvers<Context> = {
               node: {
                 ...edge.node,
                 company_description: null,
+                company_ipo_status: null,
+                vendor_company_subspecialties: null,
+                vendor_company_types: null,
+                vendor_company_certifications: null
               },
             };
           }
         });
-      
+
       return {
         edges,
         page_info: {

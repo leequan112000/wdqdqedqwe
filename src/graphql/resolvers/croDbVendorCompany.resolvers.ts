@@ -8,12 +8,12 @@ const resolvers: Resolvers<Context> = {
   CroDbVendorCompany: {
     vendor_company_subspecialties: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
+      if (parent.vendor_company_subspecialties === null) return []
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
         },
-      })
-      .vendor_company_subspecialties();
+      }).vendor_company_subspecialties();
     },
     vendor_company_locations: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
@@ -21,26 +21,26 @@ const resolvers: Resolvers<Context> = {
         where: {
           id: parent.id,
         },
-      })
-      .vendor_company_locations();
+      }).vendor_company_locations();
     },
     vendor_company_types: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
+      if (parent.vendor_company_types === null) return [];
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
         },
-      })
-      .vendor_company_types();
+      }).vendor_company_types();
     },
     vendor_company_certifications: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
+      if (parent.vendor_company_certifications === null) return []
+      
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
         },
-      })
-      .vendor_company_certifications();
+      }).vendor_company_certifications();
     },
     company_size: async (parent, _, context) => {
       let companySize = parent.company_size;
