@@ -82,9 +82,6 @@ const resolvers: Resolvers<Context> = {
         take: first,
         skip: after ? 1 : undefined,
         cursor: after ? { id: after } : undefined,
-        orderBy: {
-          company_average_size: "desc",
-        },
       });
 
       let edges = vendors.map((v) => ({
@@ -101,9 +98,6 @@ const resolvers: Resolvers<Context> = {
           take: first,
           skip: after ? 1 : undefined,
           cursor: endCursor ? { id: endCursor } : undefined,
-          orderBy: {
-            company_average_size: "desc",
-          },
         });
 
         hasNextPage = nextVendors.length > 0;
