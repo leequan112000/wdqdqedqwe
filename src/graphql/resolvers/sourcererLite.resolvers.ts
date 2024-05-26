@@ -82,12 +82,9 @@ const resolvers: Resolvers<Context> = {
         take: first,
         skip: after ? 1 : undefined,
         cursor: after ? { id: after } : undefined,
-        orderBy: {
-          company_average_size: "desc",
-        },
       });
 
-      const edges = vendors.map((v) => ({
+      let edges = vendors.map((v) => ({
         cursor: v.id,
         node: v,
       }));
@@ -101,16 +98,32 @@ const resolvers: Resolvers<Context> = {
           take: first,
           skip: after ? 1 : undefined,
           cursor: endCursor ? { id: endCursor } : undefined,
-          orderBy: {
-            company_average_size: "desc",
-          },
         });
 
         hasNextPage = nextVendors.length > 0;
       }
 
+      if (!isPaidUser)
+        edges = edges.slice(0, 25).map((edge, index) => {
+          if (index < 3) {
+            return edge;
+          } else {
+            return {
+              ...edge,
+              node: {
+                ...edge.node,
+                company_description: null,
+                company_ipo_status: null,
+                vendor_company_subspecialties: null,
+                vendor_company_types: null,
+                vendor_company_certifications: null
+              },
+            };
+          }
+        });
+
       return {
-        edges: isPaidUser ? edges : edges.slice(0, 25),
+        edges,
         page_info: {
           end_cursor: endCursor,
           has_next_page: hasNextPage,
