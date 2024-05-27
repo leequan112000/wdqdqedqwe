@@ -1,12 +1,13 @@
-import yargs from 'yargs/yargs';
-import { hideBin } from 'yargs/helpers';
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
+import PromisePool from '@supercharge/promise-pool';
 import { VendorCompany } from "../../prisma-cro/generated/client";
 import { prismaCRODb } from "../prisma";
 
 const argv = yargs(hideBin(process.argv))
-  .option('size', {
-    describe: '(Optional) Batch size',
-    type: 'number',
+  .option("size", {
+    describe: "(Optional) Batch size",
+    type: "number",
     default: 300, // Default value if the argument is not provided
   })
   .parseSync();
@@ -15,12 +16,11 @@ const extractAndGetAvgCompanySize = (vendorCompany: VendorCompany) => {
   const companySizeRange = vendorCompany.company_size || "0-0";
   const [min, max] = companySizeRange
     .replace(/,/g, "")
+    .replace(/\+/g, "") // Handle `10,000+`
     .split(/–|-/)
     .map(Number);
 
-  const avg = max
-    ? (min + max) / 2.0
-    : min;
+  const avg = max ? (min + max) / 2.0 : min;
   return avg; // Use the average value for comparison
 };
 
@@ -38,10 +38,10 @@ const extractRevenueValue = (revenueCode: string | null): number => {
       return 100_000_000;
     case "r_00500000":
       return 500_000_000;
-    case "r_010000000":
+    case "r_01000000":
       return 1_000_000_000;
-    case "r_100000000":
-      return Infinity;
+    case "r_10000000":
+      return 10_000_000_000;
     default:
       return 0;
   }
@@ -53,7 +53,7 @@ type Payload = {
   id: string;
   companyAverageSize: number;
   companyRevenueValue: number;
-}
+};
 
 const divideDataIntoBatches = (data: Payload[], batchSize: number) => {
   const batches = [];
@@ -64,13 +64,14 @@ const divideDataIntoBatches = (data: Payload[], batchSize: number) => {
   }
 
   return batches;
-}
+};
 
 const processBatch = async (batch: Payload[]) => {
-  const results: VendorCompany[] = [];
-  await prismaCRODb.$transaction(async (trx) => {
-    for (const item of batch) {
-      const result = await trx.vendorCompany.update({
+  const task = await PromisePool
+    .withConcurrency(10)
+    .for(batch)
+    .process(async (item) => {
+      return await prismaCRODb.vendorCompany.update({
         where: {
           id: item.id,
         },
@@ -79,11 +80,9 @@ const processBatch = async (batch: Payload[]) => {
           company_revenue_value: item.companyRevenueValue,
         },
       });
-      results.push(result);
-    }
-  })
-  return results;
-}
+    });
+    return task.results;
+};
 
 /**
  * This script transform vendor company details:
@@ -109,7 +108,7 @@ const main = async () => {
   console.log("Start updating vendor companies...");
   const allResults: VendorCompany[] = [];
   for (const [index, batch] of batches.entries()) {
-    console.log(`Processing batch ${index + 1}...`)
+    console.log(`Processing batch ${index + 1}...`);
     const batchResults = await processBatch(batch);
     allResults.push(...batchResults);
   }
