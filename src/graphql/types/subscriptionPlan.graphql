@@ -17,6 +17,7 @@ type SubscriptionFeature {
 type SubscriptionPlan {
   id: String!
   name: String!
+  description: String!
   prices: [SubscriptionPrice!]!
   features: [SubscriptionFeature!]!
 }
