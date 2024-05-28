@@ -114,9 +114,9 @@ const resolvers: Resolvers<Context> = {
                 ...edge.node,
                 company_description: null,
                 company_ipo_status: null,
-                vendor_company_subspecialties: null,
-                vendor_company_types: null,
-                vendor_company_certifications: null
+                vendor_company_subspecialties: [],
+                vendor_company_types: [],
+                vendor_company_certifications: []
               },
             };
           }

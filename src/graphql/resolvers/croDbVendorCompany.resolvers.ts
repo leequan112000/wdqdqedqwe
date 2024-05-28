@@ -7,8 +7,8 @@ import { CroDbVendorCompanyType } from "../../helper/constant";
 const resolvers: Resolvers<Context> = {
   CroDbVendorCompany: {
     vendor_company_subspecialties: async (parent, _, context) => {
+      if (parent.vendor_company_subspecialties) return parent.vendor_company_subspecialties;
       invariant(parent.id, 'Missing vendor company id.');
-      if (parent.vendor_company_subspecialties === null) return []
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
@@ -16,6 +16,7 @@ const resolvers: Resolvers<Context> = {
       }).vendor_company_subspecialties();
     },
     vendor_company_locations: async (parent, _, context) => {
+      if (parent.vendor_company_locations) return parent.vendor_company_locations;
       invariant(parent.id, 'Missing vendor company id.');
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
@@ -25,7 +26,7 @@ const resolvers: Resolvers<Context> = {
     },
     vendor_company_types: async (parent, _, context) => {
       invariant(parent.id, 'Missing vendor company id.');
-      if (parent.vendor_company_types === null) return [];
+      if (parent.vendor_company_types) return parent.vendor_company_types;
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
@@ -33,9 +34,8 @@ const resolvers: Resolvers<Context> = {
       }).vendor_company_types();
     },
     vendor_company_certifications: async (parent, _, context) => {
+      if (parent.vendor_company_certifications) return parent.vendor_company_certifications;
       invariant(parent.id, 'Missing vendor company id.');
-      if (parent.vendor_company_certifications === null) return []
-      
       return await context.prismaCRODb.vendorCompany.findUnique({
         where: {
           id: parent.id,
