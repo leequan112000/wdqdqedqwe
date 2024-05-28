@@ -1,6 +1,7 @@
 const dev = {
   APP_URL: 'http://localhost:3000',
   SERVER_URL: 'https://localhost:9000',
+  AI_SERVER_URL: 'http://localhost:8080',
 };
 const staging = {
   APP_URL: 'https://staging.cromatic.bio',
@@ -15,9 +16,9 @@ const prod = {
 
 let env = dev;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.APP_ENV === 'production') {
   env = prod;
-} else if (process.env.NODE_ENV === 'staging') {
+} else if (process.env.APP_ENV === 'staging') {
   env = staging;
 }
 

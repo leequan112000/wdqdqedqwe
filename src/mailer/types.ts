@@ -29,13 +29,6 @@ export type MilestoneNoticeData = {
   milestone_url: string;
 }
 
-export type AcceptProjectRequestNoticeData = {
-  login_url: string;
-  vendor_company_name: string;
-  project_title: string;
-  receiver_full_name: string;
-}
-
 export type QuoteExpiringNoticeData = {
   receiver_full_name: string;
   button_url: string;

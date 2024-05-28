@@ -95,7 +95,14 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
             in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
           },
           user: {
-            is_active: true,
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
           },
         },
         include: {

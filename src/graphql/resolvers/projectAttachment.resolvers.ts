@@ -8,7 +8,7 @@ import { getZohoContractEditorUrl } from "../../helper/zoho";
 import { Readable } from 'stream';
 import UploadLimitTracker from '../../helper/uploadLimitTracker';
 import { PublicError } from '../errors/PublicError';
-import { byteToKB } from "../../helper/filesize";
+import { byteToKB, formatBytes } from "../../helper/filesize";
 import { toDollar } from "../../helper/money";
 import { getFilenameWithVersion } from "../../helper/documentUpload";
 import invariant from "../../helper/invariant";
@@ -18,18 +18,6 @@ import { app_env } from "../../environment";
 import { createNotificationQueueJob } from "../../queues/notification.queues";
 import createFinalContractUploadNotificationJob from "../../notification/finalContractUploadNotification";
 import createFileUploadNotificationJob from "../../notification/fileUploadNotification";
-
-function formatBytes(bytes: number, decimals = 2) {
-  if (!+bytes) return '0 B'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-}
 
 async function getBuffer(stream: Readable): Promise<{ buffer: Buffer, byteSize: number }> {
   let byteSize = 0;

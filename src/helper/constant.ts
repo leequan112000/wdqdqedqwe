@@ -5,6 +5,14 @@ export const CROMATIC_ADMIN_EMAIL = 'admin@cromatic.bio'
 export enum SubscriptionStatus {
   ACTIVE = 'active',
   CANCELED = 'canceled',
+  PAST_DUE = 'past_due',
+}
+
+export enum BillingInfoStatus {
+  ACTIVE = 'active',
+  CANCELED = 'canceled',
+  PENDING_CANCEL = 'pending_cancel',
+  PAST_DUE = 'past_due',
 }
 
 export enum ProjectRequestStatus {
@@ -159,10 +167,11 @@ export enum MeetingPlatform {
   CUSTOM = 'custom',
 }
 
-export enum BiotechAccountType {
-  STARDARD = 'standard',
-  PREMIUM = 'premium',
-  ENTERPRISE = 'enterprise',
+export enum CustomerSubscriptionPlanName {
+  SOURCING_PLAN = 'sourcing_plan',
+  PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
+  WHITE_GLOVE_PLAN = 'white_glove_plan',
+  CROMATIC_CONSULTANT = 'cromatic_consultant'
 }
 
 export enum EmailType {
@@ -350,4 +359,39 @@ export const AvailabilityDayIndexObj = {
 export enum CalendarIntegrationErrorType {
   NO_TEAMS_FOR_BUSINESS = 'NoTeamsForBusiness',
   AUTHENTICATION_FAILED = 'AuthenticationFailed',
+}
+
+export enum CroDbVendorCompanyType {
+  CRO = 'CRO',
+  CMO = 'CMO',
+  CDMO = 'CDMO',
+  NON_PROFIT = 'Non-profit research org'
+}
+
+export enum UserStatus {
+  DEACTIVATED = 'deactivated',
+  PENDING_DEACTIVATION = 'pending_deactivation',
+  JOINED = 'joined',
+  PENDING_INVITATION = 'pending_invitation',
+}
+
+export enum BillingInvoiceStatus {
+  PAID = "paid",
+  OPEN = "open",
+  FAILED = "failed",
+}
+
+export enum CountryRegion {
+  ALL = 'All',
+  NORTH_AMERICA = 'NA',
+  EMEA = 'EMEA',
+  LATAM = 'LATAM',
+  APAC = 'APAC',
+}
+
+export enum SourcingResultSortBy {
+  BEST_MATCH = 'Best match',
+  TEAM_SIZE = 'Team size',
+  REVENUE = 'Revenue',
+  ALPHABETICAL = 'A - Z',
 }

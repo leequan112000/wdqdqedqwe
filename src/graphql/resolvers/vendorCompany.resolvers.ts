@@ -46,35 +46,49 @@ const resolvers: Resolvers<Context> = {
 
       return primaryMembers;
     },
-    certification_tags: async (parent, _, context) => {
-      invariant(parent.id, 'Vendor company id not found.');
+    certification_tags: async (parentVendorCompany, _, context) => {
+      invariant(parentVendorCompany.id, "Vendor company id not found.");
 
-      const certificationTagConnections = await context.prisma.certificationTagConnection.findMany({
-        where: {
-          vendor_company_id: parent.id,
-        },
-        include: {
-          certification_tag: true
-        }
-      });
+      const certificationTagConnections =
+        (await context.prisma.vendorCompany
+          .findUnique({
+            where: {
+              id: parentVendorCompany.id,
+            },
+          })
+          .certification_tag_connections({
+            include: {
+              certification_tag: true,
+            },
+          })) || [];
 
-      const certificationTags = certificationTagConnections.map(c => c.certification_tag);
-      const priorityTags = certificationTags.filter((tag) => tag.priority && tag.priority > 0);
-      const nonPriorityTags = certificationTags.filter((tag) => tag.priority === null);
+      const certificationTags = certificationTagConnections.map(
+        (c) => c.certification_tag
+      );
+      const priorityTags = certificationTags.filter(
+        (tag) => tag.priority && tag.priority > 0
+      );
+      const nonPriorityTags = certificationTags.filter(
+        (tag) => tag.priority === null
+      );
 
       return [...priorityTags, ...nonPriorityTags];
     },
     lab_specializations: async (parent, _, context) => {
       invariant(parent.id, 'Vendor company id not found.');
 
-      const labSpecializationConnections = await context.prisma.labSpecializationConnection.findMany({
-        where: {
-          vendor_company_id: parent.id,
-        },
-        include: {
-          lab_specialization: true
-        }
-      });
+      const labSpecializationConnections =
+        (await context.prisma.vendorCompany
+          .findUnique({
+            where: {
+              id: parent.id,
+            },
+          })
+          .lab_specialization_connections({
+            include: {
+              lab_specialization: true,
+            },
+          })) || [];
 
       const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
 
@@ -196,22 +210,11 @@ const resolvers: Resolvers<Context> = {
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
 
-        if (args.legal_name && args.legal_name !== vendor_member?.vendor_company?.legal_name) {
-          const existingVendorCompany = await trx.vendorCompany.findFirst({
-            where: {
-              legal_name: args.legal_name
-            }
-          });
-
-          invariant(!existingVendorCompany, new PublicError('Vendor company legal name already exists.'));
-        }
-
         return await trx.vendorCompany.update({
           where: {
             id: vendor_member.vendor_company_id
           },
           data: {
-            legal_name: args.legal_name,
             description: args.description,
             website: args.website,
             address: args.address,

@@ -24,7 +24,7 @@ const resolvers: Resolvers<Context> = {
           description: args.description,
           address: args.address,
           vendor_type: args.vendor_type,
-          skip_cda: args.skip_cda || false,
+          skip_cda: true, // deprecated
           is_on_marketplace: true,
           invited_by: InvitedByType.ADMIN,
         }
@@ -87,7 +87,14 @@ const resolvers: Resolvers<Context> = {
                     in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
                   },
                   user: {
-                    is_active: true,
+                    OR: [
+                      { deactivated_at: null },
+                      {
+                        deactivated_at: {
+                          gt: new Date(),
+                        },
+                      },
+                    ],
                   }
                 },
               });

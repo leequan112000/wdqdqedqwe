@@ -1,3 +1,4 @@
+import { parseResolveInfo, type ResolveTree } from "graphql-parse-resolve-info";
 import { Context } from "../../types/context";
 import { nonNullable } from '../../helper/filter'
 import { PublicError } from "../errors/PublicError";
@@ -7,7 +8,7 @@ import {
   AdminTeam, ProjectConnectionCollaborationStatus, ProjectRequestStatus
 } from "../../helper/constant";
 import { Prisma } from "@prisma/client";
-import { Resolvers, ProjectRequestComment, ProjectRequest } from "../generated";;
+import { Resolvers, ProjectRequestComment, ProjectRequestProjectConnectionFilter } from "../generated";;
 import {
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,
@@ -40,43 +41,45 @@ const resolvers: Resolvers<Context> = {
         }
       })
     },
-    project_connections: async (parent, args, context) => {
-      invariant(parent.id, 'Missing project request id.');
+    project_connections: async (projectRequest, args, context) => {
+      if (projectRequest.project_connections) return projectRequest.project_connections;
+      invariant(projectRequest.id, 'Missing project request id.');
 
       const { filter } = args;
 
-      const customer = await context.prisma.customer.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-
-      const projectConnections = await context.prisma.projectConnection.findMany({
-        where: {
-          project_request_id: parent.id,
-          customer_connections: {
-            some: {
-              customer_id: customer?.id
+      const projectConnections = await context.prisma.projectRequest
+        .findUnique({
+          where: {
+            id: projectRequest.id,
+          },
+        })
+        .project_connections({
+          where: {
+            customer_connections: {
+              some: {
+                customer: {
+                  user_id: context.req.user_id,
+                },
+              },
+            },
+            vendor_status: filter?.vendor_status
+              ? {
+                  equals: filter.vendor_status,
+                }
+              : {},
+          },
+          orderBy: [
+            { final_contract_uploaded_at: { sort: "desc", nulls: "last" } },
+            { updated_at: "desc" },
+          ],
+          include: {
+            quotes: {
+              include: {
+                milestones: true,
+              },
             },
           },
-          vendor_status: filter?.vendor_status
-            ? {
-              equals: filter.vendor_status,
-            }
-            : {},
-        },
-        orderBy: [
-          { final_contract_uploaded_at: { sort: 'desc', nulls: 'last' } },
-          { updated_at: 'desc' }
-        ],
-        include: {
-          quotes: {
-            include: {
-              milestones: true,
-            },
-          },
-        },
-      });
+        }) || [];
 
       if (filter?.collaboration_status) {
         return filterByCollaborationStatus(projectConnections, filter.collaboration_status as ProjectConnectionCollaborationStatus);
@@ -113,79 +116,162 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    is_white_glove: (parent) => {
+      return !!parent.sourcing_session_id;
+    },
   },
   Query: {
-    projectRequests: async (_, args, context) => {
+    projectRequests: async (_, args, context, info) => {
+      /**
+       * Parse resolve info to find any filter args on ProjectRequest.project_connections.
+       * If exist, we will do the filter in this resolver in order to prevent
+       * problem that fetch project request with ZERO project connections.
+       */
+      const parsed = parseResolveInfo(info) as ResolveTree;
+      const projectConnectionFilter = parsed.fieldsByTypeName.ProjectRequest
+        .project_connections?.args?.filter as
+        | ProjectRequestProjectConnectionFilter
+        | undefined;
+
+      // A flag to skip ProjectRequest.project_connections resolver.
+      const willSkipProjectConnectionsResolver =
+        !!projectConnectionFilter?.collaboration_status;
+
       const customer = await context.prisma.customer.findFirstOrThrow({
         where: {
-          user_id: context.req.user_id
-        }
+          user_id: context.req.user_id,
+        },
       });
 
-      let data = [];
-      if (customer.role === CompanyCollaboratorRoleType.OWNER || customer.role === CompanyCollaboratorRoleType.ADMIN) {
-        data = await context.prisma.projectRequest.findMany({
-          where: {
-            ...(args.status && args.status.length > 0 ? {
-              status: {
-                in: args.status.filter(nonNullable),
+      const data = await context.prisma.projectRequest.findMany({
+        where: {
+          ...(args.status && args.status.length > 0
+            ? {
+                status: {
+                  in: args.status.filter(nonNullable),
+                },
               }
-            } : {}),
-            OR: [{
-              biotech_id: customer.biotech_id
-            }],
-          },
-          orderBy: [
-            // Sort by status to grouped matched experiments first
-            { status: 'asc' },
-            { updated_at: 'desc' },
-          ]
-        });
-      } else {
-        data = await context.prisma.projectRequest.findMany({
-          where: {
-            ...(args.status && args.status.length > 0 ? {
-              status: {
-                in: args.status.filter(nonNullable),
-              }
-            } : {}),
-            OR: [
-              // by project connection collaborator
-              {
-                project_connections: {
-                  some: {
-                    customer_connections: {
-                      some: {
-                        customer_id: customer.id,
-                      },
+            : {}),
+          OR: [
+            // owner and admin are allow to view all project within the company
+            ...(customer.role === CompanyCollaboratorRoleType.OWNER ||
+            customer.role === CompanyCollaboratorRoleType.ADMIN
+              ? [
+                  {
+                    biotech_id: customer.biotech_id,
+                  },
+                ]
+              : [{}]),
+            // by project connection collaborator
+            {
+              project_connections: {
+                some: {
+                  customer_connections: {
+                    some: {
+                      customer_id: customer.id,
                     },
                   },
                 },
               },
-              // by project request collaborator
-              {
-                project_request_collaborators: {
-                  some: {
-                    customer_id: customer.id,
-                  }
-                }
+            },
+            // by project request collaborator
+            {
+              project_request_collaborators: {
+                some: {
+                  customer_id: customer.id,
+                },
               },
-            ],
-          },
-          orderBy: [
-            // Sort by status to grouped matched experiments first
-            { status: 'asc' },
-            { updated_at: 'desc' },
-          ]
-        });
+            },
+          ],
+          ...(projectConnectionFilter
+            ? {
+                project_connections: {
+                  some: {
+                    vendor_status: projectConnectionFilter.vendor_status,
+                  },
+                },
+              }
+            : {}),
+        },
+        orderBy: [
+          // Sort by status to grouped matched experiments first
+          { status: "asc" },
+          { updated_at: "desc" },
+        ],
+        include: {
+          ...(willSkipProjectConnectionsResolver
+            ? {
+                project_connections: {
+                  where: {
+                    customer_connections: {
+                      some: {
+                        customer: {
+                          user_id: context.req.user_id,
+                        },
+                      },
+                    },
+                    vendor_status: projectConnectionFilter?.vendor_status
+                      ? {
+                          equals: projectConnectionFilter.vendor_status,
+                        }
+                      : {},
+                  },
+                  orderBy: [
+                    {
+                      final_contract_uploaded_at: {
+                        sort: "desc",
+                        nulls: "last",
+                      },
+                    },
+                    { updated_at: "desc" },
+                  ],
+                  include: {
+                    quotes: {
+                      include: {
+                        milestones: true,
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+        },
+      });
+
+      if (willSkipProjectConnectionsResolver) {
+        return data
+          .map((pr) => ({
+            ...pr,
+            project_connections: filterByCollaborationStatus(
+              // @ts-ignore
+              pr.project_connections,
+              projectConnectionFilter.collaboration_status as ProjectConnectionCollaborationStatus
+            ),
+          }))
+          // Filter out project request with ZERO project connection.
+          .filter((pr) => pr.project_connections.length > 0)
+          // Convert decimal to number.
+          .map((pr) => ({
+            ...pr,
+            max_budget: pr.max_budget?.toNumber() || 0,
+            project_connections: pr.project_connections.map((pc) => ({
+              ...pc,
+              quotes: pc.quotes.map((q) => ({
+                ...q,
+                amount: q.amount.toNumber(),
+                milestones: q.milestones.map((m) => ({
+                  ...m,
+                  amount: m.amount.toNumber(),
+                })),
+              })),
+            })),
+          }));
       }
 
-      const processed: ProjectRequest[] = data.map((d) => ({
+      return data.map((d) => ({
         ...d,
         max_budget: d.max_budget?.toNumber() || 0,
-      }))
-
-      return processed;
+      }));
     },
     projectRequest: async (_, args, context) => {
       const vendor = await context.prisma.vendorMember.findFirst({
@@ -335,6 +421,7 @@ const resolvers: Resolvers<Context> = {
           invariant(args.email, 'Email is required.');
           invariant(args.first_name, 'First name is required.');
           invariant(args.last_name, 'Last name is required.');
+          const lowerCaseEmail = args.email.toLowerCase();
           const admins = await context.prisma.admin.findMany({
             where: {
               team: AdminTeam.SCIENCE
@@ -347,7 +434,7 @@ const resolvers: Resolvers<Context> = {
               project_request_id: projectRequest.id,
               company_name: args.company_name,
               website: args.website,
-              email: args.email,
+              email: lowerCaseEmail,
               first_name: args.first_name,
               last_name: args.last_name,
               inviter_id: user.id,
@@ -369,7 +456,7 @@ const resolvers: Resolvers<Context> = {
             website: args.website,
             first_name: args.first_name,
             last_name: args.last_name,
-            email: args.email,
+            email: lowerCaseEmail,
             project_request_name: projectRequest.title,
           };
           await Promise.all(admins.map(async (admin) => {

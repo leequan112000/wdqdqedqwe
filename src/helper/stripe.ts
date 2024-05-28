@@ -26,7 +26,7 @@ async function getStripeProductionInstance() {
 
 function isCypressEnv() {
   return Boolean(
-    process.env.NODE_ENV === `development` &&
+    process.env.APP_ENV === `development` &&
     process.env.STRIPE_EMULATOR === `true`
   );
 }

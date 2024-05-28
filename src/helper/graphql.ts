@@ -5,6 +5,7 @@ import Sentry from "../sentry";
 export const operationWhitelist = [
   'signInUserMutation',
   'signUpCustomerMutation',
+  'Public_SignUpCustomerMutation',
   'ResetPassword_Mutation',
   'ForgotPassword_Mutation',
   'SubmitCroInterest',
@@ -17,6 +18,9 @@ export const operationWhitelist = [
   'Public_FormInitialValue_Query',
   'Public_VendorSurveyPage_Query',
   'Public_SubmitSurvey_Mutation',
+  'Public_SearchVendorByService_Query',
+  `Public_SourcererLiteSearchServices_Query`,
+  'Public_PricingPageQuery'
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

@@ -1,4 +1,4 @@
-import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User } from '@prisma/client';
+import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User, CustomerSubscription } from '@prisma/client';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
 import Stripe from 'stripe';
 import { MockContext, createMockContext } from '../../../testContext';
@@ -10,7 +10,9 @@ import {
   checkoutSessionAsyncPaymentFailed,
 
   customerSubscriptionUpdated,
+  customerSubscriptionUpdatedWithCancelAt,
   customerSubscriptionDeleted,
+
 } from './stripe-mock-data/stripeMockData';
 import { processStripeEvent } from './stripe';
 import { prisma } from '../../../__mocks__/prisma';
@@ -55,6 +57,7 @@ const API_VERSION = "2022-08-01";
 let mockCtx: MockContext;
 let ctx: ServiceContext;
 let customer: Customer;
+let customerSubscription: CustomerSubscription;
 let biotech: Biotech;
 let invoice: Invoice;
 let quote: Quote;
@@ -75,6 +78,18 @@ beforeEach(() => {
     user_id: 'uuid',
     role: 'user',
   };
+
+  customerSubscription = {
+    id: 'uuid',
+    created_at: new Date(),
+    customer_id: 'uuid',
+    ended_at: null,
+    updated_at: new Date(),
+    plan_name: 'sourcing_plan',
+    status: 'active',
+    stripe_subscription_id: checkoutSessionCompleted.data.object.subscription,
+    stripe_customer_id: checkoutSessionCompleted.data.object.customer,
+  }
 
   biotech = {
     id: 'uuid',
@@ -98,7 +113,6 @@ beforeEach(() => {
     has_setup_profile: true,
     legal_name: 'Legal Name',
     linkedin_url: null,
-    number_of_reqs_allowed_without_subscription: 0,
     skip_cda: false,
     team_size: '1-10',
     twitter_url: null,
@@ -236,25 +250,33 @@ describe('process stripe event', () => {
       test('should create subscription and return 200', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
-        prisma.customer.findFirst.mockResolvedValue(customer);
+        prisma.customer.findFirst.mockResolvedValue({
+          ...customer,
+          customer_subscriptions: [],
+        } as Customer & {
+          customer_subscriptions: CustomerSubscription[];
+        });
+
 
         const result = await processStripeEvent(event);
-        expect(prisma.subscription.create).toBeCalled();
+        expect(prisma.customerSubscription.create).toBeCalled();
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
 
-      test('should update biotech and return 200', async () => {
+      test('should update subscription and return 200', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'subscription';
-        (event.data.object as Stripe.Checkout.Session).subscription = null;
         prisma.customer.findFirst.mockResolvedValue({
           ...customer,
-          biotech,
-        } as Customer & { biotech: Biotech });
+          customer_subscriptions: [customerSubscription],
+        } as Customer & {
+          customer_subscriptions: CustomerSubscription[];
+        });
+
 
         const result = await processStripeEvent(event);
-        expect(prisma.biotech.update).toBeCalled();
+        expect(prisma.customerSubscription.update).toBeCalled();
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
@@ -525,7 +547,7 @@ describe('process stripe event', () => {
     });
   });
 
-  describe('customer.subscription.updated', () => {
+  describe('customer.subscription.updated (legacy flow)', () => {
     test('should return 200', async () => {
       const event = customerSubscriptionUpdated as Stripe.Event;
 
@@ -539,7 +561,8 @@ describe('process stripe event', () => {
         images: [],
         livemode: false,
         metadata: {
-          account_type: 'standard',
+          account_type: 'sourcerer',
+          plan_name: 'sourcerer'
         },
         name: "myproduct",
         package_dimensions: null,
@@ -576,7 +599,144 @@ describe('process stripe event', () => {
           id: 'uuid',
         },
         data: {
-          account_type: 'standard',
+          account_type: 'sourcerer',
+          subscriptions: {
+            update: {
+              where: {
+                id: 'uuid',
+              },
+              data: {
+                ended_at: null,
+                status: 'active',
+              },
+            },
+          },
+        },
+      });
+      expect(message).toEqual('OK');
+      expect(status).toEqual(200);
+    });
+  });
+
+  describe('customer.subscription.updated (current flow)', () => {
+    test('should return 200', async () => {
+      const event = customerSubscriptionUpdated as Stripe.Event;
+
+      stripe.products.retrieve.mockResolvedValueOnce({
+        id: "prod_NortzQ6i7n9Xnw",
+        object: "product",
+        active: true,
+        created: 1683014531,
+        default_price: null,
+        description: "(created by Stripe CLI)",
+        images: [],
+        livemode: false,
+        metadata: {
+          account_type: 'sourcerer',
+          plan_name: 'sourcerer'
+        },
+        name: "myproduct",
+        package_dimensions: null,
+        shippable: null,
+        statement_descriptor: null,
+        tax_code: null,
+        unit_label: null,
+        updated: 1683014531,
+        url: null,
+        lastResponse: {
+          headers: {},
+          requestId: 'string',
+          statusCode: 200,
+        },
+        attributes: [],
+        type: 'good',
+      });
+
+      prisma.customerSubscription.findFirst.mockResolvedValue({
+        id: 'uuid',
+        customer_id: 'uuid',
+        created_at: new Date(),
+        ended_at: new Date(),
+        status: 'active',
+        stripe_customer_id: 'uuid',
+        stripe_subscription_id: 'uuid',
+        updated_at: new Date(),
+        plan_name: 'sourcerer',
+      });
+
+      const { message, status } = await processStripeEvent(event);
+
+      expect(prisma.customerSubscription.update).toBeCalledWith({
+        where: {
+          id: 'uuid',
+        },
+        data: {
+          plan_name: 'sourcerer',
+          ended_at: null,
+          status: 'active',
+        },
+      });
+      expect(message).toEqual('OK');
+      expect(status).toEqual(200);
+    });
+  });
+
+  describe('customer.subscription.updated (cancel flow)', () => {
+    test('should return 200', async () => {
+      const event = customerSubscriptionUpdatedWithCancelAt as any;
+
+      stripe.products.retrieve.mockResolvedValueOnce({
+        id: "prod_NortzQ6i7n9Xnw",
+        object: "product",
+        active: true,
+        created: 1683014531,
+        default_price: null,
+        description: "(created by Stripe CLI)",
+        images: [],
+        livemode: false,
+        metadata: {
+          account_type: 'sourcerer',
+          plan_name: 'sourcerer'
+        },
+        name: "myproduct",
+        package_dimensions: null,
+        shippable: null,
+        statement_descriptor: null,
+        tax_code: null,
+        unit_label: null,
+        updated: 1683014531,
+        url: null,
+        lastResponse: {
+          headers: {},
+          requestId: 'string',
+          statusCode: 200,
+        },
+        attributes: [],
+        type: 'good',
+      });
+
+      prisma.customerSubscription.findFirst.mockResolvedValue({
+        id: 'uuid',
+        customer_id: 'uuid',
+        created_at: new Date(),
+        ended_at: new Date(),
+        status: 'active',
+        stripe_customer_id: 'uuid',
+        stripe_subscription_id: 'uuid',
+        updated_at: new Date(),
+        plan_name: 'sourcerer',
+      });
+
+      const { message, status } = await processStripeEvent(event);
+
+      expect(prisma.customerSubscription.update).toBeCalledWith({
+        where: {
+          id: 'uuid',
+        },
+        data: {
+          plan_name: 'sourcerer',
+          ended_at: new Date(event.data.object.cancel_at * 1000),
+          status: 'canceled',
         },
       });
       expect(message).toEqual('OK');

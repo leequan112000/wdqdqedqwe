@@ -6,10 +6,7 @@ type VendorCompany {
   created_at: Date
   updated_at: Date
   address: String
-  cda_pandadoc_file_id: String
-  cda_signed_at: Date
   vendor_type: String
-  skip_cda: Boolean
   is_on_marketplace: Boolean
   invited_by: String
 }
@@ -21,7 +18,6 @@ type Mutation {
     website: String
     description: String
     vendor_type: String
-    skip_cda: Boolean
     invited_by: String
   ): VendorCompany
   inviteVendorCompaniesToProjectByAdmin(

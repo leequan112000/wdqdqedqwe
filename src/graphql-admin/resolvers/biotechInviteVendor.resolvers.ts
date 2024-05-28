@@ -14,6 +14,8 @@ const resolvers: Resolvers<Context> = {
         });
         invariant(biotechInviteVendor, new PublicError('Biotech invite vendor not found.'));
 
+        const lowerCaseEmail = args.email.toLowerCase();
+
         const updatedBiotechInviteVendor = await context.prisma.biotechInviteVendor.update({
           where: {
             id: biotechInviteVendor.id,
@@ -23,7 +25,7 @@ const resolvers: Resolvers<Context> = {
             website: args.website,
             first_name: args.first_name,
             last_name: args.last_name,
-            email: args.email,
+            email: lowerCaseEmail,
           },
         });
 

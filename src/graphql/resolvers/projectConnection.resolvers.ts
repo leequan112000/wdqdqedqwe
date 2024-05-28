@@ -25,11 +25,11 @@ import { hasPermission } from "../../helper/casbin";
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
-    vendor_company: async (parent, _, context) => {
-      invariant(parent.vendor_company_id, 'Vendor company id not found.');
-      const vendorCompany = await context.prisma.vendorCompany.findFirst({
+    vendor_company: async (parentProjectConnection, _, context) => {
+      invariant(parentProjectConnection.vendor_company_id, 'Vendor company id not found.');
+      const vendorCompany = await context.prisma.vendorCompany.findUnique({
         where: {
-          id: parent.vendor_company_id,
+          id: parentProjectConnection.vendor_company_id,
         },
       });
       invariant(vendorCompany, 'Vendor company not found.');
@@ -80,11 +80,13 @@ const resolvers: Resolvers<Context> = {
         document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[a.document_type],
       }));
     },
-    quotes: async (parent, _, context) => {
-      invariant(parent.id, 'Project connection id not found.');
+    quotes: async (projectConnection, _, context) => {
+      if (projectConnection.quotes) return projectConnection.quotes;
+
+      invariant(projectConnection.id, 'Project connection id not found.');
       const currentUserId = context.req.user_id;
 
-      const currentUser = await context.prisma.user.findFirst({
+      const currentUser = await context.prisma.user.findUnique({
         where: {
           id: currentUserId,
         },
@@ -96,9 +98,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currentUser, 'Current user not found.')
 
-      const filter: Prisma.QuoteWhereInput = {
-        project_connection_id: parent.id,
-      };
+      const filter: Prisma.QuoteWhereInput = {};
 
       if (currentUser.customer) {
         filter.status = {
@@ -106,12 +106,16 @@ const resolvers: Resolvers<Context> = {
         };
       }
 
-      const quotes = await context.prisma.quote.findMany({
+      const quotes = await context.prisma.projectConnection.findUnique({
+        where: {
+          id: projectConnection.id,
+        },
+      }).quotes({
         where: filter,
         orderBy: {
           created_at: 'asc',
-        }
-      });
+        },
+      }) || [];
 
       return quotes.map((quote) => {
         return {
@@ -611,7 +615,7 @@ const resolvers: Resolvers<Context> = {
         await chatService.createSystemMessage(
           {
             chat_id: chat.id,
-            content: "You've matched! Start your conversation by typing in the chat box for quick start!"
+            content: "You've found a match! Start a conversation with your partner to kick off your project."
           },
           { prisma: trx }
         )
@@ -805,7 +809,7 @@ const resolvers: Resolvers<Context> = {
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
-      const { project_connection_id, email, first_name, last_name, custom_message, role } = args;
+      const { project_connection_id, email, name, custom_message, role } = args;
       const castedRole = (role as CompanyCollaboratorRoleType) || CompanyCollaboratorRoleType.USER;
 
       invariant(currentUserId, 'Current user id not found.');
@@ -866,11 +870,14 @@ const resolvers: Resolvers<Context> = {
       // 2. Create customer/vendor member connection
       // 3. Send invitation email
       return await context.prisma.$transaction(async (trx) => {
+        const splitName = args.name.split(' ');
+        const firstName = splitName[0];
+        const lastName = splitName.length === 1 ? '' : splitName[splitName.length - 1];
 
         const newUser = await trx.user.create({
           data: {
-            first_name,
-            last_name,
+            first_name: firstName,
+            last_name: lastName,
             email,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),

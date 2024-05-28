@@ -23,8 +23,10 @@ import { ApolloServerPluginSentryMonitor, operationWhitelist } from './helper/gr
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
+import sentryMiddleware from './middlewares/sentry';
 import Sentry from './sentry';
 import { GqlErrorCode } from './helper/constant';
+import { redis } from './redis';
 
 const app = express();
 
@@ -74,7 +76,7 @@ function formatApolloServerError(formattedError: GraphQLFormattedError, error: u
 export const apolloServer = new ApolloServer<Context>({
   schema,
   validationRules: [depthLimit(7)],
-  introspection: process.env.NODE_ENV === 'development',
+  introspection: process.env.APP_ENV === 'development',
   formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -94,7 +96,7 @@ export const apolloServer = new ApolloServer<Context>({
 export const adminApolloServer = new ApolloServer<Context>({
   schema: adminSchema,
   validationRules: [depthLimit(7)],
-  introspection: process.env.NODE_ENV === 'development',
+  introspection: process.env.APP_ENV === 'development',
   formatError: formatApolloServerError,
   plugins: [
     ApolloServerPluginSentryMonitor(),
@@ -139,11 +141,11 @@ export async function startServer() {
       context: async ({ req, res }) => {
         if (
           // bypass authentication for codegen
-          (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
           // if user_id exist
           || req.is_admin_authorized
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
         }
 
         throw new GraphQLError('Admin is not authenticated', {
@@ -161,6 +163,7 @@ export async function startServer() {
     cors<cors.CorsRequest>(corsConfig),
     json(),
     authMiddleware,
+    sentryMiddleware,
     expressMiddleware<Context>(apolloServer, {
       context: async ({ req, res }) => {
         const operationName = req.body?.operationName;
@@ -174,8 +177,11 @@ export async function startServer() {
             }
           });
 
-          if (currentUser?.is_active === false) {
-            throw new GraphQLError('Session expired.', {
+          if (
+            currentUser?.deactivated_at &&
+            currentUser.deactivated_at <= new Date()
+          ) {
+            throw new GraphQLError("Session expired.", {
               extensions: {
                 code: GqlErrorCode.SESSION_EXPIRED,
                 http: { status: 401 },
@@ -186,13 +192,13 @@ export async function startServer() {
 
         if (
           // bypass authentication for codegen
-          (process.env.NODE_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
           // if user_id exist
           || req.user_id
           // bypass authentication for whitelisted operation, eg. signIn and signUp
           || isWhitelisted
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub });
+          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
         }
 
         throw new GraphQLError('User is not authenticated', {

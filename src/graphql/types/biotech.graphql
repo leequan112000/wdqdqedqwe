@@ -1,7 +1,6 @@
 type Biotech {
   id: String
   name: String
-  legal_name: String
   created_at: Date
   updated_at: Date
   has_setup_profile: Boolean
@@ -16,11 +15,6 @@ type Biotech {
   zipcode: String
   website: String
   about: String
-  cda_pandadoc_file_id: String
-  cda_pandadoc_signer: String
-  cda_signed_at: Date
-  skip_cda: Boolean
-  number_of_reqs_allowed_without_subscription: Int
   customers: [Customer]
   owner: User
   admins: [User]
@@ -36,6 +30,7 @@ type Biotech {
   biotech_invoices: [BiotechInvoice]
   purchase_orders: [PurchaseOrder]
   blanket_purchase_orders: [BlanketPurchaseOrder]
+  account_type: String
 }
 
 type Query {
@@ -43,28 +38,8 @@ type Query {
 }
 
 type Mutation {
-  onboardBiotech(
-    name: String
-    legal_name: String
-    address: String
-    address1: String
-    address2: String
-    city: String
-    state: String
-    country: String
-    zipcode: String
-    website: String
-    about: String
-    founded_year: String
-    team_size: String
-    linkedin_url: String
-    twitter_url: String
-    facebook_url: String
-    biotech_extra_info: String
-  ): Biotech
   updateBiotech(
     name: String
-    legal_name: String
     address: String
     address1: String
     address2: String

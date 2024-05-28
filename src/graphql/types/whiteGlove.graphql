@@ -1,0 +1,5 @@
+type Mutation {
+  sendSourcingShortlist(
+    sourcing_session_id: String!
+  ): Boolean
+}

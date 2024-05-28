@@ -3,8 +3,9 @@ import moment from 'moment';
 import { prisma } from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import milestoneService from '../../../services/milestone/milestone.service';
-import { InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import { CompanyCollaboratorRoleType, CustomerSubscriptionPlanName, InvoicePaymentStatus, MilestonePaymentStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
+import { ga } from '../../../helper/googleAnalytics';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
 import { createInvoicePaymentNoticeEmailJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
@@ -23,11 +24,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 id: checkoutSession.client_reference_id!
               },
               include: {
-                biotech: {
-                  include: {
-                    subscriptions: true
-                  }
-                }
+                customer_subscriptions: true,
               }
             });
             if (!customer) {
@@ -36,25 +33,69 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
               return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
             }
             if (checkoutSession.subscription) {
-              await prisma.subscription.create({
-                data: {
-                  stripe_subscription_id: checkoutSession.subscription as string,
-                  stripe_customer_id: checkoutSession.customer as string,
-                  status: SubscriptionStatus.ACTIVE,
-                  biotech_id: customer.biotech_id
+              if (!checkoutSession.metadata?.plan_name) {
+                Sentry.captureMessage("[Stripe Webhook] Missing plan name metadata.");
+              }
+
+              if (customer.customer_subscriptions.length > 0) {
+                await prisma.customerSubscription.update({
+                  where: {
+                    id: customer.customer_subscriptions[0].id,
+                  },
+                  data: {
+                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_customer_id: checkoutSession.customer as string,
+                    status: SubscriptionStatus.ACTIVE,
+                    plan_name: checkoutSession.metadata?.plan_name as string,
+                    ended_at: null,
+                  }
+                })
+              } else {
+                await prisma.customerSubscription.create({
+                  data: {
+                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_customer_id: checkoutSession.customer as string,
+                    status: SubscriptionStatus.ACTIVE,
+                    plan_name: checkoutSession.metadata?.plan_name as string,
+                    customer_id: customer.id
+                  }
+                });
+              }
+
+              await ga.trackEvent(
+                'purchase',
+                checkoutSession?.metadata?.ga_client_id ?? 'unknown',
+                {
+                  transaction_id: checkoutSession.subscription,
+                  value: (checkoutSession.amount_total ?? 0) / 100,
+                  currency: checkoutSession.currency?.toUpperCase(),
                 }
-              });
-            } else {
-              // Increment number_of_reqs_allowed_without_subscription by 1
-              const incremented_number_of_request = customer.biotech.number_of_reqs_allowed_without_subscription + 1;
-              await prisma.biotech.update({
-                where: {
-                  id: customer.biotech_id
-                },
-                data: {
-                  number_of_reqs_allowed_without_subscription: incremented_number_of_request
+              );
+
+              /**
+               * Update most recent card (payment method) as
+               * default payment method.
+               * Prevent error from breaking.
+               */
+              try {
+                const stripe = await getStripeInstance();
+                const { data } = await stripe.paymentMethods.list({
+                  customer: checkoutSession.customer as string,
+                  type: 'card',
+                });
+                if (data.length > 0) {
+                  await stripe.customers.update(
+                    checkoutSession.customer as string,
+                    {
+                      invoice_settings: {
+                        default_payment_method: data[0].id,
+                      }
+                    }
+                  )
                 }
-              })
+              } catch (error) {
+                Sentry.captureException(error);
+              }
             }
             console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
             return { status: 200, message: 'OK' };
@@ -278,59 +319,162 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
       }
 
       case 'customer.subscription.updated': {
-        const { items, customer } = event.data.object as Stripe.Subscription;
+        const { items, customer, cancel_at, status } = event.data
+          .object as Stripe.Subscription;
+        /**
+         * Default cancel at date to null to handle remove ended_at value
+         * when customer resume the subscription.
+         */
+        const cancelAtDate = cancel_at ? moment.unix(cancel_at).toDate() : null;
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
-        invariant(subItem, '[Stripe Webhook] Missing subscription item.');
+        invariant(subItem, "[Stripe Webhook] Missing subscription item.");
         const { plan } = subItem;
         const stripe = await getStripeInstance();
         const product = await stripe.products.retrieve(plan.product as string);
 
-        const { account_type } = product.metadata;
-        const subcription = await prisma.subscription.findFirst({
+        const { account_type, plan_name } = product.metadata;
+        const subscription = await prisma.subscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
           },
-        });
-
-        invariant(subcription, '[Stripe Webhook] Missing biotech subscription data.');
-
-        invariant(account_type, '[Stripe Webhook] Missing metadata: account_type.');
-
-        await prisma.biotech.update({
-          where: {
-            id: subcription.biotech_id,
-          },
-          data: {
-            account_type,
+          include: {
+            biotech: {
+              include: {
+                customers: {
+                  where: {
+                    role: CompanyCollaboratorRoleType.OWNER,
+                  },
+                },
+              },
+            },
           },
         });
 
-        return { status: 200, message: 'OK' };
+        const customerSubscription =
+          await prisma.customerSubscription.findFirst({
+            where: {
+              stripe_customer_id: stripeCustomerId,
+            },
+          });
+
+        if (subscription === null && customerSubscription === null) {
+          return {
+            status: 200,
+            message: "Skipped webhook: reason=subscription_not_found",
+          };
+        }
+
+        /**
+         * Move legacy customer's subscription to customer_subscriptions table.
+         * This logic can be safely remove if all customer has been migrated.
+         */
+        const isUpgradingLegacyCustomer = customerSubscription === null
+          && !!subscription
+          && [
+            CustomerSubscriptionPlanName.SOURCING_PLAN,
+            CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN
+          ].includes(plan_name as CustomerSubscriptionPlanName);
+        if (isUpgradingLegacyCustomer) {
+          const firstOwner = subscription.biotech.customers[0];
+          await prisma.$transaction(async (trx) => {
+            await trx.customerSubscription.create({
+              data: {
+                plan_name,
+                status,
+                stripe_customer_id: subscription.stripe_customer_id,
+                stripe_subscription_id: subscription.stripe_subscription_id,
+                customer_id: firstOwner.id,
+              },
+            });
+            await trx.subscription.delete({
+              where: {
+                id: subscription.id,
+              },
+            });
+          })
+        } else {
+          if (customerSubscription) {
+            invariant(plan_name, "Missing metadata: plan_name.");
+            await prisma.customerSubscription.update({
+              where: {
+                id: customerSubscription.id,
+              },
+              data: {
+                plan_name,
+                ended_at: cancelAtDate,
+                status,
+              },
+            });
+          }
+
+          if (subscription) {
+            invariant(account_type, "Missing metadata: account_type.");
+            await prisma.biotech.update({
+              where: {
+                id: subscription.biotech_id,
+              },
+              data: {
+                account_type,
+                subscriptions: {
+                  update: {
+                    where: {
+                      id: subscription.id,
+                    },
+                    data: {
+                      ended_at: cancelAtDate,
+                      status,
+                    },
+                  },
+                },
+              },
+            });
+          }
+        }
+
+        return { status: 200, message: "OK" };
       }
 
       case 'customer.subscription.deleted': {
         const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
-        const subscription = await prisma.subscription.findFirst({
+        const customerSubscription = await prisma.customerSubscription.findFirst({
           where: {
             stripe_customer_id: stripeCustomerId,
           },
         });
 
-        invariant(subscription, '[Stripe Webhook] Missing biotech subscription data.');
+        if (customerSubscription) {
+          await prisma.customerSubscription.update({
+            where: {
+              id: customerSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
-        await prisma.subscription.update({
+        const biotechSubscription = await prisma.subscription.findFirst({
           where: {
-            id: subscription.id,
-          },
-          data: {
-            status,
-            ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            stripe_customer_id: stripeCustomerId,
           },
         });
+
+        if (biotechSubscription) {
+          await prisma.subscription.update({
+            where: {
+              id: biotechSubscription.id,
+            },
+            data: {
+              status,
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+            },
+          });
+        }
 
         return { status: 200, message: 'OK' };
       }
@@ -363,6 +507,26 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         return { status: 200, message: 'OK' };
       }
 
+      case 'setup_intent.succeeded': {
+        const setupIntent = event.data.object as Stripe.SetupIntent;
+
+        const { customer, payment_method } = setupIntent;
+
+        // Set default payment method.
+        if (customer && typeof customer === "string") {
+          const stripe = await getStripeInstance();
+
+          await stripe.customers.update(customer as string, {
+            invoice_settings: {
+              default_payment_method: payment_method as string,
+            },
+          });
+        } else {
+          Sentry.captureMessage('Stripe webhook: Missing customer.');
+        }
+
+        return { status: 200, message: 'OK' };
+      }
       default: {
         console.warn(`Unhandled webhook: event type=${event.type}`);
         return { status: 400, message: 'Unhandled Event Type' };

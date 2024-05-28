@@ -1,5 +1,5 @@
 type User {
-  id: String
+  id: String!
   email: String
   first_name: String
   last_name: String
@@ -13,25 +13,19 @@ type User {
   notifications: [Notification]
   has_setup_profile: Boolean
   company_name: String
-  cda_url: String
-  cda_signed_at: Date @deprecated(reason: "Remove after all cda expired.")
-  skip_cda: Boolean
   company_collaborator_role: String
-  is_active: Boolean
+  is_active: Boolean @deprecated(reason: "Use `deactivated_at`.")
   country_code: String
   phone_number: String
   is_connected_microsoft: Boolean
   is_connected_google: Boolean
+  deactivated_at: Date
+  status: String
 }
 
 type AuthResponse {
   access_token: String!
   refresh_token: String!
-}
-
-type Subscription {
-  cdaUrl: String
-  cdaSignedAt: String
 }
 
 type Query {
@@ -41,17 +35,14 @@ type Query {
 type Mutation {
   signUpUser(
     email: String!
-    first_name: String!
-    last_name: String!
     password: String!
-    company_name: String!
-    phone_number: String!
-    country_code: String!
+    timezone: String!
   ): AuthResponse!
   signInUser(email: String!, password: String!): AuthResponse!
   refreshJWT: AuthResponse
   forgotPassword(email: String): Boolean
   resetPassword(reset_token: String, new_password: String): Boolean
+  changePassword(old_password: String!, new_password: String!): Boolean
   updateUserInfo(
     first_name: String!
     last_name: String!
@@ -59,6 +50,4 @@ type Mutation {
     phone_number: String
     country_code: String
   ): User
-  createCda: Boolean
-  skipCda: Boolean
 }

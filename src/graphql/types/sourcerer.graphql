@@ -1,0 +1,135 @@
+type SourcingSession {
+  id: String
+  project_title: String
+  project_desc: String
+  preparation_details: String
+  vendor_requirement: String
+  task_id: String
+  user_id: String
+  user: User
+  biotech: Biotech
+  sourcing_subspecialties: [SourcingSubspecialty]
+  sourcing_attachments: [SourcingAttachment]
+  sourced_cros(
+    first: Int = 5,
+    after: String
+    sortBy: String
+    filterCountryBy: String
+  ): SourcedCroConnection
+  shortlisted_cros: [SourcedCro]
+  updated_at: Date
+  created_at: Date
+}
+
+type SourcedCroEdge {
+  cursor: String!
+  node: SourcedCro
+}
+
+type SourcedCroPageInfo {
+  end_cursor: String!
+  has_next_page: Boolean
+  total_count: Int
+}
+
+type SourcedCroConnection {
+  edges: [SourcedCroEdge]
+  page_info: SourcedCroPageInfo
+}
+
+type SourcingSubspecialty {
+  id: String
+  name: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+}
+
+type SourcingAttachment {
+  id: String
+  key: String
+  filename: String
+  byte_size: Float
+  created_at: Date
+  signed_url: String
+  formatted_filesize: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+}
+
+type SourcedCro {
+  id: String
+  name: String
+  score: Float
+  is_shortlisted: Boolean
+  vendor_company_id: String
+  sourcing_session_id: String
+  sourcing_session: SourcingSession
+  vendor_company: CroDbVendorCompany
+}
+
+type SourcingTask {
+  id: String
+  sourcing_session_id: String
+}
+
+input SubspecialtyNameWithWeight {
+  name: String!
+  weight: Float!
+}
+
+type SourceRfpSpecialtySubscriptionPayload {
+  task_id: String
+  sourcing_session_id: String
+  data: SourcingSession
+  status: String!
+}
+
+type SourceCroSubscriptionPayload {
+  task_id: String
+  sourcing_session_id: String
+  data: SourcingSession
+  status: String!
+}
+
+type Query {
+  sourcingSession(id: String!): SourcingSession
+  sourcingSessions: [SourcingSession]
+}
+
+type Mutation {
+  extractPdfRfp(
+    file: Upload!
+    sourcing_session_id: String
+  ): SourcingSession
+  sourceRfpSpecialties(
+    project_title: String!
+    project_desc: String!
+    preparation_details: String!
+    vendor_requirement: String!
+    sourcing_session_id: String
+  ): SourcingTask
+  sourceCros(
+    names: [String!]!
+    sourcing_session_id: String!
+  ): SourcingTask
+  cancelAiTask(
+    task_id: String!
+    sourcing_session_id: String!
+  ): SourcingTask
+  shortlistSourcedCro(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
+  removeSourcedCroFromShortlist(
+    sourced_cro_id: String!
+    sourcing_session_id: String!
+  ): SourcedCro
+  confirmEditSourcingDetails(sourcing_session_id: String!): SourcingSession
+  confirmEditSourcingSubspecialties(sourcing_session_id: String!): SourcingSession
+  confirmRemoveSourcingSession(sourcing_session_id: String!): SourcingSession
+}
+
+type Subscription {
+  sourceRfpSpecialties(task_id: String!): SourceRfpSpecialtySubscriptionPayload
+  sourceCros(task_id: String!): SourceCroSubscriptionPayload
+}

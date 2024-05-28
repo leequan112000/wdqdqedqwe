@@ -22,6 +22,16 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
+    croDbSpecialty: async (_, args, context) => {
+      return await context.prismaCRODb.specialty.findFirst({
+        where: {
+          name: args.name,
+        },
+        include: {
+          subspecialties: true,
+        },
+      });
+    },
   },
 };
 

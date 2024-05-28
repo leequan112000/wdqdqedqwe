@@ -18,7 +18,7 @@ export default async function storeUpload(upload: UploadParamType, path: string 
     const mimeType = mime.lookup(filename);
     const contentType = typeof mimeType === 'string' ? mimeType : undefined;
 
-    const key = `${process.env.NODE_ENV}/${path ? `${path}/` : ''}${randomUUID()}${extname(filename)}`;
+    const key = `${process.env.APP_ENV}/${path ? `${path}/` : ''}${randomUUID()}${extname(filename)}`;
     const s3Upload = new Upload({
       client: s3Client,
       params: {
@@ -57,7 +57,7 @@ export const getFileExtFromBuffer = (buffer: Buffer) => {
       if (err) {
         reject(err);
       }
-   
+
       resolve(result.ext)
     });
   })

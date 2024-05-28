@@ -82,6 +82,8 @@ const resolvers: Resolvers<Context> = {
     answerInvitation: async (parent, args, context) => {
       const { answer, meeting_token, guest_token, name, email } = args;
 
+      const lowerCaseEmail = email.toLowerCase();
+
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
           id: meeting_token,
@@ -111,7 +113,10 @@ const resolvers: Resolvers<Context> = {
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
-          email,
+          email: {
+            mode: 'insensitive',
+            equals: lowerCaseEmail,
+          },
         },
       });
       let isPartOfProject = false;
@@ -130,13 +135,13 @@ const resolvers: Resolvers<Context> = {
       const meetingGuest = await context.prisma.meetingGuest.upsert({
         where: {
           email_meeting_event_id: {
-            email,
+            email: lowerCaseEmail,
             meeting_event_id: meetingEvent.id,
           },
           id: guest_token || undefined,
         },
         create: {
-          email,
+          email: lowerCaseEmail,
           name: name ? name : null,
           meeting_event_id: meetingEvent.id,
           type: MeetingGuestType.LINK,
@@ -242,7 +247,7 @@ const resolvers: Resolvers<Context> = {
             const attendeesArr = [
               ...existingAttendees.map((a) => ({ email: a.email })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
-              { email: email },
+              { email: lowerCaseEmail },
             ];
 
             await meetingEventService.safePatchGoogleEvent(
@@ -274,7 +279,7 @@ const resolvers: Resolvers<Context> = {
               ...existingExternalGuests.map((a) => ({
                 emailAddress: { address: a.email },
               })),
-              { emailAddress: { address: email } },
+              { emailAddress: { address: lowerCaseEmail } },
             ];
             await meetingEventService.safePatchMicrosoftEvent(
               {

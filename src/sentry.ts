@@ -4,7 +4,7 @@ import { prisma, prismaCRODb } from "./prisma";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
+  environment: process.env.APP_ENV,
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production

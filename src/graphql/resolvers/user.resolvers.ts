@@ -1,17 +1,6 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
-import {
-  checkPassword,
-  createTokens,
-  hashPassword,
-  createResetPasswordToken,
-} from "../../helper/auth";
-import {
-  createBiotechCda,
-  createBiotechViewCdaSession,
-  createVendorCompanyCda,
-  createVendorCompanyViewCdaSession,
-} from "../../helper/pandadoc";
+import { checkPassword, createTokens, hashPassword } from "../../helper/auth";
 import { verify } from "jsonwebtoken";
 import { Request } from "express";
 import { Resolvers } from "../generated";
@@ -20,12 +9,13 @@ import {
   CasbinRole,
   CompanyCollaboratorRoleType,
   OauthProvider,
+  UserStatus,
   UserType,
-  VendorType,
 } from "../../helper/constant";
 import invariant from "../../helper/invariant";
 import { addRoleForUser } from "../../helper/casbin";
 import authService from "../../services/auth/auth.service";
+import { availabilityCreateManyUserInputs } from "../../helper/availability";
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -33,7 +23,7 @@ const resolvers: Resolvers<Context> = {
       if (parent.user_type) return parent.user_type;
       if (!parent.id) return null;
 
-      const user = await context.prisma.user.findFirst({
+      const user = await context.prisma.user.findUnique({
         where: {
           id: parent.id,
         },
@@ -55,7 +45,7 @@ const resolvers: Resolvers<Context> = {
     },
     has_completed_onboarding: async (parent, _, context) => {
       invariant(parent.id, "Missing user id.");
-      const result = await context.prisma.user.findFirst({
+      const result = await context.prisma.user.findUnique({
         where: {
           id: parent.id,
         },
@@ -67,6 +57,7 @@ const resolvers: Resolvers<Context> = {
                   subscriptions: true,
                 },
               },
+              customer_subscriptions: true,
             },
           },
           vendor_member: {
@@ -110,33 +101,13 @@ const resolvers: Resolvers<Context> = {
 
       if (
         result?.customer &&
-        result.customer.biotech.subscriptions.length === 0
+        result.customer.biotech.subscriptions.length === 0 &&
+        result.customer.customer_subscriptions.length === 0
       ) {
         return false;
       }
 
-      if (process.env.DISABLE_CDA === "true") {
-        return true;
-      } else {
-        if (
-          result?.customer?.biotech?.cda_signed_at ||
-          (!result?.customer?.biotech?.cda_signed_at &&
-            result?.customer?.biotech?.skip_cda) ||
-          result?.vendor_member?.vendor_company?.cda_signed_at ||
-          (!result?.vendor_member?.vendor_company?.cda_signed_at &&
-            result?.vendor_member?.vendor_company?.skip_cda) ||
-          result?.vendor_member?.vendor_company?.vendor_type ===
-            VendorType.ACADEMIC_LAB ||
-          (!result?.vendor_member?.vendor_company?.is_on_marketplace &&
-            result?.vendor_member?.vendor_company?.skip_cda &&
-            result?.vendor_member?.vendor_company?.skip_certification_tag &&
-            result?.vendor_member?.vendor_company?.invited_by !== "admin")
-        ) {
-          return true;
-        }
-      }
-
-      return false;
+      return true;
     },
     customer: async (parent, _, context) => {
       invariant(parent.id, "Missing user id.");
@@ -216,7 +187,7 @@ const resolvers: Resolvers<Context> = {
       }
       if (!parent.id) return null;
 
-      const customer = await context.prisma.customer.findFirst({
+      const customer = await context.prisma.customer.findUnique({
         where: {
           user_id: parent.id,
         },
@@ -229,11 +200,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      if (customer?.biotech.name) {
-        return customer.biotech.name;
+      if (customer) {
+        return customer?.biotech?.name ?? null;
       }
 
-      const vendorMember = await context.prisma.vendorMember.findFirst({
+      const vendorMember = await context.prisma.vendorMember.findUnique({
         where: {
           user_id: parent.id,
         },
@@ -250,170 +221,7 @@ const resolvers: Resolvers<Context> = {
         return vendorMember.vendor_company.name;
       }
 
-      throw new InternalError("Missing user.");
-    },
-    cda_url: async (parent, _, context) => {
-      invariant(parent.id, "Missing user id.");
-
-      const vendor = await context.prisma.vendorMember.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-
-      try {
-        if (vendor) {
-          const user = await context.prisma.user.findFirstOrThrow({
-            where: {
-              id: context.req.user_id,
-            },
-            include: {
-              vendor_member: {
-                include: {
-                  vendor_company: true,
-                },
-              },
-            },
-          });
-
-          if (
-            user.vendor_member?.vendor_company?.cda_pandadoc_file_id &&
-            user.vendor_member?.vendor_company?.cda_pandadoc_signer
-          ) {
-            const viewDocSessionResponse =
-              await createVendorCompanyViewCdaSession(
-                user.vendor_member.vendor_company.cda_pandadoc_signer,
-                user.vendor_member.vendor_company.cda_pandadoc_file_id
-              );
-            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-          }
-        } else {
-          const user = await context.prisma.user.findFirstOrThrow({
-            where: {
-              id: parent.id,
-            },
-            include: {
-              customer: {
-                include: {
-                  biotech: true,
-                },
-              },
-            },
-          });
-
-          if (
-            user.customer?.biotech.cda_pandadoc_file_id &&
-            user.customer?.biotech.cda_pandadoc_signer
-          ) {
-            const viewDocSessionResponse = await createBiotechViewCdaSession(
-              user.customer.biotech.cda_pandadoc_signer,
-              user.customer.biotech.cda_pandadoc_file_id
-            );
-            return `https://app.pandadoc.com/s/${viewDocSessionResponse.id}`;
-          }
-        }
-
-        return null;
-      } catch (error) {
-        return null;
-      }
-    },
-    cda_signed_at: async (parent, _, context) => {
-      if (parent.customer?.biotech?.cda_signed_at) {
-        return parent.customer.biotech.cda_signed_at;
-      }
-      if (parent.vendor_member?.vendor_company?.cda_signed_at) {
-        return parent.vendor_member.vendor_company.cda_signed_at;
-      }
-
-      invariant(parent.id, "Missing user id.");
-
-      const vendor = await context.prisma.vendorMember.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-
-      if (vendor) {
-        const vendorMember = await context.prisma.vendorMember.findFirst({
-          where: {
-            user_id: parent.id,
-          },
-          include: {
-            vendor_company: {
-              select: {
-                cda_signed_at: true,
-              },
-            },
-          },
-        });
-        return vendorMember?.vendor_company?.cda_signed_at;
-      } else {
-        const customer = await context.prisma.customer.findFirst({
-          where: {
-            user_id: parent.id,
-          },
-          include: {
-            biotech: {
-              select: {
-                cda_signed_at: true,
-              },
-            },
-          },
-        });
-        return customer?.biotech?.cda_signed_at;
-      }
-    },
-    skip_cda: async (parent, _, context) => {
-      // gating this subscription to remove skip cda feature
-      if (process.env.DISABLE_CDA === "true") {
-        return null;
-      } else {
-        if (parent.customer?.biotech?.skip_cda) {
-          return parent.customer.biotech.skip_cda;
-        }
-        if (parent.vendor_member?.vendor_company?.skip_cda) {
-          return parent.vendor_member.vendor_company.skip_cda;
-        }
-
-        invariant(parent.id, "Missing user id.");
-
-        const vendor = await context.prisma.vendorMember.findFirst({
-          where: {
-            user_id: parent.id,
-          },
-        });
-
-        if (vendor) {
-          const vendorMember = await context.prisma.vendorMember.findFirst({
-            where: {
-              user_id: parent.id,
-            },
-            include: {
-              vendor_company: {
-                select: {
-                  skip_cda: true,
-                },
-              },
-            },
-          });
-          return vendorMember?.vendor_company?.skip_cda as boolean;
-        } else {
-          const customer = await context.prisma.customer.findFirst({
-            where: {
-              user_id: parent.id,
-            },
-            include: {
-              biotech: {
-                select: {
-                  skip_cda: true,
-                },
-              },
-            },
-          });
-          return customer?.biotech?.skip_cda as boolean;
-        }
-      }
+      return null;
     },
     full_name: async (parent, args, context) => {
       return `${parent.first_name} ${parent.last_name}`;
@@ -447,10 +255,12 @@ const resolvers: Resolvers<Context> = {
       const userId = context.req.user_id;
       invariant(userId, "Missing user id");
 
-      const oauth = await context.prisma.oauth.findFirst({
+      const oauth = await context.prisma.oauth.findUnique({
         where: {
-          user_id: userId,
-          provider: OauthProvider.MICROSOFT,
+          user_id_provider: {
+            user_id: userId,
+            provider: OauthProvider.MICROSOFT,
+          },
         },
       });
 
@@ -461,97 +271,47 @@ const resolvers: Resolvers<Context> = {
       const userId = context.req.user_id;
       invariant(userId, "Missing user id");
 
-      const oauth = await context.prisma.oauth.findFirst({
+      const oauth = await context.prisma.oauth.findUnique({
         where: {
-          user_id: userId,
-          provider: OauthProvider.GOOGLE,
+          user_id_provider: {
+            user_id: userId,
+            provider: OauthProvider.GOOGLE,
+          },
         },
       });
 
       return !!oauth;
       // TODO: properly check token validity
     },
-  },
-  Subscription: {
-    cdaUrl: {
-      // @ts-ignore
-      subscribe: async (_, __, context) => {
-        // gating this subscription to remove subscribe cda feature
-        if (process.env.DISABLE_CDA === "true") {
-          return null;
-        } else {
-          const vendor = await context.prisma.vendorMember.findFirst({
-            where: {
-              user_id: context.req.user_id,
-            },
-            include: {
-              vendor_company: true,
-            },
-          });
+    status: async (parent, _, context) => {
+      if (parent.status) return parent.status;
+      const userId = parent.id;
 
-          let channelId;
-          if (vendor) {
-            channelId = vendor.vendor_company?.id;
-          } else {
-            const customer = await context.prisma.customer.findFirstOrThrow({
-              where: {
-                user_id: context.req.user_id,
-              },
-              include: {
-                biotech: true,
-              },
-            });
+      const user = await context.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
 
-            channelId = customer.biotech.id;
-          }
+      if (!user) return null;
 
-          const channel = `cdaUrl:${channelId}`;
-          return context.pubsub.asyncIterator(channel);
+      const { deactivated_at, encrypted_password } = user;
+      const now = new Date();
+
+      switch (true) {
+        case deactivated_at && deactivated_at <= now: {
+          return UserStatus.DEACTIVATED;
         }
-      },
-    },
-    cdaSignedAt: {
-      // @ts-ignore
-      subscribe: async (_, __, context) => {
-        // gating this subscription to remove subscribe cda feature
-        if (process.env.DISABLE_CDA === "true") {
-          return null;
-        } else {
-          const vendor = await context.prisma.vendorMember.findFirst({
-            where: {
-              user_id: context.req.user_id,
-            },
-          });
-
-          let channelId;
-          if (vendor) {
-            const vendor = await context.prisma.vendorMember.findFirstOrThrow({
-              where: {
-                user_id: context.req.user_id,
-              },
-              include: {
-                vendor_company: true,
-              },
-            });
-
-            channelId = vendor.vendor_company?.id;
-          } else {
-            const customer = await context.prisma.customer.findFirstOrThrow({
-              where: {
-                user_id: context.req.user_id,
-              },
-              include: {
-                biotech: true,
-              },
-            });
-
-            channelId = customer.biotech.id;
-          }
-
-          const channel = `cdaSignedAt:${channelId}`;
-          return context.pubsub.asyncIterator(channel);
+        case deactivated_at && deactivated_at > now: {
+          return UserStatus.PENDING_DEACTIVATION;
         }
-      },
+        case encrypted_password !== null: {
+          return UserStatus.JOINED;
+        }
+        default: {
+          return UserStatus.PENDING_INVITATION;
+        }
+      }
     },
   },
   Query: {
@@ -565,80 +325,75 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     signUpUser: async (_, args, context) => {
-      return await context.prisma.$transaction(async (trx) => {
-        const lowerCaseEmail = args.email.toLowerCase();
+      const { email, password, timezone } = args;
+      const lowerCaseEmail = email.toLowerCase();
 
-        const user = await trx.user.findFirst({
-          where: {
-            email: {
-              mode: 'insensitive',
-              equals: lowerCaseEmail,
-            },
-          },
-        });
-
-        invariant(!user, new PublicError("User already exists."));
-
-        const biotech = await trx.biotech.findFirst({
-          where: {
-            name: {
-              equals: args.company_name,
-              mode: "insensitive",
-            },
-          },
-        });
-
-        invariant(
-          !biotech,
-          new PublicError(
-            "Your company has already setup an account. Please ask any user from your account to invite you to the company account."
-          )
-        );
-
-        const newBiotech = await trx.biotech.create({
-          data: {
-            name: args.company_name,
-          },
-        });
-
-        const hashedPassword = await hashPassword(args.password);
-
-        const newCreatedUser = await trx.user.create({
-          data: {
-            email: lowerCaseEmail,
-            first_name: args.first_name,
-            last_name: args.last_name,
-            encrypted_password: hashedPassword,
-            phone_number: args.phone_number,
-            country_code: args.country_code,
-          },
-        });
-
-        await trx.customer.create({
-          data: {
-            user_id: newCreatedUser.id,
-            biotech_id: newBiotech.id,
-            role: CompanyCollaboratorRoleType.OWNER,
-          },
-        });
-
-        await addRoleForUser(newCreatedUser.id, CasbinRole.OWNER);
-
-        // Genereate tokens
-        const tokens = createTokens({ id: newCreatedUser.id });
-
-        return {
-          access_token: tokens.accessToken,
-          refresh_token: tokens.refreshToken,
-        };
+      const user = await context.prisma.user.findFirst({
+        where: {
+          email,
+        },
       });
+
+      invariant(!user, new PublicError("User already exists."));
+
+      const hashedPassword = await hashPassword(password);
+
+      const availabilityCreateInputs =
+        availabilityCreateManyUserInputs(timezone);
+
+      const biotech = await context.prisma.biotech.create({
+        data: {
+          name: "",
+          customers: {
+            create: {
+              user: {
+                create: {
+                  email: lowerCaseEmail,
+                  encrypted_password: hashedPassword,
+                  availability: {
+                    createMany: {
+                      data: availabilityCreateInputs,
+                    },
+                  },
+                },
+              },
+              role: CompanyCollaboratorRoleType.OWNER,
+            },
+          },
+        },
+        include: {
+          customers: {
+            include: {
+              user: true,
+            },
+            where: {
+              user: {
+                email: lowerCaseEmail,
+              },
+            },
+          },
+        },
+      });
+
+      const newUser = biotech.customers[0].user;
+
+      // [LEGACY]
+      await addRoleForUser(newUser.id, CasbinRole.OWNER);
+
+      // Genereate tokens
+      const tokens = createTokens({ id: newUser.id });
+
+      return {
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      };
     },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
       let foundUser = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: email,
           },
         },
@@ -654,8 +409,9 @@ const resolvers: Resolvers<Context> = {
       );
 
       invariant(
-        foundUser.is_active === true,
-        new PublicError("Your account has been suspended.")
+        foundUser.deactivated_at === null ||
+          foundUser.deactivated_at > new Date(),
+        new PublicError("Your account has been deactivated.")
       );
 
       const isPasswordMatched = await checkPassword(
@@ -719,7 +475,7 @@ const resolvers: Resolvers<Context> = {
       const user = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: lowerCaseEmail,
           },
         },
@@ -776,6 +532,48 @@ const resolvers: Resolvers<Context> = {
           reset_password_token: null,
           reset_password_expiration: null,
         },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return true;
+    },
+    changePassword: async (_, args, context) => {
+      const { old_password, new_password } = args;
+      const user = await context.prisma.user.findFirst({
+        where: {
+          id: context.req.user_id,
+        },
+      });
+
+      invariant(user, new PublicError("Current user not found."));
+
+      const isPasswordMatched = await checkPassword(
+        old_password,
+        user,
+        context
+      );
+
+      invariant(
+        isPasswordMatched === true,
+        new PublicError("Old password is invalid.")
+      );
+
+      await context.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          encrypted_password: await hashPassword(new_password),
+        },
       });
       return true;
     },
@@ -795,172 +593,6 @@ const resolvers: Resolvers<Context> = {
       });
 
       return user;
-    },
-    createCda: async (_, __, context) => {
-      // gating this mutation to remove create cda feature
-      if (process.env.DISABLE_CDA === "true") {
-        return null;
-      } else {
-        try {
-          const vendor = await context.prisma.vendorMember.findFirst({
-            where: {
-              user_id: context.req.user_id,
-            },
-          });
-
-          if (vendor) {
-            await context.prisma.$transaction(async (trx) => {
-              const user = await trx.user.findFirstOrThrow({
-                where: {
-                  id: context.req.user_id,
-                },
-                include: {
-                  vendor_member: {
-                    include: {
-                      vendor_company: true,
-                    },
-                  },
-                },
-              });
-
-              invariant(
-                user.vendor_member,
-                new PublicError("Vendor member not found.")
-              );
-
-              let cda_pandadoc_file_id =
-                user?.vendor_member?.vendor_company?.cda_pandadoc_file_id;
-
-              if (cda_pandadoc_file_id === null) {
-                const docResponse = await createVendorCompanyCda(user);
-                cda_pandadoc_file_id = docResponse.id as string;
-              }
-
-              return await trx.vendorCompany.update({
-                where: {
-                  id: user.vendor_member.vendor_company_id,
-                },
-                data: {
-                  cda_pandadoc_file_id,
-                  cda_pandadoc_signer: user.email,
-                },
-              });
-            });
-          } else {
-            await context.prisma.$transaction(async (trx) => {
-              const user = await trx.user.findFirstOrThrow({
-                where: {
-                  id: context.req.user_id,
-                },
-                include: {
-                  customer: {
-                    include: {
-                      biotech: true,
-                    },
-                  },
-                },
-              });
-
-              invariant(user.customer, new PublicError("Customer not found."));
-
-              let cda_pandadoc_file_id =
-                user?.customer?.biotech?.cda_pandadoc_file_id;
-
-              if (cda_pandadoc_file_id === null) {
-                const docResponse = await createBiotechCda(user);
-                cda_pandadoc_file_id = docResponse.id as string;
-              }
-
-              return await context.prisma.biotech.update({
-                where: {
-                  id: user.customer.biotech_id,
-                },
-                data: {
-                  cda_pandadoc_file_id,
-                  cda_pandadoc_signer: user.email,
-                },
-              });
-            });
-          }
-          return true;
-        } catch (error) {
-          return false;
-        }
-      }
-    },
-    skipCda: async (_, __, context) => {
-      // gating this mutation to remove skip cda feature
-      if (process.env.DISABLE_CDA === "true") {
-        return null;
-      } else {
-        try {
-          const vendor = await context.prisma.vendorMember.findFirst({
-            where: {
-              user_id: context.req.user_id,
-            },
-          });
-
-          if (vendor) {
-            await context.prisma.$transaction(async (trx) => {
-              const user = await trx.user.findFirstOrThrow({
-                where: {
-                  id: context.req.user_id,
-                },
-                include: {
-                  vendor_member: {
-                    include: {
-                      vendor_company: true,
-                    },
-                  },
-                },
-              });
-
-              invariant(
-                user.vendor_member,
-                new PublicError("Vendor member not found.")
-              );
-
-              return await trx.vendorCompany.update({
-                where: {
-                  id: user.vendor_member.vendor_company_id,
-                },
-                data: {
-                  skip_cda: true,
-                },
-              });
-            });
-          } else {
-            await context.prisma.$transaction(async (trx) => {
-              const user = await trx.user.findFirstOrThrow({
-                where: {
-                  id: context.req.user_id,
-                },
-                include: {
-                  customer: {
-                    include: {
-                      biotech: true,
-                    },
-                  },
-                },
-              });
-
-              invariant(user.customer, new PublicError("Customer not found."));
-
-              return await context.prisma.biotech.update({
-                where: {
-                  id: user.customer.biotech_id,
-                },
-                data: {
-                  skip_cda: true,
-                },
-              });
-            });
-          }
-          return true;
-        } catch (error) {
-          return false;
-        }
-      }
     },
   },
 };
