@@ -2,6 +2,7 @@ import { Context } from "../../types/context";
 import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
 import { Prisma } from "../../../prisma-cro/generated/client";
+import { CustomerSubscriptionPlanName, SubscriptionStatus } from "../../helper/constant";
 
 const RATE_LIMIT_FIXED_WINDOW = 60; // in second
 const RATE_LIMIT_MAX_COUNTS = 15;
@@ -53,9 +54,22 @@ const resolvers: Resolvers<Context> = {
 
       let isPaidUser = false;
       if (userId) {
-        isPaidUser = !!(await context.prisma.user.findUnique({
+        const customer_subscriptions = (await context.prisma.user.findUnique({
           where: { id: userId },
-        }));
+          include: {
+            customer: {
+              include: {
+                customer_subscriptions: {
+                  where: {
+                    status: SubscriptionStatus.ACTIVE,
+                    plan_name: CustomerSubscriptionPlanName.SOURCING_PLAN,
+                  },
+                }
+              }
+            }
+          }
+        }))?.customer?.customer_subscriptions;
+        isPaidUser = !!customer_subscriptions && customer_subscriptions.length > 0
       }
 
       const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
@@ -115,13 +129,12 @@ const resolvers: Resolvers<Context> = {
                 company_description: null,
                 company_ipo_status: null,
                 vendor_company_subspecialties: [],
-                vendor_company_types: [],
+                vendor_company_locations: [],
                 vendor_company_certifications: []
               },
             };
           }
         });
-
       return {
         edges,
         page_info: {

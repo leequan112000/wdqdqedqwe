@@ -1,8 +1,8 @@
 import { Context } from "../../types/context";
 import { PublicError } from "../errors/PublicError";
 import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
 import { CroDbVendorCompanyType } from "../../helper/constant";
+import invariant from "../../helper/invariant";
 
 const resolvers: Resolvers<Context> = {
   CroDbVendorCompany: {
