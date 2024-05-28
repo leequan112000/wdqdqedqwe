@@ -2183,6 +2183,7 @@ export type SubscriptionFeatureItem = {
 
 export type SubscriptionPlan = {
   __typename?: 'SubscriptionPlan';
+  description: Scalars['String'];
   features: Array<SubscriptionFeature>;
   id: Scalars['String'];
   name: Scalars['String'];
@@ -3830,6 +3831,7 @@ export type SubscriptionFeatureItemResolvers<ContextType = any, ParentType exten
 }>;
 
 export type SubscriptionPlanResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubscriptionPlan'] = ResolversParentTypes['SubscriptionPlan']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   features?: Resolver<Array<ResolversTypes['SubscriptionFeature']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

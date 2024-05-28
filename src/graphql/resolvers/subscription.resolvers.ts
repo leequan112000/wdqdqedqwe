@@ -36,6 +36,7 @@ const resolvers: Resolvers<Context> = {
         {
           id: CustomerSubscriptionPlanName.SOURCING_PLAN,
           name: "Sourcerer™ Search",
+          description: 'Empowers you to independently conduct vendor searches and establish connections.',
           prices: [
             {
               id: env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id,
@@ -80,10 +81,11 @@ const resolvers: Resolvers<Context> = {
         {
           id: CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
           name: "White Glove Service",
+          description: 'Provides a dedicated Cromatic team to manage vendor negotiations on your behalf.',
           prices: [],
           features: [
             {
-              name: "Sourcerer™ Search plan",
+              name: "Everything in Sourcerer™ Search Plan plus...",
               items: [],
             },
             {
