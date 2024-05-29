@@ -425,6 +425,10 @@ export type ExternalParticipantInput = {
 
 export type InitialVendorSurveyData = {
   __typename?: 'InitialVendorSurveyData';
+  company_description?: Maybe<Scalars['String']>;
+  company_ipo_status?: Maybe<Scalars['String']>;
+  company_revenue?: Maybe<Scalars['String']>;
+  company_size?: Maybe<Scalars['String']>;
   countries?: Maybe<Array<Maybe<Scalars['String']>>>;
   has_submitted: Scalars['Boolean'];
   id: Scalars['String'];
@@ -849,7 +853,11 @@ export type MutationCreateQuoteArgs = {
 export type MutationCreateVendorSurveyArgs = {
   attachment?: InputMaybe<Scalars['Upload']>;
   certifications?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  company_description: Scalars['String'];
+  company_ipo_status: Scalars['String'];
   company_name: Scalars['String'];
+  company_revenue: Scalars['String'];
+  company_size: Scalars['String'];
   company_types: Array<Scalars['String']>;
   countries: Array<Scalars['String']>;
   custom_specialties?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -3015,6 +3023,10 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type InitialVendorSurveyDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitialVendorSurveyData'] = ResolversParentTypes['InitialVendorSurveyData']> = ResolversObject<{
+  company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   countries?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   has_submitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -3189,7 +3201,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
-  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_name' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'token' | 'website'>>;
+  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_description' | 'company_ipo_status' | 'company_name' | 'company_revenue' | 'company_size' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'token' | 'website'>>;
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;

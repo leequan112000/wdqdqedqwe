@@ -276,6 +276,10 @@ model VendorSurvey {
   vendor_company_id       String   @unique @db.Uuid
   company_name            String
   company_types           String[]
+  company_description     String
+  company_ipo_status      String
+  company_revenue         String
+  company_size            String
   logo_url                String
   website                 String
   countries               String[]
