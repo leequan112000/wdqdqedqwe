@@ -92,8 +92,8 @@ const resolvers: Resolvers<Context> = {
           }
         }))?.customer;
         const has_active_legacy_plan = !!customer?.biotech?.subscriptions && customer?.biotech?.subscriptions.length > 0
-        const has_active_sourcerer_plan = !!customer?.customer_subscriptions && customer?.customer_subscriptions.length > 0
-        isPaidUser = has_active_legacy_plan || has_active_sourcerer_plan;
+        const has_active_sourcerer_or_white_glove_plan = !!customer?.customer_subscriptions && customer?.customer_subscriptions.length > 0
+        isPaidUser = has_active_legacy_plan || has_active_sourcerer_or_white_glove_plan;
       }
 
       const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
