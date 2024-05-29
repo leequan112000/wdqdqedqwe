@@ -54,11 +54,28 @@ const resolvers: Resolvers<Context> = {
 
       let isPaidUser = false;
       if (userId) {
-        const customer_subscriptions = (await context.prisma.user.findUnique({
+        const customer = (await context.prisma.user.findUnique({
           where: { id: userId },
           include: {
             customer: {
               include: {
+                biotech: {
+                  include: {
+                    subscriptions: {
+                      where: {
+                        status: SubscriptionStatus.ACTIVE,
+                        OR: [
+                          { ended_at: null },
+                          {
+                            ended_at: {
+                              gt: new Date(),
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
                 customer_subscriptions: {
                   where: {
                     status: SubscriptionStatus.ACTIVE,
@@ -68,8 +85,10 @@ const resolvers: Resolvers<Context> = {
               }
             }
           }
-        }))?.customer?.customer_subscriptions;
-        isPaidUser = !!customer_subscriptions && customer_subscriptions.length > 0
+        }))?.customer;
+        const has_active_legacy_plan = !!customer?.biotech?.subscriptions && customer?.biotech?.subscriptions.length > 0
+        const has_active_sourcerer_plan = !!customer?.customer_subscriptions && customer?.customer_subscriptions.length > 0
+        isPaidUser = has_active_legacy_plan || has_active_sourcerer_plan;
       }
 
       const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
