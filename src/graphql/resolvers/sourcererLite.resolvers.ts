@@ -79,7 +79,12 @@ const resolvers: Resolvers<Context> = {
                 customer_subscriptions: {
                   where: {
                     status: SubscriptionStatus.ACTIVE,
-                    plan_name: CustomerSubscriptionPlanName.SOURCING_PLAN,
+                    plan_name: {
+                      in: [
+                        CustomerSubscriptionPlanName.SOURCING_PLAN,
+                        CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN
+                      ]
+                    },
                   },
                 }
               }
