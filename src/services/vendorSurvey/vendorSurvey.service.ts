@@ -11,6 +11,10 @@ export type CreateVendorSurveyArgs = {
   vendor_company_id: string;
   company_name: string;
   company_types: string[];
+  company_description: string;
+  company_ipo_status: string;
+  company_revenue: string;
+  company_size: string;
   website: string;
   countries: string[];
   subspecialty_ids: string[];
@@ -26,6 +30,10 @@ export const createVendorSurvey = async (args: CreateVendorSurveyArgs, context: 
   const {
     vendor_company_id,
     company_name,
+    company_description,
+    company_ipo_status,
+    company_revenue,
+    company_size,
     company_types,
     website,
     countries,
@@ -62,6 +70,10 @@ export const createVendorSurvey = async (args: CreateVendorSurveyArgs, context: 
     data: {
       vendor_company_id,
       company_name,
+      company_description,
+      company_ipo_status,
+      company_revenue,
+      company_size,
       company_types,
       logo_url,
       website,
