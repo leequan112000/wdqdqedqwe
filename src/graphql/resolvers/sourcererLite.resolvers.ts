@@ -26,37 +26,6 @@ const resolvers: Resolvers<Context> = {
           userKey = userKey + `-${ip_address}`;
         }
 
-        let uniqueSearchKey = `${userKey}-unique-search`;
-        const hasKeywordSearched = await context.redis.sismember(uniqueSearchKey, keyword);
-        if (!hasKeywordSearched) {
-          // Check the number of unique searches
-          const uniqueSearchCount = await context.redis.scard(uniqueSearchKey);
-
-          if (uniqueSearchCount >= UNIQUE_SEARCH_MAX_COUNTS) {
-            Sentry.withScope((scope) => {
-              scope.setLevel("warning");
-              scope.setTag("from", "unique-search-limit");
-              scope.setTag("fingerprint", fingerprint);
-              Sentry.captureMessage(
-                `Someone has reached the maximum search limit (${UNIQUE_SEARCH_MAX_COUNTS}) per day.`,
-                "warning"
-              );
-              return;
-            });
-          }
-
-          invariant(uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS, new PublicError('You have reached the maximum search limit per day. Please try again in 24 hours.'))
-
-          // Add the search term to the set
-          await context.redis.sadd(uniqueSearchKey, keyword);
-
-          // Set the expiration for the key if it is the first search
-          const ttl = await context.redis.ttl(uniqueSearchKey);
-          if (ttl < 0) {
-            await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
-          }
-        }
-
         const result = await context.redis
           .multi()
           .get(userKey)
@@ -87,6 +56,37 @@ const resolvers: Resolvers<Context> = {
             .exec();
         } else {
           await context.redis.multi().incr(userKey).exec();
+        }
+
+        let uniqueSearchKey = `${userKey}-unique-search`;
+        const hasKeywordSearched = await context.redis.sismember(uniqueSearchKey, keyword);
+        if (!hasKeywordSearched) {
+          // Check the number of unique searches
+          const uniqueSearchCount = await context.redis.scard(uniqueSearchKey);
+
+          if (uniqueSearchCount >= UNIQUE_SEARCH_MAX_COUNTS) {
+            Sentry.withScope((scope) => {
+              scope.setLevel("warning");
+              scope.setTag("from", "unique-search-limit");
+              scope.setTag("fingerprint", fingerprint);
+              Sentry.captureMessage(
+                `Someone has reached the maximum search limit (${UNIQUE_SEARCH_MAX_COUNTS}) per day.`,
+                "warning"
+              );
+              return;
+            });
+          }
+
+          invariant(uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS, new PublicError('You have reached the maximum search limit per day. Please try again in 24 hours.'))
+
+          // Add the search term to the set
+          await context.redis.sadd(uniqueSearchKey, keyword);
+
+          // Set the expiration for the key if it is the first search
+          const ttl = await context.redis.ttl(uniqueSearchKey);
+          if (ttl < 0) {
+            await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
+          }
         }
       }
 
