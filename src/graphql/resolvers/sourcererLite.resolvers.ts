@@ -7,6 +7,8 @@ import invariant from "../../helper/invariant";
 import { PublicError } from "../errors/PublicError";
 
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
+const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
+const UNIQUE_SEARCH_MAX_COUNTS = 15;
 const RATE_LIMIT_MAX_COUNTS = 15;
 const MAX_FREE_RESULT_COUNT = 25;
 const MAX_RESULT_COUNT = 50;
@@ -24,6 +26,37 @@ const resolvers: Resolvers<Context> = {
           userKey = userKey + `-${ip_address}`;
         }
 
+        let uniqueSearchKey = `${userKey}-unique-search`;
+        const hasKeywordSearched = await context.redis.sismember(uniqueSearchKey, keyword);
+        if (!hasKeywordSearched) {
+          // Check the number of unique searches
+          const uniqueSearchCount = await context.redis.scard(uniqueSearchKey);
+
+          if (uniqueSearchCount >= UNIQUE_SEARCH_MAX_COUNTS) {
+            Sentry.withScope((scope) => {
+              scope.setLevel("warning");
+              scope.setTag("from", "unique-search-limit");
+              scope.setTag("fingerprint", fingerprint);
+              Sentry.captureMessage(
+                `Someone has reached the maximum search limit (${UNIQUE_SEARCH_MAX_COUNTS}) per day.`,
+                "warning"
+              );
+              return;
+            });
+          }
+
+          invariant(uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS, new PublicError('You have reached the maximum search limit per day. Please try again in 24 hours.'))
+
+          // Add the search term to the set
+          await context.redis.sadd(uniqueSearchKey, keyword);
+
+          // Set the expiration for the key if it is the first search
+          const ttl = await context.redis.ttl(uniqueSearchKey);
+          if (ttl === -1) {
+            await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
+          }
+        }
+
         const result = await context.redis
           .multi()
           .get(userKey)
@@ -39,12 +72,12 @@ const resolvers: Resolvers<Context> = {
             scope.setTag("from", "rate-limit");
             scope.setTag("fingerprint", fingerprint);
             Sentry.captureMessage(
-              "Someone has reached the search limit.",
+              `Someone has tried too many times within ${RATE_LIMIT_FIXED_WINDOW} seconds.`,
               "warning"
             );
             return;
           });
-          invariant(!isBlocked, new PublicError('You have reached search limit. Please try again later.'))
+          invariant(!isBlocked, new PublicError('Too many retries. Please try again later.'))
         }
 
         if (ttl < 0) {
