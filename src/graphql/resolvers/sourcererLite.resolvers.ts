@@ -52,7 +52,7 @@ const resolvers: Resolvers<Context> = {
 
           // Set the expiration for the key if it is the first search
           const ttl = await context.redis.ttl(uniqueSearchKey);
-          if (ttl === -1) {
+          if (ttl < 0) {
             await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
           }
         }
