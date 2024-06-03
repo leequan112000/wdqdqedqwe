@@ -3,8 +3,10 @@ import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
 import { Prisma } from "../../../prisma-cro/generated/client";
 import { CustomerSubscriptionPlanName, SubscriptionStatus } from "../../helper/constant";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
-const RATE_LIMIT_FIXED_WINDOW = 60; // in second
+const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const RATE_LIMIT_MAX_COUNTS = 15;
 
 const resolvers: Resolvers<Context> = {
@@ -28,8 +30,8 @@ const resolvers: Resolvers<Context> = {
 
         const count = parseInt((result?.[0][1] as string) || "0", 10);
         const ttl = result?.[1][1] as number;
-
-        if (count >= RATE_LIMIT_MAX_COUNTS) {
+        const isBlocked = count >= RATE_LIMIT_MAX_COUNTS;
+        if (isBlocked) {
           Sentry.withScope((scope) => {
             scope.setLevel("warning");
             scope.setTag("from", "rate-limit");
@@ -40,6 +42,7 @@ const resolvers: Resolvers<Context> = {
             );
             return;
           });
+          invariant(!isBlocked, new PublicError('You have reached search limit. Please try again later.'))
         }
 
         if (ttl < 0) {
