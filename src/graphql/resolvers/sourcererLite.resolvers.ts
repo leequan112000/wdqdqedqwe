@@ -8,6 +8,8 @@ import { PublicError } from "../errors/PublicError";
 
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const RATE_LIMIT_MAX_COUNTS = 15;
+const MAX_FREE_RESULT_COUNT = 25;
+const MAX_RESULT_COUNT = 50;
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -116,19 +118,26 @@ const resolvers: Resolvers<Context> = {
 
       const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
         where: vendorCompanyFilter,
+        take: 50,
       });
 
-      const vendors = await context.prismaCRODb.vendorCompany.findMany({
-        where: vendorCompanyFilter,
-        take: first,
-        skip: after ? 1 : undefined,
-        cursor: after ? { id: after } : undefined,
-      });
+      const startSlice = after
+        ? totalVendor.findIndex((v) => {
+          return v.id === after
+        }) + 1
+        : 0;
 
-      let edges = vendors.map((v) => ({
-        cursor: v.id,
-        node: v,
-      }));
+      const endSlice = startSlice + first;
+
+      const vendors = totalVendor.slice(startSlice, endSlice);
+
+      let edges = vendors.map((v) => {
+        console.log(v.company_name)
+        return {
+          cursor: v.id,
+          node: v,
+        }
+      });
       const endCursor =
         edges.length > 0 ? edges[edges.length - 1].cursor : null;
       let hasNextPage = false;
@@ -144,24 +153,60 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextVendors.length > 0;
       }
 
-      if (!isPaidUser)
-        edges = edges.slice(0, 25).map((edge, index) => {
-          if (index < 3) {
-            return edge;
-          } else {
-            return {
-              ...edge,
-              node: {
-                ...edge.node,
-                company_description: null,
-                company_ipo_status: null,
-                vendor_company_subspecialties: [],
-                vendor_company_locations: [],
-                vendor_company_certifications: []
-              },
-            };
-          }
-        });
+
+      if (!isPaidUser) {
+        if (startSlice >= MAX_FREE_RESULT_COUNT) {
+          edges = [];
+          hasNextPage = false;
+        }
+        else if (endSlice >= MAX_FREE_RESULT_COUNT) {
+          hasNextPage = false;
+          edges = edges.map((edge, index) => {
+            if (index < 3) {
+              return edge;
+            } else {
+              return {
+                ...edge,
+                node: {
+                  ...edge.node,
+                  company_description: null,
+                  company_ipo_status: null,
+                  vendor_company_subspecialties: [],
+                  vendor_company_locations: [],
+                  vendor_company_certifications: []
+                },
+              };
+            }
+          });
+        } else {
+          edges = edges.map((edge, index) => {
+            if (index < 3) {
+              return edge;
+            } else {
+              return {
+                ...edge,
+                node: {
+                  ...edge.node,
+                  company_description: null,
+                  company_ipo_status: null,
+                  vendor_company_subspecialties: [],
+                  vendor_company_locations: [],
+                  vendor_company_certifications: []
+                },
+              };
+            }
+          });
+        }
+      } else {
+        if (startSlice >= MAX_RESULT_COUNT) {
+          edges = [];
+          hasNextPage = false;
+        }
+        else if (endSlice >= MAX_RESULT_COUNT) {
+          hasNextPage = false;
+        }
+      }
+
       return {
         edges,
         page_info: {
