@@ -3,9 +3,15 @@ import { Resolvers } from "../generated";
 import Sentry from "../../sentry";
 import { Prisma } from "../../../prisma-cro/generated/client";
 import { CustomerSubscriptionPlanName, SubscriptionStatus } from "../../helper/constant";
+import invariant from "../../helper/invariant";
+import { PublicError } from "../errors/PublicError";
 
-const RATE_LIMIT_FIXED_WINDOW = 60; // in second
+const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
+const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
+const UNIQUE_SEARCH_MAX_COUNTS = 15;
 const RATE_LIMIT_MAX_COUNTS = 15;
+const MAX_FREE_RESULT_COUNT = 25;
+const MAX_RESULT_COUNT = 50;
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -28,18 +34,19 @@ const resolvers: Resolvers<Context> = {
 
         const count = parseInt((result?.[0][1] as string) || "0", 10);
         const ttl = result?.[1][1] as number;
-
-        if (count >= RATE_LIMIT_MAX_COUNTS) {
+        const isBlocked = count >= RATE_LIMIT_MAX_COUNTS;
+        if (isBlocked) {
           Sentry.withScope((scope) => {
             scope.setLevel("warning");
             scope.setTag("from", "rate-limit");
             scope.setTag("fingerprint", fingerprint);
             Sentry.captureMessage(
-              "Someone has reached the search limit.",
+              `Someone has tried too many times within ${RATE_LIMIT_FIXED_WINDOW} seconds.`,
               "warning"
             );
             return;
           });
+          invariant(!isBlocked, new PublicError('Too many retries. Please try again later.'))
         }
 
         if (ttl < 0) {
@@ -49,6 +56,35 @@ const resolvers: Resolvers<Context> = {
             .exec();
         } else {
           await context.redis.multi().incr(userKey).exec();
+        }
+
+        let uniqueSearchKey = `${userKey}-unique-search`;
+        // Check the number of unique searches
+        const uniqueSearchCount = await context.redis.scard(uniqueSearchKey);
+        if (uniqueSearchCount >= UNIQUE_SEARCH_MAX_COUNTS) {
+          Sentry.withScope((scope) => {
+            scope.setLevel("warning");
+            scope.setTag("from", "unique-search-limit");
+            scope.setTag("fingerprint", fingerprint);
+            Sentry.captureMessage(
+              `Someone has reached the maximum search limit (${UNIQUE_SEARCH_MAX_COUNTS}) per day.`,
+              "warning"
+            );
+            return;
+          });
+        }
+        invariant(uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS, new PublicError('You have reached the maximum search limit per day. Please try again in 24 hours.'))
+
+        const hasKeywordSearched = await context.redis.sismember(uniqueSearchKey, keyword);
+        if (!hasKeywordSearched) {
+          // Add the search term to the set
+          await context.redis.sadd(uniqueSearchKey, keyword);
+
+          // Set the expiration for the key if it is the first search
+          const ttl = await context.redis.ttl(uniqueSearchKey);
+          if (ttl < 0) {
+            await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
+          }
         }
       }
 
@@ -113,19 +149,26 @@ const resolvers: Resolvers<Context> = {
 
       const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
         where: vendorCompanyFilter,
+        take: 50,
       });
 
-      const vendors = await context.prismaCRODb.vendorCompany.findMany({
-        where: vendorCompanyFilter,
-        take: first,
-        skip: after ? 1 : undefined,
-        cursor: after ? { id: after } : undefined,
-      });
+      const startSlice = after
+        ? totalVendor.findIndex((v) => {
+          return v.id === after
+        }) + 1
+        : 0;
 
-      let edges = vendors.map((v) => ({
-        cursor: v.id,
-        node: v,
-      }));
+      const endSlice = startSlice + first;
+
+      const vendors = totalVendor.slice(startSlice, endSlice);
+
+      let edges = vendors.map((v) => {
+        console.log(v.company_name)
+        return {
+          cursor: v.id,
+          node: v,
+        }
+      });
       const endCursor =
         edges.length > 0 ? edges[edges.length - 1].cursor : null;
       let hasNextPage = false;
@@ -141,24 +184,60 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextVendors.length > 0;
       }
 
-      if (!isPaidUser)
-        edges = edges.slice(0, 25).map((edge, index) => {
-          if (index < 3) {
-            return edge;
-          } else {
-            return {
-              ...edge,
-              node: {
-                ...edge.node,
-                company_description: null,
-                company_ipo_status: null,
-                vendor_company_subspecialties: [],
-                vendor_company_locations: [],
-                vendor_company_certifications: []
-              },
-            };
-          }
-        });
+
+      if (!isPaidUser) {
+        if (startSlice >= MAX_FREE_RESULT_COUNT) {
+          edges = [];
+          hasNextPage = false;
+        }
+        else if (endSlice >= MAX_FREE_RESULT_COUNT) {
+          hasNextPage = false;
+          edges = edges.map((edge, index) => {
+            if (index < 3) {
+              return edge;
+            } else {
+              return {
+                ...edge,
+                node: {
+                  ...edge.node,
+                  company_description: null,
+                  company_ipo_status: null,
+                  vendor_company_subspecialties: [],
+                  vendor_company_locations: [],
+                  vendor_company_certifications: []
+                },
+              };
+            }
+          });
+        } else {
+          edges = edges.map((edge, index) => {
+            if (index < 3) {
+              return edge;
+            } else {
+              return {
+                ...edge,
+                node: {
+                  ...edge.node,
+                  company_description: null,
+                  company_ipo_status: null,
+                  vendor_company_subspecialties: [],
+                  vendor_company_locations: [],
+                  vendor_company_certifications: []
+                },
+              };
+            }
+          });
+        }
+      } else {
+        if (startSlice >= MAX_RESULT_COUNT) {
+          edges = [];
+          hasNextPage = false;
+        }
+        else if (endSlice >= MAX_RESULT_COUNT) {
+          hasNextPage = false;
+        }
+      }
+
       return {
         edges,
         page_info: {

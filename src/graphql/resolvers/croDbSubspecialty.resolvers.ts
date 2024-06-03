@@ -26,9 +26,10 @@ const resolvers: Resolvers<Context> = {
         };
       }
 
-      return await context.prismaCRODb.subspecialty.findMany({
+
+      return (await context.prismaCRODb.subspecialty.findMany({
         where: filter,
-      });
+      })).slice(0,5);
     },
   },
 };
