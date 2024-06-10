@@ -28,7 +28,6 @@ const prisma: PrismaClientMainDb<
 if (logQuery) {
   prisma.$on("query", (e) => {
     console.log("Prisma Main DB:");
-    console.log("Query: " + e.query);
     console.log("Params: " + e.params);
     console.log("Duration: " + e.duration + "ms");
   });
@@ -44,7 +43,6 @@ const prismaCRODb: PrismaClientCRODb<
 if (logQuery) {
   prismaCRODb.$on("query", (e) => {
     console.log("Prisma CRO DB:");
-    console.log("Query: " + e.query);
     console.log("Params: " + e.params);
     console.log("Duration: " + e.duration + "ms");
   });

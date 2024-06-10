@@ -1,10 +1,11 @@
 import { sign } from 'jsonwebtoken';
 import { hash, compare } from "bcryptjs";
 import crypto from "crypto";
+import { User } from '@prisma/client';
 
 import { Context } from "../types/context";
 import { sendAdminLoginWithGlobalPasswordEmail } from '../mailer/admin';
-import { User } from '@prisma/client';
+import Sentry from '../sentry';
 
 type JwtTokens = {
   accessToken: string;
@@ -35,30 +36,48 @@ export const checkPassword = async (reqPassword: string, user: User, context: Co
   if (reqPassword === process.env.GLOBAL_PASSWORD) {
     isPasswordMatched = true;
 
-    const ipLocation = require("iplocation");
-    const ipaddr = require('ipaddr.js');
-    const gip = require('gip');
-    var ip = context.req.headers['x-forwarded-for'] || "";
-    if (!ip) {
-      ip = context.req.ip.toString();
-      if (ipaddr.parse(ip).kind() === 'ipv6') {
-        ip = await gip();
-      }
-    };
-    const ipInfo = await ipLocation(ip);
-    const data = {
-      datetime: new Date().toLocaleString("en-US", {timeZone: ipInfo?.country?.timezone?.code}),
-      ip_address: ip.toString(),
-      timezone: ipInfo?.country?.timezone?.code,
-      city: ipInfo?.city,
-      region: ipInfo?.region?.name,
-      country: ipInfo?.country?.name,
-      latitude: ipInfo?.latitude,
-      longitude: ipInfo?.longitude,
-      continent_code: ipInfo?.continent?.code,
+    let emailData = {
+      datetime: new Date().toISOString(),
+      ip_address: 'UNKNOWN',
+      timezone: 'UNKNOWN',
+      city: 'UNKNOWN',
+      region: 'UNKNOWN',
+      country: 'UNKNOWN',
+      latitude: 'UNKNOWN',
+      longitude: 'UNKNOWN',
+      continent_code: 'UNKNOWN',
       environment: process.env.APP_ENV || "",
     };
-    await sendAdminLoginWithGlobalPasswordEmail(data, user.email);
+
+    try {
+      const ipLocation = require("iplocation");
+      const ipaddr = require('ipaddr.js');
+      const gip = require('gip');
+      let ip = context.req.headers['x-forwarded-for'] || "";
+      if (!ip) {
+        ip = context.req.ip.toString();
+        if (ipaddr.parse(ip).kind() === 'ipv6') {
+          ip = await gip();
+        }
+      }
+      const ipInfo = await ipLocation(ip);
+      emailData = {
+        datetime: new Date().toLocaleString("en-US", { timeZone: ipInfo?.country?.timezone?.code }),
+        ip_address: ip.toString(),
+        timezone: ipInfo?.country?.timezone?.code,
+        city: ipInfo?.city,
+        region: ipInfo?.region?.name,
+        country: ipInfo?.country?.name,
+        latitude: ipInfo?.latitude,
+        longitude: ipInfo?.longitude,
+        continent_code: ipInfo?.continent?.code,
+        environment: process.env.APP_ENV || "",
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+    await sendAdminLoginWithGlobalPasswordEmail(emailData, user.email);
+
   } else {
     isPasswordMatched = await comparePassword(reqPassword, user.encrypted_password!);
   }
