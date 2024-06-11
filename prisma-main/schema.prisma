@@ -223,7 +223,7 @@ model CustomerSubscription {
   ended_at               DateTime?
 
   customer_id String   @db.Uuid
-  customer    Customer @relation(fields: [customer_id], references: [id])
+  customer    Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
 
   @@map("customer_subscriptions")
 }
@@ -254,7 +254,7 @@ model ProjectRequest {
   customer_id String   @db.Uuid
   customer    Customer @relation(fields: [customer_id], references: [id])
 
-  sourcing_session_id String?          @db.Uuid
+  sourcing_session_id String? @db.Uuid
 
   project_request_comments      ProjectRequestComment[]
   project_connections           ProjectConnection[]
