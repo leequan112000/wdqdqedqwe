@@ -23,6 +23,7 @@ if (process.env.APP_ENV === 'production') {
     'https://localhost:9000',
     'https://studio.apollographql.com',
     'https://octavian-test-85ec4e8ad99d.herokuapp.com',
+    'https://octavian-test.onrender.com',
     'https://github.com',
   ];
 }

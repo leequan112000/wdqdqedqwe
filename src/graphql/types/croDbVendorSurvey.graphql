@@ -23,6 +23,10 @@ type CroDbVendorSurvey {
 type InitialVendorSurveyData {
   id: String!
   name: String
+  company_description: String
+  company_size: String
+  company_revenue: String
+  company_ipo_status: String
   logo_url: String
   vendor_type: [String]
   website: String
@@ -40,6 +44,10 @@ type Mutation {
     token: String! # Vendor company ID
     company_name: String!
     company_types: [String!]!
+    company_description: String!
+    company_size: String!
+    company_revenue: String!
+    company_ipo_status: String!
     website: String!
     countries: [String!]!
     subspecialty_ids: [String!]!

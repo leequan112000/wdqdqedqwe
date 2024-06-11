@@ -150,6 +150,12 @@ const resolvers: Resolvers<Context> = {
       const totalVendor = await context.prismaCRODb.vendorCompany.findMany({
         where: vendorCompanyFilter,
         take: 50,
+        include: {
+          vendor_company_subspecialties: true,
+          vendor_company_locations: true,
+          vendor_company_certifications: true,
+          vendor_company_types: true,
+        },
       });
 
       const startSlice = after
@@ -163,7 +169,6 @@ const resolvers: Resolvers<Context> = {
       const vendors = totalVendor.slice(startSlice, endSlice);
 
       let edges = vendors.map((v) => {
-        console.log(v.company_name)
         return {
           cursor: v.id,
           node: v,
