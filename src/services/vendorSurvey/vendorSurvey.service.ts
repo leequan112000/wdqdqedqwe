@@ -8,7 +8,7 @@ type UploadParamType = {
 }
 
 export type CreateVendorSurveyArgs = {
-  vendor_company_id: string;
+  vendor_company_id?: string | null;
   company_name: string;
   company_types: string[];
   company_description: string;
