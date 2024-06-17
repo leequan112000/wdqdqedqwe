@@ -865,7 +865,7 @@ export type MutationCreateVendorSurveyArgs = {
   note?: InputMaybe<Scalars['String']>;
   products?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   subspecialty_ids: Array<Scalars['String']>;
-  token: Scalars['String'];
+  token?: InputMaybe<Scalars['String']>;
   website: Scalars['String'];
 };
 
@@ -3201,7 +3201,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'in_contact_with_vendor' | 'is_private' | 'objective_description' | 'title' | 'vendor_requirement' | 'vendor_search_timeframe'>>;
   createProjectRequestComment?: Resolver<Maybe<ResolversTypes['ProjectRequestComment']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestCommentArgs, 'content' | 'project_request_id'>>;
   createQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationCreateQuoteArgs, 'amount' | 'project_connection_id'>>;
-  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_description' | 'company_ipo_status' | 'company_name' | 'company_revenue' | 'company_size' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'token' | 'website'>>;
+  createVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationCreateVendorSurveyArgs, 'company_description' | 'company_ipo_status' | 'company_name' | 'company_revenue' | 'company_size' | 'company_types' | 'countries' | 'logo' | 'subspecialty_ids' | 'website'>>;
   deactivateCollaborator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationDeactivateCollaboratorArgs, 'user_id'>>;
   declineQuote?: Resolver<Maybe<ResolversTypes['Quote']>, ParentType, ContextType, RequireFields<MutationDeclineQuoteArgs, 'id'>>;
   declinedProjectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<MutationDeclinedProjectConnectionArgs, 'id'>>;

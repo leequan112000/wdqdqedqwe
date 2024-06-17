@@ -41,7 +41,7 @@ type Query {
 
 type Mutation {
   createVendorSurvey(
-    token: String! # Vendor company ID
+    token: String # Vendor company ID
     company_name: String!
     company_types: [String!]!
     company_description: String!

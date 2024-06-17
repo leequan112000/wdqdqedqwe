@@ -79,18 +79,21 @@ const resolvers: Resolvers<Context> = {
         logo,
         attachment,
       } = args;
-      const vendorCompany = await context.prismaCRODb.vendorCompany.findFirst({
-        where: { id: vendor_company_id },
-      });
 
-      invariant(vendorCompany, new PublicError("Vendor company not found."));
-
-      const existingVendorSurvey =
-        await context.prismaCRODb.vendorSurvey.findFirst({
+      const vendorCompany = vendor_company_id
+        ? await context.prismaCRODb.vendorCompany.findUnique({
           where: {
-            vendor_company_id,
+            id: vendor_company_id
           },
-        });
+          include: {
+            vendor_survey: true,
+          },
+        })
+        : null;
+
+      const existingVendorSurvey = vendorCompany
+        ? vendorCompany.vendor_survey
+        : null;
 
       invariant(
         !existingVendorSurvey,

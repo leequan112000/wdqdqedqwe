@@ -273,7 +273,7 @@ model WebsiteInfo {
 
 model VendorSurvey {
   id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vendor_company_id       String   @unique @db.Uuid
+  vendor_company_id       String?   @unique @db.Uuid
   company_name            String
   company_types           String[]
   company_description     String
@@ -295,7 +295,7 @@ model VendorSurvey {
   created_at              DateTime @default(now())
   updated_at              DateTime @updatedAt
 
-  vendor_company VendorCompany @relation(fields: [vendor_company_id], references: [id])
+  vendor_company VendorCompany? @relation(fields: [vendor_company_id], references: [id])
 
   @@map("vendor_surveys")
 }
