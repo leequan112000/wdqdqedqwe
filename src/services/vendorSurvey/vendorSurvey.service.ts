@@ -1,6 +1,8 @@
 import { ServiceContext } from '../../types/context';
-import { VendorSurveyFilePath, VendorSurveyStatus } from '../../helper/constant';
+import { AdminTeam, VendorSurveyFilePath, VendorSurveyStatus } from '../../helper/constant';
 import storeUpload from '../../helper/storeUpload';
+import { sendAdminGeneralNoticeEmail } from '../../mailer/admin';
+import Sentry from '../../sentry';
 
 type UploadParamType = {
   filename: string;
@@ -66,7 +68,7 @@ export const createVendorSurvey = async (args: CreateVendorSurveyArgs, context: 
     attachment_content_type = contentType as string;
   }
 
-  await context.prismaCRODb!.vendorSurvey.create({
+  const vendorSurvey = await context.prismaCRODb!.vendorSurvey.create({
     data: {
       vendor_company_id,
       company_name,
@@ -89,6 +91,29 @@ export const createVendorSurvey = async (args: CreateVendorSurveyArgs, context: 
       attachment_content_type,
     }
   });
+
+
+  try {
+    const admins = await context.prisma.admin.findMany({
+      where: {
+        team: AdminTeam.SCIENCE
+      },
+    });
+
+    await Promise.all(
+      admins.map((admin) => sendAdminGeneralNoticeEmail(admin, {
+        subject: `New Vendor Survey Response Received`,
+        preheader: "We've just received a new vendor survey response. Please review the details below.",
+        button_label: "View response",
+        button_url: 'https://cromatic.retool.com/apps/f3938150-ca1e-11ee-82b5-e3f66a469af9/Cromatic%20Web/Manage%20Vendor%20Survey',
+        content_title: `New Response Received`,
+        content_body: `We have received a new vendor survey response from ${company_name} on ${vendorSurvey.created_at}.`,
+        content_footer: "Please kindly reach out to the engineering team if any problem.",
+      }))
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
 }
 
 const vendorSurveyService = {
