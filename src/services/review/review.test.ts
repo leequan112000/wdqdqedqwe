@@ -1,9 +1,9 @@
-import { Review, ReviewAnswer, ReviewQuestion } from "@prisma/client";
+import { Review, ReviewAnswer, ReviewQuestion } from '@prisma/client';
 import { expect, test, beforeEach, describe } from 'vitest';
-import { MockContext, createMockContext } from "../../testContext";
-import { ServiceContext } from "../../types/context";
-import reviewService from "./review.service";
-import { OrdinalAction } from "../../helper/constant";
+import { MockContext, createMockContext } from '../../testContext';
+import { ServiceContext } from '../../types/context';
+import reviewService from './review.service';
+import { OrdinalAction } from '../../helper/constant';
 
 let mockCtx: MockContext;
 let ctx: ServiceContext;
@@ -82,37 +82,35 @@ beforeEach(() => {
 describe('review.service', () => {
   describe('shiftQuestion', () => {
     test('ordinal action: insert', async () => {
+      mockCtx.prisma.reviewQuestion.findMany.mockResolvedValueOnce(
+        existingQuestions,
+      );
 
-      mockCtx.prisma.reviewQuestion.findMany.mockResolvedValueOnce(existingQuestions);
-
-      await reviewService.shiftQuestions({
-        ordinal: 2,
-        review_question_set_id: 'id-01',
-      }, ctx);
+      await reviewService.shiftQuestions(
+        {
+          ordinal: 2,
+          review_question_set_id: 'id-01',
+        },
+        ctx,
+      );
 
       expect(mockCtx.prisma.reviewQuestion.update).toBeCalledTimes(2);
-      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(
-        1,
-        {
-          where: {
-            id: existingQuestions[1].id,
-          },
-          data: {
-            ordinal: existingQuestions[1].ordinal + 1,
-          },
+      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(1, {
+        where: {
+          id: existingQuestions[1].id,
         },
-      );
-      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(
-        2,
-        {
-          where: {
-            id: existingQuestions[2].id,
-          },
-          data: {
-            ordinal: existingQuestions[2].ordinal + 1,
-          },
+        data: {
+          ordinal: existingQuestions[1].ordinal + 1,
         },
-      );
+      });
+      expect(mockCtx.prisma.reviewQuestion.update).toHaveBeenNthCalledWith(2, {
+        where: {
+          id: existingQuestions[2].id,
+        },
+        data: {
+          ordinal: existingQuestions[2].ordinal + 1,
+        },
+      });
     });
   });
 
@@ -140,7 +138,7 @@ describe('review.service', () => {
           is_final: false,
         },
         ctx,
-      )
+      );
 
       expect(mockCtx.prisma.review.create).not.toBeCalled();
       expect(reviewAnswers).toEqual(existingAnswers);
@@ -169,10 +167,10 @@ describe('review.service', () => {
           is_final: true,
         },
         ctx,
-      )
+      );
 
       expect(mockCtx.prisma.review.create).not.toBeCalled();
-      expect(mockCtx.prisma.review.update).toBeCalled()
+      expect(mockCtx.prisma.review.update).toBeCalled();
       expect(reviewAnswers).toEqual(existingAnswers);
     });
   });

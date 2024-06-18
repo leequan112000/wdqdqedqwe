@@ -19,7 +19,8 @@
     "prepare": "husky install",
     "test": "vitest -c ./vitest.config.unit.ts",
     "stripe:listen:local": "stripe listen --forward-to localhost:9000/webhook/stripe --skip-verify --events customer.subscription.updated,customer.subscription.deleted,checkout.session.completed",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cromatic --project octavian ./dist && sentry-cli sourcemaps upload --org cromatic --project octavian ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cromatic --project octavian ./dist && sentry-cli sourcemaps upload --org cromatic --project octavian ./dist",
+    "format": "prettier ./**/*.{ts,queues.ts,service.ts,resolvers.ts,test.ts} --write"
   },
   "engines": {
     "node": "^18"
