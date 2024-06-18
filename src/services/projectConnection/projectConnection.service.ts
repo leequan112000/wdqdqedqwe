@@ -1,4 +1,4 @@
-import { ServiceContext } from "../../types/context";
+import { ServiceContext } from '../../types/context';
 
 type CheckIfUserInProjectConnectionArgs = {
   user_id: string;
@@ -7,7 +7,7 @@ type CheckIfUserInProjectConnectionArgs = {
 
 export const checkIfUserInProjectConnection = async (
   args: CheckIfUserInProjectConnectionArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const { project_connection_id, user_id } = args;
 
@@ -29,5 +29,5 @@ export const checkIfUserInProjectConnection = async (
     },
   });
 
-  return !!cc || !!vmc
+  return !!cc || !!vmc;
 };

@@ -1,15 +1,15 @@
-import type { Attachment } from "@sendgrid/helpers/classes";
-import { createQueue } from "../helper/queue";
-import { createMailData, sendMail } from "../mailer/config";
+import type { Attachment } from '@sendgrid/helpers/classes';
+import { createQueue } from '../helper/queue';
+import { createMailData, sendMail } from '../mailer/config';
 
-type SendMailJob<T = { [x: string]: any; }> = {
+type SendMailJob<T = { [x: string]: any }> = {
   emailData: T;
   templateId: string;
   receiverEmail: string;
   attachments?: Attachment[];
 };
 
-const emailQueue = createQueue<SendMailJob>("email");
+const emailQueue = createQueue<SendMailJob>('email');
 
 emailQueue.process(async (job, done) => {
   const { emailData, receiverEmail, templateId } = job.data;
@@ -40,14 +40,14 @@ export const createBulkSendMailJobs = (jobs: SendMailJob[]) => {
 };
 
 export type BulkEmailJobData<T> = {
-  emailData: T,
+  emailData: T;
   receiverEmail: string;
   attachments?: Attachment[];
-}[]
+}[];
 
-export function createBulkEmailJobData<T extends any = { [x: string]: any; }>(
+export function createBulkEmailJobData<T extends any = { [x: string]: any }>(
   data: BulkEmailJobData<T>,
-  templateId: string
+  templateId: string,
 ): SendMailJob<T>[] {
   return data.map((d) => ({ templateId, ...d }));
 }

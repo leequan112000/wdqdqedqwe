@@ -15,22 +15,25 @@ export type ExtractPdfToRfpArgs = {
     filename: string;
     createReadStream: () => any;
   };
-}
+};
 
 const extractAndAppendPdfText = async (content: any) => {
-  let pdfString = "";
+  let pdfString = '';
 
   content.forEach((item: any) => {
     const text = item.str.trim();
     if (text) {
-      pdfString = pdfString + "\n" + text;
+      pdfString = pdfString + '\n' + text;
     }
   });
 
-  return pdfString
+  return pdfString;
 };
 
-export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceContext) => {
+export const extractPdfToRfp = async (
+  args: ExtractPdfToRfpArgs,
+  ctx: ServiceContext,
+) => {
   const { file, user_id, sourcing_session_id } = args;
   const { createReadStream } = file;
   const stream = createReadStream();
@@ -47,7 +50,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
 
   const pdfExtract = new PDFExtract();
   const data = await pdfExtract.extractBuffer(buffer);
-  const allPdfPagesContent = data.pages.flatMap(page => page.content)
+  const allPdfPagesContent = data.pages.flatMap((page) => page.content);
   const pdfString = await extractAndAppendPdfText(allPdfPagesContent);
   try {
     const response = await axios({
@@ -57,10 +60,17 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
     });
 
     if (response.data === 'EMPTY') {
-      throw new PublicError("Encountered an issue proccessing the file. Please try again with a different document.")
+      throw new PublicError(
+        'Encountered an issue proccessing the file. Please try again with a different document.',
+      );
     }
 
-    const { project_title, project_desc, preparation_details, vendor_requirement } = JSON.parse(response.data);
+    const {
+      project_title,
+      project_desc,
+      preparation_details,
+      vendor_requirement,
+    } = JSON.parse(response.data);
     const { filename, key, filesize } = await storeUpload(
       file,
       'sourcerer_rfp',
@@ -101,7 +111,7 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
     } else {
       return await ctx.prismaCRODb!.sourcingSession.create({
         data: {
-          task_id: "",
+          task_id: '',
           project_title,
           project_desc,
           preparation_details,
@@ -118,11 +128,10 @@ export const extractPdfToRfp = async (args: ExtractPdfToRfpArgs, ctx: ServiceCon
         },
       });
     }
-
   } catch (error) {
     throw error;
   }
-}
+};
 
 export type SourceRfpSpecialtiesArgs = {
   project_title: string;
@@ -132,9 +141,12 @@ export type SourceRfpSpecialtiesArgs = {
   user_id: string;
   num_specialties: number;
   sourcing_session_id?: InputMaybe<string> | undefined;
-}
+};
 
-export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: ServiceContext) => {
+export const sourceRfpSpecialties = async (
+  args: SourceRfpSpecialtiesArgs,
+  ctx: ServiceContext,
+) => {
   try {
     const { sourcing_session_id, ...rest_args } = args;
     const response = await axios({
@@ -161,12 +173,12 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
           preparation_details: args.preparation_details,
           vendor_requirement: args.vendor_requirement,
           user_id: args.user_id,
-        }
+        },
       });
 
       return {
         sourcing_session_id,
-        ...response.data
+        ...response.data,
       };
     }
 
@@ -178,22 +190,22 @@ export const sourceRfpSpecialties = async (args: SourceRfpSpecialtiesArgs, ctx: 
         preparation_details: args.preparation_details,
         vendor_requirement: args.vendor_requirement,
         user_id: args.user_id,
-      }
+      },
     });
 
     return {
       sourcing_session_id: session.id,
-      ...response.data
+      ...response.data,
     };
   } catch (error) {
     throw error;
   }
-}
+};
 
 export type SourceCrosArgs = {
   names: string[];
   sourcing_session_id: string;
-}
+};
 
 export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
   try {
@@ -202,7 +214,7 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       method: 'post',
       url: `${app_env.AI_SERVER_URL}/source-cro/`,
       data: {
-        weighted_specs: names.map(name => `${name}, 1`),
+        weighted_specs: names.map((name) => `${name}, 1`),
       },
     });
 
@@ -213,7 +225,7 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
       data: {
         task_id: response.data.id,
         task_canceled_at: null,
-      }
+      },
     });
 
     await redis.del(`cancel-ai-task:${sourcing_session_id}`);
@@ -221,11 +233,11 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
     await ctx.prismaCRODb!.sourcingSubspecialty.deleteMany({
       where: {
         sourcing_session_id,
-      }
+      },
     });
 
     await ctx.prismaCRODb!.sourcingSubspecialty.createMany({
-      data: names.map(name => ({
+      data: names.map((name) => ({
         sourcing_session_id,
         name,
       })),
@@ -233,24 +245,27 @@ export const sourceCros = async (args: SourceCrosArgs, ctx: ServiceContext) => {
 
     return {
       sourcing_session_id,
-      ...response.data
+      ...response.data,
     };
   } catch (error) {
     throw error;
   }
-}
+};
 
 type RevokeAiTaskArgs = {
   task_id: string;
   sourcing_session_id: string;
 };
 
-export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) => {
+export const revokeAiTask = async (
+  args: RevokeAiTaskArgs,
+  ctx: ServiceContext,
+) => {
   const { task_id, sourcing_session_id } = args;
 
   await redis
     .multi()
-    .set(`cancel-ai-task:${sourcing_session_id}`, 1, "EX", 120)
+    .set(`cancel-ai-task:${sourcing_session_id}`, 1, 'EX', 120)
     .exec();
 
   // Set canceled flag ASAP so that webhook could skip DB update.
@@ -264,7 +279,7 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
   });
 
   const taskRemovePromise = axios({
-    method: "post",
+    method: 'post',
     url: `${app_env.AI_SERVER_URL}/task-revoke/`,
     data: {
       task_id,
@@ -274,7 +289,7 @@ export const revokeAiTask = async (args: RevokeAiTaskArgs, ctx: ServiceContext) 
   const results = await Promise.all([
     updateSourcingSessionPromise,
     taskRemovePromise,
-  ])
+  ]);
 
   return {
     id: results?.[1]?.data?.id as string | undefined,

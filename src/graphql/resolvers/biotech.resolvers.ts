@@ -1,10 +1,13 @@
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { CompanyCollaboratorRoleType, SubscriptionStatus } from "../../helper/constant";
-import { Resolvers } from "../generated";
-import UploadLimitTracker from "../../helper/uploadLimitTracker";
-import invariant from "../../helper/invariant";
-import { toDollar } from "../../helper/money";
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import {
+  CompanyCollaboratorRoleType,
+  SubscriptionStatus,
+} from '../../helper/constant';
+import { Resolvers } from '../generated';
+import UploadLimitTracker from '../../helper/uploadLimitTracker';
+import invariant from '../../helper/invariant';
+import { toDollar } from '../../helper/money';
 
 const resolver: Resolvers<Context> = {
   Biotech: {
@@ -14,22 +17,23 @@ const resolver: Resolvers<Context> = {
       const subscriptions = await context.prisma.subscription.findMany({
         where: {
           biotech_id: parent.id,
-          status: SubscriptionStatus.ACTIVE
-        }
+          status: SubscriptionStatus.ACTIVE,
+        },
       });
 
       const customer = await context.prisma.customer.findFirst({
         where: {
-          user_id: context.req.user_id
-        }
+          user_id: context.req.user_id,
+        },
       });
 
-      const customerSubscriptions = await context.prisma.customerSubscription.findMany({
-        where: {
-          customer_id: customer?.id,
-          status: SubscriptionStatus.ACTIVE
-        }
-      });
+      const customerSubscriptions =
+        await context.prisma.customerSubscription.findMany({
+          where: {
+            customer_id: customer?.id,
+            status: SubscriptionStatus.ACTIVE,
+          },
+        });
 
       return subscriptions.length > 0 || customerSubscriptions.length > 0;
     },
@@ -38,8 +42,8 @@ const resolver: Resolvers<Context> = {
       const subscription = await context.prisma.subscription.findFirst({
         where: {
           biotech_id: parent.id,
-          status: SubscriptionStatus.ACTIVE
-        }
+          status: SubscriptionStatus.ACTIVE,
+        },
       });
 
       return subscription?.stripe_customer_id ?? '';
@@ -48,8 +52,8 @@ const resolver: Resolvers<Context> = {
       invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.customer.findMany({
         where: {
-          biotech_id: parent.id
-        }
+          biotech_id: parent.id,
+        },
       });
     },
     owner: async (parent, _, context) => {
@@ -67,7 +71,7 @@ const resolver: Resolvers<Context> = {
                 },
               },
             ],
-          }
+          },
         },
         include: {
           user: true,
@@ -103,8 +107,8 @@ const resolver: Resolvers<Context> = {
       invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.chat.findMany({
         where: {
-          biotech_id: parent.id
-        }
+          biotech_id: parent.id,
+        },
       });
     },
     upload_used: async (parent) => {
@@ -112,7 +116,7 @@ const resolver: Resolvers<Context> = {
       const { id } = parent;
       const uploadLimitTracker = new UploadLimitTracker();
 
-      await uploadLimitTracker.init(id)
+      await uploadLimitTracker.init(id);
 
       return uploadLimitTracker.stats().used;
     },
@@ -120,7 +124,7 @@ const resolver: Resolvers<Context> = {
       invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.biotechInvoice.findMany({
         where: {
-          biotech_id: parent.id
+          biotech_id: parent.id,
         },
       });
     },
@@ -128,24 +132,27 @@ const resolver: Resolvers<Context> = {
       invariant(parent.id, 'Missing biotech id.');
       return await context.prisma.purchaseOrder.findMany({
         where: {
-          biotech_id: parent.id
+          biotech_id: parent.id,
         },
       });
     },
     blanket_purchase_orders: async (parent, _, context) => {
       invariant(parent.id, 'Missing biotech id.');
-      const blanketPurchaseOrders = await context.prisma.blanketPurchaseOrder.findMany({
-        where: {
-          biotech_id: parent.id
-        },
-      });
+      const blanketPurchaseOrders =
+        await context.prisma.blanketPurchaseOrder.findMany({
+          where: {
+            biotech_id: parent.id,
+          },
+        });
 
       return blanketPurchaseOrders.map((blanketPurchaseOrder) => {
         return {
           ...blanketPurchaseOrder,
           amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
-          balance_amount: toDollar(blanketPurchaseOrder.balance_amount.toNumber()),
-        }
+          balance_amount: toDollar(
+            blanketPurchaseOrder.balance_amount.toNumber(),
+          ),
+        };
       });
     },
   },
@@ -160,8 +167,8 @@ const resolver: Resolvers<Context> = {
 
         return await trx.biotech.findFirst({
           where: {
-            id: customer.biotech_id
-          }
+            id: customer.biotech_id,
+          },
         });
       });
     },
@@ -179,7 +186,7 @@ const resolver: Resolvers<Context> = {
 
         return await context.prisma.biotech.update({
           where: {
-            id: customer.biotech_id
+            id: customer.biotech_id,
           },
           data: {
             about: args.about,
@@ -198,11 +205,11 @@ const resolver: Resolvers<Context> = {
             facebook_url: args.facebook_url,
             biotech_extra_info: args.biotech_extra_info,
             ...(args.name !== null ? { name: args.name } : {}),
-          }
-        })
+          },
+        });
       });
     },
-  }
-}
+  },
+};
 
 export default resolver;

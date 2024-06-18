@@ -1,18 +1,18 @@
-import type { Prisma } from "@prisma/client";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
+import type { Prisma } from '@prisma/client';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
 import {
   AvailabilityDay,
   AvailabilityDayIndexObj,
-} from "../../helper/constant";
+} from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Query: {
     availability: async (_, args, context) => {
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Missing user id");
+      invariant(currentUserId, 'Missing user id');
 
       const availabilities = await context.prisma.availability.findMany({
         where: {
@@ -37,9 +37,9 @@ const resolvers: Resolvers<Context> = {
           // Make sure day of week fit the enum.
           invariant(
             Object.values(AvailabilityDay).includes(
-              cur.day_of_week as AvailabilityDay
+              cur.day_of_week as AvailabilityDay,
             ),
-            "Invalid day of week"
+            'Invalid day of week',
           );
           const draft = { ...acc };
           draft.timezone = cur.timezone;
@@ -56,21 +56,21 @@ const resolvers: Resolvers<Context> = {
           });
           return draft;
         },
-        { timezone: "", rules: [] }
+        { timezone: '', rules: [] },
       );
 
       // Unset day indexes are undefined.
       // This code remove those undefined element in order to fit apollo schema type.
       const processedRule = result.rules.filter(
         (
-          r
+          r,
         ): r is {
           day: string;
           intervals: Array<{
             from: string;
             to: string;
           }>;
-        } => r !== undefined
+        } => r !== undefined,
       );
 
       return {
@@ -85,7 +85,7 @@ const resolvers: Resolvers<Context> = {
       const { rules, timezone } = args.input;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Missing user id");
+      invariant(currentUserId, 'Missing user id');
 
       // Flatten rules payload
       const availabilityCreateManyInputs = rules.reduce<
@@ -97,7 +97,7 @@ const resolvers: Resolvers<Context> = {
           // Make sure day of week fit the enum.
           invariant(
             Object.values(AvailabilityDay).includes(cur.day as AvailabilityDay),
-            "Invalid day of week"
+            'Invalid day of week',
           );
           return [
             ...acc2,

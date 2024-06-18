@@ -1,15 +1,18 @@
-import { Resolvers } from "../generated";
-import { createResetPasswordToken } from "../../helper/auth";
-import { Context } from "../../types/context";
-import invariant from "../../helper/invariant";
-import { PublicError } from "../../graphql/errors/PublicError";
+import { Resolvers } from '../generated';
+import { createResetPasswordToken } from '../../helper/auth';
+import { Context } from '../../types/context';
+import invariant from '../../helper/invariant';
+import { PublicError } from '../../graphql/errors/PublicError';
 import collaboratorService from '../../services/collaborator/collaborator.service';
-import { CompanyCollaboratorRoleType } from "../../helper/constant";
-import { customerInvitationByAdminEmail, vendorMemberInvitationByAdminEmail } from "../../mailer";
-import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
+import { CompanyCollaboratorRoleType } from '../../helper/constant';
+import {
+  customerInvitationByAdminEmail,
+  vendorMemberInvitationByAdminEmail,
+} from '../../mailer';
+import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
 
 function ignoreEmptyString(data: string | undefined | null) {
-  if (data === "") {
+  if (data === '') {
     return undefined;
   }
   return data;
@@ -33,9 +36,13 @@ const resolvers: Resolvers<Context> = {
 
       invariant(newUser, new PublicError('User not found.'));
 
-      invariant(!newUser?.vendor_member?.title, new PublicError('User already onboarded.'))
+      invariant(
+        !newUser?.vendor_member?.title,
+        new PublicError('User already onboarded.'),
+      );
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration =
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
       const updatedNewUser = await context.prisma.user.update({
         where: {
@@ -47,7 +54,10 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
+      invariant(
+        updatedNewUser.reset_password_token,
+        new PublicError('Reset password token not found'),
+      );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
       const updatedNewUserFullName = getUserFullName(updatedNewUser);
@@ -78,9 +88,13 @@ const resolvers: Resolvers<Context> = {
 
       invariant(newUser, new PublicError('User not found.'));
 
-      invariant(!newUser?.customer?.job_title, new PublicError('User already onboarded.'))
+      invariant(
+        !newUser?.customer?.job_title,
+        new PublicError('User already onboarded.'),
+      );
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration =
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
       const updatedNewUser = await context.prisma.user.update({
         where: {
@@ -92,7 +106,10 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(updatedNewUser.reset_password_token, new PublicError('Reset password token not found'));
+      invariant(
+        updatedNewUser.reset_password_token,
+        new PublicError('Reset password token not found'),
+      );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
       const updatedNewUserFullName = getUserFullName(updatedNewUser);
@@ -107,7 +124,16 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     updateVendorMemberByAdmin: async (_, args, context) => {
-      const { user_id, department, first_name, last_name, role, title, country_code, phone_number } = args;
+      const {
+        user_id,
+        department,
+        first_name,
+        last_name,
+        role,
+        title,
+        country_code,
+        phone_number,
+      } = args;
       await context.prisma.$transaction(async (trx) => {
         await trx.user.update({
           where: {
@@ -162,7 +188,16 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     updateCustomerByAdmin: async (_, args, context) => {
-      const { user_id, team, first_name, last_name, role, job_title, phone_number, country_code } = args;
+      const {
+        user_id,
+        team,
+        first_name,
+        last_name,
+        role,
+        job_title,
+        phone_number,
+        country_code,
+      } = args;
       await context.prisma.$transaction(async (trx) => {
         await trx.user.update({
           where: {
@@ -237,8 +272,14 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(newOwner, new PublicError('New owner user not found.'));
-      invariant(newOwner.biotech_id === biotech_id, new PublicError('The new owner does not belong to this biotech.'));
-      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this biotech.'));
+      invariant(
+        newOwner.biotech_id === biotech_id,
+        new PublicError('The new owner does not belong to this biotech.'),
+      );
+      invariant(
+        owner.user_id !== user_id,
+        new PublicError('The user is already the owner of this biotech.'),
+      );
 
       await context.prisma.$transaction(async (trx) => {
         await collaboratorService.setCustomerAsUser(
@@ -278,8 +319,18 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(newOwner, new PublicError('New owner user not found.'));
-      invariant(newOwner.vendor_company_id === vendor_company_id, new PublicError('The new owner does not belong to this vendor company.'));
-      invariant(owner.user_id !== user_id, new PublicError('The user is already the owner of this vendor company.'));
+      invariant(
+        newOwner.vendor_company_id === vendor_company_id,
+        new PublicError(
+          'The new owner does not belong to this vendor company.',
+        ),
+      );
+      invariant(
+        owner.user_id !== user_id,
+        new PublicError(
+          'The user is already the owner of this vendor company.',
+        ),
+      );
 
       await context.prisma.$transaction(async (trx) => {
         await collaboratorService.setVendorMemberAsUser(
@@ -298,7 +349,7 @@ const resolvers: Resolvers<Context> = {
       });
       return true;
     },
-  }
-}
+  },
+};
 
 export default resolvers;

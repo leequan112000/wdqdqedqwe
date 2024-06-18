@@ -1,34 +1,69 @@
-import moment from "moment-timezone";
-import type { GaxiosResponse} from 'googleapis-common';
-import type { calendar_v3 } from '@googleapis/calendar'
-import * as MicrosoftGraph from "@microsoft/microsoft-graph-types"
+import moment from 'moment-timezone';
+import type { GaxiosResponse } from 'googleapis-common';
+import type { calendar_v3 } from '@googleapis/calendar';
+import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 
-import invariant from "../../helper/invariant";
-import { createMicrosoftEvent, deleteMicrosoftEvent, microsoftClient, microsoftGraphClient, patchMicrosoftEvent } from "../../helper/microsoft";
-import { GEvent, createGoogleEvent, deleteGoogleEvent, googleApiClient, googleClient, listGoogleEvents, patchGoogleEvent } from "../../helper/googleCalendar";
-import { MeetingGuestStatus, MeetingGuestType, MeetingPlatform, OauthProvider } from "../../helper/constant";
-import { createNewMeetingNotificationJob, createRemoveMeetingNotificationJob, createUpdateMeetingNotificationJob } from "../../notification/meetingNotification";
-import { createNotificationQueueJob } from "../../queues/notification.queues";
-import { find } from "lodash";
-import { ServiceContext } from "../../types/context";
-import { MicrosoftCalendarEvent } from "../../types/microsoft";
-import { CalendarEvent } from "../../graphql/generated";
-import { PublicError } from "../../graphql/errors/PublicError";
-import { checkIfUserInProjectConnection } from "../projectConnection/projectConnection.service";
-import { meetingInvitationForCromaticUserWithinProjectEmail, meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
-import { canceledMeetingNotificationEmail, newMeetingNotificationEmail, updatedMeetingNotificationEmail } from "../../mailer/meetingEvent";
-import { app_env } from "../../environment";
-import { refreshToken } from "../../helper/clientOauth2";
-import { InternalError } from "../../graphql/errors/InternalError";
-import { MeetingEvent, Prisma, ProjectConnection, ProjectRequest } from "@prisma/client";
-import { NoOAuthError } from "../../graphql/errors/NoOAuthError";
-import Sentry from "../../sentry";
+import invariant from '../../helper/invariant';
+import {
+  createMicrosoftEvent,
+  deleteMicrosoftEvent,
+  microsoftClient,
+  microsoftGraphClient,
+  patchMicrosoftEvent,
+} from '../../helper/microsoft';
+import {
+  GEvent,
+  createGoogleEvent,
+  deleteGoogleEvent,
+  googleApiClient,
+  googleClient,
+  listGoogleEvents,
+  patchGoogleEvent,
+} from '../../helper/googleCalendar';
+import {
+  MeetingGuestStatus,
+  MeetingGuestType,
+  MeetingPlatform,
+  OauthProvider,
+} from '../../helper/constant';
+import {
+  createNewMeetingNotificationJob,
+  createRemoveMeetingNotificationJob,
+  createUpdateMeetingNotificationJob,
+} from '../../notification/meetingNotification';
+import { createNotificationQueueJob } from '../../queues/notification.queues';
+import { find } from 'lodash';
+import { ServiceContext } from '../../types/context';
+import { MicrosoftCalendarEvent } from '../../types/microsoft';
+import { CalendarEvent } from '../../graphql/generated';
+import { PublicError } from '../../graphql/errors/PublicError';
+import { checkIfUserInProjectConnection } from '../projectConnection/projectConnection.service';
+import {
+  meetingInvitationForCromaticUserWithinProjectEmail,
+  meetingInvitationForGuestEmail,
+} from '../../mailer/guestMeeting';
+import {
+  canceledMeetingNotificationEmail,
+  newMeetingNotificationEmail,
+  updatedMeetingNotificationEmail,
+} from '../../mailer/meetingEvent';
+import { app_env } from '../../environment';
+import { refreshToken } from '../../helper/clientOauth2';
+import { InternalError } from '../../graphql/errors/InternalError';
+import {
+  MeetingEvent,
+  Prisma,
+  ProjectConnection,
+  ProjectRequest,
+} from '@prisma/client';
+import { NoOAuthError } from '../../graphql/errors/NoOAuthError';
+import Sentry from '../../sentry';
 
 const isGoogleExpiredError = (error: any) => {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error !== null &&
-    "code" in error &&
+    'code' in error &&
     error.code === 401
   );
 };
@@ -37,16 +72,16 @@ const isGoogleEventDeletedError = (error: any) => {
   return (
     typeof error === 'object' &&
     error !== null &&
-    "code" in error &&
+    'code' in error &&
     error.code === 410
   );
-}
+};
 
 const isMicrosoftExpiredError = (error: any) => {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error !== null &&
-    "statusCode" in error &&
+    'statusCode' in error &&
     error.statusCode === 401
   );
 };
@@ -55,17 +90,25 @@ type RefreshTokenArgs = {
   access_token: string;
   refresh_token: string;
   user_id: string;
-}
+};
 
-const refreshMicrosoftToken = async (args: RefreshTokenArgs, ctx: ServiceContext) => {
+const refreshMicrosoftToken = async (
+  args: RefreshTokenArgs,
+  ctx: ServiceContext,
+) => {
   const { access_token, refresh_token, user_id } = args;
-  const newToken = await refreshToken({ access_token,  refresh_token,  user_id, client: microsoftClient  })
+  const newToken = await refreshToken({
+    access_token,
+    refresh_token,
+    user_id,
+    client: microsoftClient,
+  });
   await ctx.prisma.oauth.upsert({
     where: {
       user_id_provider: {
         user_id,
         provider: OauthProvider.MICROSOFT,
-      }
+      },
     },
     create: {
       user_id,
@@ -81,17 +124,25 @@ const refreshMicrosoftToken = async (args: RefreshTokenArgs, ctx: ServiceContext
     },
   });
   return newToken;
-}
+};
 
-const refreshGoogleToken = async (args: RefreshTokenArgs, ctx: ServiceContext) => {
+const refreshGoogleToken = async (
+  args: RefreshTokenArgs,
+  ctx: ServiceContext,
+) => {
   const { access_token, refresh_token, user_id } = args;
-  const newToken = await refreshToken({ access_token, refresh_token, user_id, client: googleClient });
+  const newToken = await refreshToken({
+    access_token,
+    refresh_token,
+    user_id,
+    client: googleClient,
+  });
   await ctx.prisma.oauth.upsert({
     where: {
       user_id_provider: {
         user_id,
         provider: OauthProvider.GOOGLE,
-      }
+      },
     },
     create: {
       user_id,
@@ -107,19 +158,29 @@ const refreshGoogleToken = async (args: RefreshTokenArgs, ctx: ServiceContext) =
     },
   });
   return newToken;
-}
+};
 
 type SafePatchGoogleEventArgs = {
   access_token: string;
   refresh_token: string;
-  g_event: GEvent,
+  g_event: GEvent;
   send_updates: boolean;
   platform_event_id: string;
   organizer_user_id: string;
-}
+};
 
-const safePatchGoogleEvent = async (args: SafePatchGoogleEventArgs, ctx: ServiceContext) => {
-  const { access_token, g_event, refresh_token, platform_event_id, send_updates, organizer_user_id } = args;
+const safePatchGoogleEvent = async (
+  args: SafePatchGoogleEventArgs,
+  ctx: ServiceContext,
+) => {
+  const {
+    access_token,
+    g_event,
+    refresh_token,
+    platform_event_id,
+    send_updates,
+    organizer_user_id,
+  } = args;
   const client = googleApiClient(access_token, refresh_token);
   try {
     return await patchGoogleEvent(
@@ -136,9 +197,12 @@ const safePatchGoogleEvent = async (args: SafePatchGoogleEventArgs, ctx: Service
           refresh_token,
           user_id: organizer_user_id,
         },
-        ctx
+        ctx,
       );
-      client.setCredentials({ access_token: newToken.accessToken, refresh_token: newToken.refreshToken });
+      client.setCredentials({
+        access_token: newToken.accessToken,
+        refresh_token: newToken.refreshToken,
+      });
       return await patchGoogleEvent(
         client,
         platform_event_id,
@@ -149,16 +213,19 @@ const safePatchGoogleEvent = async (args: SafePatchGoogleEventArgs, ctx: Service
       throw error;
     }
   }
-}
+};
 
 type SafePatchMicrosoftEventArgs = {
   access_token: string;
   refresh_token: string;
-  event_data: MicrosoftGraph.Event,
+  event_data: MicrosoftGraph.Event;
   organizer_user_id: string;
-}
+};
 
-const safePatchMicrosoftEvent = async (args: SafePatchMicrosoftEventArgs, ctx: ServiceContext) => {
+const safePatchMicrosoftEvent = async (
+  args: SafePatchMicrosoftEventArgs,
+  ctx: ServiceContext,
+) => {
   const { access_token, refresh_token, event_data, organizer_user_id } = args;
   const client = microsoftGraphClient(access_token);
   try {
@@ -171,7 +238,7 @@ const safePatchMicrosoftEvent = async (args: SafePatchMicrosoftEventArgs, ctx: S
           refresh_token,
           user_id: organizer_user_id,
         },
-        ctx
+        ctx,
       );
       const newClient = microsoftGraphClient(newToken.accessToken);
       return await patchMicrosoftEvent(newClient, event_data);
@@ -179,7 +246,7 @@ const safePatchMicrosoftEvent = async (args: SafePatchMicrosoftEventArgs, ctx: S
       throw error;
     }
   }
-}
+};
 
 type CreateMeetingEventOnCalendarAppArgs = {
   platform: string;
@@ -190,15 +257,22 @@ type CreateMeetingEventOnCalendarAppArgs = {
   timezone: string;
   title: string;
   description?: string;
-}
+};
 
 const createMeetingEventOnCalendarApp = async (
   args: CreateMeetingEventOnCalendarAppArgs,
   ctx: ServiceContext,
 ) => {
   const {
-    organizer_user_id, platform, all_participants_emails,
-    description, end_time, start_time, timezone, title  } = args;
+    organizer_user_id,
+    platform,
+    all_participants_emails,
+    description,
+    end_time,
+    start_time,
+    timezone,
+    title,
+  } = args;
   let meeting_link = null;
   let phone_pin = null;
   let phone = null;
@@ -218,9 +292,13 @@ const createMeetingEventOnCalendarApp = async (
 
       invariant(oauthGoogle, new PublicError('Not connected to Google'));
 
-      const client = googleApiClient(oauthGoogle.access_token, oauthGoogle.refresh_token);
+      const client = googleApiClient(
+        oauthGoogle.access_token,
+        oauthGoogle.refresh_token,
+      );
 
-      let response: GaxiosResponse<calendar_v3.Schema$Event> | undefined = undefined;
+      let response: GaxiosResponse<calendar_v3.Schema$Event> | undefined =
+        undefined;
       try {
         response = await createGoogleEvent(client, {
           summary: title,
@@ -237,12 +315,18 @@ const createMeetingEventOnCalendarApp = async (
         });
       } catch (error) {
         if (isGoogleExpiredError(error)) {
-          const newToken = await refreshGoogleToken({
-            access_token: oauthGoogle.access_token,
-            refresh_token: oauthGoogle.refresh_token,
-            user_id: organizer_user_id,
-          }, ctx)
-          const newClient = googleApiClient(newToken.accessToken, newToken.refreshToken);
+          const newToken = await refreshGoogleToken(
+            {
+              access_token: oauthGoogle.access_token,
+              refresh_token: oauthGoogle.refresh_token,
+              user_id: organizer_user_id,
+            },
+            ctx,
+          );
+          const newClient = googleApiClient(
+            newToken.accessToken,
+            newToken.refreshToken,
+          );
           response = await createGoogleEvent(newClient, {
             summary: title,
             description,
@@ -265,15 +349,15 @@ const createMeetingEventOnCalendarApp = async (
       const { conferenceData, hangoutLink, id: gEventId } = response.data;
       invariant(
         conferenceData && hangoutLink,
-        new PublicError("Missing hangout link.")
+        new PublicError('Missing hangout link.'),
       );
       meeting_link = hangoutLink;
       platform_event_id = gEventId as string;
 
       const entryPoints = conferenceData.entryPoints;
-      const phoneEntryPoint = find(entryPoints, { entryPointType: "phone" })!;
+      const phoneEntryPoint = find(entryPoints, { entryPointType: 'phone' })!;
       if (phoneEntryPoint) {
-        const [countryCode, gPhone] = phoneEntryPoint.label!.split(" ");
+        const [countryCode, gPhone] = phoneEntryPoint.label!.split(' ');
         phone_pin = phoneEntryPoint.pin as string;
         phone = gPhone as string;
         phone_country = countryCode;
@@ -291,7 +375,7 @@ const createMeetingEventOnCalendarApp = async (
         },
       });
 
-      invariant(oauthMicrosoft, "Not connected to Microsoft Team")
+      invariant(oauthMicrosoft, 'Not connected to Microsoft Team');
 
       const client = microsoftGraphClient(oauthMicrosoft.access_token);
 
@@ -303,8 +387,10 @@ const createMeetingEventOnCalendarApp = async (
             content: description,
           },
           isOnlineMeeting: true,
-          onlineMeetingProvider: "teamsForBusiness",
-          attendees: all_participants_emails.map((email) => ({ emailAddress: { address: email }} )),
+          onlineMeetingProvider: 'teamsForBusiness',
+          attendees: all_participants_emails.map((email) => ({
+            emailAddress: { address: email },
+          })),
           allowNewTimeProposals: true,
           start: {
             dateTime: start_time,
@@ -317,11 +403,14 @@ const createMeetingEventOnCalendarApp = async (
         });
       } catch (error) {
         if (isMicrosoftExpiredError(error)) {
-          const newToken = await refreshMicrosoftToken({
-            access_token: oauthMicrosoft.access_token,
-            refresh_token: oauthMicrosoft.refresh_token,
-            user_id: organizer_user_id,
-          }, ctx);
+          const newToken = await refreshMicrosoftToken(
+            {
+              access_token: oauthMicrosoft.access_token,
+              refresh_token: oauthMicrosoft.refresh_token,
+              user_id: organizer_user_id,
+            },
+            ctx,
+          );
           const newClient = microsoftGraphClient(newToken.accessToken);
           response = await createMicrosoftEvent(newClient, {
             subject: title,
@@ -329,8 +418,10 @@ const createMeetingEventOnCalendarApp = async (
               content: description,
             },
             isOnlineMeeting: true,
-            onlineMeetingProvider: "teamsForBusiness",
-            attendees: all_participants_emails.map((email) => ({ emailAddress: { address: email }} )),
+            onlineMeetingProvider: 'teamsForBusiness',
+            attendees: all_participants_emails.map((email) => ({
+              emailAddress: { address: email },
+            })),
             allowNewTimeProposals: true,
             start: {
               dateTime: start_time,
@@ -350,16 +441,16 @@ const createMeetingEventOnCalendarApp = async (
       const { id: mEventId, onlineMeeting, webLink } = response;
       invariant(
         (onlineMeeting && onlineMeeting.joinUrl) || webLink,
-        new PublicError("Missing meeting link.")
+        new PublicError('Missing meeting link.'),
       );
 
-      meeting_link = onlineMeeting?.joinUrl || webLink as string;
+      meeting_link = onlineMeeting?.joinUrl || (webLink as string);
       platform_event_id = mEventId as string;
       break;
     }
     default: {
       // Skip
-      throw new InternalError(`Unsupported platform: ${platform}`)
+      throw new InternalError(`Unsupported platform: ${platform}`);
     }
   }
 
@@ -371,8 +462,8 @@ const createMeetingEventOnCalendarApp = async (
     phone,
     phone_country,
     platform_event_id,
-  }
-}
+  };
+};
 
 type CreateMeetingEventArgs = {
   title: string;
@@ -380,15 +471,18 @@ type CreateMeetingEventArgs = {
   platform: string;
   end_time: string;
   start_time: string;
-  cromatic_participants: Array<{ id: string; email: string; }>;
-  external_participants: Array<{ email: string; name?: string | null; }>;
+  cromatic_participants: Array<{ id: string; email: string }>;
+  external_participants: Array<{ email: string; name?: string | null }>;
   timezone: string;
   description?: string | null;
   project_connection_id: string;
   organizer_user_id: string;
-}
+};
 
-const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceContext) => {
+const createMeetingEvent = async (
+  args: CreateMeetingEventArgs,
+  ctx: ServiceContext,
+) => {
   const {
     title,
     meeting_link: customMeetingLink,
@@ -409,7 +503,10 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
   let phone_country = null;
   let platform_event_id = null;
 
-  const externalParticipants = external_participants.map((ep) => ({ ...ep, email: ep.email.toUpperCase() }));
+  const externalParticipants = external_participants.map((ep) => ({
+    ...ep,
+    email: ep.email.toUpperCase(),
+  }));
 
   const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
   const externalParticipantEmails = externalParticipants.map((a) => a.email);
@@ -422,7 +519,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       customer: {
         include: {
           biotech: true,
-        }
+        },
       },
       vendor_member: {
         include: {
@@ -437,7 +534,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
 
   // Create event on third party application
   if (platform === MeetingPlatform.CUSTOM) {
-    invariant(customMeetingLink, "Missing custom meeting link.");
+    invariant(customMeetingLink, 'Missing custom meeting link.');
     meeting_link = customMeetingLink;
   } else {
     const newMeetingEventOnCalendarApp = await createMeetingEventOnCalendarApp(
@@ -455,7 +552,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
         platform,
         timezone,
       },
-      ctx
+      ctx,
     );
 
     meeting_link = newMeetingEventOnCalendarApp.meeting_link;
@@ -465,7 +562,10 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     platform_event_id = newMeetingEventOnCalendarApp.platform_event_id;
   }
 
-  const meetingAttendeeConnectionCreateData = [...cromatic_participants.map((p) => ({ user_id: p.id })), { user_id: organizer_user_id }];
+  const meetingAttendeeConnectionCreateData = [
+    ...cromatic_participants.map((p) => ({ user_id: p.id })),
+    { user_id: organizer_user_id },
+  ];
   const newMeetingEvent = await ctx.prisma.meetingEvent.create({
     data: {
       title,
@@ -510,9 +610,9 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
         name: p.name,
         meeting_event_id: newMeetingEvent.id,
       },
-      ctx
-    )
-  })
+      ctx,
+    );
+  });
 
   const meetingGuests = await Promise.all(addExternalParticipantTasks);
 
@@ -570,7 +670,7 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     [...organizerParticipantEmailData, ...attendingParticipantEmailData].map(
       ({ receive_email, ...data }) => {
         newMeetingNotificationEmail(data, receive_email);
-      }
+      },
     );
   }
 
@@ -579,10 +679,9 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
       createNewMeetingNotificationJob({
         meeting_event_id: newMeetingEvent.id,
         organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-        project_title:
-          newMeetingEvent.project_connection.project_request.title,
+        project_title: newMeetingEvent.project_connection.project_request.title,
         recipient_id: u.id,
-      })
+      }),
     ),
   };
   createNotificationQueueJob(notificationJob);
@@ -591,18 +690,18 @@ const createMeetingEvent = async (args: CreateMeetingEventArgs, ctx: ServiceCont
     ...newMeetingEvent,
     external_guests: meetingGuests,
   };
-}
+};
 
 type RemoveMeetingEventOnCalendarAppArgs = {
   current_user_id: string;
   platform: string;
   platform_event_id: string;
-}
+};
 
 // Only remove event on the calendar / video calling application.
 const removeMeetingEventOnCalendarApp = async (
   args: RemoveMeetingEventOnCalendarAppArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const { current_user_id, platform, platform_event_id } = args;
   switch (platform) {
@@ -619,7 +718,7 @@ const removeMeetingEventOnCalendarApp = async (
 
       const client = googleApiClient(
         oauthGoogle.access_token,
-        oauthGoogle.refresh_token
+        oauthGoogle.refresh_token,
       );
 
       try {
@@ -637,7 +736,10 @@ const removeMeetingEventOnCalendarApp = async (
             },
             ctx,
           );
-          const newClient = googleApiClient(newToken.accessToken, newToken.refreshToken);
+          const newClient = googleApiClient(
+            newToken.accessToken,
+            newToken.refreshToken,
+          );
           await deleteGoogleEvent(newClient, platform_event_id!);
         } else {
           throw error;
@@ -688,9 +790,12 @@ const removeMeetingEventOnCalendarApp = async (
 type RemoveMeetingEventArgs = {
   meeting_event_id: string;
   current_user_id: string;
-}
+};
 
-const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceContext) => {
+const removeMeetingEvent = async (
+  args: RemoveMeetingEventArgs,
+  ctx: ServiceContext,
+) => {
   const { meeting_event_id, current_user_id } = args;
   const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
     where: {
@@ -736,7 +841,7 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
     },
   });
 
-  invariant(organizerUser, "Missing organizer user.");
+  invariant(organizerUser, 'Missing organizer user.');
 
   // Delete all meeting attendee connections.
   await ctx.prisma.meetingAttendeeConnection.deleteMany({
@@ -752,7 +857,10 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
   });
 
   if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
-    invariant(deletedMeetingEvent.platform_event_id, 'Meeting event not found.');
+    invariant(
+      deletedMeetingEvent.platform_event_id,
+      'Meeting event not found.',
+    );
 
     // Try-catch to prevent it from breaking the Cromatic platform functionality
     try {
@@ -760,7 +868,7 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
         {
           current_user_id,
           platform: meetingEvent.platform,
-          platform_event_id: meetingEvent.platform_event_id!
+          platform_event_id: meetingEvent.platform_event_id!,
         },
         ctx,
       );
@@ -776,7 +884,7 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
       meetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
     const existingCromaticParticipantWithoutOrganizerEmails =
       existingCromaticParticipantsEmails.filter(
-        (e) => e !== organizerUser.email
+        (e) => e !== organizerUser.email,
       );
 
     const cromaticParticipantWithoutOrganizerUserData =
@@ -820,16 +928,14 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
 
     const organizerParticipantEmailData = organizerParticipants.map((u) => ({
       meeting_title: meetingEvent.title,
-      project_title:
-      meetingEvent.project_connection.project_request.title,
+      project_title: meetingEvent.project_connection.project_request.title,
       company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
       user_name: `${u.first_name} ${u.last_name}`,
       receive_email: u.email,
     }));
     const attendingParticipantEmailData = attendingParticipants.map((u) => ({
       meeting_title: meetingEvent.title,
-      project_title:
-      meetingEvent.project_connection.project_request.title,
+      project_title: meetingEvent.project_connection.project_request.title,
       company_name: organizerCompanyName!,
       user_name: `${u.first_name} ${u.last_name}`,
       receive_email: u.email,
@@ -837,12 +943,11 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
     const externalParticipantEmailData = meetingEvent.meeting_guests.map(
       (guest) => ({
         meeting_title: meetingEvent.title,
-        project_title:
-        meetingEvent.project_connection.project_request.title,
+        project_title: meetingEvent.project_connection.project_request.title,
         company_name: organizerCompanyName!,
-        user_name: guest.name ? guest.name : "guest",
+        user_name: guest.name ? guest.name : 'guest',
         receive_email: guest.email,
-      })
+      }),
     );
     // Send email to all participants.
     [
@@ -857,55 +962,69 @@ const removeMeetingEvent = async (args: RemoveMeetingEventArgs, ctx: ServiceCont
   const notificationJob = {
     data: meetingEvent.meetingAttendeeConnections
       .filter((con) => con.user_id !== meetingEvent.organizer_id)
-      .map((con) => createRemoveMeetingNotificationJob({
-        meeting_event_id: meetingEvent.id,
-        organizer_full_name: `${meetingEvent.organizer.first_name} ${meetingEvent.organizer.last_name}`,
-        project_title: meetingEvent.project_connection.project_request.title,
-        recipient_id: con.user_id,
-      })),
-  }
+      .map((con) =>
+        createRemoveMeetingNotificationJob({
+          meeting_event_id: meetingEvent.id,
+          organizer_full_name: `${meetingEvent.organizer.first_name} ${meetingEvent.organizer.last_name}`,
+          project_title: meetingEvent.project_connection.project_request.title,
+          recipient_id: con.user_id,
+        }),
+      ),
+  };
   createNotificationQueueJob(notificationJob);
 
   return deletedMeetingEvent;
-}
+};
 
 type GetMicrosoftCalendarEventsArgs = {
   access_token: string;
   refresh_token: string;
   start_date_iso: string;
   end_date_iso?: string;
-}
+};
 
-const getMicrosoftCalendarEvents = async (args: GetMicrosoftCalendarEventsArgs) => {
+const getMicrosoftCalendarEvents = async (
+  args: GetMicrosoftCalendarEventsArgs,
+) => {
   const { access_token, start_date_iso, end_date_iso } = args;
   const client = microsoftGraphClient(access_token);
 
   // Doc: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
   const startDateFilterStr = `start/dateTime ge '${start_date_iso}'`;
-  const endDateFilterStr = end_date_iso ? ` and start/dateTime le '${end_date_iso}'` : ''
+  const endDateFilterStr = end_date_iso
+    ? ` and start/dateTime le '${end_date_iso}'`
+    : '';
 
   const response: { value: MicrosoftCalendarEvent[] } = await client
-    .api("/me/calendar/events")
+    .api('/me/calendar/events')
     .filter(`${startDateFilterStr}${endDateFilterStr}`)
     .get();
 
-  return response.value.map((event) => ({
-    id: event.id,
-    title: event.subject,
-    description: event.bodyPreview,
-    start_time: moment.utc(event.start.dateTime).format(),
-    end_time: moment.utc(event.end.dateTime).format(),
-    timezone: event.start.timeZone,
-    all_day: event.isAllDay,
-    meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
-    guests: event.attendees.map(({ emailAddress }) => ({ name: emailAddress.name, email: emailAddress.address })),
-    organizer: {
-      name: event.organizer.emailAddress.name,
-      email: event.organizer.emailAddress.address,
-    },
-    is_draft: event.isDraft,
-  } as CalendarEvent)) || [];
-}
+  return (
+    response.value.map(
+      (event) =>
+        ({
+          id: event.id,
+          title: event.subject,
+          description: event.bodyPreview,
+          start_time: moment.utc(event.start.dateTime).format(),
+          end_time: moment.utc(event.end.dateTime).format(),
+          timezone: event.start.timeZone,
+          all_day: event.isAllDay,
+          meeting_link: event.onlineMeeting?.joinUrl || event.webLink,
+          guests: event.attendees.map(({ emailAddress }) => ({
+            name: emailAddress.name,
+            email: emailAddress.address,
+          })),
+          organizer: {
+            name: event.organizer.emailAddress.name,
+            email: event.organizer.emailAddress.address,
+          },
+          is_draft: event.isDraft,
+        }) as CalendarEvent,
+    ) || []
+  );
+};
 
 type GetGoogleCalendarEventsArgs = {
   access_token: string;
@@ -913,34 +1032,53 @@ type GetGoogleCalendarEventsArgs = {
   single_events: boolean;
   start_date_iso: string;
   end_date_iso?: string;
-}
+};
 
 const getGoogleCalendarEvents = async (args: GetGoogleCalendarEventsArgs) => {
-  const { access_token, refresh_token, single_events, start_date_iso, end_date_iso } = args;
+  const {
+    access_token,
+    refresh_token,
+    single_events,
+    start_date_iso,
+    end_date_iso,
+  } = args;
   const client = googleApiClient(access_token, refresh_token);
 
   try {
-    const response = await listGoogleEvents(client, single_events, start_date_iso, end_date_iso);
-    return response?.map((event) => ({
-      id: event.id,
-      title: event.summary,
-      description: event.description,
-      start_time: event.start?.dateTime,
-      end_time: event.end?.dateTime,
-      timezone: event.start?.timeZone,
-      all_day: event.start?.date && !event.start.dateTime,
-      meeting_link: event.hangoutLink || event.htmlLink,
-      guests: event.attendees?.map(({ displayName, email }) => ({ name: displayName, email })),
-      organizer: {
-        name: event.organizer?.displayName,
-        email: event.organizer?.email,
-      },
-      is_draft: false,
-    } as CalendarEvent)) || [];
+    const response = await listGoogleEvents(
+      client,
+      single_events,
+      start_date_iso,
+      end_date_iso,
+    );
+    return (
+      response?.map(
+        (event) =>
+          ({
+            id: event.id,
+            title: event.summary,
+            description: event.description,
+            start_time: event.start?.dateTime,
+            end_time: event.end?.dateTime,
+            timezone: event.start?.timeZone,
+            all_day: event.start?.date && !event.start.dateTime,
+            meeting_link: event.hangoutLink || event.htmlLink,
+            guests: event.attendees?.map(({ displayName, email }) => ({
+              name: displayName,
+              email,
+            })),
+            organizer: {
+              name: event.organizer?.displayName,
+              email: event.organizer?.email,
+            },
+            is_draft: false,
+          }) as CalendarEvent,
+      ) || []
+    );
   } catch (error) {
     throw error;
   }
-}
+};
 
 type GetCalendarEventsForUserArgs = {
   user_id: string;
@@ -950,16 +1088,22 @@ type GetCalendarEventsForUserArgs = {
   googleConfig?: {
     single_events: boolean;
   };
-}
+};
 
 const getCalendarEventsForUser = async (
   args: GetCalendarEventsForUserArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ): Promise<CalendarEvent[]> => {
-  const { end_date_iso, start_date_iso, user_id, calendar = 'all', googleConfig = { single_events: true } } = args;
+  const {
+    end_date_iso,
+    start_date_iso,
+    user_id,
+    calendar = 'all',
+    googleConfig = { single_events: true },
+  } = args;
   let events: CalendarEvent[] = [];
 
-  if (calendar === "all" || calendar === 'google') {
+  if (calendar === 'all' || calendar === 'google') {
     const oauthGoogle = await ctx.prisma.oauth.findUnique({
       where: {
         user_id_provider: {
@@ -981,11 +1125,14 @@ const getCalendarEventsForUser = async (
         events = events.concat(googleEvents);
       } catch (error) {
         if (isGoogleExpiredError(error)) {
-          const newToken = await refreshGoogleToken({
-            access_token: oauthGoogle.access_token,
-            refresh_token: oauthGoogle.refresh_token,
-            user_id,
-          }, ctx);
+          const newToken = await refreshGoogleToken(
+            {
+              access_token: oauthGoogle.access_token,
+              refresh_token: oauthGoogle.refresh_token,
+              user_id,
+            },
+            ctx,
+          );
           const googleEvents = await getGoogleCalendarEvents({
             access_token: newToken.accessToken,
             refresh_token: newToken.refreshToken,
@@ -1020,11 +1167,14 @@ const getCalendarEventsForUser = async (
         events = events.concat(microsoftEvents);
       } catch (error: any) {
         if (isMicrosoftExpiredError(error)) {
-          const newToken = await refreshMicrosoftToken({
-            access_token: oauthMicrosoft.access_token,
-            refresh_token: oauthMicrosoft.refresh_token,
-            user_id,
-          }, ctx);
+          const newToken = await refreshMicrosoftToken(
+            {
+              access_token: oauthMicrosoft.access_token,
+              refresh_token: oauthMicrosoft.refresh_token,
+              user_id,
+            },
+            ctx,
+          );
           const microsoftEvents = await getMicrosoftCalendarEvents({
             access_token: newToken.accessToken,
             refresh_token: newToken.refreshToken,
@@ -1038,15 +1188,18 @@ const getCalendarEventsForUser = async (
   }
 
   return events;
-}
+};
 
 type AddExternalGuestToMeetingArgs = {
   meeting_event_id: string;
   email: string;
   name?: string | null;
-}
+};
 
-const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ctx: ServiceContext) => {
+const addExternalGuestToMeeting = async (
+  args: AddExternalGuestToMeetingArgs,
+  ctx: ServiceContext,
+) => {
   const { email, name, meeting_event_id } = args;
 
   const meeting = await ctx.prisma.meetingEvent.findFirst({
@@ -1097,7 +1250,7 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
         project_connection_id: meeting.project_connection_id,
         user_id: existingUser.id,
       },
-      ctx
+      ctx,
     );
   }
 
@@ -1116,8 +1269,8 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
     create: {
       email: email,
       name: guestName || null,
-      type: "invite",
-      status: "pending",
+      type: 'invite',
+      status: 'pending',
       meeting_event_id,
     },
     update: {},
@@ -1128,7 +1281,7 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
       {
         button_url: `${app_env.APP_URL}/app/meeting-events`,
         company_name: companyName!,
-        guest_name: name || "guest",
+        guest_name: name || 'guest',
         meeting_title: meeting.title,
         project_title: meeting.project_connection.project_request.title,
       },
@@ -1139,7 +1292,7 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
       {
         button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${guest.id}`,
         company_name: companyName!,
-        guest_name: name || "guest",
+        guest_name: name || 'guest',
         meeting_title: meeting.title,
         project_title: meeting.project_connection.project_request.title,
       },
@@ -1148,7 +1301,7 @@ const addExternalGuestToMeeting = async (args: AddExternalGuestToMeetingArgs, ct
   }
 
   return guest;
-}
+};
 
 type UpdateMeetingEventArgs = {
   meeting_event_id: string;
@@ -1162,11 +1315,11 @@ type UpdateMeetingEventArgs = {
 
   platform?: string;
   meeting_link?: string;
-}
+};
 
 const updateMeetingEvent = async (
   args: UpdateMeetingEventArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const {
     meeting_event_id,
@@ -1194,7 +1347,7 @@ const updateMeetingEvent = async (
     },
   });
 
-  invariant(previousMeetingEvent, "Meeting event not found.");
+  invariant(previousMeetingEvent, 'Meeting event not found.');
 
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
@@ -1214,7 +1367,7 @@ const updateMeetingEvent = async (
     },
   });
 
-  invariant(organizerUser, "Missing organizer user.");
+  invariant(organizerUser, 'Missing organizer user.');
 
   let meetingEventUpdateInput: Prisma.MeetingEventUpdateInput = {
     title: title || previousMeetingEvent.title,
@@ -1298,7 +1451,7 @@ const updateMeetingEvent = async (
   if (patchCalendarEvent) {
     invariant(
       previousMeetingEvent.platform_event_id,
-      "Platform event id not found."
+      'Platform event id not found.',
     );
     switch (previousMeetingEvent.platform) {
       case MeetingPlatform.GOOGLE_MEET: {
@@ -1310,21 +1463,21 @@ const updateMeetingEvent = async (
             },
           },
         });
-        invariant(oauthGoogle, new PublicError("Missing token."));
+        invariant(oauthGoogle, new PublicError('Missing token.'));
 
         const patchEventData: GEvent = {
           ...(title ? { summary: title } : {}),
           ...(description ? { description } : {}),
         };
         if (start_time) {
-          invariant(timezone, "Missing timezone");
+          invariant(timezone, 'Missing timezone');
           patchEventData.start = {
             dateTime: start_time,
             timeZone: timezone,
           };
         }
         if (end_time) {
-          invariant(timezone, "Missing timezone");
+          invariant(timezone, 'Missing timezone');
           patchEventData.end = {
             dateTime: end_time,
             timeZone: timezone,
@@ -1340,7 +1493,7 @@ const updateMeetingEvent = async (
             organizer_user_id,
             send_updates: true,
           },
-          ctx
+          ctx,
         );
         break;
       }
@@ -1354,7 +1507,7 @@ const updateMeetingEvent = async (
           },
         });
 
-        invariant(oauthMicrosoft, new PublicError("Missing token."));
+        invariant(oauthMicrosoft, new PublicError('Missing token.'));
 
         const patchEventData: MicrosoftGraph.Event = {
           ...(title ? { subject: title } : {}),
@@ -1362,14 +1515,14 @@ const updateMeetingEvent = async (
           id: previousMeetingEvent.platform_event_id!,
         };
         if (start_time) {
-          invariant(timezone, "Missing timezone");
+          invariant(timezone, 'Missing timezone');
           patchEventData.start = {
             dateTime: start_time,
             timeZone: timezone,
           };
         }
         if (end_time) {
-          invariant(timezone, "Missing timezone");
+          invariant(timezone, 'Missing timezone');
           patchEventData.end = {
             dateTime: end_time,
             timeZone: timezone,
@@ -1383,7 +1536,7 @@ const updateMeetingEvent = async (
             event_data: patchEventData,
             organizer_user_id,
           },
-          ctx
+          ctx,
         );
         break;
       }
@@ -1410,14 +1563,15 @@ const updateMeetingEvent = async (
         platform: meetingEventUpdateInput.platform! as string,
         timezone: meetingEventUpdateInput.timezone! as string,
         title: meetingEventUpdateInput.title! as string,
-        description: (meetingEventUpdateInput.description as string) || undefined,
+        description:
+          (meetingEventUpdateInput.description as string) || undefined,
         organizer_user_id: organizer_user_id,
         all_participants_emails: [
           ...existingCromaticParticipantsEmails,
           ...existingExternalParticipantsEmails,
         ],
       },
-      ctx
+      ctx,
     );
 
     meetingEventUpdateInput = {
@@ -1487,10 +1641,10 @@ const updateMeetingEvent = async (
         project_title:
           updatedMeetingEvent.project_connection.project_request.title,
         company_name: organizerCompanyName!,
-        user_name: guest.name ? guest.name : "guest",
+        user_name: guest.name ? guest.name : 'guest',
         button_url: `${app_env.APP_URL}/meeting/${updatedMeetingEvent.id}?authToken=${guest.id}`,
         receive_email: guest.email,
-      })
+      }),
     );
     // Send email to all participants.
     [
@@ -1510,7 +1664,7 @@ const updateMeetingEvent = async (
       organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
-    })
+    }),
   );
   const attendingParticipantNotifcationJob = attendingParticipants.map((u) =>
     createUpdateMeetingNotificationJob({
@@ -1519,7 +1673,7 @@ const updateMeetingEvent = async (
       organizer_full_name: organizerCompanyName!,
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
-    })
+    }),
   );
   createNotificationQueueJob({
     data: [
@@ -1538,7 +1692,7 @@ const updateMeetingEvent = async (
           platform: previousMeetingEvent.platform,
           platform_event_id: previousMeetingEvent.platform_event_id!,
         },
-        ctx
+        ctx,
       );
     } catch (error) {
       // no-op
@@ -1553,11 +1707,11 @@ type UpdateMeetingPlatformArgs = {
   organizer_user_id: string;
   platform: string;
   meeting_link?: string;
-}
+};
 
 const updateMeetingPlatform = async (
   args: UpdateMeetingPlatformArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const {
     meeting_event_id,
@@ -1584,7 +1738,7 @@ const updateMeetingPlatform = async (
     },
   });
 
-  invariant(organizerUser, "Missing current user.");
+  invariant(organizerUser, 'Missing current user.');
 
   const previousMeetingEvent = await ctx.prisma.meetingEvent.findFirst({
     where: {
@@ -1604,7 +1758,7 @@ const updateMeetingPlatform = async (
     },
   });
 
-  invariant(previousMeetingEvent, "Meeting event not found.");
+  invariant(previousMeetingEvent, 'Meeting event not found.');
 
   if (
     (previousMeetingEvent.platform === MeetingPlatform.CUSTOM &&
@@ -1614,7 +1768,6 @@ const updateMeetingPlatform = async (
   ) {
     return previousMeetingEvent;
   }
-
 
   const existingCromaticParticipantsEmails =
     previousMeetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
@@ -1669,7 +1822,7 @@ const updateMeetingPlatform = async (
     });
 
   if (newPlatform === MeetingPlatform.CUSTOM) {
-    invariant(newMeetingLink, "Missing new meeting link");
+    invariant(newMeetingLink, 'Missing new meeting link');
 
     updatedMeetingEvent = await ctx.prisma.meetingEvent.update({
       where: {
@@ -1711,26 +1864,25 @@ const updateMeetingPlatform = async (
       button_url: `${app_env.APP_URL}/app/meeting-events`,
       receive_email: u.email,
     }));
-    const externalParticipantEmailData = previousMeetingEvent.meeting_guests.map((guest) => ({
-      meeting_title: updatedMeetingEvent.title,
-      project_title:
-        updatedMeetingEvent.project_connection.project_request.title,
-      company_name: organizerCompanyName!,
-      user_name: guest.name ? guest.name : 'guest',
-      button_url: `${app_env.APP_URL}/meeting/${updatedMeetingEvent.id}?authToken=${guest.id}`,
-      receive_email: guest.email,
-    }));
+    const externalParticipantEmailData =
+      previousMeetingEvent.meeting_guests.map((guest) => ({
+        meeting_title: updatedMeetingEvent.title,
+        project_title:
+          updatedMeetingEvent.project_connection.project_request.title,
+        company_name: organizerCompanyName!,
+        user_name: guest.name ? guest.name : 'guest',
+        button_url: `${app_env.APP_URL}/meeting/${updatedMeetingEvent.id}?authToken=${guest.id}`,
+        receive_email: guest.email,
+      }));
 
     // Send email to all participants.
     [
       ...organizerParticipantEmailData,
       ...attendingParticipantEmailData,
       ...externalParticipantEmailData,
-    ].map(
-      ({ receive_email, ...emailData }) => {
-        updatedMeetingNotificationEmail(emailData, receive_email);
-      }
-    );
+    ].map(({ receive_email, ...emailData }) => {
+      updatedMeetingNotificationEmail(emailData, receive_email);
+    });
   } else {
     const newMeetingEventOnCalendarApp = await createMeetingEventOnCalendarApp(
       {
@@ -1746,7 +1898,7 @@ const updateMeetingPlatform = async (
           ...existingExternalParticipantsEmails,
         ],
       },
-      ctx
+      ctx,
     );
 
     updatedMeetingEvent = await ctx.prisma.meetingEvent.update({
@@ -1779,7 +1931,7 @@ const updateMeetingPlatform = async (
       organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
-    })
+    }),
   );
   const attendingParticipantNotifcationJob = attendingParticipants.map((u) =>
     createUpdateMeetingNotificationJob({
@@ -1788,7 +1940,7 @@ const updateMeetingPlatform = async (
       organizer_full_name: organizerCompanyName!,
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
-    })
+    }),
   );
   createNotificationQueueJob({
     data: [
@@ -1805,7 +1957,7 @@ const updateMeetingPlatform = async (
         platform: previousMeetingEvent.platform,
         platform_event_id: previousMeetingEvent.platform_event_id!,
       },
-      ctx
+      ctx,
     );
   } catch (error) {
     // no-op
@@ -1818,9 +1970,12 @@ type RemoveCromaticParticipantArgs = {
   meeting_event_id: string;
   user_id: string;
   organizer_user_id: string;
-}
+};
 
-const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ctx: ServiceContext) => {
+const removeCromaticParticipant = async (
+  args: RemoveCromaticParticipantArgs,
+  ctx: ServiceContext,
+) => {
   const { meeting_event_id, user_id, organizer_user_id } = args;
 
   const meetingEvent = await ctx.prisma.meetingEvent.findFirst({
@@ -1832,7 +1987,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
     },
   });
 
-  invariant(meetingEvent, "Meeting event not found.");
+  invariant(meetingEvent, 'Meeting event not found.');
 
   await ctx.prisma.meetingAttendeeConnection.deleteMany({
     where: {
@@ -1854,7 +2009,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
     });
 
   const existingAttendees = existingAttendeeConnections.map(
-    (conn) => conn.user
+    (conn) => conn.user,
   );
 
   const existingExternalGuests = meetingEvent.meeting_guests;
@@ -1869,7 +2024,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
           },
         },
       });
-      invariant(oauthGoogle, new PublicError("Missing token."));
+      invariant(oauthGoogle, new PublicError('Missing token.'));
       const attendeesArr = [
         ...existingAttendees.map((a) => ({ email: a.email })),
         ...existingExternalGuests.map((a) => ({ email: a.email })),
@@ -1884,7 +2039,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
           platform_event_id: meetingEvent.platform_event_id!,
           send_updates: true,
         },
-        ctx
+        ctx,
       );
       break;
     }
@@ -1898,7 +2053,7 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
         },
       });
 
-      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      invariant(oauthMicrosoft, new PublicError('Missing token.'));
       const client = microsoftGraphClient(oauthMicrosoft.access_token);
       const attendeesArr = [
         ...existingAttendees.map((a) => ({
@@ -1918,25 +2073,36 @@ const removeCromaticParticipant = async (args: RemoveCromaticParticipantArgs, ct
           },
           organizer_user_id,
         },
-        ctx
+        ctx,
       );
       break;
     }
     default:
   }
-}
+};
 
 type AddParticipantsArgs = {
-  cromatic_participants: { email: string; id: string; }[];
-  external_participants: { email: string; name?: string | null; }[]
+  cromatic_participants: { email: string; id: string }[];
+  external_participants: { email: string; name?: string | null }[];
   meeting_event_id: string;
   organizer_user_id: string;
-}
+};
 
-const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) => {
-  const { cromatic_participants, external_participants, meeting_event_id, organizer_user_id } = args;
+const addParticipants = async (
+  args: AddParticipantsArgs,
+  ctx: ServiceContext,
+) => {
+  const {
+    cromatic_participants,
+    external_participants,
+    meeting_event_id,
+    organizer_user_id,
+  } = args;
 
-  const externalParticipants = external_participants.map((ep) => ({ ...ep, email: ep.email.toLowerCase() }));
+  const externalParticipants = external_participants.map((ep) => ({
+    ...ep,
+    email: ep.email.toLowerCase(),
+  }));
 
   const organizerUser = await ctx.prisma.user.findFirst({
     where: {
@@ -1946,7 +2112,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
       customer: {
         include: {
           biotech: true,
-        }
+        },
       },
       vendor_member: {
         include: {
@@ -1976,51 +2142,50 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
     },
   });
 
-  invariant(meetingEvent, "Meeting event not found");
+  invariant(meetingEvent, 'Meeting event not found');
 
-  invariant(meetingEvent.organizer_id === organizer_user_id, "User is not organizer");
-
-  const addExternalParticipantTasks = externalParticipants.map(
-    async (p) => {
-      const { email, name } = p;
-      return await addExternalGuestToMeeting(
-        {
-          email,
-          name,
-          meeting_event_id,
-        },
-        ctx,
-      );
-    }
+  invariant(
+    meetingEvent.organizer_id === organizer_user_id,
+    'User is not organizer',
   );
+
+  const addExternalParticipantTasks = externalParticipants.map(async (p) => {
+    const { email, name } = p;
+    return await addExternalGuestToMeeting(
+      {
+        email,
+        name,
+        meeting_event_id,
+      },
+      ctx,
+    );
+  });
 
   await Promise.all(addExternalParticipantTasks);
 
-  const addCromaticParticipantTasks = cromatic_participants.map(
-    async (p) => {
-      const userId = p.id!;
+  const addCromaticParticipantTasks = cromatic_participants.map(async (p) => {
+    const userId = p.id!;
 
-      const user = await ctx.prisma.user.findFirst({
-        where: {
-          id: userId,
-        },
-      });
-      await ctx.prisma.meetingAttendeeConnection.create({
-        data: {
-          user_id: userId,
-          meeting_event_id,
-        },
-      });
+    const user = await ctx.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+    await ctx.prisma.meetingAttendeeConnection.create({
+      data: {
+        user_id: userId,
+        meeting_event_id,
+      },
+    });
 
-      return user;
-    }
-  );
+    return user;
+  });
 
   const cromaticUsers = await Promise.all(addCromaticParticipantTasks);
 
   // Update attendees on calendar / video call app
   const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
-    (mac) => mac.user
+    (mac) => mac.user,
   );
   const existingExternalGuests = meetingEvent.meeting_guests;
 
@@ -2034,7 +2199,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
           },
         },
       });
-      invariant(oauthGoogle, new PublicError("Missing token."));
+      invariant(oauthGoogle, new PublicError('Missing token.'));
 
       const attendeesArr = [
         ...existingAttendees.map((a) => ({ email: a.email })),
@@ -2065,7 +2230,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
         },
       });
 
-      invariant(oauthMicrosoft, new PublicError("Missing token."));
+      invariant(oauthMicrosoft, new PublicError('Missing token.'));
       const attendeesArr = [
         ...existingAttendees.map((a) => ({
           emailAddress: { address: a.email },
@@ -2087,7 +2252,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
             id: meetingEvent.platform_event_id!,
           },
         },
-        ctx
+        ctx,
       );
       break;
     }
@@ -2153,7 +2318,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
           organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
           project_title: meetingEvent.project_connection.project_request.title,
           recipient_id: u.id,
-        })
+        }),
       ),
     };
     createNotificationQueueJob(notificationJob);
@@ -2161,7 +2326,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
     [...organizerParticipantEmailData, ...attendingParticipantEmailData].map(
       ({ receive_email, ...data }) => {
         newMeetingNotificationEmail(data, receive_email);
-      }
+      },
     );
   }
 
@@ -2177,7 +2342,7 @@ const addParticipants = async (args: AddParticipantsArgs, ctx: ServiceContext) =
       status: MeetingGuestStatus.PENDING,
     })),
   ];
-}
+};
 
 const meetingEventService = {
   createMeetingEvent,

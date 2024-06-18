@@ -1,8 +1,8 @@
-import { PublicError } from "../../graphql/errors/PublicError";
-import { getSignedUrl } from "../../helper/awsS3";
-import { VendorSurveyStatus } from "../../helper/constant";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { PublicError } from '../../graphql/errors/PublicError';
+import { getSignedUrl } from '../../helper/awsS3';
+import { VendorSurveyStatus } from '../../helper/constant';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
 
 const resolver: Resolvers<Context> = {
   Query: {
@@ -26,7 +26,7 @@ const resolver: Resolvers<Context> = {
 
       return true;
     },
-  }
+  },
 };
 
 export default resolver;

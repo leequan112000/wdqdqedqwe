@@ -1,7 +1,7 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
-import { PublicError } from "../errors/PublicError";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
+import { PublicError } from '../errors/PublicError';
 
 const resolvers: Resolvers<Context> = {
   ProjectRequestCollaborator: {
@@ -22,34 +22,44 @@ const resolvers: Resolvers<Context> = {
       invariant(parent.customer_id, 'Missing customer id.');
       return await context.prisma.customer.findFirst({
         where: {
-          id: parent.customer_id
-        }
-      })
+          id: parent.customer_id,
+        },
+      });
     },
   },
   Mutation: {
     updateProjectRequestCollaborators: async (_, args, context) => {
       const { project_request_id, customer_ids } = args;
       return await context.prisma.$transaction(async (trx) => {
-        const existingCollaborators = await trx.projectRequestCollaborator.findMany({
-          where: {
-            project_request_id,
-          }
-        });
+        const existingCollaborators =
+          await trx.projectRequestCollaborator.findMany({
+            where: {
+              project_request_id,
+            },
+          });
 
         // Find removed collaborators
-        const removedCollaborators = existingCollaborators.filter((collaborator) => !customer_ids.includes(collaborator.customer_id));
+        const removedCollaborators = existingCollaborators.filter(
+          (collaborator) => !customer_ids.includes(collaborator.customer_id),
+        );
 
         // Find newly added collaborators
-        const newCollaboratorCustomerIds = customer_ids.filter((customer_id) => !(existingCollaborators.map(c => c.customer_id).includes(customer_id!)));
+        const newCollaboratorCustomerIds = customer_ids.filter(
+          (customer_id) =>
+            !existingCollaborators
+              .map((c) => c.customer_id)
+              .includes(customer_id!),
+        );
 
         if (removedCollaborators.length > 0) {
           await trx.projectRequestCollaborator.deleteMany({
             where: {
               project_request_id,
               customer_id: {
-                in: removedCollaborators.map((collaborator) => (collaborator.customer_id))
-              }
+                in: removedCollaborators.map(
+                  (collaborator) => collaborator.customer_id,
+                ),
+              },
             },
           });
         }
@@ -60,15 +70,15 @@ const resolvers: Resolvers<Context> = {
               return {
                 customer_id: customer_id as string,
                 project_request_id,
-              }
-            })
+              };
+            }),
           });
         }
 
         const projectConnections = await trx.projectConnection.findMany({
           where: {
             project_request_id,
-          }
+          },
         });
 
         if (projectConnections && projectConnections.length > 0) {
@@ -79,56 +89,64 @@ const resolvers: Resolvers<Context> = {
                 where: {
                   project_connection_id: pc.id,
                   customer_id: {
-                    in: removedCollaborators.map((collaborator) => (collaborator.customer_id))
-                  }
+                    in: removedCollaborators.map(
+                      (collaborator) => collaborator.customer_id,
+                    ),
+                  },
                 },
               });
 
-              await Promise.all(newCollaboratorCustomerIds.map(async (cust_id) => {
-                await trx.customerConnection.upsert({
-                  create: {
-                    customer_id: cust_id!,
-                    project_connection_id: pc.id,
-                  },
-                  update: {
-                    customer_id: cust_id!,
-                    project_connection_id: pc.id,
-                  },
-                  where: {
-                    project_connection_id_customer_id: {
+              await Promise.all(
+                newCollaboratorCustomerIds.map(async (cust_id) => {
+                  await trx.customerConnection.upsert({
+                    create: {
                       customer_id: cust_id!,
                       project_connection_id: pc.id,
                     },
-                  },
-                })
-              }));
-            })
+                    update: {
+                      customer_id: cust_id!,
+                      project_connection_id: pc.id,
+                    },
+                    where: {
+                      project_connection_id_customer_id: {
+                        customer_id: cust_id!,
+                        project_connection_id: pc.id,
+                      },
+                    },
+                  });
+                }),
+              );
+            }),
           );
         }
 
         return await trx.projectRequestCollaborator.findMany({
           where: {
             project_request_id,
-          }
+          },
         });
       });
     },
     removeProjectRequestCollaborator: async (_, args, context) => {
       const { project_request_id, customer_id } = args;
-      const existingProjectRequestCollaborator = await context.prisma.projectRequestCollaborator.findFirst({
-        where: {
-          project_request_id,
-          customer_id,
-        }
-      });
+      const existingProjectRequestCollaborator =
+        await context.prisma.projectRequestCollaborator.findFirst({
+          where: {
+            project_request_id,
+            customer_id,
+          },
+        });
 
-      invariant(existingProjectRequestCollaborator, new PublicError('Collaborator not found.'));
+      invariant(
+        existingProjectRequestCollaborator,
+        new PublicError('Collaborator not found.'),
+      );
 
       return await context.prisma.$transaction(async (trx) => {
         const projectConnections = await trx.projectConnection.findMany({
           where: {
             project_request_id,
-          }
+          },
         });
 
         if (projectConnections && projectConnections.length > 0) {
@@ -141,18 +159,18 @@ const resolvers: Resolvers<Context> = {
                   customer_id,
                 },
               });
-            })
+            }),
           );
         }
 
         return await trx.projectRequestCollaborator.delete({
           where: {
-            id: existingProjectRequestCollaborator.id
-          }
+            id: existingProjectRequestCollaborator.id,
+          },
         });
       });
     },
-  }
+  },
 };
 
 export default resolvers;

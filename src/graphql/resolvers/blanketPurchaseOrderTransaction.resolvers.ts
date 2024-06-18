@@ -1,23 +1,31 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { toDollar } from "../../helper/money";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { toDollar } from '../../helper/money';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   BlanketPurchaseOrderTransaction: {
     blanket_purchase_order: async (parent, _, context) => {
-      invariant(parent.blanket_purchase_order_id, 'Blanket Puchase Order ID not found.');
-      const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
-        where: {
-          id: parent.blanket_purchase_order_id,
-        },
-      });
+      invariant(
+        parent.blanket_purchase_order_id,
+        'Blanket Puchase Order ID not found.',
+      );
+      const blanketPurchaseOrder =
+        await context.prisma.blanketPurchaseOrder.findFirst({
+          where: {
+            id: parent.blanket_purchase_order_id,
+          },
+        });
 
-      return blanketPurchaseOrder ? {
-        ...blanketPurchaseOrder,
-        amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
-        balance_amount: toDollar(blanketPurchaseOrder.balance_amount.toNumber()),
-      } : null;
+      return blanketPurchaseOrder
+        ? {
+            ...blanketPurchaseOrder,
+            amount: toDollar(blanketPurchaseOrder.amount.toNumber()),
+            balance_amount: toDollar(
+              blanketPurchaseOrder.balance_amount.toNumber(),
+            ),
+          }
+        : null;
     },
     biotech_invoice: async (parent, _, context) => {
       invariant(parent.biotech_invoice_id, 'Invoice ID not found.');

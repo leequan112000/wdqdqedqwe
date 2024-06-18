@@ -1,22 +1,25 @@
-import { Prisma, PrismaClient, ReviewQuestion } from "@prisma/client";
-import { PublicError } from "../../graphql/errors/PublicError";
-import invariant from "../../helper/invariant";
-import { OrdinalAction } from "../../helper/constant";
-import { sortBy } from "lodash";
+import { Prisma, PrismaClient, ReviewQuestion } from '@prisma/client';
+import { PublicError } from '../../graphql/errors/PublicError';
+import invariant from '../../helper/invariant';
+import { OrdinalAction } from '../../helper/constant';
+import { sortBy } from 'lodash';
 
-const QUOTE_REVIEW_QUESTION_SET_ID = process.env.QUOTE_REVIEW_QUESTION_SET_ID || '';
+const QUOTE_REVIEW_QUESTION_SET_ID =
+  process.env.QUOTE_REVIEW_QUESTION_SET_ID || '';
 
 interface ServiceContext {
   prisma: PrismaClient | Prisma.TransactionClient;
 }
 
-
 type GetQuoteReviewQuestionsArgs = {
   quote_id: string;
   current_user_id: string;
-}
+};
 
-const getQuoteReviewQuestions = async (args: GetQuoteReviewQuestionsArgs, context: ServiceContext) => {
+const getQuoteReviewQuestions = async (
+  args: GetQuoteReviewQuestionsArgs,
+  context: ServiceContext,
+) => {
   const { current_user_id, quote_id } = args;
   // Check if quote review exists?
   const review = await context.prisma.review.findFirst({
@@ -54,7 +57,7 @@ const getQuoteReviewQuestions = async (args: GetQuoteReviewQuestionsArgs, contex
   });
 
   return reviewQuestions;
-}
+};
 
 type DraftQuoteReviewArgs = {
   review_input: Array<{
@@ -66,9 +69,12 @@ type DraftQuoteReviewArgs = {
   current_user_id: string;
   quote_id: string;
   is_final?: boolean;
-}
+};
 
-const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceContext) => {
+const draftQuoteReview = async (
+  args: DraftQuoteReviewArgs,
+  context: ServiceContext,
+) => {
   const { current_user_id, quote_id, review_input, is_final } = args;
   // Check if review & quote record exist
 
@@ -124,7 +130,7 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
           review_id_review_question_id: {
             review_id: review!.id,
             review_question_id: ri.review_question_id,
-          }
+          },
         },
         create: {
           answer_text: ri.answer_text,
@@ -147,7 +153,7 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
           rating_value: ri.rating_value,
           review_question_id: ri.review_question_id,
           review_id: review!.id,
-        }
+        },
       });
     }
   });
@@ -155,13 +161,16 @@ const draftQuoteReview = async (args: DraftQuoteReviewArgs, context: ServiceCont
   const reviewAnswers = await Promise.all(promises);
 
   return reviewAnswers;
-}
+};
 
 type CheckIsQuestionAnsweredArgs = {
   review_question_id: string;
-}
+};
 
-const checkIsQuestionAnswered = async (args: CheckIsQuestionAnsweredArgs, context: ServiceContext) => {
+const checkIsQuestionAnswered = async (
+  args: CheckIsQuestionAnsweredArgs,
+  context: ServiceContext,
+) => {
   const { review_question_id } = args;
   const reviewQuestion = await context.prisma.reviewQuestion.findFirst({
     where: {
@@ -186,13 +195,16 @@ const checkIsQuestionAnswered = async (args: CheckIsQuestionAnsweredArgs, contex
   );
 
   return reviewQuestion;
-}
+};
 
 type CheckIsQuestionSetAnsweredArgs = {
   review_question_set_id: string;
-}
+};
 
-const checkIsQuestionSetAnswered = async (args: CheckIsQuestionSetAnsweredArgs, context: ServiceContext) => {
+const checkIsQuestionSetAnswered = async (
+  args: CheckIsQuestionSetAnsweredArgs,
+  context: ServiceContext,
+) => {
   const { review_question_set_id } = args;
   const reviewQuestionSet = await context.prisma.reviewQuestionSet.findFirst({
     where: {
@@ -205,39 +217,49 @@ const checkIsQuestionSetAnswered = async (args: CheckIsQuestionSetAnsweredArgs, 
     },
   });
 
-  invariant(reviewQuestionSet, new PublicError('Review question set not found.'));
+  invariant(
+    reviewQuestionSet,
+    new PublicError('Review question set not found.'),
+  );
   invariant(
     reviewQuestionSet.reviews.length === 0,
     new PublicError('Review question set is answered'),
   );
 
   return reviewQuestionSet;
-}
+};
 
 type ShiftQuestionsArgs = {
   review_question_set_id: string;
   ordinal: number;
   exclude_question_id?: string;
-}
+};
 
-const shiftQuestions = async (args: ShiftQuestionsArgs, context: ServiceContext) => {
+const shiftQuestions = async (
+  args: ShiftQuestionsArgs,
+  context: ServiceContext,
+) => {
   const { ordinal, review_question_set_id, exclude_question_id } = args;
 
   const existingQuestions = await context.prisma.reviewQuestion.findMany({
     where: {
       review_question_set_id,
-      ...(exclude_question_id ? {
-        id: {
-          not: exclude_question_id,
-        }
-      } : {})
+      ...(exclude_question_id
+        ? {
+            id: {
+              not: exclude_question_id,
+            },
+          }
+        : {}),
     },
     orderBy: {
       ordinal: 'desc',
     },
   });
 
-  let questionsToShift: ReviewQuestion[] = existingQuestions.filter((q) => q.ordinal >= ordinal);;
+  let questionsToShift: ReviewQuestion[] = existingQuestions.filter(
+    (q) => q.ordinal >= ordinal,
+  );
 
   const sorted = sortBy(questionsToShift, 'ordinal');
   const shiftTasks = sorted.map(async (q) => {
@@ -251,7 +273,7 @@ const shiftQuestions = async (args: ShiftQuestionsArgs, context: ServiceContext)
     });
   });
   await Promise.all(shiftTasks);
-}
+};
 
 const reviewService = {
   getQuoteReviewQuestions,
@@ -259,6 +281,6 @@ const reviewService = {
   checkIsQuestionAnswered,
   checkIsQuestionSetAnswered,
   shiftQuestions,
-}
+};
 
 export default reviewService;

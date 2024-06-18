@@ -5,21 +5,24 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import cookieParser from 'cookie-parser';
 import { GraphQLError, GraphQLFormattedError, parse, execute } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
-import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.js";
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import { createServer } from 'http';
 import compression from 'compression';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws'
+import { useServer } from 'graphql-ws/lib/use/ws';
 import corsConfig from './cors';
-import { Context } from './types/context'
+import { Context } from './types/context';
 import { authMiddleware } from './middlewares/auth';
 import { prisma, prismaCRODb } from './prisma';
 import routes from './routes';
 import schema from './graphql/index';
 import adminSchema from './graphql-admin/index';
 import { json } from 'body-parser';
-import { ApolloServerPluginSentryMonitor, operationWhitelist } from './helper/graphql'
+import {
+  ApolloServerPluginSentryMonitor,
+  operationWhitelist,
+} from './helper/graphql';
 import { pubsub } from './helper/pubsub';
 import { verify } from 'jsonwebtoken';
 import basicAuth from './middlewares/basicAuth';
@@ -34,38 +37,50 @@ export const httpServer = createServer(app);
 
 const wsServer = new WebSocketServer({
   server: httpServer,
-})
+});
 
-const serverCleanup = useServer({
-  schema,
-  context: (context) => {
-    const { ACCESS_TOKEN_SECRET } = process.env;
-    const authHeader = (context.connectionParams?.authorization as string);
-    const tokenArray = authHeader ? authHeader?.split(' ') : [];
-    const req: { user_id: string | undefined } = { user_id: undefined };
-    if (tokenArray.length === 2) {
-      const accessTokenFromHeader = tokenArray[1];
-      try {
-        const data: any = verify(accessTokenFromHeader, ACCESS_TOKEN_SECRET || "secret");
-        req.user_id = data.user_id;
-      } catch (error) {
-        console.error(error);
+const serverCleanup = useServer(
+  {
+    schema,
+    context: (context) => {
+      const { ACCESS_TOKEN_SECRET } = process.env;
+      const authHeader = context.connectionParams?.authorization as string;
+      const tokenArray = authHeader ? authHeader?.split(' ') : [];
+      const req: { user_id: string | undefined } = { user_id: undefined };
+      if (tokenArray.length === 2) {
+        const accessTokenFromHeader = tokenArray[1];
+        try {
+          const data: any = verify(
+            accessTokenFromHeader,
+            ACCESS_TOKEN_SECRET || 'secret',
+          );
+          req.user_id = data.user_id;
+        } catch (error) {
+          console.error(error);
+        }
       }
-    }
-    return {
-      req,
-      prisma,
-      prismaCRODb,
-      pubsub,
-    }
+      return {
+        req,
+        prisma,
+        prismaCRODb,
+        pubsub,
+      };
+    },
   },
-}, wsServer);
+  wsServer,
+);
 
-function formatApolloServerError(formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError {
-  const message = formattedError.extensions?.code
-    && ['PUBLIC_ERROR_CODE', 'PERMISSION_DENIED'].includes(formattedError.extensions.code as string)
-    ? formattedError.message
-    : 'Something went wrong';
+function formatApolloServerError(
+  formattedError: GraphQLFormattedError,
+  error: unknown,
+): GraphQLFormattedError {
+  const message =
+    formattedError.extensions?.code &&
+    ['PUBLIC_ERROR_CODE', 'PERMISSION_DENIED'].includes(
+      formattedError.extensions.code as string,
+    )
+      ? formattedError.message
+      : 'Something went wrong';
 
   return {
     ...formattedError,
@@ -86,7 +101,7 @@ export const apolloServer = new ApolloServer<Context>({
           async drainServer() {
             await serverCleanup.dispose();
           },
-        }
+        };
       },
     },
     ApolloServerPluginSentryMonitor(),
@@ -98,9 +113,7 @@ export const adminApolloServer = new ApolloServer<Context>({
   validationRules: [depthLimit(7)],
   introspection: process.env.APP_ENV === 'development',
   formatError: formatApolloServerError,
-  plugins: [
-    ApolloServerPluginSentryMonitor(),
-  ],
+  plugins: [ApolloServerPluginSentryMonitor()],
 });
 
 export async function startServer() {
@@ -112,7 +125,12 @@ export async function startServer() {
   app.use(cookieParser());
   app.use(compression());
   app.use((req, res, next) => {
-    if (req.originalUrl === '/webhook/stripe' || req.originalUrl.startsWith('/webhook/pandadoc' || req.originalUrl.startsWith('/webhook/zoho'))) {
+    if (
+      req.originalUrl === '/webhook/stripe' ||
+      req.originalUrl.startsWith(
+        '/webhook/pandadoc' || req.originalUrl.startsWith('/webhook/zoho'),
+      )
+    ) {
       // Do nothing with the body because Stripe / Pandadoc need it to be raw
       next();
     } else {
@@ -141,11 +159,12 @@ export async function startServer() {
       context: async ({ req, res }) => {
         if (
           // bypass authentication for codegen
-          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' &&
+            req.headers.authorization === 'codegen') ||
           // if user_id exist
-          || req.is_admin_authorized
+          req.is_admin_authorized
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
+          return { prisma, prismaCRODb, req, res, pubsub, redis };
         }
 
         throw new GraphQLError('Admin is not authenticated', {
@@ -174,14 +193,14 @@ export async function startServer() {
           const currentUser = await prisma.user.findFirst({
             where: {
               id: req.user_id,
-            }
+            },
           });
 
           if (
             currentUser?.deactivated_at &&
             currentUser.deactivated_at <= new Date()
           ) {
-            throw new GraphQLError("Session expired.", {
+            throw new GraphQLError('Session expired.', {
               extensions: {
                 code: GqlErrorCode.SESSION_EXPIRED,
                 http: { status: 401 },
@@ -192,13 +211,14 @@ export async function startServer() {
 
         if (
           // bypass authentication for codegen
-          (process.env.APP_ENV === 'development' && req.headers.authorization === 'codegen')
+          (process.env.APP_ENV === 'development' &&
+            req.headers.authorization === 'codegen') ||
           // if user_id exist
-          || req.user_id
+          req.user_id ||
           // bypass authentication for whitelisted operation, eg. signIn and signUp
-          || isWhitelisted
+          isWhitelisted
         ) {
-          return ({ prisma, prismaCRODb, req, res, pubsub, redis });
+          return { prisma, prismaCRODb, req, res, pubsub, redis };
         }
 
         throw new GraphQLError('User is not authenticated', {

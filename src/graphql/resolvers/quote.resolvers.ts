@@ -1,10 +1,15 @@
-import moment from 'moment'
-import { toCent, toDollar } from "../../helper/money";
-import { Resolvers } from "../generated";
-import { Context } from "../../types/context";
-import { nanoid } from "nanoid";
-import { MilestonePaymentStatus, MilestoneStatus, QuoteNotificationActionContent, QuoteStatus } from "../../helper/constant";
-import { createSendUserQuoteNoticeJob } from "../../queues/email.queues";
+import moment from 'moment';
+import { toCent, toDollar } from '../../helper/money';
+import { Resolvers } from '../generated';
+import { Context } from '../../types/context';
+import { nanoid } from 'nanoid';
+import {
+  MilestonePaymentStatus,
+  MilestoneStatus,
+  QuoteNotificationActionContent,
+  QuoteStatus,
+} from '../../helper/constant';
+import { createSendUserQuoteNoticeJob } from '../../queues/email.queues';
 import { PublicError } from '../errors/PublicError';
 import invariant from '../../helper/invariant';
 import { QuoteNotFoundError } from '../errors/QuoteNotFoundError';
@@ -37,14 +42,16 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      return milestones
-        .map((m) => ({
-          ...m,
-          amount: toDollar(m.amount.toNumber()),
-        }));
+      return milestones.map((m) => ({
+        ...m,
+        amount: toDollar(m.amount.toNumber()),
+      }));
     },
     project_connection: async (parent, _, context) => {
-      invariant(parent.project_connection_id, 'Project connection id not found.');
+      invariant(
+        parent.project_connection_id,
+        'Project connection id not found.',
+      );
       return await context.prisma.projectConnection.findFirst({
         where: {
           id: parent.project_connection_id,
@@ -61,9 +68,9 @@ const resolvers: Resolvers<Context> = {
 
       const totalAmount = milestones.reduce((acc, cur) => {
         return acc + cur.amount.toNumber();
-      }, 0)
+      }, 0);
 
-      return toDollar(totalAmount)
+      return toDollar(totalAmount);
     },
     total_in_escrow: async (parent, _, context) => {
       invariant(parent.id, 'Quote id not found.');
@@ -75,14 +82,21 @@ const resolvers: Resolvers<Context> = {
 
       // Customer's payments are processing or paid, but not yet pay to vendor.
       const amountInEscrow = milestones.reduce((acc, cur) => {
-        if ([MilestonePaymentStatus.PAID].includes(cur.payment_status as MilestonePaymentStatus)
-          && [MilestonePaymentStatus.UNPAID, MilestonePaymentStatus.PROCESSING].includes(cur.vendor_payment_status as MilestonePaymentStatus)) {
+        if (
+          [MilestonePaymentStatus.PAID].includes(
+            cur.payment_status as MilestonePaymentStatus,
+          ) &&
+          [
+            MilestonePaymentStatus.UNPAID,
+            MilestonePaymentStatus.PROCESSING,
+          ].includes(cur.vendor_payment_status as MilestonePaymentStatus)
+        ) {
           return acc + cur.amount.toNumber();
         }
         return acc;
-      }, 0)
+      }, 0);
 
-      return toDollar(amountInEscrow)
+      return toDollar(amountInEscrow);
     },
     total_payment: async (parent, _, context) => {
       invariant(parent.id, 'Quote id not found.');
@@ -97,9 +111,9 @@ const resolvers: Resolvers<Context> = {
           return acc + cur.amount.toNumber();
         }
         return acc;
-      }, 0)
+      }, 0);
 
-      return toDollar(amountPaid)
+      return toDollar(amountPaid);
     },
     total_milestones_paid: async (parent, _, context) => {
       invariant(parent.id, 'Quote id not found.');
@@ -114,9 +128,9 @@ const resolvers: Resolvers<Context> = {
           return acc + cur.amount.toNumber();
         }
         return acc;
-      }, 0)
+      }, 0);
 
-      return toDollar(amountPaid)
+      return toDollar(amountPaid);
     },
     status: async (parentQuote, _, context) => {
       const now = new Date();
@@ -129,7 +143,7 @@ const resolvers: Resolvers<Context> = {
         }
       }
 
-      invariant(parentQuote.id, "Quote id not found.");
+      invariant(parentQuote.id, 'Quote id not found.');
       const milestones =
         (await context.prisma.quote
           .findUnique({
@@ -140,7 +154,7 @@ const resolvers: Resolvers<Context> = {
           .milestones()) || [];
 
       const completedMilestones = milestones.filter(
-        (m) => m.status === MilestoneStatus.COMPLETED
+        (m) => m.status === MilestoneStatus.COMPLETED,
       );
 
       if (completedMilestones.length === milestones.length) {
@@ -180,27 +194,34 @@ const resolvers: Resolvers<Context> = {
         where: {
           ...(project_connection_id ? { project_connection_id } : {}),
           ...(id ? { id } : {}),
-        }
+        },
       });
 
-      invariant(quote, new QuoteNotFoundError())
+      invariant(quote, new QuoteNotFoundError());
 
       return {
         ...quote,
-        amount: toDollar(quote.amount.toNumber())
+        amount: toDollar(quote.amount.toNumber()),
       };
     },
   },
   Mutation: {
     createQuote: async (_, args, context) => {
-      const { amount, project_connection_id, milestones, send_to_biotech = false } = args
+      const {
+        amount,
+        project_connection_id,
+        milestones,
+        send_to_biotech = false,
+      } = args;
 
       const newQuote = await context.prisma.$transaction(async (trx) => {
         const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
         const newQuote = await trx.quote.create({
           data: {
             amount: toCent(amount),
-            status: send_to_biotech ? QuoteStatus.PENDING_DECISION : QuoteStatus.DRAFT,
+            status: send_to_biotech
+              ? QuoteStatus.PENDING_DECISION
+              : QuoteStatus.DRAFT,
             project_connection_id,
             short_id: generateQuoteShortId(),
             expired_at: send_to_biotech ? expiryDate.toDate() : null,
@@ -221,9 +242,9 @@ const resolvers: Resolvers<Context> = {
                 vendor_payment_status: MilestonePaymentStatus.UNPAID,
                 short_id: generateMilestoneShortId(),
                 title: m.title,
-                ordinal: i
-              }
-            })
+                ordinal: i,
+              },
+            });
           });
 
           newMilestones = await Promise.all(tasks);
@@ -258,10 +279,12 @@ const resolvers: Resolvers<Context> = {
         const updatedQuote = await trx.quote.update({
           data: {
             amount: toCent(amount),
-            ...(send_to_biotech ? {
-              status: QuoteStatus.PENDING_DECISION,
-              expired_at: expiryDate.toDate()
-            } : {})
+            ...(send_to_biotech
+              ? {
+                  status: QuoteStatus.PENDING_DECISION,
+                  expired_at: expiryDate.toDate(),
+                }
+              : {}),
           },
           where: {
             id,
@@ -272,7 +295,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         const newMilestones = milestones.filter((m) => !m.id);
-        const updateMilestones = milestones.filter((m) => !!m.id)
+        const updateMilestones = milestones.filter((m) => !!m.id);
         const removedMilestones = updatedQuote.milestones
           // Find milestones which are not in the existing milestones list for removal.
           .filter((el) => {
@@ -288,13 +311,13 @@ const resolvers: Resolvers<Context> = {
               amount: toCent(um.amount),
               description: um.description,
               timeline: um.timeline,
-              ordinal: milestones.findIndex((m) => m === um) || 0
+              ordinal: milestones.findIndex((m) => m === um) || 0,
             },
             where: {
-              id: um.id!
+              id: um.id!,
             },
           });
-        })
+        });
 
         await Promise.all(updateMilestoneTasks);
 
@@ -310,7 +333,7 @@ const resolvers: Resolvers<Context> = {
               payment_status: MilestonePaymentStatus.UNPAID,
               vendor_payment_status: MilestonePaymentStatus.UNPAID,
               short_id: generateMilestoneShortId(),
-              ordinal: milestones.findIndex((m) => m === nm) || 0
+              ordinal: milestones.findIndex((m) => m === nm) || 0,
             },
           });
         });
@@ -340,7 +363,7 @@ const resolvers: Resolvers<Context> = {
           orderBy: {
             ordinal: 'asc',
           },
-        })
+        });
 
         return {
           ...quote,
@@ -364,18 +387,18 @@ const resolvers: Resolvers<Context> = {
       return updatedQuote;
     },
     acceptQuote: async (_, args, context) => {
-      const { id } = args
-      const now = new Date()
+      const { id } = args;
+      const now = new Date();
 
       const quote = await context.prisma.quote.findFirst({
         where: {
           id,
-        }
+        },
       });
       invariant(quote, 'Quote not found.');
 
       if (quote.expired_at && now >= quote.expired_at) {
-        throw new PublicError('The quote is expired.')
+        throw new PublicError('The quote is expired.');
       }
 
       const updatedQuote = await context.prisma.quote.update({
@@ -397,21 +420,21 @@ const resolvers: Resolvers<Context> = {
       return {
         ...updatedQuote,
         amount: updatedQuote.amount.toNumber(),
-      }
+      };
     },
     declineQuote: async (_, args, context) => {
-      const { id } = args
-      const now = new Date()
+      const { id } = args;
+      const now = new Date();
 
       const quote = await context.prisma.quote.findFirst({
         where: {
           id,
-        }
+        },
       });
       invariant(quote, 'Quote not found.');
 
       if (quote.expired_at && now >= quote.expired_at) {
-        throw new PublicError('The quote is expired.')
+        throw new PublicError('The quote is expired.');
       }
 
       const updatedQuote = await context.prisma.quote.update({
@@ -433,12 +456,12 @@ const resolvers: Resolvers<Context> = {
       return {
         ...updatedQuote,
         amount: updatedQuote.amount.toNumber(),
-      }
+      };
     },
     resendExpiredQuote: async (_, args, context) => {
       const { id } = args;
 
-      const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd')
+      const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
 
       const updatedQuote = await context.prisma.quote.update({
         where: {
@@ -446,7 +469,7 @@ const resolvers: Resolvers<Context> = {
         },
         data: {
           expired_at: expiryDate.toDate(),
-        }
+        },
       });
 
       // TODO: email
@@ -456,7 +479,7 @@ const resolvers: Resolvers<Context> = {
         amount: updatedQuote.amount.toNumber(),
       };
     },
-  }
-}
+  },
+};
 
 export default resolvers;

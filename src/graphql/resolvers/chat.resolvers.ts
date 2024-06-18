@@ -1,10 +1,10 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { pubsub } from "../../helper/pubsub";
-import { withFilter } from "graphql-subscriptions";
-import invariant from "../../helper/invariant";
-import chatService from "../../services/chat/chat.service";
-import { MessageType } from "../../helper/constant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { pubsub } from '../../helper/pubsub';
+import { withFilter } from 'graphql-subscriptions';
+import invariant from '../../helper/invariant';
+import chatService from '../../services/chat/chat.service';
+import { MessageType } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Chat: {
@@ -25,33 +25,8 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currectUserId, 'Current user not found.');
 
-      const messages = await context.prisma.chat
-        .findUnique({
-          where: {
-            id: parentChat.id,
-          },
-        })
-        .messages({
-          take: first,
-          skip: after ? 1 : undefined, // Skip the cursor
-          cursor: after
-            ? { id: after }
-            : undefined,
-          orderBy: {
-            created_at: 'desc'
-          },
-        }) || [];
-
-      const edges = messages.map((m) => ({
-        cursor: m.id,
-        node: m,
-      }));
-
-      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
-      let hasNextPage = false;
-
-      if (endCursor) {
-        const nextMessages = await context.prisma.chat
+      const messages =
+        (await context.prisma.chat
           .findUnique({
             where: {
               id: parentChat.id,
@@ -59,14 +34,38 @@ const resolvers: Resolvers<Context> = {
           })
           .messages({
             take: first,
-            skip: 1,
-            cursor: endCursor
-              ? { id: endCursor }
-              : undefined,
+            skip: after ? 1 : undefined, // Skip the cursor
+            cursor: after ? { id: after } : undefined,
             orderBy: {
               created_at: 'desc',
             },
-        }) || [];
+          })) || [];
+
+      const edges = messages.map((m) => ({
+        cursor: m.id,
+        node: m,
+      }));
+
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
+
+      if (endCursor) {
+        const nextMessages =
+          (await context.prisma.chat
+            .findUnique({
+              where: {
+                id: parentChat.id,
+              },
+            })
+            .messages({
+              take: first,
+              skip: 1,
+              cursor: endCursor ? { id: endCursor } : undefined,
+              orderBy: {
+                created_at: 'desc',
+              },
+            })) || [];
 
         hasNextPage = nextMessages.length > 0;
       }
@@ -85,22 +84,24 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         const customer = await trx.customer.findFirstOrThrow({
           where: {
-            id: context.req.user_id
-          }
+            id: context.req.user_id,
+          },
         });
 
-        const project_connection = await trx.projectConnection.findFirstOrThrow({
-          where: {
-            id: args.project_connection_id
-          }
-        });
+        const project_connection = await trx.projectConnection.findFirstOrThrow(
+          {
+            where: {
+              id: args.project_connection_id,
+            },
+          },
+        );
 
         return await trx.chat.create({
           data: {
             vendor_company_id: project_connection.vendor_company_id,
             project_connection_id: args.project_connection_id,
             biotech_id: customer.biotech_id,
-          }
+          },
         });
       });
     },
@@ -115,11 +116,8 @@ const resolvers: Resolvers<Context> = {
           messages: {
             take: 1,
             where: {
-              OR: [
-                { type: null },
-                { type: { not: MessageType.SYSTEM } },
-              ],
-            }
+              OR: [{ type: null }, { type: { not: MessageType.SYSTEM } }],
+            },
           },
           vendor_company: true,
           biotech: true,
@@ -130,16 +128,20 @@ const resolvers: Resolvers<Context> = {
         const biotechName = chat.biotech.name;
         const vendorCompanyName = chat.vendor_company.name;
 
-        chatService.createAdminMessage({
-          chat_id: chat.id,
-          content: 'You are now connected on Cromatic. Introduce yourselves and start collaborating!',
-        }, { prisma: context.prisma })
+        chatService.createAdminMessage(
+          {
+            chat_id: chat.id,
+            content:
+              'You are now connected on Cromatic. Introduce yourselves and start collaborating!',
+          },
+          { prisma: context.prisma },
+        );
 
         return true;
       }
 
       return false;
-    }
+    },
   },
   Subscription: {
     newMessage: {
@@ -148,13 +150,13 @@ const resolvers: Resolvers<Context> = {
         () => pubsub.asyncIterator<any>(['NEW_MESSAGE']),
         (payload, variables, context) => {
           return (
-            payload.chat_id === variables.chat_id
-            && payload.newMessage.node.user_id !== context.req.user_id
+            payload.chat_id === variables.chat_id &&
+            payload.newMessage.node.user_id !== context.req.user_id
           );
         },
       ),
     },
-  }
+  },
 };
 
 export default resolvers;

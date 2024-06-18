@@ -1,17 +1,18 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
     createProjectDeclineFeedback: async (_, args, context) => {
-      const existingProjectConnection = await context.prisma.projectConnection.findFirst({
-        where: {
-          id: args.project_connection_id,
-        },
-      });
+      const existingProjectConnection =
+        await context.prisma.projectConnection.findFirst({
+          where: {
+            id: args.project_connection_id,
+          },
+        });
 
-      invariant(existingProjectConnection, "Project connection not found");
+      invariant(existingProjectConnection, 'Project connection not found');
 
       return await context.prisma.$transaction(async (trx) => {
         const projectDeclineFeedback = await trx.projectDeclineFeedback.create({
@@ -29,8 +30,8 @@ const resolvers: Resolvers<Context> = {
         });
         return projectDeclineFeedback;
       });
-    }
-  }
+    },
+  },
 };
 
 export default resolvers;

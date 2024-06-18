@@ -1,7 +1,7 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { PublicError } from "../../graphql/errors/PublicError";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { PublicError } from '../../graphql/errors/PublicError';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   PerkCategory: {
@@ -24,7 +24,7 @@ const resolvers: Resolvers<Context> = {
         data: {
           name,
           description,
-        }
+        },
       });
     },
     updatePerkCategory: async (_, args, context) => {
@@ -36,7 +36,7 @@ const resolvers: Resolvers<Context> = {
         data: {
           name,
           description,
-        }
+        },
       });
     },
     deletePerkCategory: async (_, args, context) => {
@@ -55,17 +55,22 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(perks.length === 0, new PublicError('This category contains perks. Please remove the existing perks from this category before attempting to delete it.'));      
+      invariant(
+        perks.length === 0,
+        new PublicError(
+          'This category contains perks. Please remove the existing perks from this category before attempting to delete it.',
+        ),
+      );
 
       await context.prisma.perkCategory.delete({
         where: {
           id,
-        }
+        },
       });
 
       return true;
-    }
-  }
-}
+    },
+  },
+};
 
 export default resolvers;

@@ -1,7 +1,7 @@
-import { Resolvers } from "../generated";
-import { Context } from "../../types/context";
-import invariant from "../../helper/invariant";
-import { PublicError } from "../../graphql/errors/PublicError";
+import { Resolvers } from '../generated';
+import { Context } from '../../types/context';
+import invariant from '../../helper/invariant';
+import { PublicError } from '../../graphql/errors/PublicError';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
