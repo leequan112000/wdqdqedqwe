@@ -1,10 +1,13 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import Sentry from "../../sentry";
-import { Prisma } from "../../../prisma-cro/generated/client";
-import { CustomerSubscriptionPlanName, SubscriptionStatus } from "../../helper/constant";
-import invariant from "../../helper/invariant";
-import { PublicError } from "../errors/PublicError";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import Sentry from '../../sentry';
+import { Prisma } from '../../../prisma-cro/generated/client';
+import {
+  CustomerSubscriptionPlanName,
+  SubscriptionStatus,
+} from '../../helper/constant';
+import invariant from '../../helper/invariant';
+import { PublicError } from '../errors/PublicError';
 
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
@@ -32,27 +35,30 @@ const resolvers: Resolvers<Context> = {
           .ttl(userKey)
           .exec();
 
-        const count = parseInt((result?.[0][1] as string) || "0", 10);
+        const count = parseInt((result?.[0][1] as string) || '0', 10);
         const ttl = result?.[1][1] as number;
         const isBlocked = count >= RATE_LIMIT_MAX_COUNTS;
         if (isBlocked) {
           Sentry.withScope((scope) => {
-            scope.setLevel("warning");
-            scope.setTag("from", "rate-limit");
-            scope.setTag("fingerprint", fingerprint);
+            scope.setLevel('warning');
+            scope.setTag('from', 'rate-limit');
+            scope.setTag('fingerprint', fingerprint);
             Sentry.captureMessage(
               `Someone has tried too many times within ${RATE_LIMIT_FIXED_WINDOW} seconds.`,
-              "warning"
+              'warning',
             );
             return;
           });
-          invariant(!isBlocked, new PublicError('Too many retries. Please try again later.'))
+          invariant(
+            !isBlocked,
+            new PublicError('Too many retries. Please try again later.'),
+          );
         }
 
         if (ttl < 0) {
           await context.redis
             .multi()
-            .set(userKey, "1", "EX", RATE_LIMIT_FIXED_WINDOW)
+            .set(userKey, '1', 'EX', RATE_LIMIT_FIXED_WINDOW)
             .exec();
         } else {
           await context.redis.multi().incr(userKey).exec();
@@ -63,19 +69,27 @@ const resolvers: Resolvers<Context> = {
         const uniqueSearchCount = await context.redis.scard(uniqueSearchKey);
         if (uniqueSearchCount >= UNIQUE_SEARCH_MAX_COUNTS) {
           Sentry.withScope((scope) => {
-            scope.setLevel("warning");
-            scope.setTag("from", "unique-search-limit");
-            scope.setTag("fingerprint", fingerprint);
+            scope.setLevel('warning');
+            scope.setTag('from', 'unique-search-limit');
+            scope.setTag('fingerprint', fingerprint);
             Sentry.captureMessage(
               `Someone has reached the maximum search limit (${UNIQUE_SEARCH_MAX_COUNTS}) per day.`,
-              "warning"
+              'warning',
             );
             return;
           });
         }
-        invariant(uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS, new PublicError('You have reached the maximum search limit per day. Please try again in 24 hours.'))
+        invariant(
+          uniqueSearchCount < UNIQUE_SEARCH_MAX_COUNTS,
+          new PublicError(
+            'You have reached the maximum search limit per day. Please try again in 24 hours.',
+          ),
+        );
 
-        const hasKeywordSearched = await context.redis.sismember(uniqueSearchKey, keyword);
+        const hasKeywordSearched = await context.redis.sismember(
+          uniqueSearchKey,
+          keyword,
+        );
         if (!hasKeywordSearched) {
           // Add the search term to the set
           await context.redis.sadd(uniqueSearchKey, keyword);
@@ -83,53 +97,63 @@ const resolvers: Resolvers<Context> = {
           // Set the expiration for the key if it is the first search
           const ttl = await context.redis.ttl(uniqueSearchKey);
           if (ttl < 0) {
-            await context.redis.expire(uniqueSearchKey, UNIQUE_SEARCH_FIXED_WINDOW);
+            await context.redis.expire(
+              uniqueSearchKey,
+              UNIQUE_SEARCH_FIXED_WINDOW,
+            );
           }
         }
       }
 
       let isPaidUser = false;
       if (userId) {
-        const customer = (await context.prisma.user.findUnique({
-          where: { id: userId },
-          include: {
-            customer: {
-              include: {
-                biotech: {
-                  include: {
-                    subscriptions: {
-                      where: {
-                        status: SubscriptionStatus.ACTIVE,
-                        OR: [
-                          { ended_at: null },
-                          {
-                            ended_at: {
-                              gt: new Date(),
+        const customer = (
+          await context.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+              customer: {
+                include: {
+                  biotech: {
+                    include: {
+                      subscriptions: {
+                        where: {
+                          status: SubscriptionStatus.ACTIVE,
+                          OR: [
+                            { ended_at: null },
+                            {
+                              ended_at: {
+                                gt: new Date(),
+                              },
                             },
-                          },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  customer_subscriptions: {
+                    where: {
+                      status: SubscriptionStatus.ACTIVE,
+                      plan_name: {
+                        in: [
+                          CustomerSubscriptionPlanName.SOURCING_PLAN,
+                          CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
                         ],
                       },
                     },
                   },
                 },
-                customer_subscriptions: {
-                  where: {
-                    status: SubscriptionStatus.ACTIVE,
-                    plan_name: {
-                      in: [
-                        CustomerSubscriptionPlanName.SOURCING_PLAN,
-                        CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN
-                      ]
-                    },
-                  },
-                }
-              }
-            }
-          }
-        }))?.customer;
-        const has_active_legacy_plan = !!customer?.biotech?.subscriptions && customer?.biotech?.subscriptions.length > 0
-        const has_active_sourcerer_or_white_glove_plan = !!customer?.customer_subscriptions && customer?.customer_subscriptions.length > 0
-        isPaidUser = has_active_legacy_plan || has_active_sourcerer_or_white_glove_plan;
+              },
+            },
+          })
+        )?.customer;
+        const has_active_legacy_plan =
+          !!customer?.biotech?.subscriptions &&
+          customer?.biotech?.subscriptions.length > 0;
+        const has_active_sourcerer_or_white_glove_plan =
+          !!customer?.customer_subscriptions &&
+          customer?.customer_subscriptions.length > 0;
+        isPaidUser =
+          has_active_legacy_plan || has_active_sourcerer_or_white_glove_plan;
       }
 
       const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
@@ -160,8 +184,8 @@ const resolvers: Resolvers<Context> = {
 
       const startSlice = after
         ? totalVendor.findIndex((v) => {
-          return v.id === after
-        }) + 1
+            return v.id === after;
+          }) + 1
         : 0;
 
       const endSlice = startSlice + first;
@@ -172,7 +196,7 @@ const resolvers: Resolvers<Context> = {
         return {
           cursor: v.id,
           node: v,
-        }
+        };
       });
       const endCursor =
         edges.length > 0 ? edges[edges.length - 1].cursor : null;
@@ -189,13 +213,11 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextVendors.length > 0;
       }
 
-
       if (!isPaidUser) {
         if (startSlice >= MAX_FREE_RESULT_COUNT) {
           edges = [];
           hasNextPage = false;
-        }
-        else if (endSlice >= MAX_FREE_RESULT_COUNT) {
+        } else if (endSlice >= MAX_FREE_RESULT_COUNT) {
           hasNextPage = false;
           edges = edges.map((edge, index) => {
             if (index < 3) {
@@ -209,7 +231,7 @@ const resolvers: Resolvers<Context> = {
                   company_ipo_status: null,
                   vendor_company_subspecialties: [],
                   vendor_company_locations: [],
-                  vendor_company_certifications: []
+                  vendor_company_certifications: [],
                 },
               };
             }
@@ -227,7 +249,7 @@ const resolvers: Resolvers<Context> = {
                   company_ipo_status: null,
                   vendor_company_subspecialties: [],
                   vendor_company_locations: [],
-                  vendor_company_certifications: []
+                  vendor_company_certifications: [],
                 },
               };
             }
@@ -237,8 +259,7 @@ const resolvers: Resolvers<Context> = {
         if (startSlice >= MAX_RESULT_COUNT) {
           edges = [];
           hasNextPage = false;
-        }
-        else if (endSlice >= MAX_RESULT_COUNT) {
+        } else if (endSlice >= MAX_RESULT_COUNT) {
           hasNextPage = false;
         }
       }

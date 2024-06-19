@@ -1,33 +1,33 @@
-import { Prisma } from "@prisma/client";
-import moment from "moment-timezone";
-import { groupBy } from "lodash";
+import { Prisma } from '@prisma/client';
+import moment from 'moment-timezone';
+import { groupBy } from 'lodash';
 import {
   googleApiClient,
   googleClient,
   patchGoogleEvent,
-} from "../../helper/googleCalendar";
-import { Context } from "../../types/context";
-import { CalendarEvent, Resolvers } from "../generated";
-import { MeetingPlatform, OauthProvider } from "../../helper/constant";
+} from '../../helper/googleCalendar';
+import { Context } from '../../types/context';
+import { CalendarEvent, Resolvers } from '../generated';
+import { MeetingPlatform, OauthProvider } from '../../helper/constant';
 import {
   microsoftClient,
   microsoftGraphClient,
   patchMicrosoftEvent,
-} from "../../helper/microsoft";
-import { codeChallenge, encryptOauthState } from "../../helper/oauth";
-import invariant from "../../helper/invariant";
-import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
-import { PublicError } from "../errors/PublicError";
-import { meetingInvitationForGuestEmail } from "../../mailer/guestMeeting";
-import { app_env } from "../../environment";
+} from '../../helper/microsoft';
+import { codeChallenge, encryptOauthState } from '../../helper/oauth';
+import invariant from '../../helper/invariant';
+import meetingEventService from '../../services/meetingEvent/meetingEvent.service';
+import { PublicError } from '../errors/PublicError';
+import { meetingInvitationForGuestEmail } from '../../mailer/guestMeeting';
+import { app_env } from '../../environment';
 import {
   filterAvailableSlotsByDuration,
   findIntersectingIntervals,
   generateCalendarEventBusySlots,
   generateCommonAvailableSlots,
   generateDates,
-} from "../../helper/availableTimeSlots";
-import Sentry from "../../sentry";
+} from '../../helper/availableTimeSlots';
+import Sentry from '../../sentry';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -38,7 +38,7 @@ const resolvers: Resolvers<Context> = {
     },
     phone_pin: (parent) => {
       if (parent.phone_pin)
-        return parent.phone_pin?.replace(/\d{3}(?=\d)/g, "$& ") + "#" || null;
+        return parent.phone_pin?.replace(/\d{3}(?=\d)/g, '$& ') + '#' || null;
       return null;
     },
     phone: (parent) => {
@@ -62,7 +62,7 @@ const resolvers: Resolvers<Context> = {
       return parent.guests || [];
     },
     organizer: async (parent, args, context) => {
-      invariant(parent.id, "Meeting event id not found.");
+      invariant(parent.id, 'Meeting event id not found.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -83,11 +83,11 @@ const resolvers: Resolvers<Context> = {
       const initial = {
         in_contact_with_vendor: false,
         max_budget: 0,
-        objective_description: "",
-        status: "",
-        title: "",
-        vendor_requirement: "",
-        vendor_search_timeframe: "",
+        objective_description: '',
+        status: '',
+        title: '',
+        vendor_requirement: '',
+        vendor_search_timeframe: '',
         is_private: false,
       };
       if (!parent.project_request && parent.id) {
@@ -122,7 +122,7 @@ const resolvers: Resolvers<Context> = {
             id: parent.id,
           },
         });
-        invariant(meetingEvent, "Meeting not found.");
+        invariant(meetingEvent, 'Meeting not found.');
         organizerId = meetingEvent?.organizer_id;
       }
       const organizer = await context.prisma.user.findFirst({
@@ -138,7 +138,7 @@ const resolvers: Resolvers<Context> = {
       const organizerIsBiotech = !!organizer?.customer;
       const organizerIsVendor = !!organizer?.vendor_member;
 
-      invariant(organizer, "Organizer not found.");
+      invariant(organizer, 'Organizer not found.');
       const connections =
         await context.prisma.meetingAttendeeConnection.findMany({
           where: {
@@ -176,7 +176,7 @@ const resolvers: Resolvers<Context> = {
             id: parent.id,
           },
         });
-        invariant(meetingEvent, "Meeting not found.");
+        invariant(meetingEvent, 'Meeting not found.');
         organizerId = meetingEvent?.organizer_id;
       }
       const organizer = await context.prisma.user.findFirst({
@@ -192,7 +192,7 @@ const resolvers: Resolvers<Context> = {
       const organizerIsBiotech = !!organizer?.customer;
       const organizerIsVendor = !!organizer?.vendor_member;
 
-      invariant(organizer, "Organizer not found.");
+      invariant(organizer, 'Organizer not found.');
       const connections =
         await context.prisma.meetingAttendeeConnection.findMany({
           where: {
@@ -224,7 +224,7 @@ const resolvers: Resolvers<Context> = {
     },
     external_guests: async (parent, args, context) => {
       const { id } = parent;
-      invariant(id, "Missing id");
+      invariant(id, 'Missing id');
       const meetingGuests = await context.prisma.meetingGuest.findMany({
         where: {
           meeting_event_id: id,
@@ -240,7 +240,7 @@ const resolvers: Resolvers<Context> = {
     organizer_company: async (parent, args, context) => {
       const { organizer_id } = parent;
 
-      invariant(organizer_id, "Organizer id is missing");
+      invariant(organizer_id, 'Organizer id is missing');
 
       const organizer = await context.prisma.user.findFirst({
         where: {
@@ -260,7 +260,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(organizer, "Organizer not found");
+      invariant(organizer, 'Organizer not found');
 
       if (organizer.customer) {
         return organizer.customer.biotech.name;
@@ -273,7 +273,7 @@ const resolvers: Resolvers<Context> = {
     attending_company: async (parent, args, context) => {
       const { organizer_id, project_connection_id } = parent;
 
-      invariant(organizer_id, "Missing organizer id.");
+      invariant(organizer_id, 'Missing organizer id.');
 
       const organizer = await context.prisma.user.findFirst({
         where: {
@@ -293,7 +293,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(project_connection_id, "Missing project connection id.");
+      invariant(project_connection_id, 'Missing project connection id.');
 
       const projectConnection =
         await context.prisma.projectConnection.findFirst({
@@ -310,7 +310,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-      invariant(projectConnection, "Project connection not found.");
+      invariant(projectConnection, 'Project connection not found.');
 
       if (!!organizer?.customer) {
         return projectConnection.vendor_company.name;
@@ -325,7 +325,7 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     meetingFormAttendees: async (parent, args, context) => {
-      invariant(context.req.user_id, "Current user id not found");
+      invariant(context.req.user_id, 'Current user id not found');
 
       const currentUser = await context.prisma.user.findFirst({
         where: {
@@ -385,13 +385,13 @@ const resolvers: Resolvers<Context> = {
       const conditionalWhere: Prisma.MeetingEventWhereInput = {};
 
       switch (status) {
-        case "ongoing": {
+        case 'ongoing': {
           conditionalWhere.end_time = {
             gte: new Date(),
           };
           break;
         }
-        case "past": {
+        case 'past': {
           conditionalWhere.end_time = {
             lt: new Date(),
           };
@@ -422,7 +422,7 @@ const resolvers: Resolvers<Context> = {
           },
         },
         orderBy: {
-          start_time: "desc",
+          start_time: 'desc',
         },
       });
 
@@ -446,7 +446,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(currentUser, "Current user not found.");
+      invariant(currentUser, 'Current user not found.');
 
       const checkStartTime = moment();
 
@@ -468,7 +468,7 @@ const resolvers: Resolvers<Context> = {
           project_connection_id: project_connection_id || undefined,
         },
         orderBy: {
-          start_time: "asc",
+          start_time: 'asc',
         },
       });
 
@@ -484,7 +484,7 @@ const resolvers: Resolvers<Context> = {
         meeting_event_id,
       } = args;
       const currentUserId = context.req.user_id;
-      invariant(currentUserId, "Missing user id.");
+      invariant(currentUserId, 'Missing user id.');
 
       const allParticipantUserIds = [
         ...((attendee_user_ids as string[]) || []),
@@ -506,21 +506,21 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-      invariant(availabilities.length >= 0, "Availability not found.");
+      invariant(availabilities.length >= 0, 'Availability not found.');
 
-      const startDate = moment.tz(from, "YYYY-MM-DD", timezone);
-      const endDate = moment.tz(to, "YYYY-MM-DD", timezone);
+      const startDate = moment.tz(from, 'YYYY-MM-DD', timezone);
+      const endDate = moment.tz(to, 'YYYY-MM-DD', timezone);
 
       const availabilityGroupByUser = availabilities.reduce<{
         [user_id: string]: { start_time: Date; end_time: Date }[];
       }>((acc, cur) => {
         const draft = Object.assign(acc);
         const startTime = moment
-          .tz(cur.start_time, "h:mma", cur.timezone)
+          .tz(cur.start_time, 'h:mma', cur.timezone)
           .day(cur.day_of_week)
           .toDate();
         const endTime = moment
-          .tz(cur.end_time, "h:mma", cur.timezone)
+          .tz(cur.end_time, 'h:mma', cur.timezone)
           .day(cur.day_of_week)
           .toDate();
         if (draft[cur.user_id] === undefined) {
@@ -572,15 +572,15 @@ const resolvers: Resolvers<Context> = {
          */
         const startTime = moment(cur.start_time).tz(timezone);
         const endTime = moment(cur.end_time).tz(timezone);
-        if (!startTime.isSame(endTime, "date")) {
+        if (!startTime.isSame(endTime, 'date')) {
           return [
             ...acc,
             {
               start_time: startTime.toDate(),
-              end_time: startTime.clone().endOf("day").toDate(),
+              end_time: startTime.clone().endOf('day').toDate(),
             },
             {
-              start_time: endTime.clone().startOf("day").toDate(),
+              start_time: endTime.clone().startOf('day').toDate(),
               end_time: endTime.toDate(),
             },
           ];
@@ -593,7 +593,7 @@ const resolvers: Resolvers<Context> = {
           [day_of_week: string]: { start_time: Date; end_time: Date }[];
         }>((acc, cur) => {
           const draft = Object.assign(acc);
-          const dayOfWeek = moment(cur.start_time).tz(timezone).format("dddd");
+          const dayOfWeek = moment(cur.start_time).tz(timezone).format('dddd');
           const startTime = moment(cur.start_time).tz(timezone).toDate();
           const endTime = moment(cur.end_time).tz(timezone).toDate();
           if (draft[dayOfWeek] === undefined) {
@@ -615,7 +615,7 @@ const resolvers: Resolvers<Context> = {
       // Generate all date given start and end date
       const dateArr: string[] = generateDates(
         startDate.toDate(),
-        endDate.toDate()
+        endDate.toDate(),
       );
 
       /**
@@ -623,13 +623,13 @@ const resolvers: Resolvers<Context> = {
        * Not affected by calender event
        */
       const allCommonAvailableSlots = generateCommonAvailableSlots(
-        groupMutualAvailabilityByDayOfWeek
+        groupMutualAvailabilityByDayOfWeek,
       );
 
       // Filter slots based on the meeting duration
       const availableSlotsAfterDurationFilter = filterAvailableSlotsByDuration(
         allCommonAvailableSlots,
-        duration_in_min
+        duration_in_min,
       );
 
       const getCalendarEventTasks = allParticipantUserIds.map(async (id) => {
@@ -644,7 +644,7 @@ const resolvers: Resolvers<Context> = {
             },
             {
               prisma: context.prisma,
-            }
+            },
           );
         } catch (error) {
           Sentry.captureException(error);
@@ -660,21 +660,21 @@ const resolvers: Resolvers<Context> = {
         generateCalendarEventBusySlots(calendarEventDataArr);
 
       const dateWithAvailableTimeSlots = dateArr.map((d) => {
-        const date = moment.tz(d, "YYYY-MM-DD", timezone);
+        const date = moment.tz(d, 'YYYY-MM-DD', timezone);
 
         // Skip date if no availability on that day
         if (
-          availableSlotsAfterDurationFilter[date.format("dddd")] === undefined
+          availableSlotsAfterDurationFilter[date.format('dddd')] === undefined
         ) {
           return {
-            date: date.format("YYYY-MM-DD"),
+            date: date.format('YYYY-MM-DD'),
             time_slots: [],
           };
         }
 
         // Make sure all time slots match the date.
         const timeSlots = availableSlotsAfterDurationFilter[
-          date.format("dddd")
+          date.format('dddd')
         ].map((interval) => ({
           start_time: moment(interval.start_time)
             .year(date.year())
@@ -693,13 +693,13 @@ const resolvers: Resolvers<Context> = {
               start_time: moment
                 .tz(
                   existingMeetingEvent.start_time,
-                  existingMeetingEvent.timezone
+                  existingMeetingEvent.timezone,
                 )
                 .toDate(),
               end_time: moment
                 .tz(
                   existingMeetingEvent.end_time,
-                  existingMeetingEvent.timezone
+                  existingMeetingEvent.timezone,
                 )
                 .toDate(),
             }
@@ -711,7 +711,7 @@ const resolvers: Resolvers<Context> = {
           const isBusy = calendarEventBusySlots.some(
             (busySlot) =>
               moment(busySlot.start_time).isBefore(slot.end_time) &&
-              moment(busySlot.end_time).isAfter(slot.start_time)
+              moment(busySlot.end_time).isAfter(slot.start_time),
           );
           const isSelected =
             selectedSlot &&
@@ -721,7 +721,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         return {
-          date: date.format("YYYY-MM-DD"),
+          date: date.format('YYYY-MM-DD'),
           time_slots: finalTimeSlots.map((s) => s.start_time),
         };
       });
@@ -731,21 +731,21 @@ const resolvers: Resolvers<Context> = {
     microsoftCalendarAuthorizationUri: async (_, args, context) => {
       const { redirect_url } = args;
       const { user_id } = context.req;
-      invariant(user_id, "User ID not found.");
+      invariant(user_id, 'User ID not found.');
 
       const state = encryptOauthState({
         user_id,
-        redirect_url: redirect_url || "",
+        redirect_url: redirect_url || '',
       });
 
       const authorizationUri = microsoftClient.code.getUri({
         scopes: [
-          "Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access User.Read",
+          'Calendars.ReadWrite OnlineMeetings.ReadWrite offline_access User.Read',
         ],
         state,
         query: {
           code_challenge: codeChallenge,
-          code_challenge_method: "S256",
+          code_challenge_method: 'S256',
         },
       });
 
@@ -753,7 +753,7 @@ const resolvers: Resolvers<Context> = {
     },
     microsoftCalendarEvents: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, "User ID not found.");
+      invariant(user_id, 'User ID not found.');
 
       const oauth = await context.prisma.oauth.findFirst({
         where: {
@@ -762,38 +762,38 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(oauth, new PublicError("User not authenticated!"));
+      invariant(oauth, new PublicError('User not authenticated!'));
 
-      const oneMonthAgo = moment().subtract(1, "months").toISOString();
+      const oneMonthAgo = moment().subtract(1, 'months').toISOString();
 
       return await meetingEventService.getCalendarEventsForUser(
         {
           start_date_iso: oneMonthAgo,
           user_id,
-          calendar: "microsoft",
+          calendar: 'microsoft',
         },
         {
           prisma: context.prisma,
-        }
+        },
       );
     },
     googleCalendarAuthorizationUri: async (_, args, context) => {
       const { redirect_url } = args;
       const { user_id } = context.req;
-      invariant(user_id, "User ID not found.");
+      invariant(user_id, 'User ID not found.');
 
       const state = encryptOauthState({
         user_id,
-        redirect_url: redirect_url || "",
+        redirect_url: redirect_url || '',
       });
 
       const authorizationUri = googleClient.code.getUri({
-        scopes: ["https://www.googleapis.com/auth/calendar"],
+        scopes: ['https://www.googleapis.com/auth/calendar'],
         state,
         query: {
-          access_type: "offline",
+          access_type: 'offline',
           code_challenge: codeChallenge,
-          code_challenge_method: "S256",
+          code_challenge_method: 'S256',
         },
       });
 
@@ -801,7 +801,7 @@ const resolvers: Resolvers<Context> = {
     },
     googleCalendarEvents: async (_, __, context) => {
       const { user_id } = context.req;
-      invariant(user_id, "User ID not found.");
+      invariant(user_id, 'User ID not found.');
 
       const oauth = await context.prisma.oauth.findFirst({
         where: {
@@ -810,9 +810,9 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(oauth, new PublicError("User not authenticated!"));
+      invariant(oauth, new PublicError('User not authenticated!'));
 
-      const oneMonthAgo = moment().subtract(1, "months").toISOString();
+      const oneMonthAgo = moment().subtract(1, 'months').toISOString();
       return await meetingEventService.getCalendarEventsForUser(
         {
           user_id,
@@ -821,7 +821,7 @@ const resolvers: Resolvers<Context> = {
             single_events: false,
           },
         },
-        { prisma: context.prisma }
+        { prisma: context.prisma },
       );
     },
     moreAttendeesToAdd: async (_, args, context) => {
@@ -840,7 +840,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, "Meeting event not found");
+      invariant(meetingEvent, 'Meeting event not found');
 
       const customerConnections =
         await context.prisma.customerConnection.findMany({
@@ -891,7 +891,7 @@ const resolvers: Resolvers<Context> = {
     createMeetingEvent: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "User ID not found.");
+      invariant(currentUserId, 'User ID not found.');
 
       return await context.prisma.$transaction(async (trx) => {
         return await meetingEventService.createMeetingEvent(
@@ -899,7 +899,7 @@ const resolvers: Resolvers<Context> = {
             ...args,
             organizer_user_id: currentUserId,
           },
-          { prisma: trx }
+          { prisma: trx },
         );
       });
     },
@@ -907,7 +907,7 @@ const resolvers: Resolvers<Context> = {
       const { meeting_event_id } = args;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Missing current user id.");
+      invariant(currentUserId, 'Missing current user id.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -915,15 +915,15 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, "Meeting event not found.");
+      invariant(meetingEvent, 'Meeting event not found.');
 
       const deletedMeetingEvent = await context.prisma.$transaction(
         async (trx) => {
           return await meetingEventService.removeMeetingEvent(
             { meeting_event_id, current_user_id: currentUserId },
-            { prisma: trx }
+            { prisma: trx },
           );
-        }
+        },
       );
 
       return deletedMeetingEvent;
@@ -947,7 +947,7 @@ const resolvers: Resolvers<Context> = {
 
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Missing current user id.");
+      invariant(currentUserId, 'Missing current user id.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -963,12 +963,12 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, "Meeting event not found");
+      invariant(meetingEvent, 'Meeting event not found');
 
       // Make sure the editor is the organizer.
       invariant(
         meetingEvent.organizer_id === currentUserId,
-        "Current user is not organizer."
+        'Current user is not organizer.',
       );
 
       return await context.prisma.$transaction(async (trx) => {
@@ -981,7 +981,7 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: trx,
-          }
+          },
         );
       });
     },
@@ -1020,7 +1020,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingGuest, "Guest not found.");
+      invariant(meetingGuest, 'Guest not found.');
 
       const meeting = meetingGuest.meeting_event;
 
@@ -1032,11 +1032,11 @@ const resolvers: Resolvers<Context> = {
         {
           button_url: `${app_env.APP_URL}/meeting/${meeting.id}?authToken=${meetingGuest.id}`,
           company_name: companyName!,
-          guest_name: meetingGuest.name || "guest",
+          guest_name: meetingGuest.name || 'guest',
           meeting_title: meeting.title,
           project_title: meeting.project_connection.project_request.title,
         },
-        email
+        email,
       );
 
       return true;
@@ -1045,7 +1045,7 @@ const resolvers: Resolvers<Context> = {
       const { user_id, meeting_event_id } = args;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Current user id is missing.");
+      invariant(currentUserId, 'Current user id is missing.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -1056,11 +1056,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, "Meeting event not found.");
+      invariant(meetingEvent, 'Meeting event not found.');
 
       invariant(
         meetingEvent.organizer_id === currentUserId,
-        "Current user is not organizer."
+        'Current user is not organizer.',
       );
 
       await context.prisma.$transaction(async (trx) => {
@@ -1072,7 +1072,7 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: trx,
-          }
+          },
         );
       });
 
@@ -1082,7 +1082,7 @@ const resolvers: Resolvers<Context> = {
       const { email, meeting_event_id } = args;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Current user id is missing.");
+      invariant(currentUserId, 'Current user id is missing.');
 
       const meetingEvent = await context.prisma.meetingEvent.findFirst({
         where: {
@@ -1090,11 +1090,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, "Meeting event not found.");
+      invariant(meetingEvent, 'Meeting event not found.');
 
       invariant(
         meetingEvent.organizer_id === currentUserId,
-        "Current user is not organizer."
+        'Current user is not organizer.',
       );
 
       await context.prisma.$transaction(async (trx) => {
@@ -1116,7 +1116,7 @@ const resolvers: Resolvers<Context> = {
           });
 
         const existingAttendees = existingAttendeeConnections.map(
-          (conn) => conn.user
+          (conn) => conn.user,
         );
 
         const existingExternalGuests = await trx.meetingGuest.findMany({
@@ -1133,10 +1133,10 @@ const resolvers: Resolvers<Context> = {
                 provider: OauthProvider.GOOGLE,
               },
             });
-            invariant(oauthGoogle, new PublicError("Missing token."));
+            invariant(oauthGoogle, new PublicError('Missing token.'));
             const client = googleApiClient(
               oauthGoogle.access_token,
-              oauthGoogle.refresh_token
+              oauthGoogle.refresh_token,
             );
             const attendeesArr = [
               ...existingAttendees.map((a) => ({ email: a.email })),
@@ -1147,7 +1147,7 @@ const resolvers: Resolvers<Context> = {
               client,
               meetingEvent.platform_event_id!,
               { attendees: attendeesArr },
-              true
+              true,
             );
             break;
           }
@@ -1159,7 +1159,7 @@ const resolvers: Resolvers<Context> = {
               },
             });
 
-            invariant(oauthMicrosoft, new PublicError("Missing token."));
+            invariant(oauthMicrosoft, new PublicError('Missing token.'));
             const client = microsoftGraphClient(oauthMicrosoft.access_token);
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
@@ -1194,7 +1194,7 @@ const resolvers: Resolvers<Context> = {
       } = args;
       const currentUserId = context.req.user_id;
 
-      invariant(currentUserId, "Missing user id.");
+      invariant(currentUserId, 'Missing user id.');
 
       const updatedMeetingEvent = await context.prisma.$transaction(
         async (trx) => {
@@ -1210,9 +1210,9 @@ const resolvers: Resolvers<Context> = {
               start_time: start_time || undefined,
               timezone: timezone || undefined,
             },
-            { prisma: trx }
+            { prisma: trx },
           );
-        }
+        },
       );
 
       return updatedMeetingEvent;

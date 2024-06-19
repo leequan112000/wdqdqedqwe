@@ -1,6 +1,6 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   CertificationTagConnection: {
@@ -9,8 +9,8 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.certificationTag.findFirst({
         where: {
-          id: parent.certification_tag_id
-        }
+          id: parent.certification_tag_id,
+        },
       });
     },
     vendor_company: async (parent, _, context) => {
@@ -18,7 +18,7 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.vendorCompany.findFirst({
         where: {
-          id: parent.vendor_company_id
+          id: parent.vendor_company_id,
         },
       });
     },

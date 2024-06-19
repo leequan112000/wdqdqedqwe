@@ -1,7 +1,7 @@
-import { app_env } from "../../environment";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import ghostServices from "../../services/ghost/ghost.service";
+import { app_env } from '../../environment';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import ghostServices from '../../services/ghost/ghost.service';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -40,7 +40,7 @@ const resolvers: Resolvers<Context> = {
           is_published: true,
         },
         orderBy: {
-          published_at: "desc",
+          published_at: 'desc',
         },
       });
 
@@ -81,7 +81,7 @@ const resolvers: Resolvers<Context> = {
           is_published: true,
         },
         orderBy: {
-          published_at: "desc",
+          published_at: 'desc',
         },
       });
 

@@ -1,11 +1,11 @@
-import currency from "currency.js";
-import Stripe from "stripe";
-import { getStripeInstance } from "../../helper/stripe";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
-import { CustomerSubscriptionPlanName } from "../../helper/constant";
-import { env } from "../../env";
+import currency from 'currency.js';
+import Stripe from 'stripe';
+import { getStripeInstance } from '../../helper/stripe';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
+import { CustomerSubscriptionPlanName } from '../../helper/constant';
+import { env } from '../../env';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -15,35 +15,36 @@ const resolvers: Resolvers<Context> = {
       const stripe = await getStripeInstance();
 
       const sourcererMonthlyPrice = await stripe.prices.retrieve(
-        env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id
+        env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id,
       );
 
       invariant(
         sourcererMonthlyPrice.unit_amount,
-        "Missing sourcerer plan monthly pricing"
+        'Missing sourcerer plan monthly pricing',
       );
 
       const sourcererYearlyPrice = await stripe.prices.retrieve(
-        env.STRIPE_SOURCERER_YEARLY_PLAN.price_id
+        env.STRIPE_SOURCERER_YEARLY_PLAN.price_id,
       );
 
       invariant(
         sourcererYearlyPrice.unit_amount,
-        "Missing sourcerer plan yearly pricing"
+        'Missing sourcerer plan yearly pricing',
       );
 
       return [
         {
           id: CustomerSubscriptionPlanName.SOURCING_PLAN,
-          name: "Sourcerer™ Search",
-          description: 'Empowers you to independently conduct vendor searches and establish connections.',
+          name: 'Sourcerer™ Search',
+          description:
+            'Empowers you to independently conduct vendor searches and establish connections.',
           prices: [
             {
               id: env.STRIPE_SOURCERER_MONTHLY_PLAN.price_id,
               amount_per_month: currency(sourcererMonthlyPrice.unit_amount, {
                 fromCents: true,
               }).dollars(),
-              interval: "month",
+              interval: 'month',
               discount_percentage:
                 env.STRIPE_SOURCERER_MONTHLY_PLAN.discount_percentage,
             },
@@ -54,25 +55,25 @@ const resolvers: Resolvers<Context> = {
               })
                 .divide(12)
                 .dollars(),
-              interval: "year",
+              interval: 'year',
               discount_percentage:
                 env.STRIPE_SOURCERER_YEARLY_PLAN.discount_percentage,
             },
           ],
           features: [
             {
-              name: "Sourcerer™ Matchmaker",
+              name: 'Sourcerer™ Matchmaker',
               items: [
-                { description: "RFP analysis for vendor matching" },
-                { description: "Unlimited search requests" },
-                { description: "Comprehensive vendor discovery platform" },
+                { description: 'RFP analysis for vendor matching' },
+                { description: 'Unlimited search requests' },
+                { description: 'Comprehensive vendor discovery platform' },
               ],
             },
             {
-              name: "Sourcerer™ Lite Search",
+              name: 'Sourcerer™ Lite Search',
               items: [
                 {
-                  description: "Unlimited search requests for a single service",
+                  description: 'Unlimited search requests for a single service',
                 },
               ],
             },
@@ -80,21 +81,22 @@ const resolvers: Resolvers<Context> = {
         },
         {
           id: CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
-          name: "White Glove Service",
-          description: 'Provides a dedicated Cromatic team to manage vendor negotiations on your behalf.',
+          name: 'White Glove Service',
+          description:
+            'Provides a dedicated Cromatic team to manage vendor negotiations on your behalf.',
           prices: [],
           features: [
             {
-              name: "Everything in Sourcerer™ Search Plan plus...",
+              name: 'Everything in Sourcerer™ Search Plan plus...',
               items: [],
             },
             {
-              name: "Custom vendor management services",
+              name: 'Custom vendor management services',
               items: [
-                { description: "RFP review" },
-                { description: "Streamlined quoting process" },
-                { description: "Price negotiations" },
-                { description: "Vendor team selection" },
+                { description: 'RFP review' },
+                { description: 'Streamlined quoting process' },
+                { description: 'Price negotiations' },
+                { description: 'Vendor team selection' },
               ],
             },
           ],
@@ -120,7 +122,7 @@ const resolvers: Resolvers<Context> = {
 
       const customer = user?.customer;
 
-      invariant(customer, "Missing customer.");
+      invariant(customer, 'Missing customer.');
 
       const customerId = customer.id;
       const stripe = await getStripeInstance();
@@ -148,14 +150,14 @@ const resolvers: Resolvers<Context> = {
             quantity: 1,
           },
         ],
-        mode: "subscription",
+        mode: 'subscription',
         success_url,
         cancel_url,
         metadata: {
           plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),
         },
-        payment_method_types: ["card"],
+        payment_method_types: ['card'],
       });
 
       return session.url;
@@ -180,12 +182,12 @@ const resolvers: Resolvers<Context> = {
       const stripeCusId: string | undefined =
         subscriptions?.[0]?.stripe_customer_id;
 
-      invariant(stripeSubId, "No Stripe subscription ID");
-      invariant(stripeCusId, "No Stripe customer ID");
+      invariant(stripeSubId, 'No Stripe subscription ID');
+      invariant(stripeCusId, 'No Stripe customer ID');
 
       const stripe = await getStripeInstance();
       const stripeSub = await stripe.subscriptions.retrieve(stripeSubId, {
-        expand: ["schedule"],
+        expand: ['schedule'],
       });
       // Get Stripe subscription with schedule data
       let schedule = stripeSub.schedule as Stripe.SubscriptionSchedule;
@@ -198,7 +200,7 @@ const resolvers: Resolvers<Context> = {
 
       await stripe.subscriptionSchedules.update(schedule.id, {
         // Set to release the schedule after all the phases has completed.
-        end_behavior: "release",
+        end_behavior: 'release',
         phases: [
           // Phase 0 consists of the current subscription items, start and end dates.
           {
@@ -224,7 +226,7 @@ const resolvers: Resolvers<Context> = {
         ],
         metadata: {
           // For billingInfo.has_scheduled_for_interval_change to track user trigger.
-          trigger: "user",
+          trigger: 'user',
         },
       });
 

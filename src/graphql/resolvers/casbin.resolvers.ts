@@ -1,8 +1,7 @@
-import { frontendPermissionObject } from "../../helper/casbin";
-import { Resolvers } from "../generated";
-import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
-
+import { frontendPermissionObject } from '../../helper/casbin';
+import { Resolvers } from '../generated';
+import { Context } from '../../types/context';
+import { InternalError } from '../errors/InternalError';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -14,8 +13,8 @@ const resolvers: Resolvers<Context> = {
 
       const obj = await frontendPermissionObject(userId);
       return JSON.stringify(obj);
-    }
-  }
+    },
+  },
 };
 
 export default resolvers;

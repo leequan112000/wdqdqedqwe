@@ -1,5 +1,5 @@
 import { PublicError } from '../../graphql/errors/PublicError';
-import { Resolvers } from "../generated";
+import { Resolvers } from '../generated';
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';
@@ -12,12 +12,12 @@ import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
 const resolver: Resolvers<Context> = {
   VendorMember: {
     user: async (parent, _, context) => {
-      invariant(parent.user_id, 'User id not found.')
+      invariant(parent.user_id, 'User id not found.');
       return await context.prisma.user.findFirst({
         where: {
-          id: parent.user_id
-        }
-      })
+          id: parent.user_id,
+        },
+      });
     },
   },
   Query: {
@@ -45,12 +45,13 @@ const resolver: Resolvers<Context> = {
 
         // Check if company has owner.
         invariant(
-          args.role === CompanyCollaboratorRoleType.OWNER && noOwner
-          || args.role !== CompanyCollaboratorRoleType.OWNER,
+          (args.role === CompanyCollaboratorRoleType.OWNER && noOwner) ||
+            args.role !== CompanyCollaboratorRoleType.OWNER,
           new PublicError('Owner already exists!'),
         );
 
-        const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        const resetTokenExpiration =
+          new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
@@ -81,7 +82,7 @@ const resolver: Resolvers<Context> = {
                 vendor_company_id: args.vendor_company_id,
                 vendor_member_id: newVendorMember.id,
               },
-              { prisma: trx }
+              { prisma: trx },
             );
             break;
           }
@@ -90,7 +91,7 @@ const resolver: Resolvers<Context> = {
               {
                 vendor_member_id: newVendorMember.id,
               },
-              { prisma: trx }
+              { prisma: trx },
             );
             break;
           }
@@ -124,7 +125,7 @@ const resolver: Resolvers<Context> = {
         return newVendorMember;
       });
     },
-  }
-}
+  },
+};
 
 export default resolver;

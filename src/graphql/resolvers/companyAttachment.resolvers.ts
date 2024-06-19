@@ -1,12 +1,15 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import storeUpload from "../../helper/storeUpload";
-import { deleteObject, getSignedUrl } from "../../helper/awsS3";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import storeUpload from '../../helper/storeUpload';
+import { deleteObject, getSignedUrl } from '../../helper/awsS3';
 import { Readable } from 'stream';
 import { PublicError } from '../errors/PublicError';
-import { CompanyAttachmentDocumentType, COMPANY_ATTACHMENT_DOCUMENT_TYPE } from "../../helper/constant";
-import invariant from "../../helper/invariant";
-import { formatBytes } from "../../helper/filesize";
+import {
+  CompanyAttachmentDocumentType,
+  COMPANY_ATTACHMENT_DOCUMENT_TYPE,
+} from '../../helper/constant';
+import invariant from '../../helper/invariant';
+import { formatBytes } from '../../helper/filesize';
 
 const resolvers: Resolvers<Context> = {
   CompanyAttachment: {
@@ -24,7 +27,7 @@ const resolvers: Resolvers<Context> = {
 
       return await getSignedUrl(parent.key);
     },
-    formatted_filesize: async (parent,) => {
+    formatted_filesize: async (parent) => {
       if (parent.byte_size) {
         return formatBytes(parent.byte_size);
       }
@@ -36,7 +39,7 @@ const resolvers: Resolvers<Context> = {
       const { file, vendor_company_id } = args;
       const currectUserId = context.req.user_id;
 
-      invariant(currectUserId, 'Current user id not found.')
+      invariant(currectUserId, 'Current user id not found.');
 
       const vendorCompany = await context.prisma.vendorCompany.findFirst({
         where: {
@@ -48,17 +51,23 @@ const resolvers: Resolvers<Context> = {
       const data = await file;
       const { filename, key, filesize, contentType } = await storeUpload(
         data,
-        COMPANY_ATTACHMENT_DOCUMENT_TYPE[CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE],
+        COMPANY_ATTACHMENT_DOCUMENT_TYPE[
+          CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE
+        ],
       );
 
-      const existingAttachment = await context.prisma.companyAttachment.findFirst({
-        where: {
-          vendor_company_id: vendorCompany.id,
-          document_type: CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE,
-        },
-      });
+      const existingAttachment =
+        await context.prisma.companyAttachment.findFirst({
+          where: {
+            vendor_company_id: vendorCompany.id,
+            document_type: CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE,
+          },
+        });
 
-      invariant(filesize <= 10000000, new PublicError('File size must be less than 10MB.'));
+      invariant(
+        filesize <= 10000000,
+        new PublicError('File size must be less than 10MB.'),
+      );
 
       let attachment;
       if (existingAttachment) {
@@ -95,9 +104,10 @@ const resolvers: Resolvers<Context> = {
         data: {
           ...attachment,
           byte_size: Number(attachment.byte_size) / 1000,
-          document_type: COMPANY_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
+          document_type:
+            COMPANY_ATTACHMENT_DOCUMENT_TYPE[attachment.document_type],
           contentType,
-        }
+        },
       };
     },
     removeCompanyAttachment: async (parent, args, context) => {
@@ -113,9 +123,10 @@ const resolvers: Resolvers<Context> = {
       return {
         ...deletedAttachment,
         byte_size: Number(deletedAttachment.byte_size),
-        document_type: COMPANY_ATTACHMENT_DOCUMENT_TYPE[deletedAttachment.document_type],
-      }
-  },
+        document_type:
+          COMPANY_ATTACHMENT_DOCUMENT_TYPE[deletedAttachment.document_type],
+      };
+    },
   },
 };
 

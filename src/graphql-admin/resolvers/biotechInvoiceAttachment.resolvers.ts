@@ -1,7 +1,7 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
-import { getSignedUrl } from "../../helper/awsS3";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
+import { getSignedUrl } from '../../helper/awsS3';
 
 const resolvers: Resolvers<Context> = {
   BiotechInvoiceAttachment: {

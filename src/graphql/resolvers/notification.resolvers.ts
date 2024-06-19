@@ -1,10 +1,10 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { NotificationType } from "../../helper/constant";
-import { withFilter } from "graphql-subscriptions";
-import { pubsub } from "../../helper/pubsub";
-import invariant from "../../helper/invariant";
-import notificationService from "../../services/notification/notification.service";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { NotificationType } from '../../helper/constant';
+import { withFilter } from 'graphql-subscriptions';
+import { pubsub } from '../../helper/pubsub';
+import invariant from '../../helper/invariant';
+import notificationService from '../../services/notification/notification.service';
 
 const resolvers: Resolvers<Context> = {
   Notification: {
@@ -12,17 +12,17 @@ const resolvers: Resolvers<Context> = {
       invariant(parent.recipient_id, 'Recipient id not found.');
       return await context.prisma.user.findFirst({
         where: {
-          id: parent.recipient_id
-        }
-      })
+          id: parent.recipient_id,
+        },
+      });
     },
     sender: async (parent, _, context) => {
       invariant(parent.sender_id, 'Sender id not found.');
       return await context.prisma.user.findFirst({
         where: {
-          id: parent.sender_id
-        }
-      })
+          id: parent.sender_id,
+        },
+      });
     },
     url: async (parentNotification, _, context) => {
       const project_connection = parentNotification.params.project_connection_id
@@ -98,8 +98,8 @@ const resolvers: Resolvers<Context> = {
           ...(!!args.unread_only ? { read_at: null } : {}),
         },
         orderBy: {
-          created_at: 'desc'
-        }
+          created_at: 'desc',
+        },
       });
     },
     notificationsConnection: async (parent, args, context) => {
@@ -107,9 +107,7 @@ const resolvers: Resolvers<Context> = {
       const notifications = await context.prisma.notification.findMany({
         take: first,
         skip: after ? 1 : undefined,
-        cursor: after
-          ? { id: after }
-          : undefined,
+        cursor: after ? { id: after } : undefined,
         orderBy: {
           created_at: 'desc',
         },
@@ -122,16 +120,15 @@ const resolvers: Resolvers<Context> = {
         node: n,
       }));
 
-      const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
       let hasNextPage = false;
 
       if (endCursor) {
         const nextMessages = await context.prisma.notification.findMany({
           take: first,
           skip: 1,
-          cursor: endCursor
-            ? { id: endCursor }
-            : undefined,
+          cursor: endCursor ? { id: endCursor } : undefined,
           orderBy: {
             created_at: 'desc',
           },
@@ -162,7 +159,7 @@ const resolvers: Resolvers<Context> = {
         where: {
           id,
           recipient_id: context.req.user_id,
-        }
+        },
       });
 
       invariant(notification, 'Notification not found.');
@@ -173,7 +170,7 @@ const resolvers: Resolvers<Context> = {
       if (notification.read_at === null) {
         const updatedNotification = await context.prisma.notification.update({
           where: {
-            id
+            id,
           },
           data: {
             read_at: new Date(),
@@ -212,8 +209,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const updatedNotifications = await notificationService
-        .markNotificationsAsRead({ notifications }, context);
+      const updatedNotifications =
+        await notificationService.markNotificationsAsRead(
+          { notifications },
+          context,
+        );
 
       return updatedNotifications;
     },
@@ -244,8 +244,11 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const updatedNotifications = await notificationService
-        .markNotificationsAsRead({ notifications }, context);
+      const updatedNotifications =
+        await notificationService.markNotificationsAsRead(
+          { notifications },
+          context,
+        );
 
       return updatedNotifications;
     },

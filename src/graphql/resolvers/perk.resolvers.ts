@@ -1,6 +1,6 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   Perk: {

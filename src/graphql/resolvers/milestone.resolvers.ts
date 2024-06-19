@@ -1,33 +1,49 @@
-import { Resolvers, UploadResult } from "../generated";;
-import { Context } from "../../types/context";
+import { Resolvers, UploadResult } from '../generated';
+import { Context } from '../../types/context';
 
-import { PublicError } from "../errors/PublicError";
+import { PublicError } from '../errors/PublicError';
 
-import { createSendUserMilestoneNoticeJob } from "../../queues/email.queues";
-import { payVendorJob } from "../../queues/payout.queues";
+import { createSendUserMilestoneNoticeJob } from '../../queues/email.queues';
+import { payVendorJob } from '../../queues/payout.queues';
 
-import biotechInvoiceService from "../../services/biotechInvoice/biotechInvoice.service";
-import blanketPurchaseOrderService from "../../services/blanketPurchaseOrder/blanketPurchaseOrder.service";
+import biotechInvoiceService from '../../services/biotechInvoice/biotechInvoice.service';
+import blanketPurchaseOrderService from '../../services/blanketPurchaseOrder/blanketPurchaseOrder.service';
 
-import { checkPassword } from "../../helper/auth";
-import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission, checkMilestonePermission } from "../../helper/accessControl";
-import { MilestoneEventType, MilestonePaymentStatus, MilestoneStatus, ProjectAttachmentDocumentType, PROJECT_ATTACHMENT_DOCUMENT_TYPE, QuoteStatus, StripeWebhookPaymentType, CasbinObj, CasbinAct, BlanketPurchaseOrderTransactionType } from "../../helper/constant";
-import { toCent, toDollar } from "../../helper/money";
-import { getStripeInstance } from "../../helper/stripe";
-import storeUpload from "../../helper/storeUpload";
-import invariant from "../../helper/invariant";
-import { hasPermission } from "../../helper/casbin";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
+import { checkPassword } from '../../helper/auth';
+import {
+  checkAllowCustomerOnlyPermission,
+  checkAllowVendorOnlyPermission,
+  checkMilestonePermission,
+} from '../../helper/accessControl';
+import {
+  MilestoneEventType,
+  MilestonePaymentStatus,
+  MilestoneStatus,
+  ProjectAttachmentDocumentType,
+  PROJECT_ATTACHMENT_DOCUMENT_TYPE,
+  QuoteStatus,
+  StripeWebhookPaymentType,
+  CasbinObj,
+  CasbinAct,
+  BlanketPurchaseOrderTransactionType,
+} from '../../helper/constant';
+import { toCent, toDollar } from '../../helper/money';
+import { getStripeInstance } from '../../helper/stripe';
+import storeUpload from '../../helper/storeUpload';
+import invariant from '../../helper/invariant';
+import { hasPermission } from '../../helper/casbin';
+import { PermissionDeniedError } from '../errors/PermissionDeniedError';
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
     project_attachments: async (parent, _, context) => {
       invariant(parent.id, 'Missing milestone id.');
-      const projectAttachments = await context.prisma.projectAttachment.findMany({
-        where: {
-          milestone_id: parent.id
-        },
-      });
+      const projectAttachments =
+        await context.prisma.projectAttachment.findMany({
+          where: {
+            milestone_id: parent.id,
+          },
+        });
 
       return projectAttachments.map((a) => ({
         ...a,
@@ -39,21 +55,29 @@ const resolvers: Resolvers<Context> = {
       invariant(parent.quote_id, 'Missing quote id.');
       const quote = await context.prisma.quote.findFirst({
         where: {
-          id: parent.quote_id
+          id: parent.quote_id,
         },
       });
 
-      return quote ? { ...quote, amount: toDollar(quote.amount.toNumber()) } : {};
+      return quote
+        ? { ...quote, amount: toDollar(quote.amount.toNumber()) }
+        : {};
     },
     biotech_invoice_item: async (parent, _, context) => {
       invariant(parent.id, 'Missing milestone id.');
-      const biotechInvoiceItem = await context.prisma.biotechInvoiceItem.findFirst({
-        where: {
-          milestone_id: parent.id,
-        },
-      });
+      const biotechInvoiceItem =
+        await context.prisma.biotechInvoiceItem.findFirst({
+          where: {
+            milestone_id: parent.id,
+          },
+        });
 
-      return biotechInvoiceItem ? { ...biotechInvoiceItem, amount: toDollar(biotechInvoiceItem.amount.toNumber()) } : null;
+      return biotechInvoiceItem
+        ? {
+            ...biotechInvoiceItem,
+            amount: toDollar(biotechInvoiceItem.amount.toNumber()),
+          }
+        : null;
     },
   },
   Query: {
@@ -62,22 +86,26 @@ const resolvers: Resolvers<Context> = {
       await checkMilestonePermission(context, id);
       const milestone = await context.prisma.milestone.findFirst({
         where: {
-          id
-        }
+          id,
+        },
       });
 
       return milestone
         ? {
-          ...milestone,
-          amount: toDollar(milestone.amount.toNumber())
-        }
+            ...milestone,
+            amount: toDollar(milestone.amount.toNumber()),
+          }
         : null;
     },
     milestoneCheckoutUrl: async (_, args, context) => {
       const { id, success_url, cancel_url } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      const allowMakePayment = await hasPermission(
+        currentUserId,
+        CasbinObj.MILESTONE_PAYMENT,
+        CasbinAct.WRITE,
+      );
       invariant(allowMakePayment, new PermissionDeniedError());
       await checkAllowCustomerOnlyPermission(context);
       await checkMilestonePermission(context, id);
@@ -87,7 +115,7 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           quote: true,
-        }
+        },
       });
       const customer = await context.prisma.customer.findFirst({
         where: {
@@ -96,16 +124,24 @@ const resolvers: Resolvers<Context> = {
         include: {
           biotech: {
             include: {
-              subscriptions: true
-            }
-          }
-        }
+              subscriptions: true,
+            },
+          },
+        },
       });
 
       invariant(milestone, new PublicError('Milestone not found.'));
       invariant(customer, new PublicError('Customer not found.'));
-      invariant(milestone.quote.status === QuoteStatus.ACCEPTED, new PublicError('The quote must be accepted before proceeding with the payment.'));
-      invariant(milestone.payment_status !== MilestonePaymentStatus.PAID, new PublicError('The milestone has already been paid.'));
+      invariant(
+        milestone.quote.status === QuoteStatus.ACCEPTED,
+        new PublicError(
+          'The quote must be accepted before proceeding with the payment.',
+        ),
+      );
+      invariant(
+        milestone.payment_status !== MilestonePaymentStatus.PAID,
+        new PublicError('The milestone has already been paid.'),
+      );
 
       const stripe = await getStripeInstance();
       const session = await stripe.checkout.sessions.create({
@@ -143,7 +179,7 @@ const resolvers: Resolvers<Context> = {
   },
   Mutation: {
     markMilestoneAsCompleted: async (_, args, context) => {
-      const { id, files } = args
+      const { id, files } = args;
       await checkAllowVendorOnlyPermission(context);
       await checkMilestonePermission(context, id);
 
@@ -154,10 +190,10 @@ const resolvers: Resolvers<Context> = {
         include: {
           quote: {
             include: {
-              project_connection: true
-            }
-          }
-        }
+              project_connection: true,
+            },
+          },
+        },
       });
 
       invariant(milestone, new PublicError('Milestone not found.'));
@@ -170,44 +206,53 @@ const resolvers: Resolvers<Context> = {
         contentType: string | undefined;
       }> = [];
 
-
       if (files && files.length > 0) {
-        const result = await Promise.allSettled(files.map(async (f) => {
-          try {
-            const uploadData = await f;
-            const uploadedFile = await storeUpload(
-              uploadData,
-              PROJECT_ATTACHMENT_DOCUMENT_TYPE[ProjectAttachmentDocumentType.MILESTONE_FILE],
-            );
+        const result = await Promise.allSettled(
+          files.map(async (f) => {
+            try {
+              const uploadData = await f;
+              const uploadedFile = await storeUpload(
+                uploadData,
+                PROJECT_ATTACHMENT_DOCUMENT_TYPE[
+                  ProjectAttachmentDocumentType.MILESTONE_FILE
+                ],
+              );
 
-            uploadedFiles.push(uploadedFile);
-          } catch (error) {
-            throw error;
-          }
-        }));
+              uploadedFiles.push(uploadedFile);
+            } catch (error) {
+              throw error;
+            }
+          }),
+        );
 
-        invariant(result.every((r) => r.status === 'fulfilled'), new PublicError('Some files failed to upload please try again.'));
+        invariant(
+          result.every((r) => r.status === 'fulfilled'),
+          new PublicError('Some files failed to upload please try again.'),
+        );
       }
 
       return await context.prisma.$transaction(async (trx) => {
         if (uploadedFiles.length > 0) {
           const attachments = await Promise.allSettled(
-            uploadedFiles.map(async ({ filesize, filename, key, contentType }) => {
-              const attachment = await trx.projectAttachment.create({
-                data: {
-                  byte_size: filesize,
-                  document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
-                  filename,
-                  key,
-                  project_connection_id: milestone.quote.project_connection_id,
-                  milestone_id: milestone.id,
-                  content_type: contentType,
-                  uploader_id: context.req.user_id,
-                }
-              });
+            uploadedFiles.map(
+              async ({ filesize, filename, key, contentType }) => {
+                const attachment = await trx.projectAttachment.create({
+                  data: {
+                    byte_size: filesize,
+                    document_type: ProjectAttachmentDocumentType.MILESTONE_FILE,
+                    filename,
+                    key,
+                    project_connection_id:
+                      milestone.quote.project_connection_id,
+                    milestone_id: milestone.id,
+                    content_type: contentType,
+                    uploader_id: context.req.user_id,
+                  },
+                });
 
-              return attachment;
-            })
+                return attachment;
+              },
+            ),
           );
 
           upload_results = attachments.map((f) => {
@@ -217,7 +262,8 @@ const resolvers: Resolvers<Context> = {
                 data: {
                   ...f.value,
                   byte_size: Number(f.value.byte_size),
-                  document_type: PROJECT_ATTACHMENT_DOCUMENT_TYPE[f.value.document_type],
+                  document_type:
+                    PROJECT_ATTACHMENT_DOCUMENT_TYPE[f.value.document_type],
                 },
               };
             }
@@ -225,7 +271,7 @@ const resolvers: Resolvers<Context> = {
             return {
               success: false,
               error_message: f.reason.message,
-            }
+            };
           });
         }
         const updatedMilestone = await trx.milestone.update({
@@ -251,14 +297,18 @@ const resolvers: Resolvers<Context> = {
             amount: toDollar(updatedMilestone.amount.toNumber()),
           },
           upload_results,
-        }
-      })
+        };
+      });
     },
     verifyMilestoneAsCompleted: async (_, args, context) => {
-      const { id, password } = args
+      const { id, password } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      const allowMakePayment = await hasPermission(
+        currentUserId,
+        CasbinObj.MILESTONE_PAYMENT,
+        CasbinAct.WRITE,
+      );
       invariant(allowMakePayment, new PermissionDeniedError());
 
       await checkAllowCustomerOnlyPermission(context);
@@ -266,13 +316,16 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirstOrThrow({
         where: {
-          id: context.req.user_id
-        }
+          id: context.req.user_id,
+        },
       });
 
       const isPasswordMatched = await checkPassword(password, user, context);
 
-      invariant(isPasswordMatched === true, new PublicError('Invalid password.'));
+      invariant(
+        isPasswordMatched === true,
+        new PublicError('Invalid password.'),
+      );
 
       const updatedMilestone = await context.prisma.milestone.update({
         where: {
@@ -282,8 +335,8 @@ const resolvers: Resolvers<Context> = {
           quote: {
             include: {
               project_connection: true,
-            }
-          }
+            },
+          },
         },
         data: {
           status: MilestoneStatus.COMPLETED,
@@ -305,15 +358,19 @@ const resolvers: Resolvers<Context> = {
         amount: toDollar(updatedMilestone.amount.toNumber()),
         quote: {
           ...updatedMilestone.quote,
-          amount: toDollar(updatedMilestone.quote.amount.toNumber())
-        }
-      }
+          amount: toDollar(updatedMilestone.quote.amount.toNumber()),
+        },
+      };
     },
     payByPurchaseOrder: async (_, args, context) => {
-      const { id, po_number } = args
+      const { id, po_number } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      const allowMakePayment = await hasPermission(
+        currentUserId,
+        CasbinObj.MILESTONE_PAYMENT,
+        CasbinAct.WRITE,
+      );
       invariant(allowMakePayment, new PermissionDeniedError());
 
       await checkAllowCustomerOnlyPermission(context);
@@ -324,8 +381,8 @@ const resolvers: Resolvers<Context> = {
           user_id: currentUserId,
         },
         include: {
-          biotech: true
-        }
+          biotech: true,
+        },
       });
 
       const milestone = await context.prisma.milestone.findFirst({
@@ -335,10 +392,10 @@ const resolvers: Resolvers<Context> = {
         include: {
           quote: {
             include: {
-              project_connection: true
-            }
-          }
-        }
+              project_connection: true,
+            },
+          },
+        },
       });
 
       invariant(milestone, new PublicError('Milestone not found.'));
@@ -346,30 +403,42 @@ const resolvers: Resolvers<Context> = {
       const existingPO = await context.prisma.purchaseOrder.findFirst({
         where: {
           po_number,
-          biotech_id: customer?.biotech_id
+          biotech_id: customer?.biotech_id,
         },
       });
 
-      invariant(!existingPO, new PublicError('Purchase order number already used for another payment. Please verify or contact support.'));
+      invariant(
+        !existingPO,
+        new PublicError(
+          'Purchase order number already used for another payment. Please verify or contact support.',
+        ),
+      );
 
       const existingBPO = await context.prisma.blanketPurchaseOrder.findFirst({
         where: {
           po_number,
-          biotech_id: customer?.biotech_id
+          biotech_id: customer?.biotech_id,
         },
       });
 
-      invariant(!existingBPO, new PublicError('Your purchase order number matches a blanket PO. Please select \'Pay with Blanket PO\' instead.'));
-
+      invariant(
+        !existingBPO,
+        new PublicError(
+          "Your purchase order number matches a blanket PO. Please select 'Pay with Blanket PO' instead.",
+        ),
+      );
 
       return await context.prisma.$transaction(async (trx) => {
-        const invoice = await biotechInvoiceService.createBiotechInvoice({
-          milestone,
-          biotech_id: customer?.biotech_id as string,
-          payViaStripe: false,
-        }, {
-          prisma: trx
-        });
+        const invoice = await biotechInvoiceService.createBiotechInvoice(
+          {
+            milestone,
+            biotech_id: customer?.biotech_id as string,
+            payViaStripe: false,
+          },
+          {
+            prisma: trx,
+          },
+        );
 
         await trx.purchaseOrder.create({
           data: {
@@ -384,7 +453,7 @@ const resolvers: Resolvers<Context> = {
             id,
           },
           include: {
-            quote: true
+            quote: true,
           },
           data: {
             payment_status: MilestonePaymentStatus.PENDING,
@@ -396,16 +465,20 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(updatedMilestone.amount.toNumber()),
           quote: {
             ...updatedMilestone.quote,
-            amount: toDollar(updatedMilestone.quote.amount.toNumber())
-          }
-        }
+            amount: toDollar(updatedMilestone.quote.amount.toNumber()),
+          },
+        };
       });
     },
     payByBlanketPurchaseOrder: async (_, args, context) => {
-      const { id, blanket_purchase_order_id } = args
+      const { id, blanket_purchase_order_id } = args;
       const currentUserId = context.req.user_id;
       invariant(currentUserId, 'Current user id not found.');
-      const allowMakePayment = await hasPermission(currentUserId, CasbinObj.MILESTONE_PAYMENT, CasbinAct.WRITE);
+      const allowMakePayment = await hasPermission(
+        currentUserId,
+        CasbinObj.MILESTONE_PAYMENT,
+        CasbinAct.WRITE,
+      );
       invariant(allowMakePayment, new PermissionDeniedError());
 
       await checkAllowCustomerOnlyPermission(context);
@@ -416,8 +489,8 @@ const resolvers: Resolvers<Context> = {
           user_id: currentUserId,
         },
         include: {
-          biotech: true
-        }
+          biotech: true,
+        },
       });
 
       const milestone = await context.prisma.milestone.findFirst({
@@ -427,35 +500,48 @@ const resolvers: Resolvers<Context> = {
         include: {
           quote: {
             include: {
-              project_connection: true
-            }
-          }
-        }
+              project_connection: true,
+            },
+          },
+        },
       });
 
       invariant(milestone, new PublicError('Milestone not found.'));
 
-      const blanketPurchaseOrder = await context.prisma.blanketPurchaseOrder.findFirst({
-        where: {
-          id: blanket_purchase_order_id,
-          biotech_id: customer?.biotech_id
-        },
-        include: {
-          blanket_purchase_order_transactions: true
-        }
-      });
+      const blanketPurchaseOrder =
+        await context.prisma.blanketPurchaseOrder.findFirst({
+          where: {
+            id: blanket_purchase_order_id,
+            biotech_id: customer?.biotech_id,
+          },
+          include: {
+            blanket_purchase_order_transactions: true,
+          },
+        });
 
-      invariant(blanketPurchaseOrder, new PublicError('Blanket Purchase Order not found.'));
-      invariant(blanketPurchaseOrder.balance_amount.toNumber() >= milestone.amount.toNumber(), new PublicError('Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount'));
+      invariant(
+        blanketPurchaseOrder,
+        new PublicError('Blanket Purchase Order not found.'),
+      );
+      invariant(
+        blanketPurchaseOrder.balance_amount.toNumber() >=
+          milestone.amount.toNumber(),
+        new PublicError(
+          'Insufficient Blanket PO balance. The remaining balance on this Blanket PO is not enough to cover the milestone amount. Please review and adjust the Blanket PO amount',
+        ),
+      );
 
       return await context.prisma.$transaction(async (trx) => {
-        const invoice = await biotechInvoiceService.createBiotechInvoice({
-          milestone,
-          biotech_id: customer?.biotech_id as string,
-          payViaStripe: false,
-        }, {
-          prisma: trx
-        });
+        const invoice = await biotechInvoiceService.createBiotechInvoice(
+          {
+            milestone,
+            biotech_id: customer?.biotech_id as string,
+            payViaStripe: false,
+          },
+          {
+            prisma: trx,
+          },
+        );
 
         await trx.blanketPurchaseOrderTransaction.create({
           data: {
@@ -467,13 +553,17 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        const balanceAmount = await blanketPurchaseOrderService.calculateBlanketPurchaseOrderBalanceAmount({ id: blanket_purchase_order_id }, { prisma: trx });
+        const balanceAmount =
+          await blanketPurchaseOrderService.calculateBlanketPurchaseOrderBalanceAmount(
+            { id: blanket_purchase_order_id },
+            { prisma: trx },
+          );
         await trx.blanketPurchaseOrder.update({
           where: {
             id: blanket_purchase_order_id,
           },
           data: {
-            balance_amount: toCent(balanceAmount)
+            balance_amount: toCent(balanceAmount),
           },
         });
 
@@ -482,7 +572,7 @@ const resolvers: Resolvers<Context> = {
             id,
           },
           include: {
-            quote: true
+            quote: true,
           },
           data: {
             payment_status: MilestonePaymentStatus.PENDING,
@@ -494,12 +584,12 @@ const resolvers: Resolvers<Context> = {
           amount: toDollar(updatedMilestone.amount.toNumber()),
           quote: {
             ...updatedMilestone.quote,
-            amount: toDollar(updatedMilestone.quote.amount.toNumber())
-          }
-        }
+            amount: toDollar(updatedMilestone.quote.amount.toNumber()),
+          },
+        };
       });
     },
-  }
-}
+  },
+};
 
 export default resolvers;

@@ -4,8 +4,11 @@ import {
   biotechInvoicePaymentVerifiedByCromaticAdminTemplate,
   newBiotechInvoiceNoticeTemplate,
 } from "./templates";
-import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
-import { createBulkEmailJobData } from "../helper/queue";
+import {
+  createBulkSendMailJobs,
+  createSendMailJob,
+  createBulkEmailJobData,
+} from "../queues/sendMail.queues";
 
 type NewBiotechInvoiceNoticeData = {
   project_title: string;

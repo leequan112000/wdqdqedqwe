@@ -8,7 +8,10 @@ const resolvers: Resolvers<Context> = {
     review_questions: async (parent, _, context) => {
       if (parent.review_questions) return parent.review_questions;
 
-      invariant(parent.review_question_set_id, 'Review question set id not found.');
+      invariant(
+        parent.review_question_set_id,
+        'Review question set id not found.',
+      );
 
       const reviewQuestions = await context.prisma.reviewQuestion.findMany({
         where: {
@@ -44,19 +47,20 @@ const resolvers: Resolvers<Context> = {
 
       invariant(id, 'Question id not found.');
 
-      const reviewQuestionOptions = await context.prisma.reviewQuestionOption.findMany({
-        where: {
-          review_question_id: id,
-        },
-        orderBy: [
-          {
-            ordinal: 'asc',
+      const reviewQuestionOptions =
+        await context.prisma.reviewQuestionOption.findMany({
+          where: {
+            review_question_id: id,
           },
-        ],
-      });
+          orderBy: [
+            {
+              ordinal: 'asc',
+            },
+          ],
+        });
 
       return reviewQuestionOptions;
-    }
+    },
   },
   Query: {
     quoteReview: async (_, args, context) => {
@@ -115,11 +119,11 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: trx,
-          }
-        )
-      })
+          },
+        );
+      });
     },
   },
-}
+};
 
 export default resolvers;

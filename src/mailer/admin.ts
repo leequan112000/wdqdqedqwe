@@ -20,8 +20,12 @@ import {
   AdminBiotechInviteVendorNoticeData,
 } from "./types";
 import { CROMATIC_ADMIN_EMAIL } from "../helper/constant";
-import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
-import { createBulkEmailJobData, type BulkEmailJobData } from "../helper/queue";
+import {
+  createBulkSendMailJobs,
+  createSendMailJob,
+  createBulkEmailJobData,
+  type BulkEmailJobData,
+} from "../queues/sendMail.queues";
 
 export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
   const mailData = createMailData({
@@ -81,7 +85,7 @@ export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWith
       latitude: data.latitude,
       longitude: data.longitude,
       continent_code: data.continent_code,
-      environment: data.environment.charAt(0).toUpperCase()+data.environment.slice(1),
+      environment: data.environment.charAt(0).toUpperCase() + data.environment.slice(1),
     },
   });
 

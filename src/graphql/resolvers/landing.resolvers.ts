@@ -1,11 +1,11 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
 import {
   createSendAdminCroInterestNoticeJob,
   createSendNewBlogSubscriptionEmailJob,
-} from "../../queues/email.queues";
-import { searchContact, upsertContacts } from "../../helper/sendgrid";
-import { PublicError } from "../errors/PublicError";
+} from '../../queues/email.queues';
+import { searchContact, upsertContacts } from '../../helper/sendgrid';
+import { PublicError } from '../errors/PublicError';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -61,7 +61,7 @@ const resolvers: Resolvers<Context> = {
         return true;
       }
 
-      throw new PublicError("Something went wrong");
+      throw new PublicError('Something went wrong');
     },
   },
 };

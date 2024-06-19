@@ -1,10 +1,10 @@
-import { pubsub } from "../../helper/pubsub";
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers, MessageEdge } from "../generated";
-import { createSendUserNewMessageNoticeJob } from "../../queues/email.queues";
-import invariant from "../../helper/invariant";
-import { UserStatus, UserType } from "../../helper/constant";
+import { pubsub } from '../../helper/pubsub';
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import { Resolvers, MessageEdge } from '../generated';
+import { createSendUserNewMessageNoticeJob } from '../../queues/email.queues';
+import invariant from '../../helper/invariant';
+import { UserStatus, UserType } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Message: {
@@ -36,11 +36,12 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         invariant(context.req.user_id, new PublicError('User not logged in.'));
 
-        const projectConnection = await context.prisma.projectConnection.findFirst({
-          where: {
-            id: args.project_connection_id,
-          }
-        });
+        const projectConnection =
+          await context.prisma.projectConnection.findFirst({
+            where: {
+              id: args.project_connection_id,
+            },
+          });
         invariant(projectConnection, 'Project connection not found.');
 
         let chat = await trx.chat.findFirst({
@@ -71,21 +72,21 @@ const resolvers: Resolvers<Context> = {
               vendor_company_id: projectConnection.vendor_company_id,
               project_connection_id: projectConnection.id,
             },
-          })
+          });
         }
 
         const newMessage = await trx.message.create({
           data: {
             content: args.content,
             chat_id: chat.id,
-            user_id: context.req.user_id
-          }
+            user_id: context.req.user_id,
+          },
         });
 
         const edge: MessageEdge = {
           cursor: newMessage.id,
           node: newMessage,
-        }
+        };
 
         pubsub.publish('NEW_MESSAGE', { newMessage: edge, chat_id: chat.id });
 

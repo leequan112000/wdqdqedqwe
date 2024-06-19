@@ -1,7 +1,7 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
-import moment from "moment";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
+import moment from 'moment';
 
 const resolvers: Resolvers<Context> = {
   PerkCategory: {
@@ -19,8 +19,8 @@ const resolvers: Resolvers<Context> = {
               expired_at: {
                 gt: today.startOf('d').toDate(),
               },
-            }
-          ]
+            },
+          ],
         },
         orderBy: {
           title: 'asc',
@@ -52,7 +52,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
     },
-  }
+  },
 };
 
 export default resolvers;

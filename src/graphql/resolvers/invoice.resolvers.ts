@@ -1,13 +1,20 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
 
-import { PublicError } from "../errors/PublicError";
+import { PublicError } from '../errors/PublicError';
 
-import { toDollar } from "../../helper/money";
-import { checkAllowVendorOnlyPermission, checkInvoicePermission } from "../../helper/accessControl";
-import { InvoicePaymentDisplayStatus, InvoicePaymentStatus, StripeWebhookPaymentType } from "../../helper/constant";
-import { getStripeInstance } from "../../helper/stripe";
-import invariant from "../../helper/invariant";
+import { toDollar } from '../../helper/money';
+import {
+  checkAllowVendorOnlyPermission,
+  checkInvoicePermission,
+} from '../../helper/accessControl';
+import {
+  InvoicePaymentDisplayStatus,
+  InvoicePaymentStatus,
+  StripeWebhookPaymentType,
+} from '../../helper/constant';
+import { getStripeInstance } from '../../helper/stripe';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   Invoice: {
@@ -23,12 +30,17 @@ const resolvers: Resolvers<Context> = {
         return {
           ...invoiceItem,
           amount: toDollar(invoiceItem.amount.toNumber()),
-          milestone_amount: toDollar(invoiceItem.milestone_amount?.toNumber() || 0),
-        }
+          milestone_amount: toDollar(
+            invoiceItem.milestone_amount?.toNumber() || 0,
+          ),
+        };
       });
     },
     payment_status: async (parent, _, context) => {
-      if (parent.payment_status === InvoicePaymentStatus.UNPAID && new Date() > parent.due_at) {
+      if (
+        parent.payment_status === InvoicePaymentStatus.UNPAID &&
+        new Date() > parent.due_at
+      ) {
         return InvoicePaymentDisplayStatus.PAYMENT_DUE;
       }
       return parent.payment_status as string;
@@ -49,7 +61,10 @@ const resolvers: Resolvers<Context> = {
           invoice_id: parent.id,
         },
       });
-      const totalAmount = invoiceItems.reduce((acc, item) => acc + item.amount.toNumber(), 0);
+      const totalAmount = invoiceItems.reduce(
+        (acc, item) => acc + item.amount.toNumber(),
+        0,
+      );
       return toDollar(totalAmount);
     },
     total_milestone_amount: async (parent, _, context) => {
@@ -59,7 +74,10 @@ const resolvers: Resolvers<Context> = {
           invoice_id: parent.id,
         },
       });
-      const totalAmount = invoiceItems.reduce((acc, item) => acc + (item.milestone_amount?.toNumber() || 0), 0);
+      const totalAmount = invoiceItems.reduce(
+        (acc, item) => acc + (item.milestone_amount?.toNumber() || 0),
+        0,
+      );
       return toDollar(totalAmount);
     },
   },
@@ -69,14 +87,14 @@ const resolvers: Resolvers<Context> = {
 
       const currentVendor = await context.prisma.vendorMember.findFirst({
         where: {
-          user_id: context.req.user_id
+          user_id: context.req.user_id,
         },
       });
 
       return await context.prisma.invoice.findMany({
         where: {
           vendor_company_id: currentVendor?.vendor_company_id,
-        }
+        },
       });
     },
     invoice: async (_, args, context) => {
@@ -85,21 +103,21 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.invoice.findFirst({
         where: {
-          id
-        }
+          id,
+        },
       });
     },
     invoiceCheckoutUrl: async (_, args, context) => {
-      const { id, success_url, cancel_url } = args
+      const { id, success_url, cancel_url } = args;
       await checkInvoicePermission(context, id);
       const invoice = await context.prisma.invoice.findFirst({
         where: {
-          id
+          id,
         },
         include: {
           vendor_company: true,
           invoice_items: true,
-        }
+        },
       });
 
       invariant(invoice, 'Invoice not found.');
@@ -117,7 +135,10 @@ const resolvers: Resolvers<Context> = {
         new PublicError('The invoice is currently being processed.'),
       );
 
-      const totalPayableAmount = invoice.invoice_items.reduce((acc, item) => acc + item.amount.toNumber(), 0);
+      const totalPayableAmount = invoice.invoice_items.reduce(
+        (acc, item) => acc + item.amount.toNumber(),
+        0,
+      );
 
       const stripe = await getStripeInstance();
       const session = await stripe.checkout.sessions.create({

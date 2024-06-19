@@ -1,16 +1,16 @@
-import invariant from "../../helper/invariant";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import vendorCompanyService from "../../services/vendorCompany/vendorCompany.service";
+import invariant from '../../helper/invariant';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import vendorCompanyService from '../../services/vendorCompany/vendorCompany.service';
 
 const resolvers: Resolvers<Context> = {
   CompanyProfile: {
     __resolveType: (obj) => {
-      if (obj.__typename === "Biotech") {
-        return "Biotech";
+      if (obj.__typename === 'Biotech') {
+        return 'Biotech';
       }
-      if (obj.__typename === "VendorCompany") {
-        return "VendorCompany";
+      if (obj.__typename === 'VendorCompany') {
+        return 'VendorCompany';
       }
       return null;
     },
@@ -37,17 +37,17 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(user, "User not found.");
+      invariant(user, 'User not found.');
 
       if (user.customer) {
         return {
-          __typename: "Biotech",
+          __typename: 'Biotech',
           ...user.customer.biotech,
         };
       }
       if (user.vendor_member) {
         return {
-          __typename: "VendorCompany",
+          __typename: 'VendorCompany',
           ...user.vendor_member.vendor_company,
         };
       }
@@ -80,7 +80,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(user?.customer, "Customer not found.");
+      invariant(user?.customer, 'Customer not found.');
 
       const updatedBiotech = await context.prisma.biotech.update({
         where: {
@@ -134,7 +134,7 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        invariant(user?.vendor_member, "Vendor member not found.");
+        invariant(user?.vendor_member, 'Vendor member not found.');
 
         const updatedVendorCompany = await trx.vendorCompany.update({
           where: {
@@ -174,7 +174,7 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: trx,
-          }
+          },
         );
         // Done updating certificate connection
 
@@ -187,7 +187,7 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: trx,
-          }
+          },
         );
 
         return updatedVendorCompany;

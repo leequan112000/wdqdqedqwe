@@ -1,11 +1,11 @@
-import { getStripeInstance } from "../../helper/stripe";
+import { getStripeInstance } from '../../helper/stripe';
 
 type DecreaseSubscriptionQuantityArgs = {
   stripe_sub_id: string;
 };
 
 const decreaseSubscriptionQuantity = async (
-  args: DecreaseSubscriptionQuantityArgs
+  args: DecreaseSubscriptionQuantityArgs,
 ) => {
   const { stripe_sub_id } = args;
   const stripe = await getStripeInstance();
@@ -15,12 +15,12 @@ const decreaseSubscriptionQuantity = async (
     (item) => ({
       id: item.id,
       quantity: item.quantity && item.quantity > 1 ? item.quantity - 1 : 1,
-    })
+    }),
   );
 
   await stripe.subscriptions.update(stripe_sub_id, {
     items: updatedSubscriptionItemParams,
-    proration_behavior: "none", // no proration refund
+    proration_behavior: 'none', // no proration refund
   });
 };
 
@@ -29,7 +29,7 @@ type IncreaseSubscriptionQuantityArgs = {
 };
 
 const increaseSubscriptionQuantity = async (
-  args: IncreaseSubscriptionQuantityArgs
+  args: IncreaseSubscriptionQuantityArgs,
 ) => {
   const { stripe_sub_id } = args;
   const stripe = await getStripeInstance();
@@ -39,12 +39,12 @@ const increaseSubscriptionQuantity = async (
     (item) => ({
       id: item.id,
       quantity: item.quantity ? item.quantity + 1 : 1,
-    })
+    }),
   );
 
   await stripe.subscriptions.update(stripe_sub_id, {
     items: updatedSubscriptionItemParams,
-    proration_behavior: "always_invoice", // bill immediately
+    proration_behavior: 'always_invoice', // bill immediately
   });
 };
 
@@ -52,9 +52,7 @@ type GetNextBillingDateArgs = {
   stripe_sub_id: string;
 };
 
-const getNextBillingDate = async (
-  args: GetNextBillingDateArgs
-) => {
+const getNextBillingDate = async (args: GetNextBillingDateArgs) => {
   const { stripe_sub_id } = args;
   const stripe = await getStripeInstance();
   const stripeSubscription = await stripe.subscriptions.retrieve(stripe_sub_id);

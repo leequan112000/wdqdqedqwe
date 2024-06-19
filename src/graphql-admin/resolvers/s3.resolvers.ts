@@ -1,6 +1,6 @@
-import { getSignedUrl } from "../../helper/awsS3";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { getSignedUrl } from '../../helper/awsS3';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -8,8 +8,8 @@ const resolvers: Resolvers<Context> = {
       const { key } = args;
 
       return await getSignedUrl(key);
-    }
-  }
-}
+    },
+  },
+};
 
 export default resolvers;

@@ -1,17 +1,25 @@
-import { vendorMemberInvitationByUserEmail } from "../../mailer";
-import { createResetPasswordToken } from "../../helper/auth";
-import { Context } from "../../types/context";
-import { InternalError } from "../errors/InternalError";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../generated";
-import { customerInvitationEmail } from "../../mailer/customer";
-import { addRoleForUser, hasPermission } from "../../helper/casbin";
-import invariant from "../../helper/invariant";
-import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import collaboratorService from "../../services/collaborator/collaborator.service";
-import { createResetPasswordUrl, getUserFullName } from "../../helper/email";
-import { checkAllowCustomerOnlyPermission, checkAllowVendorOnlyPermission } from "../../helper/accessControl";
+import { vendorMemberInvitationByUserEmail } from '../../mailer';
+import { createResetPasswordToken } from '../../helper/auth';
+import { Context } from '../../types/context';
+import { InternalError } from '../errors/InternalError';
+import { PublicError } from '../errors/PublicError';
+import { Resolvers } from '../generated';
+import { customerInvitationEmail } from '../../mailer/customer';
+import { addRoleForUser, hasPermission } from '../../helper/casbin';
+import invariant from '../../helper/invariant';
+import {
+  CasbinAct,
+  CasbinObj,
+  CasbinRole,
+  CompanyCollaboratorRoleType,
+} from '../../helper/constant';
+import { PermissionDeniedError } from '../errors/PermissionDeniedError';
+import collaboratorService from '../../services/collaborator/collaborator.service';
+import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  checkAllowCustomerOnlyPermission,
+  checkAllowVendorOnlyPermission,
+} from '../../helper/accessControl';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -49,7 +57,7 @@ const resolvers: Resolvers<Context> = {
               : {}),
           },
           orderBy: {
-            created_at: "asc",
+            created_at: 'asc',
           },
         });
       }
@@ -62,7 +70,7 @@ const resolvers: Resolvers<Context> = {
             },
           },
           orderBy: {
-            created_at: 'asc'
+            created_at: 'asc',
           },
         });
       }
@@ -74,14 +82,19 @@ const resolvers: Resolvers<Context> = {
     inviteCollaborator: async (parent, args, context) => {
       const currentUserId = context.req.user_id;
       const { role = CompanyCollaboratorRoleType.USER } = args;
-      const castedRole = (role as CompanyCollaboratorRoleType) || CompanyCollaboratorRoleType.USER;
+      const castedRole =
+        (role as CompanyCollaboratorRoleType) ||
+        CompanyCollaboratorRoleType.USER;
 
       invariant(currentUserId, 'Current user id not found.');
 
       // Check if current user has the permission to set the role.
       if (castedRole) {
         const roleEnum = Object.values(CompanyCollaboratorRoleType);
-        invariant(roleEnum.includes(castedRole as CompanyCollaboratorRoleType), 'Invalid company collaborator role.');
+        invariant(
+          roleEnum.includes(castedRole as CompanyCollaboratorRoleType),
+          'Invalid company collaborator role.',
+        );
         await collaboratorService.checkPermissionToEditRole({
           role: castedRole,
           user_id: currentUserId,
@@ -126,7 +139,8 @@ const resolvers: Resolvers<Context> = {
       }
       invariant(currentUser, 'Current user not found.');
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration =
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
 
       const isBiotech = !!currentUser.customer;
@@ -135,7 +149,8 @@ const resolvers: Resolvers<Context> = {
       const newUser = await context.prisma.$transaction(async (trx) => {
         const splitName = args.name.split(' ');
         const firstName = splitName[0];
-        const lastName = splitName.length === 1 ? '' : splitName[splitName.length - 1];
+        const lastName =
+          splitName.length === 1 ? '' : splitName[splitName.length - 1];
         // Create new user
         const newUser = await trx.user.create({
           data: {
@@ -146,17 +161,18 @@ const resolvers: Resolvers<Context> = {
             reset_password_expiration: new Date(resetTokenExpiration),
             customer: isBiotech
               ? {
-                create: {
-                  biotech_id: currentUser.customer!.biotech_id,
-                },
-              }
+                  create: {
+                    biotech_id: currentUser.customer!.biotech_id,
+                  },
+                }
               : undefined,
             vendor_member: isVendor
               ? {
-                create: {
-                  vendor_company_id: currentUser.vendor_member!.vendor_company_id,
-                },
-              }
+                  create: {
+                    vendor_company_id:
+                      currentUser.vendor_member!.vendor_company_id,
+                  },
+                }
               : undefined,
           },
           include: {
@@ -165,18 +181,21 @@ const resolvers: Resolvers<Context> = {
           },
         });
         const emailMessage = args.custom_message || '';
-        const resetPasswordUrl = createResetPasswordUrl(resetToken)
-        const currentUserFullName = getUserFullName(currentUser)
-        const newUserFullName = getUserFullName(newUser)
+        const resetPasswordUrl = createResetPasswordUrl(resetToken);
+        const currentUserFullName = getUserFullName(currentUser);
+        const newUserFullName = getUserFullName(newUser);
 
         // Send email
         if (isBiotech) {
-          customerInvitationEmail({
-            inviter_full_name: currentUserFullName,
-            inviter_message: emailMessage,
-            login_url: resetPasswordUrl,
-            receiver_full_name: newUserFullName,
-          }, newUser.email)
+          customerInvitationEmail(
+            {
+              inviter_full_name: currentUserFullName,
+              inviter_message: emailMessage,
+              login_url: resetPasswordUrl,
+              receiver_full_name: newUserFullName,
+            },
+            newUser.email,
+          );
         }
         if (isVendor) {
           vendorMemberInvitationByUserEmail(
@@ -184,17 +203,20 @@ const resolvers: Resolvers<Context> = {
               inviter_full_name: currentUserFullName,
               inviter_message: emailMessage,
               login_url: resetPasswordUrl,
-              receiver_full_name: newUserFullName
+              receiver_full_name: newUserFullName,
             },
             newUser.email,
-          )
+          );
         }
 
         // Update company role and casbin role
-        await collaboratorService.updateUserRole({
-          role: castedRole,
-          user_id: newUser.id,
-        }, { prisma: trx })
+        await collaboratorService.updateUserRole(
+          {
+            role: castedRole,
+            user_id: newUser.id,
+          },
+          { prisma: trx },
+        );
 
         return newUser;
       });
@@ -211,7 +233,7 @@ const resolvers: Resolvers<Context> = {
       const allowInviteCompanyCollaborator = await hasPermission(
         currentUserId,
         CasbinObj.COMPANY_COLLABORATOR_USER,
-        CasbinAct.WRITE
+        CasbinAct.WRITE,
       );
       invariant(allowInviteCompanyCollaborator, new PermissionDeniedError());
 
@@ -227,7 +249,10 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        invariant(!existingUser, new PublicError(`User ${existingUser?.email} already exists!`));
+        invariant(
+          !existingUser,
+          new PublicError(`User ${existingUser?.email} already exists!`),
+        );
 
         return existingUser;
       });
@@ -256,7 +281,8 @@ const resolvers: Resolvers<Context> = {
 
       invariant(currentUser, 'Current user not found.');
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration =
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
 
       let newUsers;
       if (collaborators && collaborators.length > 0) {
@@ -275,9 +301,9 @@ const resolvers: Resolvers<Context> = {
                 reset_password_expiration: new Date(resetTokenExpiration),
               },
             });
-            const newUserFullName = getUserFullName(newUser)
-            const resetPasswordUrl = createResetPasswordUrl(resetToken)
-            const currentUserFullName = getUserFullName(currentUser)
+            const newUserFullName = getUserFullName(newUser);
+            const resetPasswordUrl = createResetPasswordUrl(resetToken);
+            const currentUserFullName = getUserFullName(currentUser);
 
             // If current user is a biotech member, create customer data for the new user.
             if (currentUser.customer?.biotech_id) {
@@ -290,7 +316,7 @@ const resolvers: Resolvers<Context> = {
               customerInvitationEmail(
                 {
                   inviter_full_name: currentUserFullName,
-                  inviter_message: "",
+                  inviter_message: '',
                   login_url: resetPasswordUrl,
                   receiver_full_name: newUserFullName,
                 },
@@ -303,15 +329,16 @@ const resolvers: Resolvers<Context> = {
               await trx.vendorMember.create({
                 data: {
                   user_id: newUser.id,
-                  vendor_company_id: currentUser.vendor_member.vendor_company_id,
-                }
+                  vendor_company_id:
+                    currentUser.vendor_member.vendor_company_id,
+                },
               });
               vendorMemberInvitationByUserEmail(
                 {
                   inviter_full_name: currentUserFullName,
-                  inviter_message: "",
+                  inviter_message: '',
                   login_url: resetPasswordUrl,
-                  receiver_full_name: newUserFullName
+                  receiver_full_name: newUserFullName,
                 },
                 newUser.email,
               );
@@ -367,12 +394,13 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (newUser?.customer?.job_title || newUser?.vendor_member?.title) {
-        throw new InternalError('User already onboarded.')
+        throw new InternalError('User already onboarded.');
       }
 
       invariant(newUser, 'User not found.');
 
-      const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+      const resetTokenExpiration =
+        new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
       const updatedNewUser = await context.prisma.user.update({
         where: {
@@ -383,15 +411,15 @@ const resolvers: Resolvers<Context> = {
           reset_password_expiration: new Date(resetTokenExpiration),
         },
       });
-      const updatedUserFullName = getUserFullName(updatedNewUser)
-      const resetPasswordUrl = createResetPasswordUrl(resetToken)
-      const currentUserFullName = getUserFullName(currentUser)
+      const updatedUserFullName = getUserFullName(updatedNewUser);
+      const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      const currentUserFullName = getUserFullName(currentUser);
 
       if (currentUser?.customer?.biotech_id) {
         customerInvitationEmail(
           {
             inviter_full_name: currentUserFullName,
-            inviter_message: "",
+            inviter_message: '',
             login_url: resetPasswordUrl,
             receiver_full_name: updatedUserFullName,
           },
@@ -403,9 +431,9 @@ const resolvers: Resolvers<Context> = {
         vendorMemberInvitationByUserEmail(
           {
             inviter_full_name: currentUserFullName,
-            inviter_message: "",
+            inviter_message: '',
             login_url: resetPasswordUrl,
-            receiver_full_name: updatedUserFullName
+            receiver_full_name: updatedUserFullName,
           },
           updatedNewUser.email,
         );
@@ -427,8 +455,8 @@ const resolvers: Resolvers<Context> = {
       invariant(
         !user?.encrypted_password,
         new PublicError(
-          "Unable to cancel. Please contact support for assistance."
-        )
+          'Unable to cancel. Please contact support for assistance.',
+        ),
       );
 
       await context.prisma.$transaction(async (trx) => {
@@ -436,7 +464,7 @@ const resolvers: Resolvers<Context> = {
           await collaboratorService.deleteNewUser({ user_id }, { prisma: trx });
         } catch (error) {
           throw new PublicError(
-            "Unable to cancel. Please contact support for assistance."
+            'Unable to cancel. Please contact support for assistance.',
           );
         }
       });
@@ -445,7 +473,7 @@ const resolvers: Resolvers<Context> = {
     },
     updateCollaboratorRole: async (parent, args, context) => {
       const { role_type, user_id } = args;
-      const castedRole = (role_type as CompanyCollaboratorRoleType);
+      const castedRole = role_type as CompanyCollaboratorRoleType;
       const currentUser = await context.prisma.user.findFirst({
         where: {
           id: context.req.user_id,
@@ -453,7 +481,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: true,
           vendor_member: true,
-        }
+        },
       });
       invariant(currentUser, 'Current user not found.');
 
@@ -469,8 +497,9 @@ const resolvers: Resolvers<Context> = {
       invariant(user, 'User not found.');
 
       invariant(
-        currentUser.customer?.biotech_id === user.customer?.biotech_id
-        || currentUser.vendor_member?.vendor_company_id === user.vendor_member?.vendor_company_id,
+        currentUser.customer?.biotech_id === user.customer?.biotech_id ||
+          currentUser.vendor_member?.vendor_company_id ===
+            user.vendor_member?.vendor_company_id,
         'The user is not belong to the same company.',
       );
 
@@ -479,20 +508,22 @@ const resolvers: Resolvers<Context> = {
         user_id: currentUser.id,
       });
 
-
       await context.prisma.$transaction(async (trx) => {
-        await collaboratorService.updateUserRole({
-          user_id,
-          role: castedRole,
-        }, {
-          prisma: trx,
-        });
+        await collaboratorService.updateUserRole(
+          {
+            user_id,
+            role: castedRole,
+          },
+          {
+            prisma: trx,
+          },
+        );
       });
 
       return {
         ...user,
         company_collaborator_role: role_type,
-      }
+      };
     },
     deactivateCollaborator: async (_, args, context) => {
       const { user_id } = args;
@@ -505,7 +536,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           vendor_member: true,
           customer: true,
-        }
+        },
       });
       invariant(currentUser, 'Current user not found.');
 
@@ -519,7 +550,7 @@ const resolvers: Resolvers<Context> = {
             include: {
               biotech: {
                 include: {
-                  subscriptions: true
+                  subscriptions: true,
                 },
               },
             },
@@ -530,23 +561,35 @@ const resolvers: Resolvers<Context> = {
       invariant(user, new PublicError('User not found.'));
 
       invariant(
-        user.customer?.biotech_id === currentUser.customer?.biotech_id
-        || user.vendor_member?.vendor_company_id === currentUser.vendor_member?.vendor_company_id,
+        user.customer?.biotech_id === currentUser.customer?.biotech_id ||
+          user.vendor_member?.vendor_company_id ===
+            currentUser.vendor_member?.vendor_company_id,
         new PermissionDeniedError(),
       );
 
       const userRole = user.customer?.role || user.vendor_member?.role;
 
-      invariant(userRole !== CompanyCollaboratorRoleType.OWNER, new PermissionDeniedError());
+      invariant(
+        userRole !== CompanyCollaboratorRoleType.OWNER,
+        new PermissionDeniedError(),
+      );
 
       switch (userRole) {
         case CompanyCollaboratorRoleType.USER: {
-          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(
+            currentUser.id,
+            CasbinObj.COMPANY_COLLABORATOR_USER,
+            CasbinAct.DELETE,
+          );
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
         case CompanyCollaboratorRoleType.ADMIN: {
-          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(
+            currentUser.id,
+            CasbinObj.COMPANY_COLLABORATOR_ADMIN,
+            CasbinAct.DELETE,
+          );
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
@@ -584,7 +627,7 @@ const resolvers: Resolvers<Context> = {
         include: {
           vendor_member: true,
           customer: true,
-        }
+        },
       });
       invariant(currentUser, 'Current user not found.');
 
@@ -595,29 +638,41 @@ const resolvers: Resolvers<Context> = {
         include: {
           vendor_member: true,
           customer: true,
-        }
+        },
       });
 
       invariant(user, new PublicError('User not found.'));
 
       invariant(
-        user.customer?.biotech_id === currentUser.customer?.biotech_id
-        || user.vendor_member?.vendor_company_id === currentUser.vendor_member?.vendor_company_id,
+        user.customer?.biotech_id === currentUser.customer?.biotech_id ||
+          user.vendor_member?.vendor_company_id ===
+            currentUser.vendor_member?.vendor_company_id,
         new PermissionDeniedError(),
       );
 
       const userRole = user.customer?.role || user.vendor_member?.role;
 
-      invariant(userRole !== CompanyCollaboratorRoleType.OWNER, new PermissionDeniedError());
+      invariant(
+        userRole !== CompanyCollaboratorRoleType.OWNER,
+        new PermissionDeniedError(),
+      );
 
       switch (userRole) {
         case CompanyCollaboratorRoleType.USER: {
-          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(
+            currentUser.id,
+            CasbinObj.COMPANY_COLLABORATOR_USER,
+            CasbinAct.DELETE,
+          );
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
         case CompanyCollaboratorRoleType.ADMIN: {
-          const allowDeactivateUser = await hasPermission(currentUser.id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.DELETE);
+          const allowDeactivateUser = await hasPermission(
+            currentUser.id,
+            CasbinObj.COMPANY_COLLABORATOR_ADMIN,
+            CasbinAct.DELETE,
+          );
           invariant(allowDeactivateUser, new PermissionDeniedError());
           break;
         }
@@ -645,12 +700,12 @@ const resolvers: Resolvers<Context> = {
                     },
                   },
                 },
-              }
-            }
+              },
+            },
           });
 
           return activatedUser;
-        })
+        });
 
         return activatedUser;
       }
@@ -666,11 +721,14 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           customer: true,
-        }
+        },
       });
 
       invariant(currentUser, 'Current user not found.');
-      invariant(currentUser.customer?.role === CasbinRole.OWNER, 'Only the owner has the permission to transfer ownership. Current user does not have this permission.');
+      invariant(
+        currentUser.customer?.role === CasbinRole.OWNER,
+        'Only the owner has the permission to transfer ownership. Current user does not have this permission.',
+      );
 
       const newOwner = await context.prisma.customer.findFirst({
         where: {
@@ -679,8 +737,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(newOwner, new PublicError('Selected user not found.'));
-      invariant(newOwner.biotech_id === biotech_id, new PublicError('The new owner must belong to the same biotech as you.'));
-      invariant(currentUser.id !== user_id, new PublicError('The selected user is already the owner.'));
+      invariant(
+        newOwner.biotech_id === biotech_id,
+        new PublicError(
+          'The new owner must belong to the same biotech as you.',
+        ),
+      );
+      invariant(
+        currentUser.id !== user_id,
+        new PublicError('The selected user is already the owner.'),
+      );
 
       return await context.prisma.$transaction(async (trx) => {
         await collaboratorService.setCustomerAsUser(
@@ -707,11 +773,14 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           vendor_member: true,
-        }
+        },
       });
 
       invariant(currentUser, 'Current user not found.');
-      invariant(currentUser.vendor_member?.role === CasbinRole.OWNER, 'Only the owner has the permission to transfer ownership. Current user does not have this permission.');
+      invariant(
+        currentUser.vendor_member?.role === CasbinRole.OWNER,
+        'Only the owner has the permission to transfer ownership. Current user does not have this permission.',
+      );
 
       const newOwner = await context.prisma.vendorMember.findFirst({
         where: {
@@ -720,8 +789,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       invariant(newOwner, new PublicError('Selected user not found.'));
-      invariant(newOwner.vendor_company_id === vendor_company_id, new PublicError('The new owner must belong to the same vendor company as you.'));
-      invariant(currentUser.id !== user_id, new PublicError('The selected user is already the owner.'));
+      invariant(
+        newOwner.vendor_company_id === vendor_company_id,
+        new PublicError(
+          'The new owner must belong to the same vendor company as you.',
+        ),
+      );
+      invariant(
+        currentUser.id !== user_id,
+        new PublicError('The selected user is already the owner.'),
+      );
 
       return await context.prisma.$transaction(async (trx) => {
         await collaboratorService.setVendorMemberAsUser(
