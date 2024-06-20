@@ -1,17 +1,29 @@
-import { CasbinAct, CasbinObj, CasbinRole, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { hasPermission, updateRoleForUser, deleteRolesForUser } from "../../helper/casbin";
-import { PermissionDeniedError } from "../../graphql/errors/PermissionDeniedError";
-import invariant from "../../helper/invariant";
-import { InternalError } from "../../graphql/errors/InternalError";
-import { ServiceContext } from "../../types/context";
+import {
+  CasbinAct,
+  CasbinObj,
+  CasbinRole,
+  CompanyCollaboratorRoleType,
+} from '../../helper/constant';
+import {
+  hasPermission,
+  updateRoleForUser,
+  deleteRolesForUser,
+} from '../../helper/casbin';
+import { PermissionDeniedError } from '../../graphql/errors/PermissionDeniedError';
+import invariant from '../../helper/invariant';
+import { InternalError } from '../../graphql/errors/InternalError';
+import { ServiceContext } from '../../types/context';
 
 type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;
   customer_id: string;
   user_id: string;
-}
+};
 
-const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: ServiceContext) => {
+const setCustomerAsAdmin = async (
+  args: SetCustomerRoleAsAdminArgs,
+  ctx: ServiceContext,
+) => {
   const { biotech_id, customer_id, user_id } = args;
 
   const projectConnections = await ctx.prisma.projectConnection.findMany({
@@ -22,8 +34,8 @@ const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: Service
       customer_connections: {
         none: {
           customer_id,
-        }
-      }
+        },
+      },
     },
   });
 
@@ -42,9 +54,9 @@ const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: Service
         project_connection_id_customer_id: {
           customer_id,
           project_connection_id: pc.id,
-        }
-      }
-    })
+        },
+      },
+    });
   });
   await Promise.all(upsertTasks);
 
@@ -68,13 +80,16 @@ const setCustomerAsAdmin = async (args: SetCustomerRoleAsAdminArgs, ctx: Service
   await updateRoleForUser(user_id, CasbinRole.ADMIN);
 
   return updatedCustomer;
-}
+};
 
 type SetCustomerRoleAsUser = {
   customer_id: string;
-}
+};
 
-const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContext) => {
+const setCustomerAsUser = async (
+  args: SetCustomerRoleAsUser,
+  ctx: ServiceContext,
+) => {
   const { customer_id } = args;
   const updatedCustomer = await ctx.prisma.customer.update({
     where: {
@@ -88,13 +103,16 @@ const setCustomerAsUser = async (args: SetCustomerRoleAsUser, ctx: ServiceContex
   await updateRoleForUser(updatedCustomer.user_id, CasbinRole.USER);
 
   return updatedCustomer;
-}
+};
 
 type SetCustomerRoleAsOwner = {
   customer_id: string;
-}
+};
 
-const setCustomerAsOwner = async (args: SetCustomerRoleAsOwner, ctx: ServiceContext) => {
+const setCustomerAsOwner = async (
+  args: SetCustomerRoleAsOwner,
+  ctx: ServiceContext,
+) => {
   const { customer_id } = args;
   const updatedCustomer = await ctx.prisma.customer.update({
     where: {
@@ -108,15 +126,18 @@ const setCustomerAsOwner = async (args: SetCustomerRoleAsOwner, ctx: ServiceCont
   await updateRoleForUser(updatedCustomer.user_id, CasbinRole.OWNER);
 
   return updatedCustomer;
-}
+};
 
 type SetVendorMemberRoleAsAdminArgs = {
   vendor_company_id: string;
   vendor_member_id: string;
   user_id: string;
-}
+};
 
-const setVendorMemberAsAdmin = async (args: SetVendorMemberRoleAsAdminArgs, ctx: ServiceContext) => {
+const setVendorMemberAsAdmin = async (
+  args: SetVendorMemberRoleAsAdminArgs,
+  ctx: ServiceContext,
+) => {
   const { vendor_company_id, vendor_member_id, user_id } = args;
 
   const projectConnections = await ctx.prisma.projectConnection.findMany({
@@ -165,13 +186,16 @@ const setVendorMemberAsAdmin = async (args: SetVendorMemberRoleAsAdminArgs, ctx:
   await updateRoleForUser(user_id, CasbinRole.ADMIN);
 
   return updatedVendorMember;
-}
+};
 
 type SetVendorMemberAsUser = {
   vendor_member_id: string;
-}
+};
 
-const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceContext) => {
+const setVendorMemberAsUser = async (
+  args: SetVendorMemberAsUser,
+  ctx: ServiceContext,
+) => {
   const { vendor_member_id } = args;
 
   const updatedVendorMember = await ctx.prisma.vendorMember.update({
@@ -186,13 +210,16 @@ const setVendorMemberAsUser = async (args: SetVendorMemberAsUser, ctx: ServiceCo
   await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.USER);
 
   return updatedVendorMember;
-}
+};
 
 type SetVendorMemberAsOwner = {
   vendor_member_id: string;
-}
+};
 
-const setVendorMemberAsOwner = async (args: SetVendorMemberAsOwner, ctx: ServiceContext) => {
+const setVendorMemberAsOwner = async (
+  args: SetVendorMemberAsOwner,
+  ctx: ServiceContext,
+) => {
   const { vendor_member_id } = args;
 
   const updatedVendorMember = await ctx.prisma.vendorMember.update({
@@ -207,24 +234,34 @@ const setVendorMemberAsOwner = async (args: SetVendorMemberAsOwner, ctx: Service
   await updateRoleForUser(updatedVendorMember.user_id, CasbinRole.OWNER);
 
   return updatedVendorMember;
-}
+};
 
 type CheckPermissionToEditRoleArgs = {
   user_id: string;
   role: CompanyCollaboratorRoleType;
-}
+};
 
-const checkPermissionToEditRole = async (args: CheckPermissionToEditRoleArgs) => {
+const checkPermissionToEditRole = async (
+  args: CheckPermissionToEditRoleArgs,
+) => {
   const { user_id, role } = args;
 
   switch (role) {
     case CompanyCollaboratorRoleType.USER: {
-      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_USER, CasbinAct.WRITE);
+      const allow = await hasPermission(
+        user_id,
+        CasbinObj.COMPANY_COLLABORATOR_USER,
+        CasbinAct.WRITE,
+      );
       invariant(allow, new PermissionDeniedError());
       break;
     }
     case CompanyCollaboratorRoleType.ADMIN: {
-      const allow = await hasPermission(user_id, CasbinObj.COMPANY_COLLABORATOR_ADMIN, CasbinAct.WRITE);
+      const allow = await hasPermission(
+        user_id,
+        CasbinObj.COMPANY_COLLABORATOR_ADMIN,
+        CasbinAct.WRITE,
+      );
       invariant(allow, new PermissionDeniedError());
       break;
     }
@@ -232,14 +269,17 @@ const checkPermissionToEditRole = async (args: CheckPermissionToEditRoleArgs) =>
       throw new InternalError('User has invalid role.');
     }
   }
-}
+};
 
 type UpdateUserRoleArgs = {
   user_id: string;
   role: CompanyCollaboratorRoleType;
-}
+};
 
-const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => {
+const updateUserRole = async (
+  args: UpdateUserRoleArgs,
+  ctx: ServiceContext,
+) => {
   const { role, user_id } = args;
   const user = await ctx.prisma.user.findFirst({
     where: {
@@ -259,38 +299,50 @@ const updateUserRole = async (args: UpdateUserRoleArgs, ctx: ServiceContext) => 
   switch (role) {
     case CompanyCollaboratorRoleType.ADMIN: {
       if (isBiotech) {
-        await setCustomerAsAdmin({
-          biotech_id: user.customer!.biotech_id,
-          customer_id: user.customer!.id,
-          user_id
-        }, ctx);
+        await setCustomerAsAdmin(
+          {
+            biotech_id: user.customer!.biotech_id,
+            customer_id: user.customer!.id,
+            user_id,
+          },
+          ctx,
+        );
       }
       if (isVendor) {
-        await setVendorMemberAsAdmin({
-          user_id,
-          vendor_company_id: user.vendor_member!.vendor_company_id,
-          vendor_member_id: user.vendor_member!.id,
-        }, ctx)
+        await setVendorMemberAsAdmin(
+          {
+            user_id,
+            vendor_company_id: user.vendor_member!.vendor_company_id,
+            vendor_member_id: user.vendor_member!.id,
+          },
+          ctx,
+        );
       }
       break;
     }
     case CompanyCollaboratorRoleType.USER: {
       if (isBiotech) {
-        await setCustomerAsUser({
-          customer_id: user.customer!.id,
-        }, ctx);
+        await setCustomerAsUser(
+          {
+            customer_id: user.customer!.id,
+          },
+          ctx,
+        );
       }
       if (isVendor) {
-        await setVendorMemberAsUser({
-          vendor_member_id: user.vendor_member!.id,
-        }, ctx);
+        await setVendorMemberAsUser(
+          {
+            vendor_member_id: user.vendor_member!.id,
+          },
+          ctx,
+        );
       }
       break;
     }
     default:
       throw new InternalError('Invalid role.');
   }
-}
+};
 
 type DeleteNewUserArgs = {
   user_id: string;
@@ -299,10 +351,7 @@ type DeleteNewUserArgs = {
 /**
  * Delete a newly invited user that hasn't complete the account creation.
  */
-const deleteNewUser = async (
-  args: DeleteNewUserArgs,
-  ctx: ServiceContext
-) => {
+const deleteNewUser = async (args: DeleteNewUserArgs, ctx: ServiceContext) => {
   await ctx.prisma.user.delete({
     where: {
       id: args.user_id,
@@ -322,6 +371,6 @@ const collaboratorService = {
   checkPermissionToEditRole,
   updateUserRole,
   deleteNewUser,
-}
+};
 
 export default collaboratorService;

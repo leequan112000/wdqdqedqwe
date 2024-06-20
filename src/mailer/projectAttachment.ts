@@ -1,5 +1,4 @@
-import { createBulkEmailJobData } from "../helper/queue";
-import { createBulkSendMailJobs, createSendMailJob } from "../queues/sendMail.queues";
+import { createBulkSendMailJobs, createSendMailJob, createBulkEmailJobData } from "../queues/sendMail.queues";
 import { contractUploadNoticeTemplate, contractUpdateNoticeTemplate, documentUploadNoticeTemplate } from "./templates";
 
 type DocumentUploadNoticeEmailData = {

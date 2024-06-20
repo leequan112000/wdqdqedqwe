@@ -1,18 +1,27 @@
-import { Biotech, BiotechInvoice, BiotechInvoiceItem, Customer, Invoice, Milestone, Prisma, ProjectConnection, Quote, User, CustomerSubscription } from '@prisma/client';
+import {
+  Biotech,
+  BiotechInvoice,
+  BiotechInvoiceItem,
+  Customer,
+  Invoice,
+  Milestone,
+  Prisma,
+  ProjectConnection,
+  Quote,
+  User,
+  CustomerSubscription,
+} from '@prisma/client';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
 import Stripe from 'stripe';
 import { MockContext, createMockContext } from '../../../testContext';
 import { ServiceContext } from '../../../types/context';
 import {
   checkoutSessionCompleted,
-
   checkoutSessionAsyncPaymentSucceeded,
   checkoutSessionAsyncPaymentFailed,
-
   customerSubscriptionUpdated,
   customerSubscriptionUpdatedWithCancelAt,
   customerSubscriptionDeleted,
-
 } from './stripe-mock-data/stripeMockData';
 import { processStripeEvent } from './stripe';
 import { prisma } from '../../../__mocks__/prisma';
@@ -20,13 +29,20 @@ import stripe from '../../../helper/__mocks__/stripe';
 import {
   createInvoicePaymentNoticeEmailJob,
   createSendUserMilestoneNoticeJob,
-  createSendUserMilestonePaymentFailedNoticeJob
+  createSendUserMilestonePaymentFailedNoticeJob,
 } from '../../../queues/email.queues';
 import {
-  InvoicePaymentStatus, MilestonePaymentStatus, MilestoneStatus, ProjectConnectionVendorStatus, QuoteStatus
+  InvoicePaymentStatus,
+  MilestonePaymentStatus,
+  MilestoneStatus,
+  ProjectConnectionVendorStatus,
+  QuoteStatus,
 } from '../../../helper/constant';
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
-import { NotificationJob, createNotificationQueueJob } from '../../../queues/notification.queues';
+import {
+  NotificationJob,
+  createNotificationQueueJob,
+} from '../../../queues/notification.queues';
 
 vi.mock('../../../prisma.ts');
 
@@ -52,7 +68,7 @@ vi.mock('../../../helper/stripe.ts', () => ({
   getStripeInstance: () => stripe,
 }));
 
-const API_VERSION = "2022-08-01";
+const API_VERSION = '2022-08-01';
 
 let mockCtx: MockContext;
 let ctx: ServiceContext;
@@ -89,7 +105,7 @@ beforeEach(() => {
     status: 'active',
     stripe_subscription_id: checkoutSessionCompleted.data.object.subscription,
     stripe_customer_id: checkoutSessionCompleted.data.object.customer,
-  }
+  };
 
   biotech = {
     id: 'uuid',
@@ -145,7 +161,7 @@ beforeEach(() => {
     short_id: 'uuid',
     status: QuoteStatus.ACCEPTED,
     updated_at: new Date(),
-  }
+  };
 
   milestone = {
     id: 'uuid',
@@ -186,7 +202,8 @@ describe('process stripe event', () => {
       test('should skip webhook and return 200', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
         prisma.customer.findFirst.mockResolvedValue(null);
 
         const result = await processStripeEvent(event);
@@ -198,7 +215,8 @@ describe('process stripe event', () => {
       test('should return 200 & OK', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
         prisma.customer.findFirst.mockResolvedValue(customer);
 
         const result = await processStripeEvent(event);
@@ -212,8 +230,10 @@ describe('process stripe event', () => {
       test('should return 200 & OK', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'invoice';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'invoice';
+        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id =
+          'uuid';
         prisma.customer.findFirst.mockResolvedValue(customer);
 
         const result = await processStripeEvent(event);
@@ -224,8 +244,10 @@ describe('process stripe event', () => {
       test('should return 400, missing invoice_id', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'invoice';
-        delete (event.data.object as Stripe.Checkout.Session).metadata?.invoice_id;
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'invoice';
+        delete (event.data.object as Stripe.Checkout.Session).metadata
+          ?.invoice_id;
         prisma.customer.findFirst.mockResolvedValue(customer);
 
         const result = await processStripeEvent(event);
@@ -257,7 +279,6 @@ describe('process stripe event', () => {
           customer_subscriptions: CustomerSubscription[];
         });
 
-
         const result = await processStripeEvent(event);
         expect(prisma.customerSubscription.create).toBeCalled();
         expect(result.status).toEqual(200);
@@ -273,7 +294,6 @@ describe('process stripe event', () => {
         } as Customer & {
           customer_subscriptions: CustomerSubscription[];
         });
-
 
         const result = await processStripeEvent(event);
         expect(prisma.customerSubscription.update).toBeCalled();
@@ -293,7 +313,7 @@ describe('process stripe event', () => {
 
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
-      })
+      });
     });
     describe('mode: subscription', () => {
       test('should return 200', async () => {
@@ -304,30 +324,35 @@ describe('process stripe event', () => {
 
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
-      })
+      });
     });
     describe('mode: payment, type: invoice', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentSucceeded as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'invoice';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'invoice';
+        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id =
+          'uuid';
 
         prisma.invoice.update.mockResolvedValue(invoice);
-        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(() => true);
+        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(
+          () => true,
+        );
 
         const { message, status } = await processStripeEvent(event);
 
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
         expect(createInvoicePaymentNoticeEmailJob).toBeCalled();
-      })
+      });
     });
     describe('mode: payment, type: milestone', () => {
       test('should skip and return 200', async () => {
         const event = checkoutSessionAsyncPaymentSucceeded as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
 
         prisma.customer.findFirst.mockResolvedValue(null);
 
@@ -339,9 +364,12 @@ describe('process stripe event', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentSucceeded as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
-        (event.data.object as Stripe.Checkout.Session).metadata!.milestone_id = 'uuid';
-        (event.data.object as Stripe.Checkout.Session).metadata!.quote_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.milestone_id =
+          'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.quote_id =
+          'uuid';
 
         prisma.customer.findFirst.mockResolvedValue(customer);
         prisma.milestone.update.mockResolvedValue({
@@ -382,29 +410,35 @@ describe('process stripe event', () => {
           biotech: Biotech;
         });
 
-        prisma.customer.findMany.mockResolvedValue([{
-          ...customer,
-          user: {
-            id: 'uuid',
-            email: 'user@cromatic.bio',
-            first_name: 'Cromatic',
-            last_name: 'User',
-            encrypted_password: 'password',
-            reset_password_token: null,
-            reset_password_expiration: null,
-            reset_password_sent_at: null,
-            remember_created_at: null,
-            created_at: new Date(),
-            updated_at: new Date(),
-            is_active: true,
-          }
-        } as Customer & {
-          user: User;
-        }]);
+        prisma.customer.findMany.mockResolvedValue([
+          {
+            ...customer,
+            user: {
+              id: 'uuid',
+              email: 'user@cromatic.bio',
+              first_name: 'Cromatic',
+              last_name: 'User',
+              encrypted_password: 'password',
+              reset_password_token: null,
+              reset_password_expiration: null,
+              reset_password_sent_at: null,
+              remember_created_at: null,
+              created_at: new Date(),
+              updated_at: new Date(),
+              is_active: true,
+            },
+          } as Customer & {
+            user: User;
+          },
+        ]);
 
-        vi.mocked(bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail).mockImplementation(() => Promise.resolve());
+        vi.mocked(
+          bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail,
+        ).mockImplementation(() => Promise.resolve());
         vi.mocked(createNotificationQueueJob);
-        vi.mocked(createSendUserMilestoneNoticeJob).mockImplementation(() => true);
+        vi.mocked(createSendUserMilestoneNoticeJob).mockImplementation(
+          () => true,
+        );
 
         const { message, status } = await processStripeEvent(event);
 
@@ -418,8 +452,8 @@ describe('process stripe event', () => {
             quote: {
               include: {
                 project_connection: true,
-              }
-            }
+              },
+            },
           },
           data: {
             payment_status: MilestonePaymentStatus.PAID,
@@ -433,14 +467,16 @@ describe('process stripe event', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentSucceeded as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'unhandled';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'unhandled';
+        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id =
+          'uuid';
 
         const { message, status } = await processStripeEvent(event);
 
         expect(status).toEqual(400);
         expect(message).contain('Unhandled');
-      })
+      });
     });
   });
 
@@ -465,19 +501,26 @@ describe('process stripe event', () => {
 
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
-      })
+      });
     });
     describe('mode: payment, type: invoice', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentFailed as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'invoice';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id = 'uuid';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_number = 'uuid';
-        (event.data.object as Stripe.Checkout.Session).metadata!.user_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'invoice';
+        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id =
+          'uuid';
+        (
+          event.data.object as Stripe.Checkout.Session
+        ).metadata!.invoice_number = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.user_id =
+          'uuid';
 
         prisma.invoice.update.mockResolvedValue(invoice);
-        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(() => true);
+        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(
+          () => true,
+        );
 
         const { message, status } = await processStripeEvent(event);
 
@@ -492,13 +535,14 @@ describe('process stripe event', () => {
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
         expect(createInvoicePaymentNoticeEmailJob).toBeCalled();
-      })
+      });
     });
     describe('mode: payment, type: milestone', () => {
       test('should skip and return 200', async () => {
         const event = checkoutSessionAsyncPaymentFailed as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
 
         prisma.customer.findFirst.mockResolvedValue(null);
 
@@ -510,12 +554,17 @@ describe('process stripe event', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentFailed as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'milestone';
-        (event.data.object as Stripe.Checkout.Session).metadata!.milestone_id = 'uuid';
-        (event.data.object as Stripe.Checkout.Session).metadata!.quote_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'milestone';
+        (event.data.object as Stripe.Checkout.Session).metadata!.milestone_id =
+          'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.quote_id =
+          'uuid';
 
         prisma.customer.findFirst.mockResolvedValue(customer);
-        vi.mocked(createSendUserMilestonePaymentFailedNoticeJob).mockImplementation(() => true);
+        vi.mocked(
+          createSendUserMilestonePaymentFailedNoticeJob,
+        ).mockImplementation(() => true);
 
         const { message, status } = await processStripeEvent(event);
 
@@ -536,14 +585,16 @@ describe('process stripe event', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentFailed as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
-        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type = 'unhandled';
-        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id = 'uuid';
+        (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
+          'unhandled';
+        (event.data.object as Stripe.Checkout.Session).metadata!.invoice_id =
+          'uuid';
 
         const { message, status } = await processStripeEvent(event);
 
         expect(status).toEqual(400);
         expect(message).contain('Unhandled');
-      })
+      });
     });
   });
 
@@ -552,19 +603,19 @@ describe('process stripe event', () => {
       const event = customerSubscriptionUpdated as Stripe.Event;
 
       stripe.products.retrieve.mockResolvedValueOnce({
-        id: "prod_NortzQ6i7n9Xnw",
-        object: "product",
+        id: 'prod_NortzQ6i7n9Xnw',
+        object: 'product',
         active: true,
         created: 1683014531,
         default_price: null,
-        description: "(created by Stripe CLI)",
+        description: '(created by Stripe CLI)',
         images: [],
         livemode: false,
         metadata: {
           account_type: 'sourcerer',
-          plan_name: 'sourcerer'
+          plan_name: 'sourcerer',
         },
-        name: "myproduct",
+        name: 'myproduct',
         package_dimensions: null,
         shippable: null,
         statement_descriptor: null,
@@ -623,19 +674,19 @@ describe('process stripe event', () => {
       const event = customerSubscriptionUpdated as Stripe.Event;
 
       stripe.products.retrieve.mockResolvedValueOnce({
-        id: "prod_NortzQ6i7n9Xnw",
-        object: "product",
+        id: 'prod_NortzQ6i7n9Xnw',
+        object: 'product',
         active: true,
         created: 1683014531,
         default_price: null,
-        description: "(created by Stripe CLI)",
+        description: '(created by Stripe CLI)',
         images: [],
         livemode: false,
         metadata: {
           account_type: 'sourcerer',
-          plan_name: 'sourcerer'
+          plan_name: 'sourcerer',
         },
-        name: "myproduct",
+        name: 'myproduct',
         package_dimensions: null,
         shippable: null,
         statement_descriptor: null,
@@ -686,19 +737,19 @@ describe('process stripe event', () => {
       const event = customerSubscriptionUpdatedWithCancelAt as any;
 
       stripe.products.retrieve.mockResolvedValueOnce({
-        id: "prod_NortzQ6i7n9Xnw",
-        object: "product",
+        id: 'prod_NortzQ6i7n9Xnw',
+        object: 'product',
         active: true,
         created: 1683014531,
         default_price: null,
-        description: "(created by Stripe CLI)",
+        description: '(created by Stripe CLI)',
         images: [],
         livemode: false,
         metadata: {
           account_type: 'sourcerer',
-          plan_name: 'sourcerer'
+          plan_name: 'sourcerer',
         },
-        name: "myproduct",
+        name: 'myproduct',
         package_dimensions: null,
         shippable: null,
         statement_descriptor: null,

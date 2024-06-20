@@ -1,9 +1,9 @@
-import moment from "moment";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { createSendAdminNewProjectRequestCommentJob } from "../../queues/email.queues";
-import invariant from "../../helper/invariant";
-import { PublicError } from "../errors/PublicError";
+import moment from 'moment';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { createSendAdminNewProjectRequestCommentJob } from '../../queues/email.queues';
+import invariant from '../../helper/invariant';
+import { PublicError } from '../errors/PublicError';
 
 const resolvers: Resolvers<Context> = {
   ProjectRequestComment: {
@@ -38,28 +38,32 @@ const resolvers: Resolvers<Context> = {
           const projectRequest = await trx.projectRequest.findFirst({
             where: {
               customer_id: customer.id,
-              id: args.project_request_id
+              id: args.project_request_id,
             },
             include: { biotech: true },
           });
 
-          invariant(projectRequest, new PublicError('Project request not found.'));
+          invariant(
+            projectRequest,
+            new PublicError('Project request not found.'),
+          );
 
           const fifteenMinBefore = moment().subtract(15, 'minute');
-          const commentsWithinThePast15Min = await trx.projectRequestComment.findFirst({
-            where: {
-              project_request_id: args.project_request_id,
-              created_at: {
-                gte: fifteenMinBefore.toDate(),
-              }
-            },
-            orderBy: {
-              created_at: 'desc',
-            },
-          });
+          const commentsWithinThePast15Min =
+            await trx.projectRequestComment.findFirst({
+              where: {
+                project_request_id: args.project_request_id,
+                created_at: {
+                  gte: fifteenMinBefore.toDate(),
+                },
+              },
+              orderBy: {
+                created_at: 'desc',
+              },
+            });
 
           const newComment = await trx.projectRequestComment.create({
-            data: { ...args }
+            data: { ...args },
           });
 
           // Simple anti spam mechanism.
@@ -76,7 +80,7 @@ const resolvers: Resolvers<Context> = {
         throw error;
       }
     },
-  }
+  },
 };
 
 export default resolvers;

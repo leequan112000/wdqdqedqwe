@@ -4,7 +4,7 @@ import { ServiceContext } from '../../types/context';
 import { MockContext, createMockContext } from '../../testContext';
 import collaboratorService from './collaborator.service';
 import { CompanyCollaboratorRoleType } from '../../helper/constant';
-import { hasPermission } from '../../helper/__mocks__/casbin'
+import { hasPermission } from '../../helper/__mocks__/casbin';
 import { PermissionDeniedError } from '../../graphql/errors/PermissionDeniedError';
 
 let mockCtx: MockContext;
@@ -36,8 +36,8 @@ describe('collaborator.service', () => {
           reset_password_expiration: null,
           reset_password_sent_at: null,
           reset_password_token: null,
-          phone_number: "5555551234",
-          country_code: "1",
+          phone_number: '5555551234',
+          country_code: '1',
           created_at: new Date(),
           updated_at: new Date(),
           customer: {
@@ -60,13 +60,15 @@ describe('collaborator.service', () => {
           ...user.customer,
         });
 
-        expect(collaboratorService.updateUserRole(
-          {
-            role: CompanyCollaboratorRoleType.ADMIN,
-            user_id: 'user-id',
-          },
-          ctx
-        )).resolves.not.toThrowError();
+        expect(
+          collaboratorService.updateUserRole(
+            {
+              role: CompanyCollaboratorRoleType.ADMIN,
+              user_id: 'user-id',
+            },
+            ctx,
+          ),
+        ).resolves.not.toThrowError();
       });
     });
 
@@ -83,8 +85,8 @@ describe('collaborator.service', () => {
           reset_password_expiration: null,
           reset_password_sent_at: null,
           reset_password_token: null,
-          phone_number: "5555551234",
-          country_code: "1",
+          phone_number: '5555551234',
+          country_code: '1',
           created_at: new Date(),
           updated_at: new Date(),
           customer: {
@@ -107,13 +109,15 @@ describe('collaborator.service', () => {
           ...user.customer,
         });
 
-        expect(collaboratorService.updateUserRole(
-          {
-            role: CompanyCollaboratorRoleType.USER,
-            user_id: 'user-id',
-          },
-          ctx
-        )).resolves.not.toThrowError();
+        expect(
+          collaboratorService.updateUserRole(
+            {
+              role: CompanyCollaboratorRoleType.USER,
+              user_id: 'user-id',
+            },
+            ctx,
+          ),
+        ).resolves.not.toThrowError();
       });
     });
 
@@ -132,8 +136,8 @@ describe('collaborator.service', () => {
           reset_password_token: null,
           created_at: new Date(),
           updated_at: new Date(),
-          phone_number: "5555551234",
-          country_code: "1",
+          phone_number: '5555551234',
+          country_code: '1',
           vendor_member: {
             id: 'customer-id',
             vendor_company_id: 'biotech_id',
@@ -154,13 +158,15 @@ describe('collaborator.service', () => {
           ...user.vendor_member,
         });
 
-        expect(collaboratorService.updateUserRole(
-          {
-            role: CompanyCollaboratorRoleType.ADMIN,
-            user_id: 'user-id',
-          },
-          ctx
-        )).resolves.not.toThrowError();
+        expect(
+          collaboratorService.updateUserRole(
+            {
+              role: CompanyCollaboratorRoleType.ADMIN,
+              user_id: 'user-id',
+            },
+            ctx,
+          ),
+        ).resolves.not.toThrowError();
       });
     });
 
@@ -179,8 +185,8 @@ describe('collaborator.service', () => {
           reset_password_token: null,
           created_at: new Date(),
           updated_at: new Date(),
-          phone_number: "5555551234",
-          country_code: "1",
+          phone_number: '5555551234',
+          country_code: '1',
           vendor_member: {
             id: 'customer-id',
             vendor_company_id: 'biotech_id',
@@ -201,26 +207,30 @@ describe('collaborator.service', () => {
           ...user.vendor_member,
         });
 
-        expect(collaboratorService.updateUserRole(
-          {
-            role: CompanyCollaboratorRoleType.USER,
-            user_id: 'user-id',
-          },
-          ctx
-        )).resolves.not.toThrowError();
+        expect(
+          collaboratorService.updateUserRole(
+            {
+              role: CompanyCollaboratorRoleType.USER,
+              user_id: 'user-id',
+            },
+            ctx,
+          ),
+        ).resolves.not.toThrowError();
       });
     });
   });
 
   describe('checkPermissionToEditRole', () => {
-    describe('Given the user doesn\'t has permission', () => {
+    describe("Given the user doesn't has permission", () => {
       test('Should throw permission denied error', async () => {
         vi.mocked(hasPermission).mockResolvedValueOnce(false);
 
-        expect(collaboratorService.checkPermissionToEditRole({
-          role: CompanyCollaboratorRoleType.USER,
-          user_id: 'user-id',
-        })).rejects.toThrowError(PermissionDeniedError);
+        expect(
+          collaboratorService.checkPermissionToEditRole({
+            role: CompanyCollaboratorRoleType.USER,
+            user_id: 'user-id',
+          }),
+        ).rejects.toThrowError(PermissionDeniedError);
       });
     });
 
@@ -228,10 +238,12 @@ describe('collaborator.service', () => {
       test('Should pass without throw', async () => {
         vi.mocked(hasPermission).mockResolvedValueOnce(true);
 
-        expect(collaboratorService.checkPermissionToEditRole({
-          role: CompanyCollaboratorRoleType.USER,
-          user_id: 'user-id',
-        })).resolves.not.toThrowError();
+        expect(
+          collaboratorService.checkPermissionToEditRole({
+            role: CompanyCollaboratorRoleType.USER,
+            user_id: 'user-id',
+          }),
+        ).resolves.not.toThrowError();
       });
     });
 
@@ -239,11 +251,13 @@ describe('collaborator.service', () => {
       test('Should throw error', async () => {
         vi.mocked(hasPermission).mockResolvedValueOnce(true);
 
-        expect(collaboratorService.checkPermissionToEditRole({
-          role: 'invalid-role' as CompanyCollaboratorRoleType,
-          user_id: 'user-id',
-        })).rejects.toThrowError();
+        expect(
+          collaboratorService.checkPermissionToEditRole({
+            role: 'invalid-role' as CompanyCollaboratorRoleType,
+            user_id: 'user-id',
+          }),
+        ).rejects.toThrowError();
       });
-    })
+    });
   });
-})
+});

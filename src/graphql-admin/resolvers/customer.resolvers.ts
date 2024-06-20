@@ -1,5 +1,5 @@
 import { PublicError } from '../../graphql/errors/PublicError';
-import { Resolvers } from "../generated";
+import { Resolvers } from '../generated';
 import { Context } from '../../types/context';
 import { createResetPasswordToken } from '../../helper/auth';
 import invariant from '../../helper/invariant';
@@ -12,12 +12,12 @@ import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
 const resolver: Resolvers<Context> = {
   Customer: {
     user: async (parent, _, context) => {
-      invariant(parent.user_id, 'User id not found.')
+      invariant(parent.user_id, 'User id not found.');
       return await context.prisma.user.findFirst({
         where: {
-          id: parent.user_id
-        }
-      })
+          id: parent.user_id,
+        },
+      });
     },
   },
   Query: {
@@ -26,7 +26,15 @@ const resolver: Resolvers<Context> = {
   Mutation: {
     inviteCustomerByAdmin: async (_, args, context) => {
       return await context.prisma.$transaction(async (trx) => {
-        const { first_name, last_name, email, biotech_id, role, country_code, phone_number } = args;
+        const {
+          first_name,
+          last_name,
+          email,
+          biotech_id,
+          role,
+          country_code,
+          phone_number,
+        } = args;
 
         const user = await trx.user.findFirst({
           where: {
@@ -43,16 +51,16 @@ const resolver: Resolvers<Context> = {
           },
         });
         const noOwner = owner === null;
-        const isAddingOwner = role === CompanyCollaboratorRoleType.OWNER
+        const isAddingOwner = role === CompanyCollaboratorRoleType.OWNER;
 
         // Check if company has owner.
         invariant(
-          isAddingOwner && noOwner
-          || !isAddingOwner,
+          (isAddingOwner && noOwner) || !isAddingOwner,
           new PublicError('Owner already exists!'),
         );
 
-        const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        const resetTokenExpiration =
+          new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
@@ -83,7 +91,7 @@ const resolver: Resolvers<Context> = {
                 biotech_id: biotech_id,
                 customer_id: newCustomer.id,
               },
-              { prisma: trx }
+              { prisma: trx },
             );
             break;
           }
@@ -92,7 +100,7 @@ const resolver: Resolvers<Context> = {
               {
                 customer_id: newCustomer.id,
               },
-              { prisma: trx }
+              { prisma: trx },
             );
             break;
           }
@@ -125,7 +133,7 @@ const resolver: Resolvers<Context> = {
         return newCustomer;
       });
     },
-  }
-}
+  },
+};
 
 export default resolver;

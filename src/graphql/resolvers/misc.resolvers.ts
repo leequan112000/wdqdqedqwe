@@ -1,16 +1,15 @@
-import { GraphQLScalarType, Kind } from "graphql";
-import { isDate } from "moment";
-import GraphQLUpload from "graphql-upload/GraphQLUpload.js";
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
+import { GraphQLScalarType, Kind } from 'graphql';
+import { isDate } from 'moment';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
 
 const resolvers: Resolvers<Context> = {
   Date: new GraphQLScalarType({
-    name: "Date",
+    name: 'Date',
     description: 'Date custom scalar type',
     serialize(value) {
-      if (isDate(value))
-        return value.toISOString();
+      if (isDate(value)) return value.toISOString();
       return value;
     },
     parseValue(value) {
@@ -25,7 +24,7 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
   }),
-  Upload: GraphQLUpload
-}
+  Upload: GraphQLUpload,
+};
 
 export default resolvers;

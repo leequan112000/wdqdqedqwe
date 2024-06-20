@@ -1,29 +1,29 @@
-import { MeetingGuest } from "@prisma/client";
-import moment from "moment";
-import { app_env } from "../../environment";
-import invariant from "../../helper/invariant";
+import { MeetingGuest } from '@prisma/client';
+import moment from 'moment';
+import { app_env } from '../../environment';
+import invariant from '../../helper/invariant';
 import {
   acceptedMeetingRSVPUpdateNotificationEmail,
   declinedMeetingRSVPNotificationForGuestEmail,
   declinedMeetingRSVPUpdateNotificationEmail,
   acceptedMeetingRSVPNotificationForGuestEmail,
-} from "../../mailer/guestMeeting";
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../generated";
+} from '../../mailer/guestMeeting';
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import { Resolvers } from '../generated';
 import {
   InvitationAnswer,
   MeetingGuestStatus,
   MeetingGuestType,
   MeetingPlatform,
   OauthProvider,
-} from "../../helper/constant";
+} from '../../helper/constant';
 import {
   createAcceptedMeetingRSVPNotification,
   createDeclinedMeetingRSVPNotification,
-} from "../../notification/guestMeeting";
-import { checkIfUserInProjectConnection } from "../../services/projectConnection/projectConnection.service";
-import meetingEventService from "../../services/meetingEvent/meetingEvent.service";
+} from '../../notification/guestMeeting';
+import { checkIfUserInProjectConnection } from '../../services/projectConnection/projectConnection.service';
+import meetingEventService from '../../services/meetingEvent/meetingEvent.service';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -44,7 +44,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meeting, new PublicError("Invalid token"));
+      invariant(meeting, new PublicError('Invalid token'));
 
       let meetingGuest: MeetingGuest | null = null;
 
@@ -104,12 +104,12 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(meetingEvent, new PublicError("Invalid token"));
+      invariant(meetingEvent, new PublicError('Invalid token'));
 
       const now = moment();
       const isEnded = now.isAfter(moment(meetingEvent.end_time));
 
-      invariant(!isEnded, new PublicError("The meeting is already ended"));
+      invariant(!isEnded, new PublicError('The meeting is already ended'));
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
@@ -128,7 +128,7 @@ const resolvers: Resolvers<Context> = {
           },
           {
             prisma: context.prisma,
-          }
+          },
         );
       }
 
@@ -162,7 +162,7 @@ const resolvers: Resolvers<Context> = {
       const { organizer, id: meetingEventId, organizer_id } = meetingEvent;
       const projectTitle =
         meetingEvent.project_connection.project_request.title;
-      const guestName = name || "guest";
+      const guestName = name || 'guest';
 
       // Send response confirmation email
       if (answer === InvitationAnswer.YES) {
@@ -173,23 +173,23 @@ const resolvers: Resolvers<Context> = {
           {
             button_url: buttonUrl,
             meeting_title: meetingEvent.title,
-            guest_name: name || "guest",
+            guest_name: name || 'guest',
             project_title:
               meetingEvent.project_connection.project_request.title,
             host_name: `${organizer.first_name} ${organizer.last_name}`,
           },
-          meetingGuest.email
+          meetingGuest.email,
         );
         acceptedMeetingRSVPUpdateNotificationEmail(
           {
             button_url: `${app_env.APP_URL}/app/meeting-events`,
             meeting_title: meetingEvent.title,
-            guest_name: name || "guest",
+            guest_name: name || 'guest',
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
-          organizer.email
+          organizer.email,
         );
         createAcceptedMeetingRSVPNotification({
           guest_name: guestName,
@@ -202,23 +202,23 @@ const resolvers: Resolvers<Context> = {
         declinedMeetingRSVPNotificationForGuestEmail(
           {
             meeting_title: meetingEvent.title,
-            guest_name: name || "guest",
+            guest_name: name || 'guest',
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
-          meetingGuest.email
+          meetingGuest.email,
         );
         declinedMeetingRSVPUpdateNotificationEmail(
           {
             button_url: `${app_env.APP_URL}/app/meeting-events`,
             meeting_title: meetingEvent.title,
-            guest_name: name || "guest",
+            guest_name: name || 'guest',
             host_name: `${organizer.first_name} ${organizer.last_name}`,
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
-          organizer.email
+          organizer.email,
         );
         createDeclinedMeetingRSVPNotification({
           guest_name: guestName,
@@ -231,7 +231,7 @@ const resolvers: Resolvers<Context> = {
       // Patch calendar event
       if (meetingEvent.platform !== MeetingPlatform.CUSTOM) {
         const existingAttendees = meetingEvent.meetingAttendeeConnections.map(
-          (mac) => mac.user
+          (mac) => mac.user,
         );
         const existingExternalGuests = meetingEvent.meeting_guests;
         switch (meetingEvent.platform) {
@@ -242,7 +242,7 @@ const resolvers: Resolvers<Context> = {
                 provider: OauthProvider.GOOGLE,
               },
             });
-            invariant(oauthGoogle, new PublicError("Missing token."));
+            invariant(oauthGoogle, new PublicError('Missing token.'));
 
             const attendeesArr = [
               ...existingAttendees.map((a) => ({ email: a.email })),
@@ -271,7 +271,7 @@ const resolvers: Resolvers<Context> = {
               },
             });
 
-            invariant(oauthMicrosoft, new PublicError("Missing token."));
+            invariant(oauthMicrosoft, new PublicError('Missing token.'));
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
                 emailAddress: { address: a.email },

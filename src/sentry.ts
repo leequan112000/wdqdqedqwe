@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from '@sentry/node';
 
-import { prisma, prismaCRODb } from "./prisma";
+import { prisma, prismaCRODb } from './prisma';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,

@@ -1,12 +1,16 @@
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers, StripeAccountData } from "../generated";;
-import { getStripeInstance } from "../../helper/stripe";
-import invariant from "../../helper/invariant";
-import { hasPermission } from "../../helper/casbin";
-import { CasbinAct, CasbinObj, CompanyCollaboratorRoleType } from "../../helper/constant";
-import { PermissionDeniedError } from "../errors/PermissionDeniedError";
-import { checkAllowEditCompanyInfoPermission } from "../../helper/accessControl";
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import { Resolvers, StripeAccountData } from '../generated';
+import { getStripeInstance } from '../../helper/stripe';
+import invariant from '../../helper/invariant';
+import { hasPermission } from '../../helper/casbin';
+import {
+  CasbinAct,
+  CasbinObj,
+  CompanyCollaboratorRoleType,
+} from '../../helper/constant';
+import { PermissionDeniedError } from '../errors/PermissionDeniedError';
+import { checkAllowEditCompanyInfoPermission } from '../../helper/accessControl';
 
 const resolvers: Resolvers<Context> = {
   VendorCompany: {
@@ -14,24 +18,24 @@ const resolvers: Resolvers<Context> = {
       invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.vendorMember.findMany({
         where: {
-          vendor_company_id: parent.id
-        }
+          vendor_company_id: parent.id,
+        },
       });
     },
     project_connections: async (parent, _, context) => {
       invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.projectConnection.findMany({
         where: {
-          vendor_company_id: parent.id
-        }
-      })
+          vendor_company_id: parent.id,
+        },
+      });
     },
     chats: async (parent, _, context) => {
       invariant(parent.id, 'Vendor company id not found.');
       return await context.prisma.chat.findMany({
         where: {
-          vendor_company_id: parent.id
-        }
+          vendor_company_id: parent.id,
+        },
       });
     },
     primary_members: async (parent, _, context) => {
@@ -47,7 +51,7 @@ const resolvers: Resolvers<Context> = {
       return primaryMembers;
     },
     certification_tags: async (parentVendorCompany, _, context) => {
-      invariant(parentVendorCompany.id, "Vendor company id not found.");
+      invariant(parentVendorCompany.id, 'Vendor company id not found.');
 
       const certificationTagConnections =
         (await context.prisma.vendorCompany
@@ -63,13 +67,13 @@ const resolvers: Resolvers<Context> = {
           })) || [];
 
       const certificationTags = certificationTagConnections.map(
-        (c) => c.certification_tag
+        (c) => c.certification_tag,
       );
       const priorityTags = certificationTags.filter(
-        (tag) => tag.priority && tag.priority > 0
+        (tag) => tag.priority && tag.priority > 0,
       );
       const nonPriorityTags = certificationTags.filter(
-        (tag) => tag.priority === null
+        (tag) => tag.priority === null,
       );
 
       return [...priorityTags, ...nonPriorityTags];
@@ -90,7 +94,9 @@ const resolvers: Resolvers<Context> = {
             },
           })) || [];
 
-      const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
+      const labSpecializations = labSpecializationConnections.map(
+        (c) => c.lab_specialization,
+      );
 
       return labSpecializations;
     },
@@ -106,16 +112,20 @@ const resolvers: Resolvers<Context> = {
 
         return await trx.vendorCompany.findFirst({
           where: {
-            id: vendorMember.vendor_company_id
-          }
-        })
+            id: vendorMember.vendor_company_id,
+          },
+        });
       });
     },
     vendorCompanyStripeConnectUrl: async (_, args, context) => {
       const { refresh_url, return_url } = args;
 
       invariant(context.req.user_id, 'Current user id not found.');
-      const allowSetupBankAccount = await hasPermission(context.req.user_id, CasbinObj.PAYOUT_ACCOUNT, CasbinAct.WRITE);
+      const allowSetupBankAccount = await hasPermission(
+        context.req.user_id,
+        CasbinObj.PAYOUT_ACCOUNT,
+        CasbinAct.WRITE,
+      );
       invariant(allowSetupBankAccount, new PermissionDeniedError());
 
       return await context.prisma.$transaction(async (trx) => {
@@ -124,8 +134,8 @@ const resolvers: Resolvers<Context> = {
             user_id: context.req.user_id,
           },
           include: {
-            vendor_company: true
-          }
+            vendor_company: true,
+          },
         });
 
         if (vendorMember.vendor_company) {
@@ -143,11 +153,11 @@ const resolvers: Resolvers<Context> = {
 
               await trx.vendorCompany.update({
                 where: {
-                  id: vendor_company.id
+                  id: vendor_company.id,
                 },
                 data: {
                   stripe_account: account.id,
-                }
+                },
               });
             }
 
@@ -173,18 +183,23 @@ const resolvers: Resolvers<Context> = {
           user_id: context.req.user_id,
         },
         include: {
-          vendor_company: true
-        }
+          vendor_company: true,
+        },
       });
 
       if (vendorMember.vendor_company) {
         try {
           const { vendor_company } = vendorMember;
-          if (vendor_company.stripe_account === null || vendor_company.stripe_account === '') {
+          if (
+            vendor_company.stripe_account === null ||
+            vendor_company.stripe_account === ''
+          ) {
             return null;
           }
           const stripe = await getStripeInstance();
-          const account = await stripe.accounts.retrieve(vendor_company.stripe_account);
+          const account = await stripe.accounts.retrieve(
+            vendor_company.stripe_account,
+          );
           return account as StripeAccountData;
         } catch (error) {
           throw new PublicError(error as string);
@@ -192,7 +207,7 @@ const resolvers: Resolvers<Context> = {
       } else {
         return null;
       }
-    }
+    },
   },
   Mutation: {
     updateVendorCompany: async (_, args, context) => {
@@ -204,15 +219,15 @@ const resolvers: Resolvers<Context> = {
             user_id: context.req.user_id,
           },
           include: {
-            vendor_company: true
-          }
+            vendor_company: true,
+          },
         });
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
 
         return await trx.vendorCompany.update({
           where: {
-            id: vendor_member.vendor_company_id
+            id: vendor_member.vendor_company_id,
           },
           data: {
             description: args.description,
@@ -236,8 +251,8 @@ const resolvers: Resolvers<Context> = {
             cro_extra_info: args.cro_extra_info,
             project_completed_per_year: args.project_completed_per_year,
             ...(args.name !== null ? { name: args.name } : {}),
-          }
-        })
+          },
+        });
       });
     },
     updateVendorCompanyCertificationTags: async (_, args, context) => {
@@ -249,8 +264,8 @@ const resolvers: Resolvers<Context> = {
             user_id: context.req.user_id,
           },
           include: {
-            vendor_company: true
-          }
+            vendor_company: true,
+          },
         });
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
@@ -259,65 +274,79 @@ const resolvers: Resolvers<Context> = {
 
         const certificationTagIds = certification_tag_ids || [];
 
-        const certificationTagConnections = await trx.certificationTagConnection.findMany({
-          where: {
-            vendor_company_id: vendor_member.vendor_company_id,
-          },
-          include: {
-            certification_tag: true
-          }
-        });
+        const certificationTagConnections =
+          await trx.certificationTagConnection.findMany({
+            where: {
+              vendor_company_id: vendor_member.vendor_company_id,
+            },
+            include: {
+              certification_tag: true,
+            },
+          });
 
         let newTagIds: string[] = [];
         // Check if certification tag exist
-        if (new_certification_tag_names && new_certification_tag_names.length > 0) {
+        if (
+          new_certification_tag_names &&
+          new_certification_tag_names.length > 0
+        ) {
           const existingCertificationTag = await trx.certificationTag.findMany({
             where: {
               full_name: {
-                in: new_certification_tag_names as string[]
-              }
+                in: new_certification_tag_names as string[],
+              },
             },
           });
 
           let verifiedNewCertificationTagNames = new_certification_tag_names;
           if (existingCertificationTag.length > 0) {
-            newTagIds = newTagIds.concat(existingCertificationTag.map(c => c.id));
+            newTagIds = newTagIds.concat(
+              existingCertificationTag.map((c) => c.id),
+            );
 
-            verifiedNewCertificationTagNames = new_certification_tag_names.filter(
-              n => !existingCertificationTag.map(c => c.full_name).includes(n as string)
-            )
+            verifiedNewCertificationTagNames =
+              new_certification_tag_names.filter(
+                (n) =>
+                  !existingCertificationTag
+                    .map((c) => c.full_name)
+                    .includes(n as string),
+              );
           }
 
           // Create new tag by user
           if (verifiedNewCertificationTagNames.length > 0) {
             await trx.certificationTag.createMany({
-              data: verifiedNewCertificationTagNames.map(name => {
+              data: verifiedNewCertificationTagNames.map((name) => {
                 return {
                   full_name: name as string,
-                }
+                };
               }),
             });
 
             const newCertificationTags = await trx.certificationTag.findMany({
               where: {
                 full_name: {
-                  in: verifiedNewCertificationTagNames as string[]
-                }
-              }
+                  in: verifiedNewCertificationTagNames as string[],
+                },
+              },
             });
 
-            newTagIds = newTagIds.concat(newCertificationTags.map(c => c.id.toString()));
+            newTagIds = newTagIds.concat(
+              newCertificationTags.map((c) => c.id.toString()),
+            );
           }
         }
 
-        const certificationTags = certificationTagConnections.map(c => c.certification_tag);
+        const certificationTags = certificationTagConnections.map(
+          (c) => c.certification_tag,
+        );
         // Disconnect the existing certification tag connections
         await trx.certificationTagConnection.deleteMany({
           where: {
             vendor_company_id: vendor_member.vendor_company_id,
             certification_tag_id: {
-              in: certificationTags.map((c) => c.id)
-            }
+              in: certificationTags.map((c) => c.id),
+            },
           },
         });
 
@@ -325,11 +354,11 @@ const resolvers: Resolvers<Context> = {
         const tagsToBeConnected = [...certificationTagIds, ...newTagIds];
         if (tagsToBeConnected.length > 0) {
           await trx.certificationTagConnection.createMany({
-            data: tagsToBeConnected.map(id => {
+            data: tagsToBeConnected.map((id) => {
               return {
                 certification_tag_id: id as string,
-                vendor_company_id: vendor_member.vendor_company_id
-              }
+                vendor_company_id: vendor_member.vendor_company_id,
+              };
             }),
           });
         }
@@ -337,8 +366,8 @@ const resolvers: Resolvers<Context> = {
         return await trx.vendorCompany.findFirst({
           where: {
             id: vendor_member.vendor_company_id,
-          }
-        })
+          },
+        });
       });
     },
     updateVendorCompanyLabSpecializations: async (_, args, context) => {
@@ -350,8 +379,8 @@ const resolvers: Resolvers<Context> = {
             user_id: context.req.user_id,
           },
           include: {
-            vendor_company: true
-          }
+            vendor_company: true,
+          },
         });
 
         invariant(vendor_member, new PublicError('Vendor member not found.'));
@@ -360,77 +389,95 @@ const resolvers: Resolvers<Context> = {
 
         const labSpecializationIds = lab_specialization_ids || [];
 
-        const labSpecializationConnections = await trx.labSpecializationConnection.findMany({
-          where: {
-            vendor_company_id: vendor_member.vendor_company_id,
-          },
-          include: {
-            lab_specialization: true
-          }
-        });
-
-        let newSpecializationIds: string[] = [];
-        // Check if lab specialization exist
-        if (new_lab_specialization_names && new_lab_specialization_names.length > 0) {
-          const existingLabSpecialization = await trx.labSpecialization.findMany({
+        const labSpecializationConnections =
+          await trx.labSpecializationConnection.findMany({
             where: {
-              full_name: {
-                in: new_lab_specialization_names as string[]
-              }
+              vendor_company_id: vendor_member.vendor_company_id,
+            },
+            include: {
+              lab_specialization: true,
             },
           });
 
+        let newSpecializationIds: string[] = [];
+        // Check if lab specialization exist
+        if (
+          new_lab_specialization_names &&
+          new_lab_specialization_names.length > 0
+        ) {
+          const existingLabSpecialization =
+            await trx.labSpecialization.findMany({
+              where: {
+                full_name: {
+                  in: new_lab_specialization_names as string[],
+                },
+              },
+            });
+
           let verifiedNewLabSpecializationNames = new_lab_specialization_names;
           if (existingLabSpecialization.length > 0) {
-            newSpecializationIds = newSpecializationIds.concat(existingLabSpecialization.map(c => c.id));
+            newSpecializationIds = newSpecializationIds.concat(
+              existingLabSpecialization.map((c) => c.id),
+            );
 
-            verifiedNewLabSpecializationNames = new_lab_specialization_names.filter(
-              n => !existingLabSpecialization.map(c => c.full_name).includes(n as string)
-            )
+            verifiedNewLabSpecializationNames =
+              new_lab_specialization_names.filter(
+                (n) =>
+                  !existingLabSpecialization
+                    .map((c) => c.full_name)
+                    .includes(n as string),
+              );
           }
 
           // Create new specialization by user
           if (verifiedNewLabSpecializationNames.length > 0) {
             await trx.labSpecialization.createMany({
-              data: verifiedNewLabSpecializationNames.map(name => {
+              data: verifiedNewLabSpecializationNames.map((name) => {
                 return {
                   full_name: name as string,
-                }
+                };
               }),
             });
 
             const newLabSpecializations = await trx.labSpecialization.findMany({
               where: {
                 full_name: {
-                  in: verifiedNewLabSpecializationNames as string[]
-                }
-              }
+                  in: verifiedNewLabSpecializationNames as string[],
+                },
+              },
             });
 
-            newSpecializationIds = newSpecializationIds.concat(newLabSpecializations.map(c => c.id.toString()));
+            newSpecializationIds = newSpecializationIds.concat(
+              newLabSpecializations.map((c) => c.id.toString()),
+            );
           }
         }
 
-        const labSpecializations = labSpecializationConnections.map(c => c.lab_specialization);
+        const labSpecializations = labSpecializationConnections.map(
+          (c) => c.lab_specialization,
+        );
         // Disconnect the existing lab specialization connections
         await trx.labSpecializationConnection.deleteMany({
           where: {
             vendor_company_id: vendor_member.vendor_company_id,
             lab_specialization_id: {
-              in: labSpecializations.map((c) => c.id)
-            }
+              in: labSpecializations.map((c) => c.id),
+            },
           },
         });
 
         // Connect the new lab specializations
-        const specializationsToBeConnected = [...labSpecializationIds, ...newSpecializationIds];
+        const specializationsToBeConnected = [
+          ...labSpecializationIds,
+          ...newSpecializationIds,
+        ];
         if (specializationsToBeConnected.length > 0) {
           await trx.labSpecializationConnection.createMany({
-            data: specializationsToBeConnected.map(id => {
+            data: specializationsToBeConnected.map((id) => {
               return {
                 lab_specialization_id: id as string,
-                vendor_company_id: vendor_member.vendor_company_id
-              }
+                vendor_company_id: vendor_member.vendor_company_id,
+              };
             }),
           });
         }
@@ -438,8 +485,8 @@ const resolvers: Resolvers<Context> = {
         return await trx.vendorCompany.findFirst({
           where: {
             id: vendor_member.vendor_company_id,
-          }
-        })
+          },
+        });
       });
     },
     skipAddCertificationTag: async (_, args, context) => {
@@ -453,11 +500,11 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.vendorCompany.update({
         where: {
-          id: vendor_member.vendor_company_id
+          id: vendor_member.vendor_company_id,
         },
         data: {
           skip_certification_tag: true,
-        }
+        },
       });
     },
     skipAddLabSpecialization: async (_, args, context) => {
@@ -471,14 +518,14 @@ const resolvers: Resolvers<Context> = {
 
       return await context.prisma.vendorCompany.update({
         where: {
-          id: vendor_member.vendor_company_id
+          id: vendor_member.vendor_company_id,
         },
         data: {
           skip_lab_specialization: true,
-        }
+        },
       });
     },
-  }
+  },
 };
 
 export default resolvers;

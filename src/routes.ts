@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { indexHome, webhookRouter, authRouter, sitemapRouter } from './controller';
+import {
+  indexHome,
+  webhookRouter,
+  authRouter,
+  sitemapRouter,
+} from './controller';
 
 const routes = Router();
 

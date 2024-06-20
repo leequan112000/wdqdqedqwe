@@ -1,7 +1,7 @@
-import { Context } from "../../types/context";
-import { Resolvers } from "../generated";
-import { toDollar } from "../../helper/money";
-import invariant from "../../helper/invariant";
+import { Context } from '../../types/context';
+import { Resolvers } from '../generated';
+import { toDollar } from '../../helper/money';
+import invariant from '../../helper/invariant';
 
 const resolvers: Resolvers<Context> = {
   InvoiceItem: {
@@ -14,13 +14,15 @@ const resolvers: Resolvers<Context> = {
       });
     },
     milestone: async (parent, _, context) => {
-      invariant(parent.milestone_id, 'Milestone ID not found.')
+      invariant(parent.milestone_id, 'Milestone ID not found.');
       const milestone = await context.prisma.milestone.findFirst({
         where: {
           id: parent.milestone_id,
         },
       });
-      return milestone ? { ...milestone, amount: toDollar(milestone.amount.toNumber()) } : null;
+      return milestone
+        ? { ...milestone, amount: toDollar(milestone.amount.toNumber()) }
+        : null;
     },
   },
 };

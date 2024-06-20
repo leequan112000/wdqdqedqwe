@@ -1,7 +1,7 @@
-import { NotificationType } from "../helper/constant";
-import { createQueue } from "../helper/queue";
-import { prisma } from "../prisma";
-import { publishNewNotification } from "../helper/pubsub";
+import { NotificationType } from '../helper/constant';
+import { createQueue } from '../helper/queue';
+import { prisma } from '../prisma';
+import { publishNewNotification } from '../helper/pubsub';
 
 export type NotificationJob = {
   data: Array<{
@@ -10,7 +10,7 @@ export type NotificationJob = {
     params: { [key: string]: any };
     recipient_id: string;
   }>;
-}
+};
 
 const notificationQueue = createQueue<NotificationJob>('notification');
 
@@ -36,4 +36,4 @@ notificationQueue.process(async (job, done) => {
 
 export const createNotificationQueueJob = (job: NotificationJob) => {
   return notificationQueue.add(job);
-}
+};

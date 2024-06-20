@@ -1,4 +1,4 @@
-import { Resolvers } from "../generated";
+import { Resolvers } from '../generated';
 import { Context } from '../../types/context';
 
 const resolvers: Resolvers<Context> = {
@@ -26,8 +26,8 @@ const resolvers: Resolvers<Context> = {
       });
 
       return updated;
-    }
-  }
+    },
+  },
 };
 
 export default resolvers;

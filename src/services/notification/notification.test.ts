@@ -5,8 +5,8 @@ import { Notification } from '@prisma/client';
 import { NotificationType } from '../../helper/constant';
 import notificationService from './notification.service';
 
-let mockCtx: MockContext
-let ctx: ServiceContext
+let mockCtx: MockContext;
+let ctx: ServiceContext;
 
 beforeEach(() => {
   mockCtx = createMockContext();
@@ -35,8 +35,9 @@ describe('notification service', () => {
         read_at: new Date(),
       });
 
-      expect(notificationService.markNotificationsAsRead({ notifications }, ctx))
-        .resolves.toHaveProperty([0, 'read_at'])
+      expect(
+        notificationService.markNotificationsAsRead({ notifications }, ctx),
+      ).resolves.toHaveProperty([0, 'read_at']);
     });
   });
 });

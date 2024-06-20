@@ -1,13 +1,16 @@
-import invariant from "../../helper/invariant";
-import { deleteRolesForUser } from "../../helper/casbin";
-import { PublicError } from "../../graphql/errors/PublicError";
-import { ServiceContext } from "../../types/context";
+import invariant from '../../helper/invariant';
+import { deleteRolesForUser } from '../../helper/casbin';
+import { PublicError } from '../../graphql/errors/PublicError';
+import { ServiceContext } from '../../types/context';
 
 type PurgeTestDataByUserEventArgs = {
   user_id: string;
-}
+};
 
-const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: ServiceContext) => {
+const purgeTestDataByUser = async (
+  args: PurgeTestDataByUserEventArgs,
+  ctx: ServiceContext,
+) => {
   const { user_id } = args;
   const user = await ctx.prisma.user.findFirst({
     where: {
@@ -16,7 +19,7 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
     include: {
       customer: true,
       vendor_member: true,
-    }
+    },
   });
 
   invariant(user, 'User not found.');
@@ -39,19 +42,21 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
                 chats: true,
                 customer_connections: true,
                 vendor_member_connections: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     invariant(biotech, 'Biotech not found.');
 
-    const projectRequestIds = biotech.project_requests.map(p => p.id);
+    const projectRequestIds = biotech.project_requests.map((p) => p.id);
     let projectConnectionIds: string[] = [];
     for (const projectRequest of biotech.project_requests) {
-      projectConnectionIds.concat(projectRequest.project_connections.map(c => c.id));
+      projectConnectionIds.concat(
+        projectRequest.project_connections.map((c) => c.id),
+      );
     }
 
     // Delete vendor_member_connections
@@ -59,8 +64,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete customer_connections
@@ -68,8 +73,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_attachments
@@ -77,8 +82,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete meeting_events
@@ -86,22 +91,22 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
     await ctx.prisma.meetingAttendeeConnection.deleteMany({
       where: {
         meeting_event_id: {
-          in: meetingEvents.map(m => m.id),
-        }
-      }
+          in: meetingEvents.map((m) => m.id),
+        },
+      },
     });
     await ctx.prisma.meetingEvent.deleteMany({
       where: {
         id: {
-          in: meetingEvents.map(m => m.id),
-        }
-      }
+          in: meetingEvents.map((m) => m.id),
+        },
+      },
     });
 
     // Delete quotes & milestones
@@ -109,22 +114,22 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
     await ctx.prisma.milestone.deleteMany({
       where: {
         quote_id: {
-          in: quotes.map(q => q.id),
-        }
-      }
+          in: quotes.map((q) => q.id),
+        },
+      },
     });
     await ctx.prisma.quote.deleteMany({
       where: {
         id: {
-          in: quotes.map(q => q.id),
-        }
-      }
+          in: quotes.map((q) => q.id),
+        },
+      },
     });
 
     // Delete chats
@@ -132,8 +137,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_connections
@@ -141,8 +146,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_request_id: {
           in: projectRequestIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_request_collaborators
@@ -150,46 +155,46 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_request_id: {
           in: projectRequestIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_requests
     await ctx.prisma.projectRequest.deleteMany({
       where: {
-        biotech_id: biotech.id
-      }
+        biotech_id: biotech.id,
+      },
     });
 
     // Delete biotech_invite_vendors
     await ctx.prisma.biotechInviteVendor.deleteMany({
       where: {
-        biotech_id: biotech.id
-      }
+        biotech_id: biotech.id,
+      },
     });
 
     // Delete customers
     await ctx.prisma.customer.deleteMany({
       where: {
-        biotech_id: biotech.id
-      }
+        biotech_id: biotech.id,
+      },
     });
 
     // Delete subscription
     await ctx.prisma.subscription.deleteMany({
       where: {
         biotech_id: biotech.id,
-      }
+      },
     });
 
     // Delete users
-    const userIds = biotech.customers.map(c => c.user_id);
+    const userIds = biotech.customers.map((c) => c.user_id);
     await ctx.prisma.user.deleteMany({
       where: {
         id: {
-          in: userIds
-        }
-      }
+          in: userIds,
+        },
+      },
     });
 
     // Delete user roles
@@ -200,8 +205,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
     // Delete biotech
     await ctx.prisma.biotech.delete({
       where: {
-        id: biotech.id
-      }
+        id: biotech.id,
+      },
     });
   }
 
@@ -214,24 +219,26 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
         project_connections: true,
         vendor_members: {
           include: {
-            vendor_member_connections: true
-          }
-        }
-      }
-    })
+            vendor_member_connections: true,
+          },
+        },
+      },
+    });
 
     invariant(vendorCompany, 'Vendor company not found.');
 
-    const projectConnectionIds = vendorCompany.project_connections.map(v => v.id);
-    const userIds = vendorCompany.vendor_members.map(v => v.user_id);
+    const projectConnectionIds = vendorCompany.project_connections.map(
+      (v) => v.id,
+    );
+    const userIds = vendorCompany.vendor_members.map((v) => v.user_id);
 
     // Delete customer_connections
     await ctx.prisma.customerConnection.deleteMany({
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_attachments
@@ -239,54 +246,54 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete meeting_events
     const meetingEvents = await ctx.prisma.meetingEvent.findMany({
       where: {
         project_connection_id: {
-          in: projectConnectionIds
-        }
-      }
+          in: projectConnectionIds,
+        },
+      },
     });
     await ctx.prisma.meetingAttendeeConnection.deleteMany({
       where: {
         meeting_event_id: {
-          in: meetingEvents.map(m => m.id),
-        }
-      }
+          in: meetingEvents.map((m) => m.id),
+        },
+      },
     });
     await ctx.prisma.meetingEvent.deleteMany({
       where: {
         id: {
-          in: meetingEvents.map(m => m.id),
-        }
-      }
+          in: meetingEvents.map((m) => m.id),
+        },
+      },
     });
 
     // Delete quotes & milestones
     const quotes = await ctx.prisma.quote.findMany({
       where: {
         project_connection_id: {
-          in: projectConnectionIds
-        }
-      }
+          in: projectConnectionIds,
+        },
+      },
     });
     await ctx.prisma.milestone.deleteMany({
       where: {
         quote_id: {
-          in: quotes.map(q => q.id),
-        }
-      }
+          in: quotes.map((q) => q.id),
+        },
+      },
     });
     await ctx.prisma.quote.deleteMany({
       where: {
         id: {
-          in: quotes.map(q => q.id),
-        }
-      }
+          in: quotes.map((q) => q.id),
+        },
+      },
     });
 
     // Delete chats
@@ -294,8 +301,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete vendor_member_connections
@@ -303,8 +310,8 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         project_connection_id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete project_connections
@@ -312,50 +319,47 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
       where: {
         id: {
           in: projectConnectionIds,
-        }
-      }
+        },
+      },
     });
 
     // Delete certification_tag_connections
     await ctx.prisma.certificationTagConnection.deleteMany({
       where: {
-        vendor_company_id: vendorCompany.id
-      }
+        vendor_company_id: vendorCompany.id,
+      },
     });
 
     // Delete lab_specialization_connections
     await ctx.prisma.labSpecializationConnection.deleteMany({
       where: {
-        vendor_company_id: vendorCompany.id
-      }
+        vendor_company_id: vendorCompany.id,
+      },
     });
 
     // Delete notifications
     await ctx.prisma.notification.deleteMany({
       where: {
-        OR: [
-          { recipient_id: { in: userIds } },
-          { sender_id: { in: userIds } },
-        ]
-      }
+        OR: [{ recipient_id: { in: userIds } }, { sender_id: { in: userIds } }],
+      },
     });
 
     // Delete vendor_members
     await ctx.prisma.vendorMember.deleteMany({
       where: {
         id: {
-          in: vendorCompany.vendor_members.map(v => v.id)
-        }
-      }
+          in: vendorCompany.vendor_members.map((v) => v.id),
+        },
+      },
     });
 
     // Delete users
     await ctx.prisma.user.deleteMany({
       where: {
         id: {
-          in: userIds
-        }
-      }
+          in: userIds,
+        },
+      },
     });
 
     // Delete user roles
@@ -366,19 +370,22 @@ const purgeTestDataByUser = async (args: PurgeTestDataByUserEventArgs, ctx: Serv
     // Delete vendor_company
     await ctx.prisma.vendorCompany.delete({
       where: {
-        id: vendorCompany.id
-      }
+        id: vendorCompany.id,
+      },
     });
   }
 
   return true;
-}
+};
 
 type UnregisterBiotechAccountEventArgs = {
   biotech_id: string;
-}
+};
 
-const unregisterBiotechAccount = async (args: UnregisterBiotechAccountEventArgs, ctx: ServiceContext) => {
+const unregisterBiotechAccount = async (
+  args: UnregisterBiotechAccountEventArgs,
+  ctx: ServiceContext,
+) => {
   // This function is use to unregister account that vendor wrongly signed up as biotech
   const { biotech_id } = args;
   const biotech = await ctx.prisma.biotech.findFirst({
@@ -388,10 +395,10 @@ const unregisterBiotechAccount = async (args: UnregisterBiotechAccountEventArgs,
     include: {
       customers: {
         include: {
-          user: true
-        }
-      }
-    }
+          user: true,
+        },
+      },
+    },
   });
 
   invariant(biotech, 'Biotech not found.');
@@ -399,26 +406,26 @@ const unregisterBiotechAccount = async (args: UnregisterBiotechAccountEventArgs,
   // Biotech should have only one user
   await ctx.prisma.customer.delete({
     where: {
-      id: biotech.customers[0].id
-    }
+      id: biotech.customers[0].id,
+    },
   });
 
   await ctx.prisma.user.delete({
     where: {
-      id: biotech.customers[0].user_id
-    }
+      id: biotech.customers[0].user_id,
+    },
   });
 
   await ctx.prisma.biotech.delete({
     where: {
-      id: biotech_id
-    }
+      id: biotech_id,
+    },
   });
 
   await deleteRolesForUser(biotech.customers[0].user_id);
 
   return true;
-}
+};
 
 const userService = {
   purgeTestDataByUser,

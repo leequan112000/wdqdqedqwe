@@ -1,13 +1,13 @@
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { Resolvers } from "../generated";
-import invariant from "../../helper/invariant";
-import vendorSurveyService from "../../services/vendorSurvey/vendorSurvey.service";
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import { Resolvers } from '../generated';
+import invariant from '../../helper/invariant';
+import vendorSurveyService from '../../services/vendorSurvey/vendorSurvey.service';
 
 const resolvers: Resolvers<Context> = {
   CroDbVendorSurvey: {
     vendor_company: async (parent, _, context) => {
-      invariant(parent.vendor_company_id, "Missing vendor company id.");
+      invariant(parent.vendor_company_id, 'Missing vendor company id.');
       return await context.prismaCRODb.vendorCompany.findFirst({
         where: {
           id: parent.vendor_company_id,
@@ -28,24 +28,30 @@ const resolvers: Resolvers<Context> = {
           vendor_company_subspecialties: true,
           vendor_company_types: true,
           vendor_survey: true,
-        }
+        },
       });
 
-      invariant(vendorCompany, new PublicError("Invalid token!"));
+      invariant(vendorCompany, new PublicError('Invalid token!'));
 
       if (vendorCompany.vendor_survey) {
         return {
           id: vendorCompany.id,
           has_submitted: true,
-        }
+        };
       }
-      const subspecialtyIds = vendorCompany.vendor_company_subspecialties.map((s) => s.subspecialty_id);
-      const vendorType = vendorCompany.vendor_company_types.map((t) => t.company_type);
-      const countries = vendorCompany.vendor_company_locations.map((l) => l.country)
+      const subspecialtyIds = vendorCompany.vendor_company_subspecialties.map(
+        (s) => s.subspecialty_id,
+      );
+      const vendorType = vendorCompany.vendor_company_types.map(
+        (t) => t.company_type,
+      );
+      const countries = vendorCompany.vendor_company_locations.map(
+        (l) => l.country,
+      );
 
       return {
         id: vendorCompany.id,
-        countries: [... new Set(countries)],
+        countries: [...new Set(countries)],
         logo_url: vendorCompany.logo_url,
         name: vendorCompany.company_name,
         company_description: vendorCompany.company_description,
@@ -54,9 +60,9 @@ const resolvers: Resolvers<Context> = {
         company_size: vendorCompany.company_size,
         subspecialty_ids: subspecialtyIds,
         website: vendorCompany.website_url,
-        vendor_type: [... new Set(vendorType)],
+        vendor_type: [...new Set(vendorType)],
         has_submitted: false,
-      }
+      };
     },
   },
   Mutation: {
@@ -79,22 +85,25 @@ const resolvers: Resolvers<Context> = {
         logo,
         attachment,
       } = args;
-      const vendorCompany = await context.prismaCRODb.vendorCompany.findFirst({
-        where: { id: vendor_company_id },
-      });
 
-      invariant(vendorCompany, new PublicError("Vendor company not found."));
+      const vendorCompany = vendor_company_id
+        ? await context.prismaCRODb.vendorCompany.findUnique({
+            where: {
+              id: vendor_company_id,
+            },
+            include: {
+              vendor_survey: true,
+            },
+          })
+        : null;
 
-      const existingVendorSurvey =
-        await context.prismaCRODb.vendorSurvey.findFirst({
-          where: {
-            vendor_company_id,
-          },
-        });
+      const existingVendorSurvey = vendorCompany
+        ? vendorCompany.vendor_survey
+        : null;
 
       invariant(
         !existingVendorSurvey,
-        new PublicError("Profile update has been submitted.")
+        new PublicError('Profile update has been submitted.'),
       );
 
       await vendorSurveyService.createVendorSurvey(
@@ -116,7 +125,7 @@ const resolvers: Resolvers<Context> = {
           ...(note !== null ? { note } : {}),
           ...(attachment !== null ? { attachment: await attachment } : {}),
         },
-        context
+        context,
       );
       return vendorCompany;
     },

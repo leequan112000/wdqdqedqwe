@@ -1,4 +1,4 @@
-import { ServiceContext } from "../../types/context";
+import { ServiceContext } from '../../types/context';
 
 type UpdateVendorCompanyCertificationTagArg = {
   vendor_company_id: string;
@@ -8,7 +8,7 @@ type UpdateVendorCompanyCertificationTagArg = {
 
 const updateVendorCompanyCertificationTag = async (
   args: UpdateVendorCompanyCertificationTagArg,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const {
     certification_tag_ids: certificationTagIds,
@@ -26,7 +26,7 @@ const updateVendorCompanyCertificationTag = async (
             in: new_certification_tag_names as string[],
           },
         },
-      }
+      },
     );
 
     let verifiedNewCertificationTagNames = new_certification_tag_names;
@@ -37,7 +37,7 @@ const updateVendorCompanyCertificationTag = async (
         (n) =>
           !existingCertificationTag
             .map((c) => c.full_name)
-            .includes(n as string)
+            .includes(n as string),
       );
     }
 
@@ -60,7 +60,7 @@ const updateVendorCompanyCertificationTag = async (
       });
 
       newTagIds = newTagIds.concat(
-        newCertificationTags.map((c) => c.id.toString())
+        newCertificationTags.map((c) => c.id.toString()),
       );
     }
   }
@@ -75,7 +75,7 @@ const updateVendorCompanyCertificationTag = async (
       },
     });
   const certificationTags = certificationTagConnections.map(
-    (c) => c.certification_tag
+    (c) => c.certification_tag,
   );
   // Disconnect the existing certification tag connections
   await ctx.prisma.certificationTagConnection.deleteMany({
@@ -109,7 +109,7 @@ type UpdateVendorCompanyLabSpecializationArgs = {
 
 const updateVendorCompanyLabSpecialization = async (
   args: UpdateVendorCompanyLabSpecializationArgs,
-  ctx: ServiceContext
+  ctx: ServiceContext,
 ) => {
   const {
     vendor_company_id,
@@ -131,14 +131,14 @@ const updateVendorCompanyLabSpecialization = async (
     let verifiedNewLabSpecializationNames = new_lab_specialization_names;
     if (existingLabSpecialization.length > 0) {
       newSpecializationIds = newSpecializationIds.concat(
-        existingLabSpecialization.map((c) => c.id)
+        existingLabSpecialization.map((c) => c.id),
       );
 
       verifiedNewLabSpecializationNames = new_lab_specialization_names.filter(
         (n) =>
           !existingLabSpecialization
             .map((c) => c.full_name)
-            .includes(n as string)
+            .includes(n as string),
       );
     }
 
@@ -159,11 +159,11 @@ const updateVendorCompanyLabSpecialization = async (
               in: verifiedNewLabSpecializationNames as string[],
             },
           },
-        }
+        },
       );
 
       newSpecializationIds = newSpecializationIds.concat(
-        newLabSpecializations.map((c) => c.id.toString())
+        newLabSpecializations.map((c) => c.id.toString()),
       );
     }
   }
@@ -179,7 +179,7 @@ const updateVendorCompanyLabSpecialization = async (
     });
 
   const labSpecializations = labSpecializationConnections.map(
-    (c) => c.lab_specialization
+    (c) => c.lab_specialization,
   );
   // Disconnect the existing lab specialization connections
   await ctx.prisma.labSpecializationConnection.deleteMany({

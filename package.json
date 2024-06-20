@@ -19,7 +19,8 @@
     "prepare": "husky install",
     "test": "vitest -c ./vitest.config.unit.ts",
     "stripe:listen:local": "stripe listen --forward-to localhost:9000/webhook/stripe --skip-verify --events customer.subscription.updated,customer.subscription.deleted,checkout.session.completed",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cromatic --project octavian ./dist && sentry-cli sourcemaps upload --org cromatic --project octavian ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org cromatic --project octavian ./dist && sentry-cli sourcemaps upload --org cromatic --project octavian ./dist",
+    "format": "prettier ./**/*.{ts,queues.ts,service.ts,resolvers.ts,test.ts} --write"
   },
   "engines": {
     "node": "^18"
@@ -56,7 +57,9 @@
     "@types/uuid": "^9.0.1",
     "concurrently": "^7.6.0",
     "husky": "^8.0.0",
+    "lint-staged": ">=10",
     "nodemon": "^2.0.20",
+    "prettier": "3.3.2",
     "prisma": "^5.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
@@ -128,5 +131,8 @@
     "ws": "^8.13.0",
     "yargs": "^17.7.2",
     "zod": "^3.23.8"
+  },
+  "lint-staged": {
+    "*.ts": "prettier --write"
   }
 }

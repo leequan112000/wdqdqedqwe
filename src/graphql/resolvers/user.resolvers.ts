@@ -1,21 +1,21 @@
-import { Context } from "../../types/context";
-import { PublicError } from "../errors/PublicError";
-import { checkPassword, createTokens, hashPassword } from "../../helper/auth";
-import { verify } from "jsonwebtoken";
-import { Request } from "express";
-import { Resolvers } from "../generated";
-import { InternalError } from "../errors/InternalError";
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
+import { checkPassword, createTokens, hashPassword } from '../../helper/auth';
+import { verify } from 'jsonwebtoken';
+import { Request } from 'express';
+import { Resolvers } from '../generated';
+import { InternalError } from '../errors/InternalError';
 import {
   CasbinRole,
   CompanyCollaboratorRoleType,
   OauthProvider,
   UserStatus,
   UserType,
-} from "../../helper/constant";
-import invariant from "../../helper/invariant";
-import { addRoleForUser } from "../../helper/casbin";
-import authService from "../../services/auth/auth.service";
-import { availabilityCreateManyUserInputs } from "../../helper/availability";
+} from '../../helper/constant';
+import invariant from '../../helper/invariant';
+import { addRoleForUser } from '../../helper/casbin';
+import authService from '../../services/auth/auth.service';
+import { availabilityCreateManyUserInputs } from '../../helper/availability';
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -44,7 +44,7 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
     has_completed_onboarding: async (parent, _, context) => {
-      invariant(parent.id, "Missing user id.");
+      invariant(parent.id, 'Missing user id.');
       const result = await context.prisma.user.findUnique({
         where: {
           id: parent.id,
@@ -110,7 +110,7 @@ const resolvers: Resolvers<Context> = {
       return true;
     },
     customer: async (parent, _, context) => {
-      invariant(parent.id, "Missing user id.");
+      invariant(parent.id, 'Missing user id.');
       return await context.prisma.customer.findFirst({
         where: {
           user_id: parent.id,
@@ -118,7 +118,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     vendor_member: async (parent, _, context) => {
-      invariant(parent.id, "Missing user id.");
+      invariant(parent.id, 'Missing user id.');
       const vendorMember = await context.prisma.vendorMember.findFirst({
         where: {
           user_id: parent.id,
@@ -128,7 +128,7 @@ const resolvers: Resolvers<Context> = {
       return vendorMember;
     },
     notifications: async (parent, _, context) => {
-      invariant(parent.id, "Missing user id.");
+      invariant(parent.id, 'Missing user id.');
       const notifications = await context.prisma.notification.findMany({
         where: {
           recipient_id: parent.id,
@@ -146,7 +146,7 @@ const resolvers: Resolvers<Context> = {
         return !!parent.vendor_member.title ? true : false;
       }
 
-      invariant(parent.id, "Missing user id.");
+      invariant(parent.id, 'Missing user id.');
 
       const user = await context.prisma.user.findFirst({
         where: {
@@ -174,7 +174,7 @@ const resolvers: Resolvers<Context> = {
         return user.vendor_member.title ? true : false;
       }
 
-      throw new InternalError("Missing user");
+      throw new InternalError('Missing user');
     },
     company_name: async (parent, _, context) => {
       if (parent.company_name) return parent.company_name;
@@ -230,7 +230,7 @@ const resolvers: Resolvers<Context> = {
       if (parent.company_collaborator_role) {
         return parent.company_collaborator_role;
       }
-      invariant(parent.id, "User id not found.");
+      invariant(parent.id, 'User id not found.');
       const user = await context.prisma.user.findFirst({
         where: {
           id: parent.id,
@@ -240,7 +240,7 @@ const resolvers: Resolvers<Context> = {
           vendor_member: true,
         },
       });
-      invariant(user, "User not found.");
+      invariant(user, 'User not found.');
 
       if (user.customer) {
         return user.customer.role;
@@ -249,11 +249,11 @@ const resolvers: Resolvers<Context> = {
         return user.vendor_member.role;
       }
 
-      throw new InternalError("User company collaborator role not found.");
+      throw new InternalError('User company collaborator role not found.');
     },
     is_connected_microsoft: async (parent, args, context) => {
       const userId = context.req.user_id;
-      invariant(userId, "Missing user id");
+      invariant(userId, 'Missing user id');
 
       const oauth = await context.prisma.oauth.findUnique({
         where: {
@@ -269,7 +269,7 @@ const resolvers: Resolvers<Context> = {
     },
     is_connected_google: async (parent, args, context) => {
       const userId = context.req.user_id;
-      invariant(userId, "Missing user id");
+      invariant(userId, 'Missing user id');
 
       const oauth = await context.prisma.oauth.findUnique({
         where: {
@@ -334,7 +334,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(!user, new PublicError("User already exists."));
+      invariant(!user, new PublicError('User already exists.'));
 
       const hashedPassword = await hashPassword(password);
 
@@ -343,7 +343,7 @@ const resolvers: Resolvers<Context> = {
 
       const biotech = await context.prisma.biotech.create({
         data: {
-          name: "",
+          name: '',
           customers: {
             create: {
               user: {
@@ -393,35 +393,35 @@ const resolvers: Resolvers<Context> = {
       let foundUser = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: "insensitive",
+            mode: 'insensitive',
             equals: email,
           },
         },
       });
 
-      invariant(foundUser, new PublicError("User not found."));
+      invariant(foundUser, new PublicError('User not found.'));
 
       invariant(
         foundUser && foundUser.encrypted_password !== null,
         new PublicError(
-          "User password not set, please proceed to forgot password to set a new password."
-        )
+          'User password not set, please proceed to forgot password to set a new password.',
+        ),
       );
 
       invariant(
         foundUser.deactivated_at === null ||
           foundUser.deactivated_at > new Date(),
-        new PublicError("Your account has been deactivated.")
+        new PublicError('Your account has been deactivated.'),
       );
 
       const isPasswordMatched = await checkPassword(
         password,
         foundUser,
-        context
+        context,
       );
       invariant(
         isPasswordMatched === true,
-        new PublicError("Invalid email or password.")
+        new PublicError('Invalid email or password.'),
       );
 
       // Genereate tokens
@@ -434,11 +434,11 @@ const resolvers: Resolvers<Context> = {
     },
     refreshJWT: async (_, args, context) => {
       // Get refresh token from header
-      const authHeader = context.req.get("authorization");
+      const authHeader = context.req.get('authorization');
       if (!authHeader) {
         return null;
       }
-      const tokenArray = authHeader.split(" ");
+      const tokenArray = authHeader.split(' ');
       if (tokenArray.length !== 2) {
         return null;
       }
@@ -449,7 +449,7 @@ const resolvers: Resolvers<Context> = {
       try {
         const data = verify(
           refreshToken,
-          REFRESH_TOKEN_SECRET || "secret"
+          REFRESH_TOKEN_SECRET || 'secret',
         ) as Request;
         userId = data.user_id;
         if (userId) {
@@ -461,31 +461,31 @@ const resolvers: Resolvers<Context> = {
         }
 
         // Invalid jwt token if user id not found
-        throw new PublicError("Your session is expired.");
+        throw new PublicError('Your session is expired.');
       } catch (error) {
         // If verify failed, meaning the session is no longer authenticated.
-        throw new PublicError("Your session is expired.");
+        throw new PublicError('Your session is expired.');
       }
     },
     forgotPassword: async (_, args, context) => {
-      invariant(args.email, new InternalError("Missing argument: email."));
+      invariant(args.email, new InternalError('Missing argument: email.'));
 
       const lowerCaseEmail = args.email.toLowerCase();
 
       const user = await context.prisma.user.findFirst({
         where: {
           email: {
-            mode: "insensitive",
+            mode: 'insensitive',
             equals: lowerCaseEmail,
           },
         },
       });
 
-      invariant(user, new PublicError("User not found."));
+      invariant(user, new PublicError('User not found.'));
 
       const updatedUser = authService.forgotPassword(
         { email: lowerCaseEmail },
-        { prisma: context.prisma }
+        { prisma: context.prisma },
       );
 
       if (!updatedUser) {
@@ -496,12 +496,12 @@ const resolvers: Resolvers<Context> = {
     resetPassword: async (_, args, context) => {
       invariant(
         args.reset_token,
-        new InternalError("Missing argument: reset_token")
+        new InternalError('Missing argument: reset_token'),
       );
 
       invariant(
         args.new_password,
-        new InternalError("Missing argument: new_password")
+        new InternalError('Missing argument: new_password'),
       );
 
       const user = await context.prisma.user.findFirst({
@@ -512,7 +512,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(
         user && user.reset_password_expiration,
-        new PublicError("Invalid reset password link.")
+        new PublicError('Invalid reset password link.'),
       );
 
       const timeElapsed =
@@ -520,7 +520,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(
         timeElapsed <= 7 * 24 * 60 * 60 * 1000 && timeElapsed >= 0,
-        new PublicError("The reset password link is expired.")
+        new PublicError('The reset password link is expired.'),
       );
 
       await context.prisma.user.update({
@@ -554,17 +554,17 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(user, new PublicError("Current user not found."));
+      invariant(user, new PublicError('Current user not found.'));
 
       const isPasswordMatched = await checkPassword(
         old_password,
         user,
-        context
+        context,
       );
 
       invariant(
         isPasswordMatched === true,
-        new PublicError("Old password is invalid.")
+        new PublicError('Old password is invalid.'),
       );
 
       await context.prisma.user.update({
