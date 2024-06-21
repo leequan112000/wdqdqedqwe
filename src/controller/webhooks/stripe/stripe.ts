@@ -3,14 +3,26 @@ import moment from 'moment';
 import { prisma } from '../../../prisma';
 import biotechInvoiceService from '../../../services/biotechInvoice/biotechInvoice.service';
 import milestoneService from '../../../services/milestone/milestone.service';
-import { CompanyCollaboratorRoleType, CustomerSubscriptionPlanName, InvoicePaymentStatus, MilestonePaymentStatus, StripeWebhookPaymentType, SubscriptionStatus } from '../../../helper/constant';
+import {
+  CompanyCollaboratorRoleType,
+  CustomerSubscriptionPlanName,
+  InvoicePaymentStatus,
+  MilestonePaymentStatus,
+  StripeWebhookPaymentType,
+  SubscriptionStatus,
+} from '../../../helper/constant';
 import invariant from '../../../helper/invariant';
 import { ga } from '../../../helper/googleAnalytics';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
-import { createInvoicePaymentNoticeEmailJob, createSendUserMilestonePaymentFailedNoticeJob } from '../../../queues/email.queues';
+import {
+  createInvoicePaymentNoticeEmailJob,
+  createSendUserMilestonePaymentFailedNoticeJob,
+} from '../../../queues/email.queues';
 
-export const processStripeEvent = async (event: Stripe.Event): Promise<{ status: number; message: string }> => {
+export const processStripeEvent = async (
+  event: Stripe.Event,
+): Promise<{ status: number; message: string }> => {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -21,20 +33,27 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
           case 'subscription': {
             const customer = await prisma.customer.findFirst({
               where: {
-                id: checkoutSession.client_reference_id!
+                id: checkoutSession.client_reference_id!,
               },
               include: {
                 customer_subscriptions: true,
-              }
+              },
             });
             if (!customer) {
               // This can happen in because stripe sends webhooks for both staging and production traffic.
-              console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-              return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
+              console.info(
+                `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+              );
+              return {
+                status: 200,
+                message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+              };
             }
             if (checkoutSession.subscription) {
               if (!checkoutSession.metadata?.plan_name) {
-                Sentry.captureMessage("[Stripe Webhook] Missing plan name metadata.");
+                Sentry.captureMessage(
+                  '[Stripe Webhook] Missing plan name metadata.',
+                );
               }
 
               if (customer.customer_subscriptions.length > 0) {
@@ -43,22 +62,24 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                     id: customer.customer_subscriptions[0].id,
                   },
                   data: {
-                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_subscription_id:
+                      checkoutSession.subscription as string,
                     stripe_customer_id: checkoutSession.customer as string,
                     status: SubscriptionStatus.ACTIVE,
                     plan_name: checkoutSession.metadata?.plan_name as string,
                     ended_at: null,
-                  }
-                })
+                  },
+                });
               } else {
                 await prisma.customerSubscription.create({
                   data: {
-                    stripe_subscription_id: checkoutSession.subscription as string,
+                    stripe_subscription_id:
+                      checkoutSession.subscription as string,
                     stripe_customer_id: checkoutSession.customer as string,
                     status: SubscriptionStatus.ACTIVE,
                     plan_name: checkoutSession.metadata?.plan_name as string,
-                    customer_id: customer.id
-                  }
+                    customer_id: customer.id,
+                  },
                 });
               }
 
@@ -69,7 +90,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   transaction_id: checkoutSession.subscription,
                   value: (checkoutSession.amount_total ?? 0) / 100,
                   currency: checkoutSession.currency?.toUpperCase(),
-                }
+                },
               );
 
               /**
@@ -89,49 +110,68 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                     {
                       invoice_settings: {
                         default_payment_method: data[0].id,
-                      }
-                    }
-                  )
+                      },
+                    },
+                  );
                 }
               } catch (error) {
                 Sentry.captureException(error);
               }
             }
-            console.info(`Processed webhook: type=${event.type} customer=${customer.id}`);
+            console.info(
+              `Processed webhook: type=${event.type} customer=${customer.id}`,
+            );
             return { status: 200, message: 'OK' };
           }
           case 'payment': {
-            invariant(checkoutSession.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
+            invariant(
+              checkoutSession.metadata?.payment_type,
+              '[Stripe Webhook] Missing metadata: payment_type.',
+            );
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                invariant(checkoutSession.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
+                invariant(
+                  checkoutSession.metadata?.invoice_id,
+                  '[Stripe Webhook] Missing metadata: invoice_id.',
+                );
 
-                const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                const { invoice_id, invoice_number, user_id } =
+                  checkoutSession.metadata;
                 await prisma.invoice.update({
                   where: {
                     id: invoice_id,
                   },
                   data: {
                     payment_status: InvoicePaymentStatus.PROCESSING,
-                  }
+                  },
                 });
-                console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                console.info(
+                  `Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`,
+                );
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
+                invariant(
+                  checkoutSession?.metadata?.milestone_id,
+                  '[Stripe Webhook] Missing metadata: milestone_id.',
+                );
 
                 const customer = await prisma.customer.findFirst({
                   where: {
-                    id: checkoutSession.client_reference_id!
+                    id: checkoutSession.client_reference_id!,
                   },
                 });
 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
-                  console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` };
+                  console.info(
+                    `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  );
+                  return {
+                    status: 200,
+                    message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  };
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
@@ -141,20 +181,25 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   },
                   data: {
                     payment_status: MilestonePaymentStatus.PROCESSING,
-                  }
+                  },
                 });
 
-                await biotechInvoiceService.createBiotechInvoice({
-                  milestone,
-                  biotech_id: customer?.biotech_id as string,
-                  payViaStripe: true,
-                }, { prisma });
+                await biotechInvoiceService.createBiotechInvoice(
+                  {
+                    milestone,
+                    biotech_id: customer?.biotech_id as string,
+                    payViaStripe: true,
+                  },
+                  { prisma },
+                );
 
-                console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                console.info(
+                  `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
+                );
                 break;
               }
               default: {
-                return { status: 400, message: 'Unhandled payment type' };
+                return { status: 200, message: 'Unhandled payment type' };
               }
             }
             return { status: 200, message: 'OK' };
@@ -163,7 +208,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             return { status: 200, message: 'Payment method setup complete' };
           }
           default: {
-            return { status: 400, message: 'Unhandled checkout mode.' };
+            return { status: 200, message: 'Unhandled checkout mode.' };
           }
         }
       }
@@ -177,13 +222,20 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             return { status: 200, message: 'OK' };
           }
           case 'payment': {
-            invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
+            invariant(
+              checkoutSession?.metadata?.payment_type,
+              '[Stripe Webhook] Missing metadata: payment_type.',
+            );
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                invariant(checkoutSession?.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
+                invariant(
+                  checkoutSession?.metadata?.invoice_id,
+                  '[Stripe Webhook] Missing metadata: invoice_id.',
+                );
 
-                const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                const { invoice_id, invoice_number, user_id } =
+                  checkoutSession.metadata;
                 const invoice = await prisma.invoice.update({
                   where: {
                     id: invoice_id,
@@ -191,7 +243,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   data: {
                     payment_status: InvoicePaymentStatus.PAID,
                     paid_at: new Date(),
-                  }
+                  },
                 });
 
                 createInvoicePaymentNoticeEmailJob({
@@ -201,42 +253,57 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   vendorCompanyId: invoice.vendor_company_id,
                 });
 
-                console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                console.info(
+                  `Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`,
+                );
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
+                invariant(
+                  checkoutSession?.metadata?.milestone_id,
+                  '[Stripe Webhook] Missing metadata: milestone_id.',
+                );
 
                 const customer = await prisma.customer.findFirst({
                   where: {
-                    id: checkoutSession.client_reference_id!
+                    id: checkoutSession.client_reference_id!,
                   },
                 });
 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
-                  console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
+                  console.info(
+                    `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  );
+                  return {
+                    status: 200,
+                    message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  };
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
 
-                await milestoneService.updateMilestoneAsPaid({
-                  milestone_id,
-                  user_id: customer.user_id,
-                }, { prisma });
+                await milestoneService.updateMilestoneAsPaid(
+                  {
+                    milestone_id,
+                    user_id: customer.user_id,
+                  },
+                  { prisma },
+                );
 
-                console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                console.info(
+                  `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
+                );
                 break;
               }
               default: {
-                return { status: 400, message: 'Unhandled payment type' };
+                return { status: 200, message: 'Unhandled payment type' };
               }
             }
             return { status: 200, message: 'OK' };
           }
           default: {
-            return { status: 400, message: 'Unhandled checkout mode' };
+            return { status: 200, message: 'Unhandled checkout mode' };
           }
         }
       }
@@ -251,20 +318,27 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             return { status: 200, message: 'OK' };
           }
           case 'payment': {
-            invariant(checkoutSession?.metadata?.payment_type, '[Stripe Webhook] Missing metadata: payment_type.');
+            invariant(
+              checkoutSession?.metadata?.payment_type,
+              '[Stripe Webhook] Missing metadata: payment_type.',
+            );
 
             switch (checkoutSession?.metadata?.payment_type) {
               case StripeWebhookPaymentType.INVOICE: {
-                invariant(checkoutSession?.metadata?.invoice_id, '[Stripe Webhook] Missing metadata: invoice_id.');
+                invariant(
+                  checkoutSession?.metadata?.invoice_id,
+                  '[Stripe Webhook] Missing metadata: invoice_id.',
+                );
 
-                const { invoice_id, invoice_number, user_id } = checkoutSession.metadata;
+                const { invoice_id, invoice_number, user_id } =
+                  checkoutSession.metadata;
                 const invoice = await prisma.invoice.update({
                   where: {
                     id: invoice_id,
                   },
                   data: {
                     payment_status: InvoicePaymentStatus.FAILED,
-                  }
+                  },
                 });
 
                 createInvoicePaymentNoticeEmailJob({
@@ -274,22 +348,32 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   vendorCompanyId: invoice.vendor_company_id,
                 });
 
-                console.info(`Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`);
+                console.info(
+                  `Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`,
+                );
                 break;
               }
               case StripeWebhookPaymentType.MILESTONE: {
-                invariant(checkoutSession?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
+                invariant(
+                  checkoutSession?.metadata?.milestone_id,
+                  '[Stripe Webhook] Missing metadata: milestone_id.',
+                );
 
                 const customer = await prisma.customer.findFirst({
                   where: {
-                    id: checkoutSession.client_reference_id!
+                    id: checkoutSession.client_reference_id!,
                   },
                 });
 
                 if (!customer) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
-                  console.info(`Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`);
-                  return { status: 200, message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}` }
+                  console.info(
+                    `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  );
+                  return {
+                    status: 200,
+                    message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  };
                 }
 
                 const { quote_id, milestone_id } = checkoutSession.metadata;
@@ -299,21 +383,25 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                   },
                   data: {
                     payment_status: MilestonePaymentStatus.UNPAID,
-                  }
+                  },
                 });
 
-                createSendUserMilestonePaymentFailedNoticeJob({ milestoneId: milestone_id });
-                console.info(`Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`);
+                createSendUserMilestonePaymentFailedNoticeJob({
+                  milestoneId: milestone_id,
+                });
+                console.info(
+                  `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
+                );
                 break;
               }
               default: {
-                return { status: 400, message: 'Unhandled payment type' };
+                return { status: 200, message: 'Unhandled payment type' };
               }
             }
             return { status: 200, message: 'OK' };
           }
           default: {
-            return { status: 400, message: 'Unhandled checkout mode' };
+            return { status: 200, message: 'Unhandled checkout mode' };
           }
         }
       }
@@ -329,7 +417,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const stripeCustomerId = customer as string;
 
         const subItem = items.data.find((i) => !!i.plan);
-        invariant(subItem, "[Stripe Webhook] Missing subscription item.");
+        invariant(subItem, '[Stripe Webhook] Missing subscription item.');
         const { plan } = subItem;
         const stripe = await getStripeInstance();
         const product = await stripe.products.retrieve(plan.product as string);
@@ -362,7 +450,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         if (subscription === null && customerSubscription === null) {
           return {
             status: 200,
-            message: "Skipped webhook: reason=subscription_not_found",
+            message: 'Skipped webhook: reason=subscription_not_found',
           };
         }
 
@@ -370,11 +458,12 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
          * Move legacy customer's subscription to customer_subscriptions table.
          * This logic can be safely remove if all customer has been migrated.
          */
-        const isUpgradingLegacyCustomer = customerSubscription === null
-          && !!subscription
-          && [
+        const isUpgradingLegacyCustomer =
+          customerSubscription === null &&
+          !!subscription &&
+          [
             CustomerSubscriptionPlanName.SOURCING_PLAN,
-            CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN
+            CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
           ].includes(plan_name as CustomerSubscriptionPlanName);
         if (isUpgradingLegacyCustomer) {
           const firstOwner = subscription.biotech.customers[0];
@@ -393,10 +482,10 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
                 id: subscription.id,
               },
             });
-          })
+          });
         } else {
           if (customerSubscription) {
-            invariant(plan_name, "Missing metadata: plan_name.");
+            invariant(plan_name, 'Missing metadata: plan_name.');
             await prisma.customerSubscription.update({
               where: {
                 id: customerSubscription.id,
@@ -410,7 +499,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
           }
 
           if (subscription) {
-            invariant(account_type, "Missing metadata: account_type.");
+            invariant(account_type, 'Missing metadata: account_type.');
             await prisma.biotech.update({
               where: {
                 id: subscription.biotech_id,
@@ -433,18 +522,20 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
           }
         }
 
-        return { status: 200, message: "OK" };
+        return { status: 200, message: 'OK' };
       }
 
       case 'customer.subscription.deleted': {
-        const { status, customer, cancel_at } = event.data.object as Stripe.Subscription;
+        const { status, customer, cancel_at } = event.data
+          .object as Stripe.Subscription;
         const stripeCustomerId = customer as string;
 
-        const customerSubscription = await prisma.customerSubscription.findFirst({
-          where: {
-            stripe_customer_id: stripeCustomerId,
-          },
-        });
+        const customerSubscription =
+          await prisma.customerSubscription.findFirst({
+            where: {
+              stripe_customer_id: stripeCustomerId,
+            },
+          });
 
         if (customerSubscription) {
           await prisma.customerSubscription.update({
@@ -453,7 +544,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             },
             data: {
               status,
-              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined),
             },
           });
         }
@@ -471,7 +562,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             },
             data: {
               status,
-              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined)
+              ...(cancel_at ? { ended_at: new Date(cancel_at) } : undefined),
             },
           });
         }
@@ -482,7 +573,10 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
       case 'payout.paid':
       case 'payout.failed': {
         const payout = event.data.object as Stripe.Payout;
-        invariant(payout?.metadata?.milestone_id, '[Stripe Webhook] Missing metadata: milestone_id.');
+        invariant(
+          payout?.metadata?.milestone_id,
+          '[Stripe Webhook] Missing metadata: milestone_id.',
+        );
 
         const { milestone_id } = payout.metadata;
         const milestone = await prisma.milestone.findFirst({
@@ -498,7 +592,10 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
             id: milestone.id,
           },
           data: {
-            vendor_payment_status: payout.status === 'paid' ? MilestonePaymentStatus.PAID : MilestonePaymentStatus.UNPAID,
+            vendor_payment_status:
+              payout.status === 'paid'
+                ? MilestonePaymentStatus.PAID
+                : MilestonePaymentStatus.UNPAID,
           },
         });
 
@@ -513,7 +610,7 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
         const { customer, payment_method } = setupIntent;
 
         // Set default payment method.
-        if (customer && typeof customer === "string") {
+        if (customer && typeof customer === 'string') {
           const stripe = await getStripeInstance();
 
           await stripe.customers.update(customer as string, {
@@ -529,11 +626,11 @@ export const processStripeEvent = async (event: Stripe.Event): Promise<{ status:
       }
       default: {
         console.warn(`Unhandled webhook: event type=${event.type}`);
-        return { status: 400, message: 'Unhandled Event Type' };
+        return { status: 200, message: 'Unhandled Event Type' };
       }
     }
   } catch (error) {
     Sentry.captureException(error);
-    return { status: 400, message: `Webhook Signed Error: ${error}` };
+    return { status: 200, message: 'Process Stripe event failed.' };
   }
-}
+};
