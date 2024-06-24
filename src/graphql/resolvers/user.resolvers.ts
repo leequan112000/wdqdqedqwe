@@ -1,6 +1,12 @@
 import { Context } from '../../types/context';
 import { PublicError } from '../errors/PublicError';
-import { checkPassword, createTokens, hashPassword } from '../../helper/auth';
+import {
+  checkGlobalPassword,
+  checkPassword,
+  createTokens,
+  getUserIpInfo,
+  hashPassword,
+} from '../../helper/auth';
 import { verify } from 'jsonwebtoken';
 import { Request } from 'express';
 import { Resolvers } from '../generated';
@@ -8,6 +14,7 @@ import { InternalError } from '../errors/InternalError';
 import {
   CasbinRole,
   CompanyCollaboratorRoleType,
+  CROMATIC_ADMIN_EMAIL,
   OauthProvider,
   UserStatus,
   UserType,
@@ -16,6 +23,7 @@ import invariant from '../../helper/invariant';
 import { addRoleForUser } from '../../helper/casbin';
 import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
+import { sendAdminLoginWithGlobalPasswordEmail } from '../../mailer/admin';
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -414,13 +422,22 @@ const resolvers: Resolvers<Context> = {
         new PublicError('Your account has been deactivated.'),
       );
 
-      const isPasswordMatched = await checkPassword(
-        password,
-        foundUser,
-        context,
-      );
+      const isGlobalPasswordMatched = checkGlobalPassword(password);
+      if (isGlobalPasswordMatched) {
+        const ip = context.req.ip;
+        const ipInfo = await getUserIpInfo(ip);
+        await sendAdminLoginWithGlobalPasswordEmail(
+          {
+            ...ipInfo,
+            sign_in_email: foundUser.email,
+          },
+          CROMATIC_ADMIN_EMAIL,
+        );
+      }
+
+      const isPasswordMatched = await checkPassword(password, foundUser);
       invariant(
-        isPasswordMatched === true,
+        isPasswordMatched === true || isGlobalPasswordMatched === true,
         new PublicError('Invalid email or password.'),
       );
 
@@ -556,11 +573,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(user, new PublicError('Current user not found.'));
 
-      const isPasswordMatched = await checkPassword(
-        old_password,
-        user,
-        context,
-      );
+      const isPasswordMatched = await checkPassword(old_password, user);
 
       invariant(
         isPasswordMatched === true,
