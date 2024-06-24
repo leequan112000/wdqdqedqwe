@@ -3,7 +3,13 @@ import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
 
-export const createMilestoneNotification = async (sender_id: string, quote_id: string, milestone_update_content: string, recipient_id: string, project_connection_id: string) => {
+export const createMilestoneNotification = async (
+  sender_id: string,
+  quote_id: string,
+  milestone_update_content: string,
+  recipient_id: string,
+  project_connection_id: string,
+) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,
@@ -36,7 +42,12 @@ export const createMilestoneNotification = async (sender_id: string, quote_id: s
   publishNewNotification(notification);
 };
 
-export const createMilestonePaymentFailedNotification = async (quote_id: string, milestone_update_content: string, recipient_id: string, project_connection_id: string) => {
+export const createMilestonePaymentFailedNotification = async (
+  quote_id: string,
+  milestone_update_content: string,
+  recipient_id: string,
+  project_connection_id: string,
+) => {
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,

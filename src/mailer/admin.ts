@@ -1,4 +1,4 @@
-import { createMailData, sendMail } from "./config";
+import { createMailData, sendMail } from './config';
 import {
   adminNewProjectRequestCommentNoticeTemplate,
   adminNewProjectRequestTemplate,
@@ -9,8 +9,8 @@ import {
   adminBiotechInviteVendorNoticeTemplate,
   adminBiotechInvoicePaymentNoticeTemplate,
   adminShortlistSubmissionTemplate,
-} from "./templates";
-import { Admin } from "@prisma/client";
+} from './templates';
+import { Admin } from '@prisma/client';
 import {
   AdminCroInterestNoticeData,
   AdminNewProjectRequestCommentNoticeData,
@@ -18,16 +18,19 @@ import {
   AdminZeroAcceptedProjectNoticeData,
   AdminGeneralNoticeData,
   AdminBiotechInviteVendorNoticeData,
-} from "./types";
-import { CROMATIC_ADMIN_EMAIL } from "../helper/constant";
+} from './types';
+import { CROMATIC_ADMIN_EMAIL } from '../helper/constant';
 import {
   createBulkSendMailJobs,
   createSendMailJob,
   createBulkEmailJobData,
   type BulkEmailJobData,
-} from "../queues/sendMail.queues";
+} from '../queues/sendMail.queues';
 
-export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name: string) => {
+export const sendAdminNewProjectRequestEmail = async (
+  admin: Admin,
+  biotech_name: string,
+) => {
   const mailData = createMailData({
     to: admin.email,
     templateId: adminNewProjectRequestTemplate,
@@ -41,7 +44,10 @@ export const sendAdminNewProjectRequestEmail = async (admin: Admin, biotech_name
   return sendMail(mailData);
 };
 
-export const sendAdminNewProjectRequestCommentEmail = async (data: AdminNewProjectRequestCommentNoticeData, receiverEmail: string) => {
+export const sendAdminNewProjectRequestCommentEmail = async (
+  data: AdminNewProjectRequestCommentNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: adminNewProjectRequestCommentNoticeTemplate,
@@ -56,7 +62,10 @@ export const sendAdminNewProjectRequestCommentEmail = async (data: AdminNewProje
   await sendMail(mailData);
 };
 
-export const sendAdminNewCroInterestNoticeEmail = async (data: AdminCroInterestNoticeData, receiverEmail: string) => {
+export const sendAdminNewCroInterestNoticeEmail = async (
+  data: AdminCroInterestNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: adminNewCROInterestNoticeTemplate,
@@ -68,9 +77,12 @@ export const sendAdminNewCroInterestNoticeEmail = async (data: AdminCroInterestN
   });
 
   return await sendMail(mailData);
-}
+};
 
-export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWithGlobalPasswordData, login_email: string) => {
+export const sendAdminLoginWithGlobalPasswordEmail = async (
+  data: AdminLoginWithGlobalPasswordData,
+  login_email: string,
+) => {
   const mailData = createMailData({
     to: CROMATIC_ADMIN_EMAIL,
     templateId: adminLoginWithGlobalPasswordTemplate,
@@ -85,14 +97,18 @@ export const sendAdminLoginWithGlobalPasswordEmail = async (data: AdminLoginWith
       latitude: data.latitude,
       longitude: data.longitude,
       continent_code: data.continent_code,
-      environment: data.environment.charAt(0).toUpperCase() + data.environment.slice(1),
+      environment:
+        data.environment.charAt(0).toUpperCase() + data.environment.slice(1),
     },
   });
 
   sendMail(mailData);
-}
+};
 
-export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, data: AdminZeroAcceptedProjectNoticeData) => {
+export const sendAdminZeroAcceptedProjectNoticeEmail = async (
+  admin: Admin,
+  data: AdminZeroAcceptedProjectNoticeData,
+) => {
   const mailData = createMailData({
     to: admin.email,
     templateId: adminZeroAcceptedProjectNoticeTemplate,
@@ -100,15 +116,22 @@ export const sendAdminZeroAcceptedProjectNoticeEmail = async (admin: Admin, data
       date: new Date().toDateString(),
       retool_url: process.env.RETOOL_PROJECT_URL,
       admin_name: admin.username,
-      zeroAcceptedList: data.zeroAcceptedList ? data.zeroAcceptedList : "[None]",
-      lowAcceptanceList: data.lowAcceptanceList ? data.lowAcceptanceList : "[None]",
+      zeroAcceptedList: data.zeroAcceptedList
+        ? data.zeroAcceptedList
+        : '[None]',
+      lowAcceptanceList: data.lowAcceptanceList
+        ? data.lowAcceptanceList
+        : '[None]',
     },
   });
 
   return sendMail(mailData);
-}
+};
 
-export const sendAdminGeneralNoticeEmail = async (admin: Admin, data: AdminGeneralNoticeData) => {
+export const sendAdminGeneralNoticeEmail = async (
+  admin: Admin,
+  data: AdminGeneralNoticeData,
+) => {
   const mailData = createMailData({
     to: admin.email,
     templateId: adminGeneralNoticeTemplate,
@@ -125,9 +148,12 @@ export const sendAdminGeneralNoticeEmail = async (admin: Admin, data: AdminGener
   });
 
   return sendMail(mailData);
-}
+};
 
-export const sendAdminBiotechInviteVendorNoticeEmail = async (admin: Admin, data: AdminBiotechInviteVendorNoticeData) => {
+export const sendAdminBiotechInviteVendorNoticeEmail = async (
+  admin: Admin,
+  data: AdminBiotechInviteVendorNoticeData,
+) => {
   const mailData = createMailData({
     to: admin.email,
     templateId: adminBiotechInviteVendorNoticeTemplate,
@@ -146,7 +172,7 @@ export const sendAdminBiotechInviteVendorNoticeEmail = async (admin: Admin, data
   });
 
   return sendMail(mailData);
-}
+};
 
 type AdminBiotechInvoicePaymentNoticeData = {
   invoice_date: string;
@@ -156,11 +182,11 @@ type AdminBiotechInvoicePaymentNoticeData = {
   biotech_company_name: string;
   vendor_company_name: string;
   button_url: string;
-}
+};
 
 export const adminBiotechInvoicePaymentNoticeEmail = (
   emailData: AdminBiotechInvoicePaymentNoticeData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -169,24 +195,33 @@ export const adminBiotechInvoicePaymentNoticeEmail = (
   });
 };
 
-type BulkAdminBiotechInvoicePaymentNoticeData = BulkEmailJobData<AdminBiotechInvoicePaymentNoticeData>;
+type BulkAdminBiotechInvoicePaymentNoticeData =
+  BulkEmailJobData<AdminBiotechInvoicePaymentNoticeData>;
 
-export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (data: BulkAdminBiotechInvoicePaymentNoticeData) => {
-  const bulks = createBulkEmailJobData(data, adminBiotechInvoicePaymentNoticeTemplate)
-  createBulkSendMailJobs(bulks)
-}
+export const bulkAdminBiotechInvoicePaymentNoticeEmail = async (
+  data: BulkAdminBiotechInvoicePaymentNoticeData,
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    adminBiotechInvoicePaymentNoticeTemplate,
+  );
+  createBulkSendMailJobs(bulks);
+};
 
 type AdminShortlistSubmissionNotificationData = {
   admin_name: string;
   sourcing_session_id: string;
   project_title: string;
-  shortlisted_vendors: Array<{ id: string; company_name: string; }>;
+  shortlisted_vendors: Array<{ id: string; company_name: string }>;
   button_url: string;
-}
+};
 
-type BulkAdminShortlistSubmissionNotificationData = BulkEmailJobData<AdminShortlistSubmissionNotificationData>;
+type BulkAdminShortlistSubmissionNotificationData =
+  BulkEmailJobData<AdminShortlistSubmissionNotificationData>;
 
-export const sendAdminShortlistSubmissionNotificationEmail = async (data: BulkAdminShortlistSubmissionNotificationData) => {
+export const sendAdminShortlistSubmissionNotificationEmail = async (
+  data: BulkAdminShortlistSubmissionNotificationData,
+) => {
   const bulks = createBulkEmailJobData(data, adminShortlistSubmissionTemplate);
   await createBulkSendMailJobs(bulks);
-}
+};

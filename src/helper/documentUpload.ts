@@ -1,7 +1,11 @@
 import { prisma } from '../prisma';
 import { ProjectAttachmentDocumentType } from './constant';
 
-export const getFilenameWithVersion = async (fullFilename: string, version: number, projectConnectionId: string): Promise<string> => {
+export const getFilenameWithVersion = async (
+  fullFilename: string,
+  version: number,
+  projectConnectionId: string,
+): Promise<string> => {
   const [filenameWithoutExt, ext] = fullFilename.split('.');
 
   const newFullFilename = `${filenameWithoutExt} (${version}).${ext}`;
@@ -19,4 +23,4 @@ export const getFilenameWithVersion = async (fullFilename: string, version: numb
   }
 
   return getFilenameWithVersion(fullFilename, version + 1, projectConnectionId);
-}
+};

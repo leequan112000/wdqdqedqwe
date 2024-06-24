@@ -1,8 +1,21 @@
-import { createMailData, sendMail } from "./config";
-import { BillingNoticeData, InvoicePaymentNoticeData, InvoicePaymentOverdueNoticeData, InvoicePaymentReminderData } from "./types";
-import { billingNoticeTemplate, invoicePaymentNoticeTemplate, invoicePaymentOverdueNoticeTemplate, invoicePaymentReminderTemplate } from "./templates";
+import { createMailData, sendMail } from './config';
+import {
+  BillingNoticeData,
+  InvoicePaymentNoticeData,
+  InvoicePaymentOverdueNoticeData,
+  InvoicePaymentReminderData,
+} from './types';
+import {
+  billingNoticeTemplate,
+  invoicePaymentNoticeTemplate,
+  invoicePaymentOverdueNoticeTemplate,
+  invoicePaymentReminderTemplate,
+} from './templates';
 
-export const sendBillingNoticeEmail = async (emailData: BillingNoticeData, receiverEmail: string) => {
+export const sendBillingNoticeEmail = async (
+  emailData: BillingNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: billingNoticeTemplate,
@@ -10,9 +23,12 @@ export const sendBillingNoticeEmail = async (emailData: BillingNoticeData, recei
   });
 
   return await sendMail(mailData);
-}
+};
 
-export const sendInvoicePaymentNoticeEmail = async (emailData: InvoicePaymentNoticeData, receiverEmail: string) => {
+export const sendInvoicePaymentNoticeEmail = async (
+  emailData: InvoicePaymentNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: invoicePaymentNoticeTemplate,
@@ -20,9 +36,12 @@ export const sendInvoicePaymentNoticeEmail = async (emailData: InvoicePaymentNot
   });
 
   return await sendMail(mailData);
-}
+};
 
-export const sendInvoicePaymentReminderEmail = async (emailData: InvoicePaymentReminderData, receiverEmail: string) => {
+export const sendInvoicePaymentReminderEmail = async (
+  emailData: InvoicePaymentReminderData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: invoicePaymentReminderTemplate,
@@ -30,9 +49,12 @@ export const sendInvoicePaymentReminderEmail = async (emailData: InvoicePaymentR
   });
 
   return await sendMail(mailData);
-}
+};
 
-export const sendInvoicePaymentOverdueNoticeEmail = async (emailData: InvoicePaymentOverdueNoticeData, receiverEmail: string) => {
+export const sendInvoicePaymentOverdueNoticeEmail = async (
+  emailData: InvoicePaymentOverdueNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: invoicePaymentOverdueNoticeTemplate,
@@ -40,4 +62,4 @@ export const sendInvoicePaymentOverdueNoticeEmail = async (emailData: InvoicePay
   });
 
   return await sendMail(mailData);
-}
+};

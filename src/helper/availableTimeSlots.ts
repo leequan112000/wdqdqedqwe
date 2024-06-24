@@ -1,7 +1,7 @@
-import moment from "moment-timezone";
-import { Availability } from "@prisma/client";
-import { AvailabilityDay } from "./constant";
-import { CalendarEvent } from "../graphql/generated";
+import moment from 'moment-timezone';
+import { Availability } from '@prisma/client';
+import { AvailabilityDay } from './constant';
+import { CalendarEvent } from '../graphql/generated';
 
 type Slot = {
   start_time: Date;
@@ -14,9 +14,9 @@ type GroupedSlots = {
 
 export function findIntersectingIntervals(slots: Slot[]) {
   slots.sort((a, b) => {
-    if (moment(a.start_time, "h:mma").isBefore(moment(b.start_time, "h:mma")))
+    if (moment(a.start_time, 'h:mma').isBefore(moment(b.start_time, 'h:mma')))
       return -1;
-    if (moment(a.start_time, "h:mma").isAfter(moment(b.start_time, "h:mma")))
+    if (moment(a.start_time, 'h:mma').isAfter(moment(b.start_time, 'h:mma')))
       return 1;
     return 0;
   });
@@ -55,14 +55,14 @@ export const generateDates = (from: Date, to: Date) => {
   const dateArr: string[] = [];
   let currentDate = startDate.clone();
   while (currentDate.isSameOrBefore(endDate)) {
-    dateArr.push(currentDate.format("YYYY-MM-DD"));
-    currentDate.add(1, "days");
+    dateArr.push(currentDate.format('YYYY-MM-DD'));
+    currentDate.add(1, 'days');
   }
   return dateArr;
 };
 
 export const generateCommonAvailableSlots = (
-  groupedAvailability: GroupedSlots
+  groupedAvailability: GroupedSlots,
 ) => {
   return Object.values(AvailabilityDay).reduce<GroupedSlots>((acc, cur) => {
     const dayIntervals = groupedAvailability[cur];
@@ -75,12 +75,12 @@ export const generateCommonAvailableSlots = (
     >((slotsAcc, interval) => {
       let slots = [];
       let start = moment(interval.start_time);
-      if (start.get("minute") < 30) {
+      if (start.get('minute') < 30) {
         start.minute(0);
       } else {
         start.minute(30);
       }
-      let end = start.clone().add(30, "minutes");
+      let end = start.clone().add(30, 'minutes');
       let endOfAvailableDay = moment(interval.end_time);
       while (start.isBefore(endOfAvailableDay)) {
         slots.push({
@@ -88,8 +88,8 @@ export const generateCommonAvailableSlots = (
           end_time: end.toDate(),
         });
 
-        start.add(30, "minutes");
-        end.add(30, "minutes");
+        start.add(30, 'minutes');
+        end.add(30, 'minutes');
       }
 
       return [...slotsAcc, ...slots];
@@ -102,7 +102,7 @@ export const generateCommonAvailableSlots = (
 
 export const filterAvailableSlotsByDuration = (
   groupedCommonAvailableSlots: GroupedSlots,
-  durationInMin: number
+  durationInMin: number,
 ) => {
   return Object.values(AvailabilityDay).reduce<GroupedSlots>((acc, cur) => {
     const slots = groupedCommonAvailableSlots[cur];
@@ -116,7 +116,7 @@ export const filterAvailableSlotsByDuration = (
       let currentSlot = slots[i];
       let endTimeForDuration = moment(currentSlot.start_time).add(
         durationInMin,
-        "minutes"
+        'minutes',
       );
 
       // Check if the duration fits in the consecutive free slots
@@ -143,7 +143,7 @@ type UserCalendarData = {
 };
 
 export const generateCalendarEventBusySlots = (
-  userCalendarData: UserCalendarData[]
+  userCalendarData: UserCalendarData[],
 ): Slot[] => {
   return userCalendarData.reduce<{ start_time: Date; end_time: Date }[]>(
     (acc, eventData) => {
@@ -159,7 +159,7 @@ export const generateCalendarEventBusySlots = (
           : moment.tz(event.end_time);
 
         while (current.isBefore(eventEndTime)) {
-          let end = current.clone().add(30, "minutes");
+          let end = current.clone().add(30, 'minutes');
 
           if (end.isAfter(eventEndTime)) {
             end = moment(eventEndTime);
@@ -169,12 +169,12 @@ export const generateCalendarEventBusySlots = (
             start_time: current.toDate(),
             end_time: end.toDate(),
           });
-          current.add(30, "minutes");
+          current.add(30, 'minutes');
         }
       });
 
       return [...acc, ...busySlots];
     },
-    []
+    [],
   );
 };

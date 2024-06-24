@@ -1,18 +1,22 @@
-import { HeadObjectCommand } from "@aws-sdk/client-s3";
-import { Upload } from '@aws-sdk/lib-storage'
-import { randomUUID } from "crypto";
-import { fromBuffer } from "detect-file-type";
+import { HeadObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { randomUUID } from 'crypto';
+import { fromBuffer } from 'detect-file-type';
 import { extname } from 'path';
 import mime from 'mime-types';
-import { s3Client } from "./awsS3";
-import config from "../config";
+import { s3Client } from './awsS3';
+import config from '../config';
 
 type UploadParamType = {
   filename: string;
   createReadStream: () => any;
-}
+};
 
-export default async function storeUpload(upload: UploadParamType, path: string = '', isPublic: boolean = false) {
+export default async function storeUpload(
+  upload: UploadParamType,
+  path: string = '',
+  isPublic: boolean = false,
+) {
   try {
     const { createReadStream, filename } = upload;
     const mimeType = mime.lookup(filename);
@@ -26,7 +30,7 @@ export default async function storeUpload(upload: UploadParamType, path: string 
         Bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
         Key: key,
         ContentType: contentType,
-        ...(isPublic? { ACL: "public-read" } : {})
+        ...(isPublic ? { ACL: 'public-read' } : {}),
       },
     });
 
@@ -36,7 +40,7 @@ export default async function storeUpload(upload: UploadParamType, path: string 
       Bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
       Key: key,
     });
-    const headObjectResp = await s3Client.send(headObjectCommand)
+    const headObjectResp = await s3Client.send(headObjectCommand);
 
     return {
       key,
@@ -44,7 +48,7 @@ export default async function storeUpload(upload: UploadParamType, path: string 
       bucket: isPublic ? config.s3.publicBucket : config.s3.bucket,
       filesize: headObjectResp.ContentLength || 0,
       contentType,
-    }
+    };
   } catch (error) {
     console.log(error);
     throw error;
@@ -58,7 +62,7 @@ export const getFileExtFromBuffer = (buffer: Buffer) => {
         reject(err);
       }
 
-      resolve(result.ext)
+      resolve(result.ext);
     });
-  })
-}
+  });
+};

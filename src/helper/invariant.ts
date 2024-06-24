@@ -1,4 +1,4 @@
-const defaultMessage = 'Something went wrong.'
+const defaultMessage = 'Something went wrong.';
 
 // Throw an error if the condition fails
 // Strip out error messages for production
@@ -15,7 +15,8 @@ export default function invariant(
     throw message;
   }
 
-  const provided: string | undefined = typeof message === 'function' ? message() : message;
+  const provided: string | undefined =
+    typeof message === 'function' ? message() : message;
 
   const value: string = provided ? provided : defaultMessage;
   throw new Error(value);

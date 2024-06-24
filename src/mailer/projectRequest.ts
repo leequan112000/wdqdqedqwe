@@ -1,15 +1,18 @@
-import { User } from "@prisma/client";
+import { User } from '@prisma/client';
 import {
   acceptProjectRequestNoticeTemplate,
   privateProjectRequestSubmissionTemplate,
   projectRequestSubmissionTemplate,
   vendorRequestExpiredNoticeTemplate,
   vendorRequestExpiringNoticeTemplate,
-} from "./templates";
-import { VendorProjectRequestExpiredNoticeData, VendorProjectRequestExpiringNoticeData } from "./types";
-import { app_env } from "../environment";
-import { createMailData, sendMail } from "./config";
-import { createSendMailJob } from "../queues/sendMail.queues";
+} from './templates';
+import {
+  VendorProjectRequestExpiredNoticeData,
+  VendorProjectRequestExpiringNoticeData,
+} from './types';
+import { app_env } from '../environment';
+import { createMailData, sendMail } from './config';
+import { createSendMailJob } from '../queues/sendMail.queues';
 
 export const sendProjectRequestSubmissionEmail = (receiver: User) => {
   const mailData = createMailData({
@@ -44,7 +47,7 @@ type AcceptProjectRequestNoticeData = {
 
 export const sendVendorAcceptProjectNoticeEmail = async (
   emailData: AcceptProjectRequestNoticeData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   return await createSendMailJob({
     emailData,
@@ -53,22 +56,28 @@ export const sendVendorAcceptProjectNoticeEmail = async (
   });
 };
 
-export const sendVendorProjectRequestExpiringEmail = async (emailData: VendorProjectRequestExpiringNoticeData, receiverEmail: string) => {
+export const sendVendorProjectRequestExpiringEmail = async (
+  emailData: VendorProjectRequestExpiringNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: vendorRequestExpiringNoticeTemplate,
     dynamicTemplateData: emailData,
-  })
+  });
 
   return await sendMail(mailData);
-}
+};
 
-export const sendVendorProjectRequestExpiredEmail = async (emailData: VendorProjectRequestExpiredNoticeData, receiverEmail: string) => {
+export const sendVendorProjectRequestExpiredEmail = async (
+  emailData: VendorProjectRequestExpiredNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: vendorRequestExpiredNoticeTemplate,
     dynamicTemplateData: emailData,
-  })
+  });
 
   return await sendMail(mailData);
-}
+};

@@ -1,4 +1,4 @@
-import { NotificationType } from "../helper/constant";
+import { NotificationType } from '../helper/constant';
 
 type FinalContractUploadNotificationData = {
   sender_fullname: string;
@@ -9,7 +9,7 @@ type FinalContractUploadNotificationData = {
 };
 
 const createFinalContractUploadNotificationJob = (
-  data: FinalContractUploadNotificationData
+  data: FinalContractUploadNotificationData,
 ) => {
   const {
     project_connection_id,

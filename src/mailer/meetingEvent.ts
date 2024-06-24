@@ -1,10 +1,10 @@
-import type { Attachment } from "@sendgrid/helpers/classes";
-import { createSendMailJob } from "../queues/sendMail.queues";
+import type { Attachment } from '@sendgrid/helpers/classes';
+import { createSendMailJob } from '../queues/sendMail.queues';
 import {
   newMeetingNotificationTemplate,
   updatedMeetingNotificationTemplate,
   canceledMeetingNotificationTemplate,
-} from "./templates";
+} from './templates';
 
 type NewMeetingNotificationEmailData = {
   meeting_title: string;
@@ -17,7 +17,7 @@ type NewMeetingNotificationEmailData = {
 export const newMeetingNotificationEmail = (
   emailData: NewMeetingNotificationEmailData,
   receiverEmail: string,
-  attachments?: Attachment[]
+  attachments?: Attachment[],
 ) => {
   createSendMailJob({
     emailData,
@@ -38,7 +38,7 @@ type UpdatedMeetingNotificationEmailData = {
 export const updatedMeetingNotificationEmail = (
   emailData: UpdatedMeetingNotificationEmailData,
   receiverEmail: string,
-  attachments?: Attachment[]
+  attachments?: Attachment[],
 ) => {
   createSendMailJob({
     emailData,
@@ -58,7 +58,7 @@ type CanceledMeetingNotificationEmailData = {
 export const canceledMeetingNotificationEmail = (
   emailData: CanceledMeetingNotificationEmailData,
   receiverEmail: string,
-  attachments?: Attachment[]
+  attachments?: Attachment[],
 ) => {
   createSendMailJob({
     emailData,

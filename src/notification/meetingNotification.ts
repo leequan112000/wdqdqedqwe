@@ -5,10 +5,13 @@ type NewMeetingNotificationData = {
   organizer_full_name: string;
   meeting_event_id: string;
   recipient_id: string;
-}
+};
 
-export const createNewMeetingNotificationJob = (data: NewMeetingNotificationData) => {
-  const { project_title, organizer_full_name, meeting_event_id, recipient_id } = data;
+export const createNewMeetingNotificationJob = (
+  data: NewMeetingNotificationData,
+) => {
+  const { project_title, organizer_full_name, meeting_event_id, recipient_id } =
+    data;
 
   return {
     notification_type: NotificationType.NEW_MEETING_NOTIFICATION,
@@ -18,17 +21,20 @@ export const createNewMeetingNotificationJob = (data: NewMeetingNotificationData
     },
     recipient_id,
   };
-}
+};
 
 type UpdateMeetingNotificationData = {
   project_title: string;
   organizer_full_name: string;
   meeting_event_id: string;
   recipient_id: string;
-}
+};
 
-export const createUpdateMeetingNotificationJob = (data: UpdateMeetingNotificationData) => {
-  const { meeting_event_id, organizer_full_name, project_title, recipient_id } = data;
+export const createUpdateMeetingNotificationJob = (
+  data: UpdateMeetingNotificationData,
+) => {
+  const { meeting_event_id, organizer_full_name, project_title, recipient_id } =
+    data;
 
   return {
     notification_type: NotificationType.UPDATE_MEETING_NOTIFICATION,
@@ -38,17 +44,20 @@ export const createUpdateMeetingNotificationJob = (data: UpdateMeetingNotificati
     },
     recipient_id,
   };
-}
+};
 
 type RemoveMeetingNotificationData = {
   project_title: string;
   organizer_full_name: string;
   meeting_event_id: string;
   recipient_id: string;
-}
+};
 
-export const createRemoveMeetingNotificationJob = (data: RemoveMeetingNotificationData) => {
-  const { meeting_event_id, organizer_full_name, project_title, recipient_id } = data;
+export const createRemoveMeetingNotificationJob = (
+  data: RemoveMeetingNotificationData,
+) => {
+  const { meeting_event_id, organizer_full_name, project_title, recipient_id } =
+    data;
 
   return {
     notification_type: NotificationType.REMOVE_MEETING_NOTIFICATION,
@@ -58,4 +67,4 @@ export const createRemoveMeetingNotificationJob = (data: RemoveMeetingNotificati
     },
     recipient_id,
   };
-}
+};

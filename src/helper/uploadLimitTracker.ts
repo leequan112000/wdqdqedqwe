@@ -1,5 +1,5 @@
-import { prisma } from "../prisma";
-import { byteToKB } from "./filesize";
+import { prisma } from '../prisma';
+import { byteToKB } from './filesize';
 
 // Note: all sizes in kilobytes
 
@@ -14,15 +14,15 @@ class UploadLimitTracker {
   public async init(biotechId: string) {
     const biotech = await prisma.biotech.findFirst({
       where: {
-        id: biotechId
+        id: biotechId,
       },
     });
     const aggregations = await prisma.projectAttachment.aggregate({
       where: {
         project_connection: {
           project_request: {
-            biotech_id: biotechId
-          }
+            biotech_id: biotechId,
+          },
         },
         uploader: {
           customer: {
@@ -47,7 +47,7 @@ class UploadLimitTracker {
   }
 
   public deductUsed(filesize: number) {
-    const deducted = this.usedSize - filesize
+    const deducted = this.usedSize - filesize;
     if (deducted <= 0) {
       this.usedSize = 0;
     } else {
@@ -63,7 +63,7 @@ class UploadLimitTracker {
     return {
       total: this.totalLimit,
       used: this.usedSize,
-    }
+    };
   }
 }
 

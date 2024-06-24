@@ -1,9 +1,9 @@
-import { Prisma } from "@prisma/client";
-import { Client } from "@googlemaps/google-maps-services-js";
+import { Prisma } from '@prisma/client';
+import { Client } from '@googlemaps/google-maps-services-js';
 
-import invariant from "../helper/invariant";
-import { prisma } from "../prisma";
-import { availabilitiesCreateData } from "../helper/availability";
+import invariant from '../helper/invariant';
+import { prisma } from '../prisma';
+import { availabilitiesCreateData } from '../helper/availability';
 
 const client = new Client({});
 
@@ -29,7 +29,7 @@ const main = async () => {
       },
     });
 
-    invariant(process.env.GOOGLE_MAPS_API_KEY, "no api");
+    invariant(process.env.GOOGLE_MAPS_API_KEY, 'no api');
 
     const data = users.reduce<{ user_id: string; company_address: string }[]>(
       (acc, cur) => {
@@ -54,7 +54,7 @@ const main = async () => {
 
         return acc;
       },
-      []
+      [],
     );
 
     const tasks = data.map(async (d) => {
@@ -99,9 +99,9 @@ const main = async () => {
       data: createInputData,
     });
 
-    console.log("Operation done.");
+    console.log('Operation done.');
   } catch (error) {
-    console.log("Operation failed.");
+    console.log('Operation failed.');
     console.log(error);
   } finally {
     await prisma.$disconnect();
