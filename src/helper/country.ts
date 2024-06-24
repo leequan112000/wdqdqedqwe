@@ -248,6 +248,8 @@ export const countryRegionMap: { [key: string]: string } = {
   ZW: 'EMEA',
 };
 
-export const getRegionByCountryCode = (countryCode: string): string | undefined => {
+export const getRegionByCountryCode = (
+  countryCode: string,
+): string | undefined => {
   return countryRegionMap[countryCode.toUpperCase()];
 };

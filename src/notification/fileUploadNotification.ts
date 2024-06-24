@@ -1,4 +1,4 @@
-import { NotificationType } from "../helper/constant";
+import { NotificationType } from '../helper/constant';
 
 type FileUploadNotificationData = {
   sender_fullname: string;
@@ -8,9 +8,7 @@ type FileUploadNotificationData = {
   sender_id: string;
 };
 
-const createFileUploadNotificationJob = (
-  data: FileUploadNotificationData
-) => {
+const createFileUploadNotificationJob = (data: FileUploadNotificationData) => {
   const {
     project_connection_id,
     project_title,

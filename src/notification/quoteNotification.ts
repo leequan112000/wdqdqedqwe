@@ -1,9 +1,19 @@
-import { NotificationType, QuoteNotificationActionContent } from '../helper/constant';
+import {
+  NotificationType,
+  QuoteNotificationActionContent,
+} from '../helper/constant';
 import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
 
-const createQuoteNotification = async (sender_id: string, sender_company_name: string, quote_id: string, action: QuoteNotificationActionContent, recipient_id: string, project_connection_id: string) => {
+const createQuoteNotification = async (
+  sender_id: string,
+  sender_company_name: string,
+  quote_id: string,
+  action: QuoteNotificationActionContent,
+  recipient_id: string,
+  project_connection_id: string,
+) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,
@@ -70,10 +80,18 @@ type CreateExpiredQuoteNotificationJobData = {
   project_connection_id: string;
   quote_id: string;
   recipient_id: string;
-}
+};
 
-export const createExpiredQuoteNotificationJob = (data: CreateExpiredQuoteNotificationJobData) => {
-  const { project_connection_id, project_name, quote_id, recipient_id, vendor_full_name } = data;
+export const createExpiredQuoteNotificationJob = (
+  data: CreateExpiredQuoteNotificationJobData,
+) => {
+  const {
+    project_connection_id,
+    project_name,
+    quote_id,
+    recipient_id,
+    vendor_full_name,
+  } = data;
 
   return {
     notification_type: NotificationType.QUOTE_EXPIRED_NOTIFICATION,
@@ -83,8 +101,8 @@ export const createExpiredQuoteNotificationJob = (data: CreateExpiredQuoteNotifi
       quote_id,
     },
     recipient_id,
-  }
-}
+  };
+};
 
 type CreateExpiringQuoteNotificationJobData = {
   project_name: string;
@@ -93,10 +111,19 @@ type CreateExpiringQuoteNotificationJobData = {
   quote_id: string;
   recipient_id: string;
   expiring_in: string;
-}
+};
 
-export const createExpiringQuoteNotificationJob = (data: CreateExpiringQuoteNotificationJobData) => {
-  const { project_connection_id, project_name, quote_id, recipient_id, vendor_full_name, expiring_in } = data;
+export const createExpiringQuoteNotificationJob = (
+  data: CreateExpiringQuoteNotificationJobData,
+) => {
+  const {
+    project_connection_id,
+    project_name,
+    quote_id,
+    recipient_id,
+    vendor_full_name,
+    expiring_in,
+  } = data;
 
   return {
     notification_type: NotificationType.QUOTE_EXPIRING_NOTIFICATION,
@@ -106,5 +133,5 @@ export const createExpiringQuoteNotificationJob = (data: CreateExpiringQuoteNoti
       quote_id,
     },
     recipient_id,
-  }
-}
+  };
+};

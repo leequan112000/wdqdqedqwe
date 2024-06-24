@@ -1,8 +1,11 @@
-import { createMailData, sendMail } from "./config";
-import type { MilestoneNoticeData } from "./types";
-import { milestoneNoticeTemplate } from "./templates";
+import { createMailData, sendMail } from './config';
+import type { MilestoneNoticeData } from './types';
+import { milestoneNoticeTemplate } from './templates';
 
-export const sendMilestoneNoticeEmail = async (emailData: MilestoneNoticeData, receiverEmail: string) => {
+export const sendMilestoneNoticeEmail = async (
+  emailData: MilestoneNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: milestoneNoticeTemplate,
@@ -16,4 +19,4 @@ export const sendMilestoneNoticeEmail = async (emailData: MilestoneNoticeData, r
   });
 
   await sendMail(mailData);
-}
+};

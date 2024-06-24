@@ -3,12 +3,12 @@ import {
   biotechInvoicePaymentReminderTemplate,
   biotechInvoicePaymentVerifiedByCromaticAdminTemplate,
   newBiotechInvoiceNoticeTemplate,
-} from "./templates";
+} from './templates';
 import {
   createBulkSendMailJobs,
   createSendMailJob,
   createBulkEmailJobData,
-} from "../queues/sendMail.queues";
+} from '../queues/sendMail.queues';
 
 type NewBiotechInvoiceNoticeData = {
   project_title: string;
@@ -17,11 +17,11 @@ type NewBiotechInvoiceNoticeData = {
   biotech_company_name: string;
   due_at: string;
   button_url: string;
-}
+};
 
 export const newBiotechInvoiceNoticeEmail = (
   emailData: NewBiotechInvoiceNoticeData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -33,12 +33,14 @@ export const newBiotechInvoiceNoticeEmail = (
 type BulkNewBiotechInvoiceNoticeData = {
   emailData: NewBiotechInvoiceNoticeData;
   receiverEmail: string;
-}
+};
 
-export const bulkNewBiotechInvoiceNoticeEmail = async (data: BulkNewBiotechInvoiceNoticeData[]) => {
-  const bulks = createBulkEmailJobData(data, newBiotechInvoiceNoticeTemplate)
-  createBulkSendMailJobs(bulks)
-}
+export const bulkNewBiotechInvoiceNoticeEmail = async (
+  data: BulkNewBiotechInvoiceNoticeData[],
+) => {
+  const bulks = createBulkEmailJobData(data, newBiotechInvoiceNoticeTemplate);
+  createBulkSendMailJobs(bulks);
+};
 
 type BiotechInvoicePaymentReminderData = {
   invoice_date: string;
@@ -48,11 +50,11 @@ type BiotechInvoicePaymentReminderData = {
   due_at: string;
   due_period: string;
   button_url: string;
-}
+};
 
 export const biotechInvoicePaymentReminderEmail = (
   emailData: BiotechInvoicePaymentReminderData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -64,12 +66,17 @@ export const biotechInvoicePaymentReminderEmail = (
 type BulkBiotechInvoicePaymentReminderData = {
   emailData: BiotechInvoicePaymentReminderData;
   receiverEmail: string;
-}
+};
 
-export const bulkBiotechInvoicePaymentReminderEmail = async (data: BulkBiotechInvoicePaymentReminderData[]) => {
-  const bulks = createBulkEmailJobData(data, biotechInvoicePaymentReminderTemplate)
-  createBulkSendMailJobs(bulks)
-}
+export const bulkBiotechInvoicePaymentReminderEmail = async (
+  data: BulkBiotechInvoicePaymentReminderData[],
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    biotechInvoicePaymentReminderTemplate,
+  );
+  createBulkSendMailJobs(bulks);
+};
 
 type BiotechInvoicePaymentOverdueNoticeData = {
   invoice_date: string;
@@ -78,11 +85,11 @@ type BiotechInvoicePaymentOverdueNoticeData = {
   biotech_company_name: string;
   overdue_period: string;
   button_url: string;
-}
+};
 
 export const biotechInvoicePaymentOverdueNoticeEmail = (
   emailData: BiotechInvoicePaymentOverdueNoticeData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -94,12 +101,17 @@ export const biotechInvoicePaymentOverdueNoticeEmail = (
 type BulkBiotechInvoicePaymentOverdueNoticeDataData = {
   emailData: BiotechInvoicePaymentOverdueNoticeData;
   receiverEmail: string;
-}
+};
 
-export const bulkBiotechInvoicePaymentOverdueNoticeEmail = async (data: BulkBiotechInvoicePaymentOverdueNoticeDataData[]) => {
-  const bulks = createBulkEmailJobData(data, biotechInvoicePaymentOverdueNoticeTemplate)
-  createBulkSendMailJobs(bulks)
-}
+export const bulkBiotechInvoicePaymentOverdueNoticeEmail = async (
+  data: BulkBiotechInvoicePaymentOverdueNoticeDataData[],
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    biotechInvoicePaymentOverdueNoticeTemplate,
+  );
+  createBulkSendMailJobs(bulks);
+};
 
 type BiotechInvoicePaymentVerifiedByCromaticAdminData = {
   invoice_date: string;
@@ -107,11 +119,11 @@ type BiotechInvoicePaymentVerifiedByCromaticAdminData = {
   invoice_total_amount: string;
   biotech_company_name: string;
   button_url: string;
-}
+};
 
 export const biotechInvoicePaymentVerifiedByCromaticAdminEmail = (
   emailData: BiotechInvoicePaymentVerifiedByCromaticAdminData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -123,9 +135,14 @@ export const biotechInvoicePaymentVerifiedByCromaticAdminEmail = (
 type BulkBiotechInvoicePaymentVerifiedByCromaticAdminData = {
   emailData: BiotechInvoicePaymentVerifiedByCromaticAdminData;
   receiverEmail: string;
-}
+};
 
-export const bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail = async (data: BulkBiotechInvoicePaymentVerifiedByCromaticAdminData[]) => {
-  const bulks = createBulkEmailJobData(data, biotechInvoicePaymentVerifiedByCromaticAdminTemplate)
-  createBulkSendMailJobs(bulks)
-}
+export const bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail = async (
+  data: BulkBiotechInvoicePaymentVerifiedByCromaticAdminData[],
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    biotechInvoicePaymentVerifiedByCromaticAdminTemplate,
+  );
+  createBulkSendMailJobs(bulks);
+};

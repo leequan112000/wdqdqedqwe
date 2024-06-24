@@ -1,8 +1,11 @@
-import { createMailData, sendMail } from "./config";
-import type { NewMessageNoticeData } from "./types";
-import { newMessageNoticeTemplate } from "./templates";
+import { createMailData, sendMail } from './config';
+import type { NewMessageNoticeData } from './types';
+import { newMessageNoticeTemplate } from './templates';
 
-export const sendNewMessageNoticeEmail = async (emailData: NewMessageNoticeData, receiverEmail: string) => {
+export const sendNewMessageNoticeEmail = async (
+  emailData: NewMessageNoticeData,
+  receiverEmail: string,
+) => {
   const mailData = createMailData({
     to: receiverEmail,
     templateId: newMessageNoticeTemplate,
@@ -16,4 +19,4 @@ export const sendNewMessageNoticeEmail = async (emailData: NewMessageNoticeData,
   });
 
   await sendMail(mailData);
-}
+};

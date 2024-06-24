@@ -1,5 +1,5 @@
-import { NotificationType } from "../helper/constant";
-import { createNotificationQueueJob } from "../queues/notification.queues";
+import { NotificationType } from '../helper/constant';
+import { createNotificationQueueJob } from '../queues/notification.queues';
 
 type AcceptedMeetingRSVPNotificationData = {
   guest_name: string;
@@ -10,7 +10,7 @@ type AcceptedMeetingRSVPNotificationData = {
 };
 
 export const createAcceptedMeetingRSVPNotification = (
-  data: AcceptedMeetingRSVPNotificationData
+  data: AcceptedMeetingRSVPNotificationData,
 ) => {
   const { guest_name, project_title, meeting_event_id, recipient_id } = data;
   createNotificationQueueJob({
@@ -34,10 +34,10 @@ type DeclinedMeetingRSVPNotificationData = {
 
   meeting_event_id: string;
   recipient_id: string;
-}
+};
 
 export const createDeclinedMeetingRSVPNotification = (
-  data: DeclinedMeetingRSVPNotificationData
+  data: DeclinedMeetingRSVPNotificationData,
 ) => {
   const { guest_name, project_title, meeting_event_id, recipient_id } = data;
   createNotificationQueueJob({

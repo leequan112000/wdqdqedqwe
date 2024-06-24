@@ -4,9 +4,11 @@ type CreateAdminInviteNotificationData = {
   project_connection_id: string;
   project_title: string;
   recipient_id: string;
-}
+};
 
-const createAdminInviteNotificationJob = (data: CreateAdminInviteNotificationData) => {
+const createAdminInviteNotificationJob = (
+  data: CreateAdminInviteNotificationData,
+) => {
   const { project_connection_id, project_title, recipient_id } = data;
   return {
     notification_type: NotificationType.ADMIN_INVITE_NOTIFICATION,
@@ -15,7 +17,7 @@ const createAdminInviteNotificationJob = (data: CreateAdminInviteNotificationDat
       project_connection_id: project_connection_id,
     },
     recipient_id: recipient_id,
-  }
+  };
 };
 
 export default createAdminInviteNotificationJob;

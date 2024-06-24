@@ -3,8 +3,8 @@ import {
   vendorMemberInvitationByExistingMemberTemplate,
   vendorMemberInvitationToProjectRequestByAdminTemplate,
   vendorMemberInvitationByBiotechTemplate,
-} from "./templates";
-import { createSendMailJob } from "../queues/sendMail.queues";
+} from './templates';
+import { createSendMailJob } from '../queues/sendMail.queues';
 
 type VendorMemberInvitationByUserEmailData = {
   login_url: string;
@@ -15,7 +15,7 @@ type VendorMemberInvitationByUserEmailData = {
 
 export const vendorMemberInvitationByUserEmail = (
   emailData: VendorMemberInvitationByUserEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -31,7 +31,7 @@ type VendorMemberInvitationByAdminEmailData = {
 
 export const vendorMemberInvitationByAdminEmail = (
   emailData: VendorMemberInvitationByAdminEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -48,7 +48,7 @@ type VendorMemberProjectRequestInvitationByAdminEmailData = {
 
 export const vendorMemberProjectRequestInvitationByAdminEmail = (
   emailData: VendorMemberProjectRequestInvitationByAdminEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -67,7 +67,7 @@ type VendorMemberInvitationByBiotechEmailData = {
 
 export const vendorMemberInvitationByBiotechEmail = (
   emailData: VendorMemberInvitationByBiotechEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,

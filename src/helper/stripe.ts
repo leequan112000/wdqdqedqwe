@@ -7,7 +7,7 @@ async function loadStripe() {
 async function getStripeEmulatorInstance() {
   const Stripe = await loadStripe();
 
-  return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     host: `localhost`,
     port: 12111,
     apiVersion: '2022-11-15',
@@ -18,7 +18,7 @@ async function getStripeEmulatorInstance() {
 
 async function getStripeProductionInstance() {
   const Stripe = await loadStripe();
-  return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2022-11-15',
     typescript: true,
   });
@@ -27,7 +27,7 @@ async function getStripeProductionInstance() {
 function isCypressEnv() {
   return Boolean(
     process.env.APP_ENV === `development` &&
-    process.env.STRIPE_EMULATOR === `true`
+      process.env.STRIPE_EMULATOR === `true`,
   );
 }
 
@@ -40,4 +40,3 @@ export async function getStripeInstance() {
 
   return getStripeProductionInstance();
 }
-

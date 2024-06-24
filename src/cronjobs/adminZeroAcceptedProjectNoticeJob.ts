@@ -26,9 +26,11 @@ async function adminZeroAcceptedProjectNoticeJob() {
     },
   });
 
-  const zeroAcceptedList = zeroAcceptedProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
+  const zeroAcceptedList = zeroAcceptedProjectRequests
+    .map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`)
+    .join('<br/>');
   // less than 5 accepted projects
-  const projectRequests =  await prisma.projectRequest.findMany({
+  const projectRequests = await prisma.projectRequest.findMany({
     where: {
       project_connections: {
         some: {
@@ -50,13 +52,19 @@ async function adminZeroAcceptedProjectNoticeJob() {
     },
   });
 
-  const filteredProjectRequests = projectRequests.filter((pc) => pc.project_connections.length < 5);
-  const lowAcceptanceList = filteredProjectRequests.map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`).join('<br/>');
+  const filteredProjectRequests = projectRequests.filter(
+    (pc) => pc.project_connections.length < 5,
+  );
+  const lowAcceptanceList = filteredProjectRequests
+    .map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`)
+    .join('<br/>');
 
-
-  createSendAdminZeroAcceptedProjectNoticeJob({ zeroAcceptedList: zeroAcceptedList, lowAcceptanceList: lowAcceptanceList });
+  createSendAdminZeroAcceptedProjectNoticeJob({
+    zeroAcceptedList: zeroAcceptedList,
+    lowAcceptanceList: lowAcceptanceList,
+  });
 
   process.exit(0);
-};
+}
 
 adminZeroAcceptedProjectNoticeJob();

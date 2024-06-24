@@ -1,6 +1,6 @@
 export const ACCESS_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 14; // 14 days
 export const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 365 * 100; // 100 years
-export const CROMATIC_ADMIN_EMAIL = 'admin@cromatic.bio'
+export const CROMATIC_ADMIN_EMAIL = 'admin@cromatic.bio';
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
@@ -134,14 +134,14 @@ export enum MilestoneEventType {
 export enum ProjectAttachmentDocumentType {
   FILE,
   REDLINE_FILE,
-  MILESTONE_FILE
+  MILESTONE_FILE,
 }
 
 export const PROJECT_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [ProjectAttachmentDocumentType.FILE]: 'file',
   [ProjectAttachmentDocumentType.REDLINE_FILE]: 'redline_file',
   [ProjectAttachmentDocumentType.MILESTONE_FILE]: 'milestone_file',
-}
+};
 
 export enum CompanyAttachmentDocumentType {
   VENDOR_COMPANY_FILE,
@@ -149,15 +149,16 @@ export enum CompanyAttachmentDocumentType {
 
 export const COMPANY_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
   [CompanyAttachmentDocumentType.VENDOR_COMPANY_FILE]: 'vendor_company_file',
-}
+};
 
 export enum BiotechInvoiceAttachmentDocumentType {
   PAYMENT_RECEIPT,
 }
 
-export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> = {
-  [BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT]: 'payment_receipt',
-}
+export const BIOTECH_INVOICE_ATTACHMENT_DOCUMENT_TYPE: Record<number, string> =
+  {
+    [BiotechInvoiceAttachmentDocumentType.PAYMENT_RECEIPT]: 'payment_receipt',
+  };
 
 export enum MeetingPlatform {
   GOOGLE_MEET = 'google-meet',
@@ -171,7 +172,7 @@ export enum CustomerSubscriptionPlanName {
   SOURCING_PLAN = 'sourcing_plan',
   PROJECT_MANAGEMENT_PLAN = 'project_management_plan',
   WHITE_GLOVE_PLAN = 'white_glove_plan',
-  CROMATIC_CONSULTANT = 'cromatic_consultant'
+  CROMATIC_CONSULTANT = 'cromatic_consultant',
 }
 
 export enum EmailType {
@@ -365,7 +366,7 @@ export enum CroDbVendorCompanyType {
   CRO = 'CRO',
   CMO = 'CMO',
   CDMO = 'CDMO',
-  NON_PROFIT = 'Non-profit research org'
+  NON_PROFIT = 'Non-profit research org',
 }
 
 export enum UserStatus {
@@ -376,9 +377,9 @@ export enum UserStatus {
 }
 
 export enum BillingInvoiceStatus {
-  PAID = "paid",
-  OPEN = "open",
-  FAILED = "failed",
+  PAID = 'paid',
+  OPEN = 'open',
+  FAILED = 'failed',
 }
 
 export enum CountryRegion {

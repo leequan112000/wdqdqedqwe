@@ -42,30 +42,32 @@ const main = async () => {
         },
       },
     });
-    const biotechRegularUsers = biotechWithRegularUsers.reduce<User[]>((acc, b) => {
-      if (b.customers.length > 0) {
-        const users = b.customers.map((c) => c.user);
-        acc.unshift(...users);
-      }
-      return acc;
-    }, []);
+    const biotechRegularUsers = biotechWithRegularUsers.reduce<User[]>(
+      (acc, b) => {
+        if (b.customers.length > 0) {
+          const users = b.customers.map((c) => c.user);
+          acc.unshift(...users);
+        }
+        return acc;
+      },
+      [],
+    );
 
-    await PromisePool
-      .withConcurrency(10)
+    await PromisePool.withConcurrency(10)
       .for(biotechRegularUsers)
       .process(async (u) => {
         console.log('Processing:', u.first_name, u.last_name);
         await addRoleForUser(u.id, CasbinRole.USER);
       });
 
-    console.log('Operation done.')
+    console.log('Operation done.');
   } catch (error) {
-    console.log('Operation failed.')
-    console.log(error)
+    console.log('Operation failed.');
+    console.log(error);
   } finally {
     await prisma.$disconnect();
   }
   process.exit(0);
-}
+};
 
 main();

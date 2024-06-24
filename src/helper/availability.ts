@@ -1,9 +1,9 @@
-import { Prisma } from "@prisma/client";
-import { AvailabilityDay } from "./constant";
+import { Prisma } from '@prisma/client';
+import { AvailabilityDay } from './constant';
 
 export const availabilitiesCreateData = (
   tz: string,
-  userId: string
+  userId: string,
 ): Prisma.AvailabilityCreateManyInput[] => {
   return [
     AvailabilityDay.MONDAY,
@@ -14,8 +14,8 @@ export const availabilitiesCreateData = (
   ].map((day) => ({
     user_id: userId,
     day_of_week: day,
-    start_time: "9:00am",
-    end_time: "5:00pm",
+    start_time: '9:00am',
+    end_time: '5:00pm',
     timezone: tz,
   }));
 };
@@ -29,8 +29,8 @@ export const availabilityCreateManyUserInputs = (tz: string) => {
     AvailabilityDay.FRIDAY,
   ].map((day) => ({
     day_of_week: day,
-    start_time: "9:00am",
-    end_time: "5:00pm",
+    start_time: '9:00am',
+    end_time: '5:00pm',
     timezone: tz,
   }));
 };

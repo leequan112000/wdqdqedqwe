@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from 'express';
 
 const basicAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {
@@ -7,8 +7,8 @@ const basicAuth = (req: Request, res: Response, next: NextFunction) => {
   } else {
     const { ADMIN_BASIC_AUTH, CROMATIC_CONSULTANT_USER_ID } = process.env;
 
-    const encoded = req.headers.authorization?.split(" ")[1];
-    const decoded = Buffer.from(encoded, "base64").toString();
+    const encoded = req.headers.authorization?.split(' ')[1];
+    const decoded = Buffer.from(encoded, 'base64').toString();
 
     if (decoded !== ADMIN_BASIC_AUTH) {
       req.is_admin_authorized = false;

@@ -2,15 +2,31 @@ import moment from 'moment';
 import { app_env } from '../environment';
 import { prisma } from '../prisma';
 import currency from 'currency.js';
-import { bulkBiotechInvoicePaymentOverdueNoticeEmail, bulkBiotechInvoicePaymentReminderEmail } from '../mailer/biotechInvoice';
-import { createBiotechInvoicePaymentOverdueNotificationJob, createBiotechInvoicePaymentReminderNotificationJob } from '../notification/biotechInvoiceNotification';
+import {
+  bulkBiotechInvoicePaymentOverdueNoticeEmail,
+  bulkBiotechInvoicePaymentReminderEmail,
+} from '../mailer/biotechInvoice';
+import {
+  createBiotechInvoicePaymentOverdueNotificationJob,
+  createBiotechInvoicePaymentReminderNotificationJob,
+} from '../notification/biotechInvoiceNotification';
 import { createNotificationQueueJob } from '../queues/notification.queues';
-import { createInvoicePaymentOverdueNoticeEmailJob, createInvoicePaymentReminderEmailJob } from '../queues/email.queues';
-import { CompanyCollaboratorRoleType, InvoicePaymentStatus } from '../helper/constant';
+import {
+  createInvoicePaymentOverdueNoticeEmailJob,
+  createInvoicePaymentReminderEmailJob,
+} from '../queues/email.queues';
+import {
+  CompanyCollaboratorRoleType,
+  InvoicePaymentStatus,
+} from '../helper/constant';
 
 const today = moment();
 
-async function sendInvoicePaymentReminder(dueDate: moment.Moment, duePeriod: string, overdue: boolean) {
+async function sendInvoicePaymentReminder(
+  dueDate: moment.Moment,
+  duePeriod: string,
+  overdue: boolean,
+) {
   const invoices = await prisma.invoice.findMany({
     where: {
       due_at: {
@@ -28,14 +44,19 @@ async function sendInvoicePaymentReminder(dueDate: moment.Moment, duePeriod: str
 
   await Promise.all(
     invoices.map(async (invoice) => {
-      const totalAmount = invoice.invoice_items.reduce((acc, cur) => acc + cur.amount.toNumber(), 0);
+      const totalAmount = invoice.invoice_items.reduce(
+        (acc, cur) => acc + cur.amount.toNumber(),
+        0,
+      );
       if (overdue) {
         createInvoicePaymentOverdueNoticeEmailJob({
           invoiceId: invoice.id,
           vendorCompanyId: invoice.vendor_company_id,
           overduePeriod: duePeriod,
           invoiceDate: moment(invoice.created_at).format('ll'),
-          invoiceTotalAmount: currency(totalAmount, { fromCents: true }).format(),
+          invoiceTotalAmount: currency(totalAmount, {
+            fromCents: true,
+          }).format(),
         });
       } else {
         createInvoicePaymentReminderEmailJob({
@@ -44,14 +65,20 @@ async function sendInvoicePaymentReminder(dueDate: moment.Moment, duePeriod: str
           invoiceDueAt: moment(invoice.due_at).format('ll'),
           invoiceDate: moment(invoice.created_at).format('ll'),
           duePeriod,
-          invoiceTotalAmount: currency(totalAmount, { fromCents: true }).format(),
+          invoiceTotalAmount: currency(totalAmount, {
+            fromCents: true,
+          }).format(),
         });
       }
-    })
+    }),
   );
 }
 
-async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeriod: string, overdue: boolean) {
+async function sendBiotechInvoicePaymentReminder(
+  dueDate: moment.Moment,
+  duePeriod: string,
+  overdue: boolean,
+) {
   const biotechInvoices = await prisma.biotechInvoice.findMany({
     where: {
       due_at: {
@@ -73,13 +100,13 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
                     include: {
                       vendor_company: true,
                       project_request: true,
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       biotech: true,
     },
@@ -87,12 +114,18 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
 
   await Promise.all(
     biotechInvoices.map(async (biotechInvoice) => {
-      const totalAmount = biotechInvoice.biotech_invoice_items.reduce((acc, item) => acc + item.amount.toNumber(), 0);
+      const totalAmount = biotechInvoice.biotech_invoice_items.reduce(
+        (acc, item) => acc + item.amount.toNumber(),
+        0,
+      );
       const receivers = await prisma.customer.findMany({
         where: {
           biotech_id: biotechInvoice.biotech_id,
           role: {
-            in: [CompanyCollaboratorRoleType.OWNER, CompanyCollaboratorRoleType.ADMIN],
+            in: [
+              CompanyCollaboratorRoleType.OWNER,
+              CompanyCollaboratorRoleType.ADMIN,
+            ],
           },
           user: {
             OR: [
@@ -107,7 +140,7 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
         },
         include: {
           user: true,
-        }
+        },
       });
 
       if (overdue) {
@@ -115,10 +148,12 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
           emailData: {
             invoice_date: moment(biotechInvoice.created_at).format('ll'),
             invoice_number: biotechInvoice.invoice_number,
-            invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
+            invoice_total_amount: currency(totalAmount, {
+              fromCents: true,
+            }).format(),
             biotech_company_name: biotechInvoice.biotech.name,
             overdue_period: duePeriod,
-            button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
+            button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
           },
           receiverEmail: r.user.email,
         }));
@@ -127,9 +162,10 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
             recipient_id: r.user_id,
             invoice_id: biotechInvoice.id,
             invoice_number: biotechInvoice.invoice_number,
-            project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
+            project_title: biotechInvoice.biotech_invoice_items[0].milestone
+              ?.quote.project_connection.project_request.title as string,
             due_at: moment(biotechInvoice.due_at).format('ll'),
-          })
+          });
         });
         bulkBiotechInvoicePaymentOverdueNoticeEmail(emailData);
         createNotificationQueueJob({ data: notificationData });
@@ -138,11 +174,13 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
           emailData: {
             invoice_date: moment(biotechInvoice.created_at).format('ll'),
             invoice_number: biotechInvoice.invoice_number,
-            invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
+            invoice_total_amount: currency(totalAmount, {
+              fromCents: true,
+            }).format(),
             biotech_company_name: biotechInvoice.biotech.name,
             due_at: moment(biotechInvoice.due_at).format('ll'),
             due_period: duePeriod,
-            button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`
+            button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
           },
           receiverEmail: r.user.email,
         }));
@@ -151,14 +189,15 @@ async function sendBiotechInvoicePaymentReminder(dueDate: moment.Moment, duePeri
             recipient_id: r.user_id,
             invoice_id: biotechInvoice.id,
             invoice_number: biotechInvoice.invoice_number,
-            project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote.project_connection.project_request.title as string,
+            project_title: biotechInvoice.biotech_invoice_items[0].milestone
+              ?.quote.project_connection.project_request.title as string,
             overdue_period: duePeriod,
-          })
+          });
         });
         bulkBiotechInvoicePaymentReminderEmail(emailData);
         createNotificationQueueJob({ data: notificationData });
       }
-    })
+    }),
   );
 }
 
