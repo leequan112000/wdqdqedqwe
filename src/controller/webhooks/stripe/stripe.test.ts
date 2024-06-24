@@ -241,7 +241,7 @@ describe('process stripe event', () => {
         expect(result.status).toEqual(200);
         expect(result.message).contain('OK');
       });
-      test('should return 400, missing invoice_id', async () => {
+      test('should return 200 with missing invoice id error', async () => {
         const event = checkoutSessionCompleted as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'payment';
         (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
@@ -252,8 +252,10 @@ describe('process stripe event', () => {
 
         const result = await processStripeEvent(event);
 
-        expect(result.status).toEqual(400);
-        expect(result.message).contain('Webhook Signed Error');
+        expect(result.status).toEqual(200);
+        expect(result.message).contain(
+          '[Stripe Webhook] Missing metadata: invoice_id.',
+        );
       });
     });
 
@@ -474,7 +476,7 @@ describe('process stripe event', () => {
 
         const { message, status } = await processStripeEvent(event);
 
-        expect(status).toEqual(400);
+        expect(status).toEqual(200);
         expect(message).contain('Unhandled');
       });
     });
@@ -592,7 +594,7 @@ describe('process stripe event', () => {
 
         const { message, status } = await processStripeEvent(event);
 
-        expect(status).toEqual(400);
+        expect(status).toEqual(200);
         expect(message).contain('Unhandled');
       });
     });
