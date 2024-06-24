@@ -631,6 +631,10 @@ export const processStripeEvent = async (
     }
   } catch (error) {
     Sentry.captureException(error);
-    return { status: 200, message: 'Process Stripe event failed.' };
+    let message = 'Process Stripe event failed.';
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return { status: 200, message };
   }
 };
