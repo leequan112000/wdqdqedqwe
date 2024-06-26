@@ -3,5 +3,17 @@ type Query {
 }
 
 type Mutation {
-  approveVendorSurvey(id: String!): Boolean
+  approveVendorSurvey(
+    id: String!
+    company_name: String!
+    company_description: String!
+    company_ipo_status: String!
+    company_revenue: String!
+    company_size: String!
+    website_url: String!
+    company_types: [String!]!
+    countries: [String!]!
+    certificates: [String!]!
+    subspecialty_ids: [String!]!
+  ): Boolean
 }
