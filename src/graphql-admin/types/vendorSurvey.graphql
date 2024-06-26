@@ -11,6 +11,7 @@ type Mutation {
     company_revenue: String!
     company_size: String!
     website_url: String!
+    logo_url: String!
     company_types: [String!]!
     countries: [String!]!
     certificates: [String!]!
