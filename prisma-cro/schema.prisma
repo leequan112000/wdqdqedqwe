@@ -23,7 +23,6 @@ model VendorCompany {
   website_url           String
   linkedin_url          String
   crunchbase_url        String
-  type                  String
   product               String?
   logo_url              String?
   is_active             Boolean
