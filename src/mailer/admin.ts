@@ -1,7 +1,6 @@
 import { createMailData, sendMail } from './config';
 import {
   adminNewProjectRequestCommentNoticeTemplate,
-  adminNewProjectRequestTemplate,
   adminNewCROInterestNoticeTemplate,
   adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,

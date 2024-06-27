@@ -14,6 +14,7 @@ import {
 import { app_env } from '../environment';
 import { createMailData, sendMail } from './config';
 import {
+  BulkEmailJobData,
   createBulkEmailJobData,
   createBulkSendMailJobs,
   createSendMailJob,
@@ -87,16 +88,14 @@ export const sendVendorProjectRequestExpiredEmail = async (
   return await sendMail(mailData);
 };
 
-type bulkNewProjectRequestAdminNoticeEmailData = {
-  emailData: {
-    retool_url?: string;
-    biotech_name?: string;
-    admin_name: string;
-  };
-  receiverEmail: string;
-};
+type bulkNewProjectRequestAdminNoticeEmailData = BulkEmailJobData<{
+  retool_url?: string;
+  biotech_name?: string;
+  admin_name: string;
+}>;
+
 export const bulkNewProjectRequestAdminNoticeEmail = async (
-  data: bulkNewProjectRequestAdminNoticeEmailData[],
+  data: bulkNewProjectRequestAdminNoticeEmailData,
 ) => {
   const bulks = createBulkEmailJobData(data, adminNewProjectRequestTemplate);
   return await createBulkSendMailJobs(bulks);
