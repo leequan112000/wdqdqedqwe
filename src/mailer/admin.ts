@@ -27,23 +27,6 @@ import {
   type BulkEmailJobData,
 } from '../queues/sendMail.queues';
 
-export const sendAdminNewProjectRequestEmail = async (
-  admin: Admin,
-  biotech_name: string,
-) => {
-  const mailData = createMailData({
-    to: admin.email,
-    templateId: adminNewProjectRequestTemplate,
-    dynamicTemplateData: {
-      retool_url: process.env.RETOOL_PROJECT_URL,
-      biotech_name,
-      admin_name: admin.username,
-    },
-  });
-
-  return sendMail(mailData);
-};
-
 export const sendAdminNewProjectRequestCommentEmail = async (
   data: AdminNewProjectRequestCommentNoticeData,
   receiverEmail: string,

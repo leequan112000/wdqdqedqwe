@@ -18,10 +18,10 @@ import {
   ProjectRequestProjectConnectionFilter,
 } from '../generated';
 import {
+  bulkNewProjectRequestAdminNoticeEmail,
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,
 } from '../../mailer/projectRequest';
-import { createSendAdminNewProjectRequestEmailJob } from '../../queues/email.queues';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import invariant from '../../helper/invariant';
 import { hasPermission } from '../../helper/casbin';
@@ -437,10 +437,21 @@ const resolvers: Resolvers<Context> = {
          * - notify admin public request
          */
         if (!projectRequest.is_private) {
-          sendProjectRequestSubmissionEmail(user);
-          createSendAdminNewProjectRequestEmailJob({
-            biotechName: user.customer.biotech.name,
+          const receivers = await context.prisma.admin.findMany({
+            where: {
+              team: AdminTeam.SCIENCE,
+            },
           });
+          const emailData = receivers.map((r) => ({
+            emailData: {
+              admin_name: r.username,
+              biotech_name: user.customer?.biotech.name,
+              retool_url: process.env.RETOOL_PROJECT_URL,
+            },
+            receiverEmail: r.email,
+          }));
+          sendProjectRequestSubmissionEmail(user);
+          bulkNewProjectRequestAdminNoticeEmail(emailData);
         }
 
         /**
@@ -588,10 +599,20 @@ const resolvers: Resolvers<Context> = {
           id: args.project_request_id,
         },
       });
-
-      createSendAdminNewProjectRequestEmailJob({
-        biotechName: user.customer.biotech.name,
+      const receivers = await context.prisma.admin.findMany({
+        where: {
+          team: AdminTeam.SCIENCE,
+        },
       });
+      const emailData = receivers.map((r) => ({
+        emailData: {
+          admin_name: r.username,
+          biotech_name: user.customer?.biotech.name,
+          retool_url: process.env.RETOOL_PROJECT_URL,
+        },
+        receiverEmail: r.email,
+      }));
+      bulkNewProjectRequestAdminNoticeEmail(emailData);
 
       return {
         ...updatedRequest,

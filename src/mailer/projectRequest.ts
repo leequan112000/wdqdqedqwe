@@ -1,6 +1,7 @@
 import { User } from '@prisma/client';
 import {
   acceptProjectRequestNoticeTemplate,
+  adminNewProjectRequestTemplate,
   privateProjectRequestSubmissionTemplate,
   projectRequestSubmissionTemplate,
   vendorRequestExpiredNoticeTemplate,
@@ -12,7 +13,11 @@ import {
 } from './types';
 import { app_env } from '../environment';
 import { createMailData, sendMail } from './config';
-import { createSendMailJob } from '../queues/sendMail.queues';
+import {
+  createBulkEmailJobData,
+  createBulkSendMailJobs,
+  createSendMailJob,
+} from '../queues/sendMail.queues';
 
 export const sendProjectRequestSubmissionEmail = (receiver: User) => {
   const mailData = createMailData({
@@ -80,4 +85,19 @@ export const sendVendorProjectRequestExpiredEmail = async (
   });
 
   return await sendMail(mailData);
+};
+
+type bulkNewProjectRequestAdminNoticeEmailData = {
+  emailData: {
+    retool_url?: string;
+    biotech_name?: string;
+    admin_name: string;
+  };
+  receiverEmail: string;
+};
+export const bulkNewProjectRequestAdminNoticeEmail = async (
+  data: bulkNewProjectRequestAdminNoticeEmailData[],
+) => {
+  const bulks = createBulkEmailJobData(data, adminNewProjectRequestTemplate);
+  return await createBulkSendMailJobs(bulks);
 };

@@ -11,7 +11,6 @@ import { prisma } from '../prisma';
 import {
   sendAdminNewCroInterestNoticeEmail,
   sendAdminNewProjectRequestCommentEmail,
-  sendAdminNewProjectRequestEmail,
   sendAdminZeroAcceptedProjectNoticeEmail,
 } from '../mailer/admin';
 import { app_env } from '../environment';
@@ -72,23 +71,6 @@ emailQueue.process(async (job, done) => {
 
   try {
     switch (type) {
-      case EmailType.ADMIN_NEW_PROJECT_REQUEST: {
-        const { biotechName } = data;
-        const admins = await prisma.admin.findMany({
-          where: {
-            team: AdminTeam.SCIENCE,
-          },
-        });
-
-        const result = await Promise.all(
-          admins.map((admin) =>
-            sendAdminNewProjectRequestEmail(admin, biotechName),
-          ),
-        );
-
-        done(null, result);
-        break;
-      }
       case EmailType.ADMIN_NEW_PROJECT_REQUEST_COMMENT: {
         const { biotechName, projectRequestName } = data;
 
@@ -839,12 +821,6 @@ emailQueue.process(async (job, done) => {
     }
   }
 });
-
-export const createSendAdminNewProjectRequestEmailJob = (data: {
-  biotechName: string;
-}) => {
-  emailQueue.add({ type: EmailType.ADMIN_NEW_PROJECT_REQUEST, data });
-};
 
 export const createSendUserNewMessageNoticeJob = (data: {
   projectConnectionId: string;
