@@ -27,6 +27,7 @@ export type CreateVendorSurveyArgs = {
   custom_specialties: string[];
   certifications?: string[];
   products?: string[];
+  email: string;
   note?: string;
   logo: UploadParamType;
   attachment?: UploadParamType;
@@ -50,6 +51,7 @@ export const createVendorSurvey = async (
     custom_specialties,
     certifications,
     products,
+    email,
     note,
     logo,
     attachment,
@@ -93,6 +95,7 @@ export const createVendorSurvey = async (
       custom_specialties,
       certifications,
       products,
+      email,
       note,
       status: VendorSurveyStatus.PENDING,
       attachment_key,
