@@ -1,6 +1,7 @@
 import { User } from '@prisma/client';
 import {
   acceptProjectRequestNoticeTemplate,
+  adminNewProjectRequestCommentNoticeTemplate,
   adminNewProjectRequestTemplate,
   privateProjectRequestSubmissionTemplate,
   projectRequestSubmissionTemplate,
@@ -98,5 +99,22 @@ export const bulkNewProjectRequestAdminNoticeEmail = async (
   data: bulkNewProjectRequestAdminNoticeEmailData,
 ) => {
   const bulks = createBulkEmailJobData(data, adminNewProjectRequestTemplate);
+  return await createBulkSendMailJobs(bulks);
+};
+
+type bulkNewProjectRequestCommentAdminNoticeEmailData = BulkEmailJobData<{
+  retool_url?: string;
+  biotech_name?: string;
+  admin_name: string;
+  project_request_name: string;
+}>;
+
+export const bulkNewProjectRequestCommentAdminNoticeEmail = async (
+  data: bulkNewProjectRequestCommentAdminNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    adminNewProjectRequestCommentNoticeTemplate,
+  );
   return await createBulkSendMailJobs(bulks);
 };
