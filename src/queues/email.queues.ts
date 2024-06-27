@@ -8,10 +8,7 @@ import {
 } from '../helper/constant';
 import { createQueue } from '../helper/queue';
 import { prisma } from '../prisma';
-import {
-  sendAdminNewCroInterestNoticeEmail,
-  sendAdminZeroAcceptedProjectNoticeEmail,
-} from '../mailer/admin';
+import { sendAdminZeroAcceptedProjectNoticeEmail } from '../mailer/admin';
 import { app_env } from '../environment';
 import { sendNewMessageNoticeEmail } from '../mailer/message';
 import {
@@ -70,30 +67,6 @@ emailQueue.process(async (job, done) => {
 
   try {
     switch (type) {
-      case EmailType.ADMIN_CRO_INTEREST_NOTICE: {
-        const { companyName } = data;
-
-        const admins = await prisma.admin.findMany({
-          where: {
-            team: AdminTeam.SCIENCE,
-          },
-        });
-
-        const results = await Promise.all(
-          admins.map((admin) =>
-            sendAdminNewCroInterestNoticeEmail(
-              {
-                admin_name: admin.username,
-                company_name: companyName,
-              },
-              admin.email,
-            ),
-          ),
-        );
-
-        done(null, results);
-        break;
-      }
       case EmailType.ADMIN_ZERO_ACCEPTED_PROJECT_NOTICE: {
         // Get the timestamp for 24 hours ago
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -830,12 +803,6 @@ export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
     type: EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL,
     data,
   });
-};
-
-export const createSendAdminCroInterestNoticeJob = (data: {
-  companyName: string;
-}) => {
-  emailQueue.add({ type: EmailType.ADMIN_CRO_INTEREST_NOTICE, data });
 };
 
 export const createSendUserAcceptProjectRequestNoticeJob = (data: {

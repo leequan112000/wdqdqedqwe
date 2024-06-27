@@ -26,21 +26,17 @@ import {
   type BulkEmailJobData,
 } from '../queues/sendMail.queues';
 
-export const sendAdminNewCroInterestNoticeEmail = async (
-  data: AdminCroInterestNoticeData,
-  receiverEmail: string,
-) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: adminNewCROInterestNoticeTemplate,
-    dynamicTemplateData: {
-      retool_url: process.env.RETOOL_INTEREST_TO_JOIN_URL,
-      company_name: data.company_name,
-      admin_name: data.admin_name,
-    },
-  });
+type bulkCroInterestAdminNoticeEmailData = BulkEmailJobData<{
+  retool_url?: string;
+  company_name: string;
+  admin_name: string;
+}>;
 
-  return await sendMail(mailData);
+export const bulkCroInterestAdminNoticeEmail = async (
+  data: bulkCroInterestAdminNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(data, adminNewCROInterestNoticeTemplate);
+  await createBulkSendMailJobs(bulks);
 };
 
 export const sendAdminLoginWithGlobalPasswordEmail = async (

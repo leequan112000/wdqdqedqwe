@@ -1,11 +1,10 @@
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
-import {
-  createSendAdminCroInterestNoticeJob,
-  createSendNewBlogSubscriptionEmailJob,
-} from '../../queues/email.queues';
+import { createSendNewBlogSubscriptionEmailJob } from '../../queues/email.queues';
+import { AdminTeam } from '../../helper/constant';
 import { searchContact, upsertContacts } from '../../helper/sendgrid';
 import { PublicError } from '../errors/PublicError';
+import { bulkCroInterestAdminNoticeEmail } from '../../mailer/admin';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -37,7 +36,20 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (newInterestedCro) {
-        createSendAdminCroInterestNoticeJob({ companyName: company_name });
+        const receivers = await context.prisma.admin.findMany({
+          where: {
+            team: AdminTeam.SCIENCE,
+          },
+        });
+        const emailData = receivers.map((r) => ({
+          emailData: {
+            retool_url: process.env.RETOOL_PROJECT_URL,
+            admin_name: r.username,
+            company_name: company_name,
+          },
+          receiverEmail: r.email,
+        }));
+        bulkCroInterestAdminNoticeEmail(emailData);
         return true;
       }
 
