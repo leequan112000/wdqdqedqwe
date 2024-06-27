@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
-import { createSendAdminZeroAcceptedProjectNoticeJob } from '../queues/email.queues';
+import { AdminTeam } from '../helper/constant';
+import { bulkZeroAcceptedProjectAdminNoticeEmail } from '../mailer/admin';
 
 async function adminZeroAcceptedProjectNoticeJob() {
   // Get the timestamp for 24 hours ago
@@ -59,11 +60,24 @@ async function adminZeroAcceptedProjectNoticeJob() {
     .map((pc) => ` •  [${pc.biotech.name}] ${pc.title}`)
     .join('<br/>');
 
-  createSendAdminZeroAcceptedProjectNoticeJob({
-    zeroAcceptedList: zeroAcceptedList,
-    lowAcceptanceList: lowAcceptanceList,
+  const receivers = await prisma.admin.findMany({
+    where: {
+      team: AdminTeam.SCIENCE,
+    },
   });
 
+  const date = new Date().toDateString();
+  const emailData = receivers.map((r) => ({
+    emailData: {
+      date,
+      zeroAcceptedList,
+      lowAcceptanceList,
+      retool_url: process.env.RETOOL_PROJECT_URL,
+      admin_name: r.username,
+    },
+    receiverEmail: r.email,
+  }));
+  bulkZeroAcceptedProjectAdminNoticeEmail(emailData);
   process.exit(0);
 }
 

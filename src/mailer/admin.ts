@@ -39,6 +39,24 @@ export const bulkCroInterestAdminNoticeEmail = async (
   await createBulkSendMailJobs(bulks);
 };
 
+type bulkZeroAcceptedProjectAdminNoticeEmailData = BulkEmailJobData<{
+  retool_url?: string;
+  date: string;
+  admin_name: string;
+  zeroAcceptedList?: string;
+  lowAcceptanceList?: string;
+}>;
+
+export const bulkZeroAcceptedProjectAdminNoticeEmail = async (
+  data: bulkZeroAcceptedProjectAdminNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    adminZeroAcceptedProjectNoticeTemplate,
+  );
+  await createBulkSendMailJobs(bulks);
+};
+
 export const sendAdminLoginWithGlobalPasswordEmail = async (
   data: AdminLoginWithGlobalPasswordData,
   login_email: string,
@@ -63,29 +81,6 @@ export const sendAdminLoginWithGlobalPasswordEmail = async (
   });
 
   sendMail(mailData);
-};
-
-export const sendAdminZeroAcceptedProjectNoticeEmail = async (
-  admin: Admin,
-  data: AdminZeroAcceptedProjectNoticeData,
-) => {
-  const mailData = createMailData({
-    to: admin.email,
-    templateId: adminZeroAcceptedProjectNoticeTemplate,
-    dynamicTemplateData: {
-      date: new Date().toDateString(),
-      retool_url: process.env.RETOOL_PROJECT_URL,
-      admin_name: admin.username,
-      zeroAcceptedList: data.zeroAcceptedList
-        ? data.zeroAcceptedList
-        : '[None]',
-      lowAcceptanceList: data.lowAcceptanceList
-        ? data.lowAcceptanceList
-        : '[None]',
-    },
-  });
-
-  return sendMail(mailData);
 };
 
 export const sendAdminGeneralNoticeEmail = async (
