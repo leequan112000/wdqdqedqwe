@@ -119,6 +119,7 @@ const resolver: Resolvers<Context> = {
             logo_url,
             company_average_size: avgCompanySize,
             company_revenue_value: revenueValue,
+            verified_at: new Date(),
           },
           where: {
             id: vendorSurvey.vendor_company_id,
