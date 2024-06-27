@@ -1,5 +1,4 @@
 import {
-  AdminTeam,
   CompanyCollaboratorRoleType,
   EmailType,
   MilestoneEventType,
@@ -10,10 +9,7 @@ import { createQueue } from '../helper/queue';
 import { prisma } from '../prisma';
 import { app_env } from '../environment';
 import { sendNewMessageNoticeEmail } from '../mailer/message';
-import {
-  sendVendorAcceptProjectNoticeEmail,
-  sendVendorProjectRequestExpiringEmail,
-} from '../mailer/projectRequest';
+import { sendVendorAcceptProjectNoticeEmail } from '../mailer/projectRequest';
 import createAcceptRequestNotification from '../notification/acceptRequestNotification';
 import createMessageNotification from '../notification/messageNotification';
 import createQuoteNotification from '../notification/quoteNotification';
@@ -36,8 +32,6 @@ import {
   CreateInvoicePaymentReminderEmailJobParam,
   CreateSendUserExpiredQuoteNoticeEmailJobParam,
   CreateSendUserExpiringQuoteNoticeEmailJobParam,
-  CreateVendorProjectRequestExpiredNoticeEmailJobParam,
-  CreateVendorProjectRequestExpiringNoticeEmailJobParam,
 } from './types';
 import {
   sendBillingNoticeEmail,
@@ -623,35 +617,6 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
-      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL: {
-        const { receiverEmail, receiverName, requests, expiringIn } =
-          data as CreateVendorProjectRequestExpiringNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
-
-        const receiver = await prisma.user.findFirst({
-          where: {
-            email: receiverEmail,
-          },
-        });
-        invariant(receiver, 'Receiver not found.');
-        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
-          done(null, 'Deactivated');
-          break;
-        }
-
-        const resp = await sendVendorProjectRequestExpiringEmail(
-          {
-            button_url: buttonUrl,
-            expiring_in: expiringIn,
-            receiver_full_name: receiverName,
-            requests,
-          },
-          receiverEmail,
-        );
-
-        done(null, resp);
-        break;
-      }
       default:
         done(new Error('No type match.'));
         break;
@@ -753,15 +718,6 @@ export const createInvoicePaymentOverdueNoticeEmailJob = (
 ) => {
   emailQueue.add({
     type: EmailType.USER_INVOICE_PAYMENT_OVERDUE_NOTICE_EMAIL,
-    data,
-  });
-};
-
-export const createVendorProjectRequestExpiringNoticeEmailJob = (
-  data: CreateVendorProjectRequestExpiringNoticeEmailJobParam,
-) => {
-  return emailQueue.add({
-    type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL,
     data,
   });
 };

@@ -8,10 +8,6 @@ import {
   vendorRequestExpiredNoticeTemplate,
   vendorRequestExpiringNoticeTemplate,
 } from './templates';
-import {
-  VendorProjectRequestExpiredNoticeData,
-  VendorProjectRequestExpiringNoticeData,
-} from './types';
 import { app_env } from '../environment';
 import { createMailData, sendMail } from './config';
 import {
@@ -63,7 +59,7 @@ export const sendVendorAcceptProjectNoticeEmail = async (
   });
 };
 
-type bulkVendorProjectRequestExpiredNoticeEmailData = BulkEmailJobData<{
+type BulkVendorProjectRequestExpiredNoticeEmailData = BulkEmailJobData<{
   receiver_full_name: string;
   button_url: string;
   requests: Array<{
@@ -73,24 +69,32 @@ type bulkVendorProjectRequestExpiredNoticeEmailData = BulkEmailJobData<{
 }>;
 
 export const bulkVendorProjectRequestExpiredNoticeEmail = async (
-  data: bulkVendorProjectRequestExpiredNoticeEmailData,
+  data: BulkVendorProjectRequestExpiredNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    vendorRequestExpiredNoticeTemplate,
+  );
+  return await createBulkSendMailJobs(bulks);
+};
+
+type BulkVendorProjectRequestExpiringNoticeEmailData = BulkEmailJobData<{
+  receiver_full_name: string;
+  button_url: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}>;
+
+export const bulkVendorProjectRequestExpiringNoticeEmail = async (
+  data: BulkVendorProjectRequestExpiringNoticeEmailData,
 ) => {
   const bulks = createBulkEmailJobData(
     data,
     vendorRequestExpiringNoticeTemplate,
   );
   return await createBulkSendMailJobs(bulks);
-};
-
-export const sendVendorProjectRequestExpiringEmail = async (
-  emailData: VendorProjectRequestExpiringNoticeData,
-  receiverEmail: string,
-) => {
-  return await createSendMailJob({
-    emailData,
-    receiverEmail,
-    templateId: vendorRequestExpiringNoticeTemplate,
-  });
 };
 
 type bulkNewProjectRequestAdminNoticeEmailData = BulkEmailJobData<{
