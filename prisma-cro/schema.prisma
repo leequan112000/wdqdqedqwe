@@ -12,7 +12,7 @@ datasource db {
 }
 
 model VendorCompany {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   company_name          String
   company_size          String?
   company_average_size  Float?
@@ -287,6 +287,7 @@ model VendorSurvey {
   custom_specialties      String[]
   certifications          String[]
   products                String[]
+  email                   String?
   note                    String?
   attachment_key          String?
   attachment_file_name    String?
