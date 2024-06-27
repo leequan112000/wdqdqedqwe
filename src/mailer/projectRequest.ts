@@ -63,30 +63,34 @@ export const sendVendorAcceptProjectNoticeEmail = async (
   });
 };
 
+type bulkVendorProjectRequestExpiredNoticeEmailData = BulkEmailJobData<{
+  receiver_full_name: string;
+  button_url: string;
+  requests: Array<{
+    project_request_title: string;
+    biotech_full_name: string;
+  }>;
+}>;
+
+export const bulkVendorProjectRequestExpiredNoticeEmail = async (
+  data: bulkVendorProjectRequestExpiredNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(
+    data,
+    vendorRequestExpiringNoticeTemplate,
+  );
+  return await createBulkSendMailJobs(bulks);
+};
+
 export const sendVendorProjectRequestExpiringEmail = async (
   emailData: VendorProjectRequestExpiringNoticeData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: vendorRequestExpiringNoticeTemplate,
-    dynamicTemplateData: emailData,
   });
-
-  return await sendMail(mailData);
-};
-
-export const sendVendorProjectRequestExpiredEmail = async (
-  emailData: VendorProjectRequestExpiredNoticeData,
-  receiverEmail: string,
-) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: vendorRequestExpiredNoticeTemplate,
-    dynamicTemplateData: emailData,
-  });
-
-  return await sendMail(mailData);
 };
 
 type bulkNewProjectRequestAdminNoticeEmailData = BulkEmailJobData<{

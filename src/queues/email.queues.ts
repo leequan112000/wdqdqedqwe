@@ -12,7 +12,6 @@ import { app_env } from '../environment';
 import { sendNewMessageNoticeEmail } from '../mailer/message';
 import {
   sendVendorAcceptProjectNoticeEmail,
-  sendVendorProjectRequestExpiredEmail,
   sendVendorProjectRequestExpiringEmail,
 } from '../mailer/projectRequest';
 import createAcceptRequestNotification from '../notification/acceptRequestNotification';
@@ -653,34 +652,6 @@ emailQueue.process(async (job, done) => {
         done(null, resp);
         break;
       }
-      case EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL: {
-        const { receiverEmail, receiverName, requests } =
-          data as CreateVendorProjectRequestExpiredNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/projects/expired`;
-
-        const receiver = await prisma.user.findFirst({
-          where: {
-            email: receiverEmail,
-          },
-        });
-        invariant(receiver, 'Receiver not found.');
-        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
-          done(null, 'Deactivated');
-          break;
-        }
-
-        const resp = await sendVendorProjectRequestExpiredEmail(
-          {
-            button_url: buttonUrl,
-            receiver_full_name: receiverName,
-            requests,
-          },
-          receiverEmail,
-        );
-
-        done(null, resp);
-        break;
-      }
       default:
         done(new Error('No type match.'));
         break;
@@ -791,15 +762,6 @@ export const createVendorProjectRequestExpiringNoticeEmailJob = (
 ) => {
   return emailQueue.add({
     type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRING_NOTICE_EMAIL,
-    data,
-  });
-};
-
-export const createVendorProjectRequestExpiredNoticeEmailJob = (
-  data: CreateVendorProjectRequestExpiredNoticeEmailJobParam,
-) => {
-  return emailQueue.add({
-    type: EmailType.USER_VENDOR_PROJECT_REQUEST_EXPIRED_NOTICE_EMAIL,
     data,
   });
 };
