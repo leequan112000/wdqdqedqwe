@@ -1,7 +1,6 @@
 import moment from 'moment';
 import * as lodash from 'lodash';
 import { prisma } from '../prisma';
-import { createSendUserExpiringQuoteNoticeEmailJob } from '../queues/email.queues';
 import { CreateSendUserExpiringQuoteNoticeEmailJobParam } from '../queues/types';
 import { QuoteStatus } from '../helper/constant';
 import {
@@ -16,6 +15,8 @@ import {
   createNotificationQueueJob,
 } from '../queues/notification.queues';
 import { createExpiringQuoteNotificationJob } from '../notification/quoteNotification';
+import { app_env } from '../environment';
+import { bulkQuoteExpiringNoticeEmail } from '../mailer/quote';
 
 const EXPIRING_DAYS = 3;
 
@@ -81,8 +82,9 @@ async function main() {
     });
   });
 
-  const toSendQuoteExpiringEmailData: CreateSendUserExpiringQuoteNoticeEmailJobParam[] =
-    Object.entries(expiringQuotesGroupByUserId).map(([_, data]) => {
+  const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
+  const emailData = Object.entries(expiringQuotesGroupByUserId).map(
+    ([_, data]) => {
       const { quotes, userData } = data;
       const quotesGroupByProject = lodash.groupBy(
         quotes,
@@ -107,16 +109,18 @@ async function main() {
 
       return {
         receiverEmail: userData.email,
-        receiverName: `${userData.first_name} ${userData.last_name}`,
-        listData: listData.slice(0, 2),
-        expiringIn: `${EXPIRING_DAYS} days`,
-        moreCount,
+        emailData: {
+          receiver_full_name: `${userData.first_name} ${userData.last_name}`,
+          list_data: listData.slice(0, 2),
+          more_count: moreCount,
+          view_more_url: buttonUrl,
+          button_url: buttonUrl,
+          expiring_in: `${EXPIRING_DAYS} days`,
+        },
       };
-    });
-
-  const expiringQuoteTasks = toSendQuoteExpiringEmailData.map((d) => {
-    return createSendUserExpiringQuoteNoticeEmailJob(d);
-  });
+    },
+  );
+  bulkQuoteExpiringNoticeEmail(emailData);
 
   const expiringQuoteNotificationJobData = Object.entries(
     expiringQuotesGroupByUserId,
@@ -138,7 +142,7 @@ async function main() {
     data: expiringQuoteNotificationJobData,
   });
 
-  await Promise.all([...expiringQuoteTasks, notificationTask]);
+  await Promise.all([notificationTask]);
   process.exit(0);
 }
 

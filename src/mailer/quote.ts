@@ -1,14 +1,15 @@
 import { createMailData, sendMail } from './config';
-import type {
-  QuoteExpiredNoticeData,
-  QuoteExpiringNoticeData,
-  QuoteNoticeData,
-} from './types';
+import type { QuoteNoticeData } from './types';
 import {
   quoteExpiredNoticeTemplate,
   quoteExpiringNoticeTemplate,
   quoteNoticeTemplate,
 } from './templates';
+import {
+  BulkEmailJobData,
+  createBulkEmailJobData,
+  createBulkSendMailJobs,
+} from '../queues/sendMail.queues';
 
 export const sendQuoteNoticeEmail = async (
   emailData: QuoteNoticeData,
@@ -29,41 +30,45 @@ export const sendQuoteNoticeEmail = async (
   await sendMail(mailData);
 };
 
-export const sendQuoteExpiringNoticeEmail = async (
-  emailData: QuoteExpiringNoticeData,
-  receiverEmail: string,
-) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: quoteExpiringNoticeTemplate,
-    dynamicTemplateData: {
-      receiver_full_name: emailData.receiver_full_name,
-      button_url: emailData.button_url,
-      expiring_in: emailData.expiring_in,
-      list_data: emailData.list_data,
-      more_count: emailData.more_count,
-      view_more_url: emailData.view_more_url,
-    },
-  });
+type BulkQuoteExpiringNoticeEmailData = BulkEmailJobData<{
+  receiver_full_name: string;
+  button_url: string;
+  expiring_in: string;
+  list_data: Array<{
+    project_request_title: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
+  }>;
+  more_count?: number;
+  view_more_url?: string;
+}>;
 
-  return await sendMail(mailData);
+export const bulkQuoteExpiringNoticeEmail = async (
+  data: BulkQuoteExpiringNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(data, quoteExpiringNoticeTemplate);
+  return await createBulkSendMailJobs(bulks);
 };
 
-export const sendQuoteExpiredNoticeEmail = async (
-  emailData: QuoteExpiredNoticeData,
-  receiverEmail: string,
-) => {
-  const mailData = createMailData({
-    to: receiverEmail,
-    templateId: quoteExpiredNoticeTemplate,
-    dynamicTemplateData: {
-      receiver_full_name: emailData.receiver_full_name,
-      button_url: emailData.button_url,
-      list_data: emailData.list_data,
-      more_count: emailData.more_count,
-      view_more_url: emailData.view_more_url,
-    },
-  });
+type BulkQuoteExpiredNoticeEmailData = BulkEmailJobData<{
+  receiver_full_name: string;
+  button_url: string;
+  list_data: Array<{
+    project_request_title: string;
+    quotes: Array<{
+      short_id: string;
+      vendor_full_name: string;
+    }>;
+  }>;
+  more_count?: number;
+  view_more_url?: string;
+}>;
 
-  return await sendMail(mailData);
+export const bulkQuoteExpiredNoticeEmail = async (
+  data: BulkQuoteExpiredNoticeEmailData,
+) => {
+  const bulks = createBulkEmailJobData(data, quoteExpiredNoticeTemplate);
+  return await createBulkSendMailJobs(bulks);
 };

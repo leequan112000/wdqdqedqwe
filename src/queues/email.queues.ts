@@ -19,11 +19,7 @@ import {
 } from '../notification/milestoneNotification';
 import { sendMilestoneNoticeEmail } from '../mailer/milestone';
 import { sendNewSubscriptionEmail } from '../mailer/newsletter';
-import {
-  sendQuoteExpiredNoticeEmail,
-  sendQuoteExpiringNoticeEmail,
-  sendQuoteNoticeEmail,
-} from '../mailer/quote';
+import { sendQuoteNoticeEmail } from '../mailer/quote';
 import { getReceiversByProjectConnection } from './utils';
 import {
   CreateBillingNoticeEmailJobParam,
@@ -337,67 +333,6 @@ emailQueue.process(async (job, done) => {
         done();
         break;
       }
-      case EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL: {
-        const { receiverEmail, receiverName, expiringIn, listData, moreCount } =
-          data as CreateSendUserExpiringQuoteNoticeEmailJobParam;
-
-        const receiver = await prisma.user.findFirst({
-          where: {
-            email: receiverEmail,
-          },
-        });
-        invariant(receiver, 'Receiver not found.');
-        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
-          done(null, 'Deactivated');
-          break;
-        }
-
-        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
-        const resp = await sendQuoteExpiringNoticeEmail(
-          {
-            button_url: buttonUrl,
-            expiring_in: expiringIn,
-            receiver_full_name: receiverName,
-            list_data: listData,
-            more_count: moreCount,
-            view_more_url: buttonUrl,
-          },
-          receiverEmail,
-        );
-
-        done(null, resp);
-        break;
-      }
-      case EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL: {
-        const { receiverEmail, receiverName, listData, moreCount } =
-          data as CreateSendUserExpiredQuoteNoticeEmailJobParam;
-        const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
-
-        const receiver = await prisma.user.findFirst({
-          where: {
-            email: receiverEmail,
-          },
-        });
-        invariant(receiver, 'Receiver not found.');
-        if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
-          done(null, 'Deactivated');
-          break;
-        }
-
-        const resp = await sendQuoteExpiredNoticeEmail(
-          {
-            button_url: buttonUrl,
-            receiver_full_name: receiverName,
-            list_data: listData,
-            more_count: moreCount,
-            view_more_url: buttonUrl,
-          },
-          receiverEmail,
-        );
-
-        done(null, resp);
-        break;
-      }
       case EmailType.USER_BILLING_NOTICE_EMAIL: {
         const {
           invoiceId,
@@ -675,24 +610,6 @@ export const createSendNewBlogSubscriptionEmailJob = (data: {
   receiverEmail: string;
 }) => {
   emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data });
-};
-
-export const createSendUserExpiringQuoteNoticeEmailJob = (
-  data: CreateSendUserExpiringQuoteNoticeEmailJobParam,
-) => {
-  return emailQueue.add({
-    type: EmailType.USER_QUOTE_EXPIRING_NOTICE_EMAIL,
-    data,
-  });
-};
-
-export const createSendUserExpiredQuoteNoticeEmailJob = (
-  data: CreateSendUserExpiredQuoteNoticeEmailJobParam,
-) => {
-  return emailQueue.add({
-    type: EmailType.USER_QUOTE_EXPIRED_NOTICE_EMAIL,
-    data,
-  });
 };
 
 export const createBillingNoticeEmailJob = (

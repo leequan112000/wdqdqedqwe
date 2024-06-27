@@ -1,8 +1,6 @@
 import moment from 'moment';
 import * as lodash from 'lodash';
 import { prisma } from '../prisma';
-import { createSendUserExpiredQuoteNoticeEmailJob } from '../queues/email.queues';
-import { CreateSendUserExpiredQuoteNoticeEmailJobParam } from '../queues/types';
 import { QuoteStatus } from '../helper/constant';
 import {
   ProjectConnection,
@@ -16,6 +14,8 @@ import {
   createNotificationQueueJob,
 } from '../queues/notification.queues';
 import { createExpiredQuoteNotificationJob } from '../notification/quoteNotification';
+import { app_env } from '../environment';
+import { bulkQuoteExpiredNoticeEmail } from '../mailer/quote';
 
 async function main() {
   const today = moment();
@@ -78,8 +78,9 @@ async function main() {
     });
   });
 
-  const toSendQuoteExpiredEmailData: CreateSendUserExpiredQuoteNoticeEmailJobParam[] =
-    Object.entries(expiredQuotesGroupByUserId).map(([_, data]) => {
+  const buttonUrl = `${app_env.APP_URL}/app/projects/on-going`;
+  const emailData = Object.entries(expiredQuotesGroupByUserId).map(
+    ([_, data]) => {
       const { quotes, userData } = data;
       const quotesGroupByProject = lodash.groupBy(
         quotes,
@@ -99,21 +100,20 @@ async function main() {
           };
         },
       );
-
       const moreCount = listData.length > 2 ? listData.length - 2 : undefined;
-
       return {
         receiverEmail: userData.email,
-        receiverName: `${userData.first_name} ${userData.last_name}`,
-        listData,
-        moreCount,
+        emailData: {
+          receiver_full_name: `${userData.first_name} ${userData.last_name}`,
+          list_data: listData,
+          more_count: moreCount,
+          view_more_url: buttonUrl,
+          button_url: buttonUrl,
+        },
       };
-    });
-
-  const expiredQuoteTasks = toSendQuoteExpiredEmailData.map((d) => {
-    return createSendUserExpiredQuoteNoticeEmailJob(d);
-  });
-
+    },
+  );
+  bulkQuoteExpiredNoticeEmail(emailData);
   const expiredQuoteNotificationJobData = Object.entries(
     expiredQuotesGroupByUserId,
   ).reduce<NotificationJob['data']>((acc, [_, data]) => {
@@ -133,7 +133,7 @@ async function main() {
     data: expiredQuoteNotificationJobData,
   });
 
-  await Promise.all([...expiredQuoteTasks, notificationTask]);
+  await Promise.all([notificationTask]);
 
   process.exit(0);
 }
