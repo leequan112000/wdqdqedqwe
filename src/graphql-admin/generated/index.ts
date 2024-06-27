@@ -233,7 +233,7 @@ export type MutationAddReviewQuestionSetArgs = {
 
 
 export type MutationApproveVendorSurveyArgs = {
-  certificates: Array<Scalars['String']>;
+  certifications: Array<Scalars['String']>;
   company_description: Scalars['String'];
   company_ipo_status: Scalars['String'];
   company_name: Scalars['String'];
@@ -1023,7 +1023,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionArgs, 'ordinal' | 'question_text' | 'question_type' | 'review_question_set_id'>>;
   addReviewQuestionOption?: Resolver<Maybe<ResolversTypes['ReviewQuestionOption']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionOptionArgs, 'option_text' | 'review_question_id'>>;
   addReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationAddReviewQuestionSetArgs, 'name'>>;
-  approveVendorSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationApproveVendorSurveyArgs, 'certificates' | 'company_description' | 'company_ipo_status' | 'company_name' | 'company_revenue' | 'company_size' | 'company_types' | 'countries' | 'id' | 'logo_url' | 'subspecialty_ids' | 'website_url'>>;
+  approveVendorSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationApproveVendorSurveyArgs, 'certifications' | 'company_description' | 'company_ipo_status' | 'company_name' | 'company_revenue' | 'company_size' | 'company_types' | 'countries' | 'id' | 'logo_url' | 'subspecialty_ids' | 'website_url'>>;
   connectCustomerToProject?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationConnectCustomerToProjectArgs, 'customer_id' | 'project_connection_id'>>;
   createAdmin?: Resolver<Maybe<ResolversTypes['Admin']>, ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'email' | 'username'>>;
   createCertificationTag?: Resolver<Maybe<ResolversTypes['CertificationTag']>, ParentType, ContextType, RequireFields<MutationCreateCertificationTagArgs, 'full_name'>>;

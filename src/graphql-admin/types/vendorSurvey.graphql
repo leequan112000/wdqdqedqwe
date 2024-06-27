@@ -14,7 +14,7 @@ type Mutation {
     logo_url: String!
     company_types: [String!]!
     countries: [String!]!
-    certificates: [String!]!
+    certifications: [String!]!
     subspecialty_ids: [String!]!
   ): Boolean
 }

@@ -29,7 +29,7 @@ const resolver: Resolvers<Context> = {
         logo_url,
         company_types,
         countries,
-        certificates,
+        certifications,
         subspecialty_ids,
       } = args;
 
@@ -85,7 +85,7 @@ const resolver: Resolvers<Context> = {
         });
 
         await trx.vendorCompanyCertification.createMany({
-          data: certificates.map((c) => ({
+          data: certifications.map((c) => ({
             certification_name: c,
             vendor_company_id: vendorSurvey.vendor_company_id!,
           })),
