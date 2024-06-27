@@ -9,6 +9,7 @@ type CroDbVendorSurvey {
   custom_specialties: [String]
   certifications: [String]
   product: String
+  email: String
   note: String
   attachment_key: String
   attachment_file_name: String
@@ -54,6 +55,7 @@ type Mutation {
     custom_specialties: [String]
     certifications: [String]
     products: [String]
+    email: String!
     note: String
     logo: Upload!
     attachment: Upload

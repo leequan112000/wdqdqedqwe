@@ -3,6 +3,10 @@ import { hideBin } from 'yargs/helpers';
 import PromisePool from '@supercharge/promise-pool';
 import { VendorCompany } from '../../prisma-cro/generated/client';
 import { prismaCRODb } from '../prisma';
+import {
+  extractAndGetAvgCompanySize,
+  extractRevenueValue,
+} from '../helper/vendorCompany';
 
 const argv = yargs(hideBin(process.argv))
   .option('size', {
@@ -11,41 +15,6 @@ const argv = yargs(hideBin(process.argv))
     default: 300, // Default value if the argument is not provided
   })
   .parseSync();
-
-const extractAndGetAvgCompanySize = (vendorCompany: VendorCompany) => {
-  const companySizeRange = vendorCompany.company_size || '0-0';
-  const [min, max] = companySizeRange
-    .replace(/,/g, '')
-    .replace(/\+/g, '') // Handle `10,000+`
-    .split(/–|-/)
-    .map(Number);
-
-  const avg = max ? (min + max) / 2.0 : min;
-  return avg; // Use the average value for comparison
-};
-
-const extractRevenueValue = (revenueCode: string | null): number => {
-  switch (revenueCode) {
-    case 'r_00000000':
-      return 0;
-    case 'r_00001000':
-      return 1_000_000;
-    case 'r_00010000':
-      return 10_000_000;
-    case 'r_00050000':
-      return 50_000_000;
-    case 'r_00100000':
-      return 100_000_000;
-    case 'r_00500000':
-      return 500_000_000;
-    case 'r_01000000':
-      return 1_000_000_000;
-    case 'r_10000000':
-      return 10_000_000_000;
-    default:
-      return 0;
-  }
-};
 
 const BATCH_SIZE = argv.size;
 
@@ -94,7 +63,9 @@ const main = async () => {
 
   console.log('Preparing update payloads...');
   const payloads: Payload[] = vendorCompanies.map((vendorCompany) => {
-    const avgCompanySize = extractAndGetAvgCompanySize(vendorCompany);
+    const avgCompanySize = extractAndGetAvgCompanySize(
+      vendorCompany.company_size,
+    );
     const revenueValue = extractRevenueValue(vendorCompany.company_revenue);
     return {
       id: vendorCompany.id,
