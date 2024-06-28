@@ -30,6 +30,7 @@ type InitialVendorSurveyData {
   company_ipo_status: String
   logo_url: String
   vendor_type: [String]
+  certifications: [String]
   website: String
   countries: [String]
   subspecialty_ids: [String]
