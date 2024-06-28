@@ -10,8 +10,11 @@ import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import { createBillingNoticeEmailJob } from '../queues/email.queues';
 import { generateInvoiceNumber } from '../helper/invoice';
+import { app_env } from '../environment';
+import invariant from '../helper/invariant';
+import { sendBillingNoticeEmail } from '../mailer/invoice';
+import { createBillingNotification } from '../notification/invoiceNotification';
 
 const argv = yargs(hideBin(process.argv))
   .option('debug', {
@@ -182,15 +185,35 @@ async function main() {
       },
     });
 
-    primaryMembers.map((member) => {
-      return createBillingNoticeEmailJob({
-        invoiceId: invoice.id,
-        invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
-        invoicePeriod: `${moment(invoice.from_date).format('MMM YYYY')} - ${moment(invoice.to_date).format('MMM YYYY')}`,
-        invoiceTotalAmount: currency(totalAmount, { fromCents: true }).format(),
-        receiverCompanyName: vendorCompany!.name,
-        receiverEmail: member.user.email,
-        receiverId: member.user.id,
+    primaryMembers.map(async (member) => {
+      const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoice.id}`;
+      const receiver = await prisma.user.findFirst({
+        where: {
+          email: member.user.email,
+        },
+      });
+      invariant(receiver, 'Receiver not found.');
+      if (receiver.deactivated_at && receiver.deactivated_at <= new Date()) {
+        return;
+      }
+      const invoice_month = moment(invoice.from_date).format('MMM YYYY');
+      await sendBillingNoticeEmail(
+        {
+          button_url: buttonUrl,
+          invoice_month,
+          invoice_period: `${moment(invoice.from_date).format('MMM YYYY')} - ${moment(invoice.to_date).format('MMM YYYY')}`,
+          invoice_total_amount: currency(totalAmount, {
+            fromCents: true,
+          }).format(),
+          vendor_company_name: vendorCompany!.name,
+        },
+        member.user.email,
+      );
+
+      await createBillingNotification({
+        invoice_id: invoice.id,
+        invoice_month,
+        recipient_id: receiver.id,
       });
     });
   });

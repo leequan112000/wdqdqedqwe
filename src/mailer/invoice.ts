@@ -11,55 +11,48 @@ import {
   invoicePaymentOverdueNoticeTemplate,
   invoicePaymentReminderTemplate,
 } from './templates';
+import { createSendMailJob } from '../queues/sendMail.queues';
 
 export const sendBillingNoticeEmail = async (
   emailData: BillingNoticeData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: billingNoticeTemplate,
-    dynamicTemplateData: emailData,
   });
-
-  return await sendMail(mailData);
 };
 
 export const sendInvoicePaymentNoticeEmail = async (
   emailData: InvoicePaymentNoticeData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: invoicePaymentNoticeTemplate,
-    dynamicTemplateData: emailData,
   });
-
-  return await sendMail(mailData);
 };
 
 export const sendInvoicePaymentReminderEmail = async (
   emailData: InvoicePaymentReminderData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: invoicePaymentReminderTemplate,
-    dynamicTemplateData: emailData,
   });
-
-  return await sendMail(mailData);
 };
 
 export const sendInvoicePaymentOverdueNoticeEmail = async (
   emailData: InvoicePaymentOverdueNoticeData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: invoicePaymentOverdueNoticeTemplate,
-    dynamicTemplateData: emailData,
   });
-
-  return await sendMail(mailData);
 };

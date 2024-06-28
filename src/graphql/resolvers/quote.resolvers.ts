@@ -528,7 +528,7 @@ const resolvers: Resolvers<Context> = {
               sender_name: senderCompanyName,
               project_title: projectConnection.project_request.title,
               receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-              action: QuoteNotificationActionContent.ACCEPTED,
+              action: QuoteNotificationActionContent.DECLINED,
               quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
             },
             receiver.email,
@@ -544,7 +544,6 @@ const resolvers: Resolvers<Context> = {
           );
         }),
       );
-
       return {
         ...updatedQuote,
         amount: updatedQuote.amount.toNumber(),

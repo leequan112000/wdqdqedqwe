@@ -3,7 +3,6 @@ import { Context } from '../../types/context';
 
 import { PublicError } from '../errors/PublicError';
 
-import { createSendUserMilestoneNoticeJob } from '../../queues/email.queues';
 import { payVendorJob } from '../../queues/payout.queues';
 
 import biotechInvoiceService from '../../services/biotechInvoice/biotechInvoice.service';
@@ -16,7 +15,6 @@ import {
   checkMilestonePermission,
 } from '../../helper/accessControl';
 import {
-  MilestoneEventType,
   MilestonePaymentStatus,
   MilestoneStatus,
   ProjectAttachmentDocumentType,
@@ -33,6 +31,10 @@ import storeUpload from '../../helper/storeUpload';
 import invariant from '../../helper/invariant';
 import { hasPermission } from '../../helper/casbin';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
+import { getReceiversByProjectConnection } from '../../queues/utils';
+import { sendMilestoneNoticeEmail } from '../../mailer/milestone';
+import { app_env } from '../../environment';
+import { createMilestoneNotification } from '../../notification/milestoneNotification';
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
@@ -282,15 +284,39 @@ const resolvers: Resolvers<Context> = {
             status: MilestoneStatus.PENDING_COMPLETION_APPROVAL,
           },
         });
+        const projectConnectionId = milestone.quote.project_connection_id;
+        const quoteId = milestone.quote.id;
+        const currentUserId = context.req.user_id!;
+        const { receivers, projectConnection, senderCompanyName } =
+          await getReceiversByProjectConnection(
+            projectConnectionId,
+            context.req.user_id!,
+          );
+        let milestoneUpdateContent =
+          'New milestone completed! Please review and approve for release of payment.';
 
-        createSendUserMilestoneNoticeJob({
-          projectConnectionId: milestone.quote.project_connection_id,
-          milestoneTitle: milestone.title,
-          quoteId: milestone.quote.id,
-          senderUserId: context.req.user_id!,
-          milestoneEventType: MilestoneEventType.VENDOR_MARKED_AS_COMPLETE,
-        });
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendMilestoneNoticeEmail(
+              {
+                sender_name: senderCompanyName,
+                project_title: projectConnection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                milestone_update_content: milestoneUpdateContent,
+                milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+              },
+              receiver.email,
+            );
 
+            await createMilestoneNotification(
+              currentUserId,
+              quoteId,
+              milestoneUpdateContent,
+              receiver.id,
+              projectConnection.id,
+            );
+          }),
+        );
         return {
           milestone: {
             ...updatedMilestone,
@@ -344,14 +370,38 @@ const resolvers: Resolvers<Context> = {
       });
 
       payVendorJob({ milestoneId: id });
+      const projectConnectionId = updatedMilestone.quote.project_connection_id;
+      const quoteId = updatedMilestone.quote.id;
+      const { receivers, projectConnection, senderCompanyName } =
+        await getReceiversByProjectConnection(
+          projectConnectionId,
+          context.req.user_id!,
+        );
+      let milestoneUpdateContent =
+        'Milestone completion approved! Your payout is now in progress.';
 
-      createSendUserMilestoneNoticeJob({
-        projectConnectionId: updatedMilestone.quote.project_connection_id,
-        milestoneTitle: updatedMilestone.title,
-        quoteId: updatedMilestone.quote.id,
-        senderUserId: context.req.user_id!,
-        milestoneEventType: MilestoneEventType.BIOTECH_VERIFIED_AS_COMPLETED,
-      });
+      await Promise.all(
+        receivers.map(async (receiver) => {
+          await sendMilestoneNoticeEmail(
+            {
+              sender_name: senderCompanyName,
+              project_title: projectConnection.project_request.title,
+              receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+              milestone_update_content: milestoneUpdateContent,
+              milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+            },
+            receiver.email,
+          );
+
+          await createMilestoneNotification(
+            currentUserId,
+            quoteId,
+            milestoneUpdateContent,
+            receiver.id,
+            projectConnection.id,
+          );
+        }),
+      );
 
       return {
         ...updatedMilestone,

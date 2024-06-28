@@ -9,25 +9,18 @@ import {
   BulkEmailJobData,
   createBulkEmailJobData,
   createBulkSendMailJobs,
+  createSendMailJob,
 } from '../queues/sendMail.queues';
 
 export const sendQuoteNoticeEmail = async (
   emailData: QuoteNoticeData,
   receiverEmail: string,
 ) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+  return await createSendMailJob({
+    emailData,
+    receiverEmail,
     templateId: quoteNoticeTemplate,
-    dynamicTemplateData: {
-      sender_name: emailData.sender_name,
-      project_title: emailData.project_title,
-      receiver_full_name: emailData.receiver_full_name,
-      action: emailData.action,
-      quotation_url: emailData.quotation_url,
-    },
   });
-
-  await sendMail(mailData);
 };
 
 type BulkQuoteExpiringNoticeEmailData = BulkEmailJobData<{
