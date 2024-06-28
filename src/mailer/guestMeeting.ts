@@ -1,4 +1,4 @@
-import { createSendMailJob } from "../queues/sendMail.queues";
+import { createSendMailJob } from '../queues/sendMail.queues';
 import {
   meetingInvitationTemplate,
   acceptedMeetingRSVPNotificationForHostTemplate,
@@ -6,7 +6,7 @@ import {
   declinedMeetingRSVPNotificationForHostTemplate,
   meetingInvitationForCromaticUserWithinProjectTemplate,
   declinedMeetingRSVPNotificationForGuestTemplate,
-} from "./templates";
+} from './templates';
 
 type AcceptedMeetingRSVPNotificationForGuestData = {
   button_url: string;
@@ -18,7 +18,7 @@ type AcceptedMeetingRSVPNotificationForGuestData = {
 
 export const acceptedMeetingRSVPNotificationForGuestEmail = (
   emailData: AcceptedMeetingRSVPNotificationForGuestData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -37,7 +37,7 @@ type AcceptedMeetingRSVPUpdateNotificationEmailData = {
 
 export const acceptedMeetingRSVPUpdateNotificationEmail = (
   emailData: AcceptedMeetingRSVPUpdateNotificationEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -56,7 +56,7 @@ type DeclinedMeetingRSVPUpdateNotificationEmailData = {
 
 export const declinedMeetingRSVPUpdateNotificationEmail = (
   emailData: DeclinedMeetingRSVPUpdateNotificationEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -75,7 +75,7 @@ type MeetingInvitationForGuestEmailData = {
 
 export const meetingInvitationForGuestEmail = (
   emailData: MeetingInvitationForGuestEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -94,7 +94,7 @@ type MeetingInvitationForCromaticUserWithinProjectEmailData = {
 
 export const meetingInvitationForCromaticUserWithinProjectEmail = (
   emailData: MeetingInvitationForCromaticUserWithinProjectEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -112,7 +112,7 @@ type DeclinedMeetingRSVPNotificationForGuestEmailData = {
 
 export const declinedMeetingRSVPNotificationForGuestEmail = (
   emailData: DeclinedMeetingRSVPNotificationForGuestEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,

@@ -9,4 +9,4 @@ export const pubsub = new RedisPubSub({
 
 export const publishNewNotification = (newNotification: Notification) => {
   return pubsub.publish('NEW_NOTIFICATION', { newNotification });
-}
+};

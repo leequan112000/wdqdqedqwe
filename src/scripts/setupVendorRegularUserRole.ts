@@ -21,12 +21,15 @@ const main = async () => {
         },
       },
     });
-    const vendorFirstUsers = vendorCompaniesWithFirstUser.reduce<User[]>((acc, b) => {
-      if (b.vendor_members.length > 0) {
-        acc.unshift(b.vendor_members[0].user);
-      }
-      return acc;
-    }, []);
+    const vendorFirstUsers = vendorCompaniesWithFirstUser.reduce<User[]>(
+      (acc, b) => {
+        if (b.vendor_members.length > 0) {
+          acc.unshift(b.vendor_members[0].user);
+        }
+        return acc;
+      },
+      [],
+    );
     const vendorCompanyFirstUserIDs = vendorFirstUsers.map((u) => u.id);
     const vendorCompanyWithRegularUsers = await prisma.vendorCompany.findMany({
       select: {
@@ -42,7 +45,9 @@ const main = async () => {
         },
       },
     });
-    const vendorCompanyRegularUsers = vendorCompanyWithRegularUsers.reduce<User[]>((acc, v) => {
+    const vendorCompanyRegularUsers = vendorCompanyWithRegularUsers.reduce<
+      User[]
+    >((acc, v) => {
       if (v.vendor_members.length > 0) {
         const users = v.vendor_members.map((vm) => vm.user);
         acc.unshift(...users);
@@ -50,22 +55,21 @@ const main = async () => {
       return acc;
     }, []);
 
-    await PromisePool
-      .withConcurrency(10)
+    await PromisePool.withConcurrency(10)
       .for(vendorCompanyRegularUsers)
       .process(async (u) => {
         console.log('Processing:', u.first_name, u.last_name);
         await addRoleForUser(u.id, CasbinRole.USER);
       });
 
-    console.log('Operation done.')
+    console.log('Operation done.');
   } catch (error) {
-    console.log('Operation failed.')
-    console.log(error)
+    console.log('Operation failed.');
+    console.log(error);
   } finally {
     await prisma.$disconnect();
   }
   process.exit(0);
-}
+};
 
 main();

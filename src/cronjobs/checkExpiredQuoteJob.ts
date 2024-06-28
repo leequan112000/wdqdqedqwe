@@ -4,10 +4,18 @@ import { prisma } from '../prisma';
 import { createSendUserExpiredQuoteNoticeEmailJob } from '../queues/email.queues';
 import { CreateSendUserExpiredQuoteNoticeEmailJobParam } from '../queues/types';
 import { QuoteStatus } from '../helper/constant';
-import { ProjectConnection, ProjectRequest, Quote, User, VendorCompany } from '@prisma/client';
-import { NotificationJob, createNotificationQueueJob } from '../queues/notification.queues';
+import {
+  ProjectConnection,
+  ProjectRequest,
+  Quote,
+  User,
+  VendorCompany,
+} from '@prisma/client';
+import {
+  NotificationJob,
+  createNotificationQueueJob,
+} from '../queues/notification.queues';
 import { createExpiredQuoteNotificationJob } from '../notification/quoteNotification';
-
 
 async function main() {
   const today = moment();
@@ -42,56 +50,73 @@ async function main() {
 
   const expiredQuotesGroupByUserId: {
     [userId: string]: {
-      quotes: (Quote & { project_connection: ProjectConnection & { project_request: ProjectRequest; vendor_company: VendorCompany } })[];
+      quotes: (Quote & {
+        project_connection: ProjectConnection & {
+          project_request: ProjectRequest;
+          vendor_company: VendorCompany;
+        };
+      })[];
       userData: User;
     };
-  } = {}
+  } = {};
 
   expiredQuotes.forEach((quote) => {
     quote.project_connection.customer_connections.forEach((cc) => {
       const userId = cc.customer.user_id;
-      if (cc.customer.user.deactivated_at === null || cc.customer.user.deactivated_at > new Date()) {
+      if (
+        cc.customer.user.deactivated_at === null ||
+        cc.customer.user.deactivated_at > new Date()
+      ) {
         if (!expiredQuotesGroupByUserId[userId]) {
-          expiredQuotesGroupByUserId[userId] = { quotes: [], userData: cc.customer.user };
+          expiredQuotesGroupByUserId[userId] = {
+            quotes: [],
+            userData: cc.customer.user,
+          };
         }
-        expiredQuotesGroupByUserId[userId].quotes.unshift(quote)
-      }
-    })
-  });
-
-  const toSendQuoteExpiredEmailData: CreateSendUserExpiredQuoteNoticeEmailJobParam[] = Object.entries(expiredQuotesGroupByUserId).map(([_, data]) => {
-    const { quotes, userData } = data;
-    const quotesGroupByProject = lodash.groupBy(quotes, (q) => q.project_connection.project_request.title);
-
-    const listData = Object.entries(quotesGroupByProject).map(([title, data]) => {
-      return {
-        project_request_title: title,
-        quotes: data.map((d) => {
-          return {
-            short_id: d.short_id,
-            vendor_full_name: d.project_connection.vendor_company.name,
-          }
-        }),
+        expiredQuotesGroupByUserId[userId].quotes.unshift(quote);
       }
     });
-
-    const moreCount = listData.length > 2
-    ? listData.length - 2
-    : undefined;
-
-    return {
-      receiverEmail: userData.email,
-      receiverName: `${userData.first_name} ${userData.last_name}`,
-      listData,
-      moreCount,
-    }
   });
+
+  const toSendQuoteExpiredEmailData: CreateSendUserExpiredQuoteNoticeEmailJobParam[] =
+    Object.entries(expiredQuotesGroupByUserId).map(([_, data]) => {
+      const { quotes, userData } = data;
+      const quotesGroupByProject = lodash.groupBy(
+        quotes,
+        (q) => q.project_connection.project_request.title,
+      );
+
+      const listData = Object.entries(quotesGroupByProject).map(
+        ([title, data]) => {
+          return {
+            project_request_title: title,
+            quotes: data.map((d) => {
+              return {
+                short_id: d.short_id,
+                vendor_full_name: d.project_connection.vendor_company.name,
+              };
+            }),
+          };
+        },
+      );
+
+      const moreCount = listData.length > 2 ? listData.length - 2 : undefined;
+
+      return {
+        receiverEmail: userData.email,
+        receiverName: `${userData.first_name} ${userData.last_name}`,
+        listData,
+        moreCount,
+      };
+    });
 
   const expiredQuoteTasks = toSendQuoteExpiredEmailData.map((d) => {
     return createSendUserExpiredQuoteNoticeEmailJob(d);
   });
 
-  const expiredQuoteNotificationJobData = Object.entries(expiredQuotesGroupByUserId).reduce<NotificationJob['data']>((acc, [_, data]) => {
+  const expiredQuoteNotificationJobData = Object.entries(
+    expiredQuotesGroupByUserId,
+  ).reduce<NotificationJob['data']>((acc, [_, data]) => {
     const { quotes, userData } = data;
     const jobs: NotificationJob['data'] = quotes.map((q) => {
       return createExpiredQuoteNotificationJob({
@@ -104,7 +129,9 @@ async function main() {
     });
     return [...acc, ...jobs];
   }, []);
-  const notificationTask = createNotificationQueueJob({ data: expiredQuoteNotificationJobData });
+  const notificationTask = createNotificationQueueJob({
+    data: expiredQuoteNotificationJobData,
+  });
 
   await Promise.all([...expiredQuoteTasks, notificationTask]);
 

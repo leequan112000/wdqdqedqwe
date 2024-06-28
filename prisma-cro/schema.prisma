@@ -12,7 +12,7 @@ datasource db {
 }
 
 model VendorCompany {
-  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   company_name          String
   company_size          String?
   company_average_size  Float?
@@ -23,11 +23,11 @@ model VendorCompany {
   website_url           String
   linkedin_url          String
   crunchbase_url        String
-  type                  String
   product               String?
   logo_url              String?
   is_active             Boolean
   is_cromatic_vendor    Boolean
+  verified_at           DateTime?
 
   traffic_infos                 TrafficInfo[]
   linkedin_infos                LinkedinInfo[]
@@ -273,7 +273,7 @@ model WebsiteInfo {
 
 model VendorSurvey {
   id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vendor_company_id       String?   @unique @db.Uuid
+  vendor_company_id       String?  @unique @db.Uuid
   company_name            String
   company_types           String[]
   company_description     String
@@ -287,6 +287,7 @@ model VendorSurvey {
   custom_specialties      String[]
   certifications          String[]
   products                String[]
+  email                   String?
   note                    String?
   attachment_key          String?
   attachment_file_name    String?

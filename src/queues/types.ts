@@ -9,7 +9,7 @@ export type CreateSendUserExpiredQuoteNoticeEmailJobParam = {
     }>;
   }>;
   moreCount?: number;
-}
+};
 
 export type CreateSendUserExpiringQuoteNoticeEmailJobParam = {
   receiverEmail: string;
@@ -23,7 +23,7 @@ export type CreateSendUserExpiringQuoteNoticeEmailJobParam = {
     }>;
   }>;
   moreCount?: number;
-}
+};
 
 export type CreateBillingNoticeEmailJobParam = {
   receiverId: string;
@@ -33,31 +33,31 @@ export type CreateBillingNoticeEmailJobParam = {
   invoiceTotalAmount: string;
   invoicePeriod: string;
   invoiceId: string;
-}
+};
 
 export type CreateInvoicePaymentNoticeEmailJobParam = {
   vendorCompanyId: string;
   invoiceMonth: string;
   paymentStatus: string;
   invoiceId: string;
-}
+};
 
 export type CreateInvoicePaymentReminderEmailJobParam = {
   vendorCompanyId: string;
-  invoiceDueAt: string
-  duePeriod: string
+  invoiceDueAt: string;
+  duePeriod: string;
   invoiceDate: string;
   invoiceTotalAmount: string;
   invoiceId: string;
-}
+};
 
 export type CreateInvoicePaymentOverdueNoticeEmailJobParam = {
   vendorCompanyId: string;
-  overduePeriod: string
+  overduePeriod: string;
   invoiceDate: string;
   invoiceTotalAmount: string;
   invoiceId: string;
-}
+};
 
 export type CreateVendorProjectRequestExpiringNoticeEmailJobParam = {
   receiverEmail: string;
@@ -67,7 +67,7 @@ export type CreateVendorProjectRequestExpiringNoticeEmailJobParam = {
     project_request_title: string;
     biotech_full_name: string;
   }>;
-}
+};
 
 export type CreateVendorProjectRequestExpiredNoticeEmailJobParam = {
   receiverEmail: string;
@@ -76,4 +76,4 @@ export type CreateVendorProjectRequestExpiredNoticeEmailJobParam = {
     project_request_title: string;
     biotech_full_name: string;
   }>;
-}
+};

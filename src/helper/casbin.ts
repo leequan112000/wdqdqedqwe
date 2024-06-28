@@ -28,16 +28,20 @@ const createEnforcer = async () => {
     const username = args;
     const result = await e.hasRoleForUser(username, CasbinRole.OWNER);
     return result;
-  })
+  });
   return e;
-}
+};
 
 export const addRoleForUser = async (userId: string, role: CasbinRole) => {
   const e = await createEnforcer();
   return await e.addRoleForUser(`user:${userId}`, role);
-}
+};
 
-export const hasPermission = async (userId: string, obj: CasbinObj | CasbinObj[], act: CasbinAct) => {
+export const hasPermission = async (
+  userId: string,
+  obj: CasbinObj | CasbinObj[],
+  act: CasbinAct,
+) => {
   const e = await createEnforcer();
 
   let resources: CasbinObj[];
@@ -46,17 +50,21 @@ export const hasPermission = async (userId: string, obj: CasbinObj | CasbinObj[]
   } else {
     resources = [obj];
   }
-  const tasks = resources.map((o) => e.enforce(`user:${userId}`, o, act))
+  const tasks = resources.map((o) => e.enforce(`user:${userId}`, o, act));
   const allEffects = await Promise.all(tasks);
 
   return allEffects.filter((e) => e === false).length === 0;
-}
+};
 
 export const frontendPermissionObject = async (userId: string) => {
   const e = await createEnforcer();
-  const namedGroupingPolicy = await e.getFilteredNamedGroupingPolicy('g', 0, `user:${userId!}`);
+  const namedGroupingPolicy = await e.getFilteredNamedGroupingPolicy(
+    'g',
+    0,
+    `user:${userId!}`,
+  );
   const userRoles = namedGroupingPolicy.map((p) => {
-    return p[1]
+    return p[1];
   });
 
   /**
@@ -65,7 +73,9 @@ export const frontendPermissionObject = async (userId: string) => {
    */
   if (userRoles.includes(CasbinRole.OWNER)) {
     const allObjs = Object.values(CasbinObj);
-    return [CasbinAct.WRITE, CasbinAct.READ, CasbinAct.DELETE].reduce<{ [act: string]: string[] }>((acc, action) => {
+    return [CasbinAct.WRITE, CasbinAct.READ, CasbinAct.DELETE].reduce<{
+      [act: string]: string[];
+    }>((acc, action) => {
       acc[action] = allObjs;
       return acc;
     }, {});
@@ -86,23 +96,30 @@ export const frontendPermissionObject = async (userId: string) => {
       acc[policy[2]] = [policy[1]];
     }
     return acc;
-  }, {})
-}
+  }, {});
+};
 
-export const updateRoleForUser = async (userId: string, newRole: CasbinRole) => {
+export const updateRoleForUser = async (
+  userId: string,
+  newRole: CasbinRole,
+) => {
   const user = `user:${userId}`;
   const e = await createEnforcer();
   await e.deleteRolesForUser(user);
   await e.addRoleForUser(user, newRole);
-}
+};
 
 export const deleteRolesForUser = async (userId: string) => {
   const user = `user:${userId}`;
   const e = await createEnforcer();
   return await e.deleteRolesForUser(user);
-}
+};
 
-export const addPermissionForRole = async (role: CasbinRole, obj: CasbinObj, act: CasbinAct) => {
+export const addPermissionForRole = async (
+  role: CasbinRole,
+  obj: CasbinObj,
+  act: CasbinAct,
+) => {
   const e = await createEnforcer();
   await e.addPermissionForUser(role, obj, act);
-}
+};

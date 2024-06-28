@@ -3,7 +3,11 @@ import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
 
-const createMessageNotification = async (sender_id: string, recipient_id: string, project_connection_id: string) => {
+const createMessageNotification = async (
+  sender_id: string,
+  recipient_id: string,
+  project_connection_id: string,
+) => {
   const sender = await prisma.user.findFirst({
     where: {
       id: sender_id,

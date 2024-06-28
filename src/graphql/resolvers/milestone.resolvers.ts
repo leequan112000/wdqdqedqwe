@@ -320,7 +320,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      const isPasswordMatched = await checkPassword(password, user, context);
+      const isPasswordMatched = await checkPassword(password, user);
 
       invariant(
         isPasswordMatched === true,

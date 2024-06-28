@@ -1,5 +1,5 @@
-import { ApolloServerPlugin } from "@apollo/server";
-import Sentry from "../sentry";
+import { ApolloServerPlugin } from '@apollo/server';
+import Sentry from '../sentry';
 
 // add operation name here to whitelist
 export const operationWhitelist = [
@@ -20,7 +20,7 @@ export const operationWhitelist = [
   'Public_SubmitSurvey_Mutation',
   'Public_SearchVendorByService_Query',
   `Public_SourcererLiteSearchServices_Query`,
-  'Public_PricingPageQuery'
+  'Public_PricingPageQuery',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({
@@ -42,27 +42,27 @@ export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({
           }
 
           // Add scoped report details and send to Sentry
-          Sentry.withScope(scope => {
+          Sentry.withScope((scope) => {
             // Annotate whether failing operation was query/mutation/subscription
-            scope.setTag("kind", ctx.operation!.operation);
+            scope.setTag('kind', ctx.operation!.operation);
 
             // Log query and variables as extras (make sure to strip out sensitive data!)
-            scope.setExtra("query", ctx.request.query);
-            scope.setExtra("variables", ctx.request.variables);
+            scope.setExtra('query', ctx.request.query);
+            scope.setExtra('variables', ctx.request.variables);
 
             if (err.path) {
               // We can also add the path as breadcrumb
               scope.addBreadcrumb({
-                category: "query-path",
-                message: err.path.join(" > "),
-                level: "debug"
+                category: 'query-path',
+                message: err.path.join(' > '),
+                level: 'debug',
               });
             }
 
             Sentry.captureException(err);
           });
         }
-      }
+      },
     };
-  }
+  },
 });

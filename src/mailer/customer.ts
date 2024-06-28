@@ -1,8 +1,8 @@
 import {
   customerInvitationByAdminTemplate,
   customerInvitationTemplate,
-} from "./templates";
-import { createSendMailJob } from "../queues/sendMail.queues";
+} from './templates';
+import { createSendMailJob } from '../queues/sendMail.queues';
 
 type CustomerInvitationEmailData = {
   login_url: string;
@@ -13,7 +13,7 @@ type CustomerInvitationEmailData = {
 
 export const customerInvitationEmail = (
   emailData: CustomerInvitationEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,
@@ -29,7 +29,7 @@ type CustomerInvitationByAdminEmailData = {
 
 export const customerInvitationByAdminEmail = (
   emailData: CustomerInvitationByAdminEmailData,
-  receiverEmail: string
+  receiverEmail: string,
 ) => {
   createSendMailJob({
     emailData,

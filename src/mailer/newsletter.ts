@@ -1,5 +1,5 @@
-import { createMailData, sendMail } from "./config"
-import { blogNewSubscriptionTemplate } from './templates'
+import { createMailData, sendMail } from './config';
+import { blogNewSubscriptionTemplate } from './templates';
 
 export const sendNewSubscriptionEmail = (receiverEmail: string) => {
   const mailData = createMailData({
@@ -8,4 +8,4 @@ export const sendNewSubscriptionEmail = (receiverEmail: string) => {
   });
 
   return sendMail(mailData);
-}
+};

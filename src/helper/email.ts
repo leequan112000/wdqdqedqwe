@@ -1,4 +1,4 @@
-import { app_env } from "../environment";
+import { app_env } from '../environment';
 
 export function createResetPasswordUrl(token: string) {
   return `${app_env.APP_URL}/reset-password?token=${encodeURIComponent(token)}`;

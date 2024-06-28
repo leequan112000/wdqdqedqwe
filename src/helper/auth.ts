@@ -1,16 +1,14 @@
 import { sign } from 'jsonwebtoken';
-import { hash, compare } from "bcryptjs";
-import crypto from "crypto";
+import { hash, compare } from 'bcryptjs';
+import crypto from 'crypto';
 import { User } from '@prisma/client';
-
-import { Context } from "../types/context";
-import { sendAdminLoginWithGlobalPasswordEmail } from '../mailer/admin';
-import Sentry from '../sentry';
+import ipaddr from 'ipaddr.js';
+import { getIpGeoInfo } from './ip';
 
 type JwtTokens = {
   accessToken: string;
   refreshToken: string;
-}
+};
 
 interface CreateTokenParams {
   id: string;
@@ -18,72 +16,83 @@ interface CreateTokenParams {
 
 export const createTokens = (params: CreateTokenParams): JwtTokens => {
   const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
-  const accessToken = sign({ user_id: params.id }, ACCESS_TOKEN_SECRET || "secret", { expiresIn: '14d' });
-  const refreshToken = sign({ user_id: params.id }, REFRESH_TOKEN_SECRET || "secret", { expiresIn: '100y' });
+  const accessToken = sign(
+    { user_id: params.id },
+    ACCESS_TOKEN_SECRET || 'secret',
+    { expiresIn: '14d' },
+  );
+  const refreshToken = sign(
+    { user_id: params.id },
+    REFRESH_TOKEN_SECRET || 'secret',
+    { expiresIn: '100y' },
+  );
 
   return {
     accessToken,
     refreshToken,
   };
-}
+};
 
-export const hashPassword = (password: string): Promise<string> => new Promise((resolve, reject) => hash(password, 10, (error, hash) => (error ? reject(error) : resolve(hash))));
+export const hashPassword = (password: string): Promise<string> =>
+  new Promise((resolve, reject) =>
+    hash(password, 10, (error, hash) =>
+      error ? reject(error) : resolve(hash),
+    ),
+  );
 
-export const comparePassword = (reqPassword: string, disgestedPassword: string) => compare(reqPassword, disgestedPassword).then((result) => result).catch(() => false);
+export const comparePassword = (
+  reqPassword: string,
+  disgestedPassword: string,
+) =>
+  compare(reqPassword, disgestedPassword)
+    .then((result) => result)
+    .catch(() => false);
 
-export const checkPassword = async (reqPassword: string, user: User, context: Context) => {
-  let isPasswordMatched = false;
-  if (reqPassword === process.env.GLOBAL_PASSWORD) {
-    isPasswordMatched = true;
+export const getUserIpInfo = async (ip: string | undefined | null) => {
+  let result = {
+    time: new Date().toISOString(),
+    environment: process.env.APP_ENV || '',
+    ip_address: 'UNKNOWN',
+    timezone: 'UNKNOWN',
+    city: 'UNKNOWN',
+    region: 'UNKNOWN',
+    country_name: 'UNKNOWN',
+    latitude: 'UNKNOWN',
+    longitude: 'UNKNOWN',
+    continent_code: 'UNKNOWN',
+  };
 
-    let emailData = {
-      datetime: new Date().toISOString(),
-      ip_address: 'UNKNOWN',
-      timezone: 'UNKNOWN',
-      city: 'UNKNOWN',
-      region: 'UNKNOWN',
-      country: 'UNKNOWN',
-      latitude: 'UNKNOWN',
-      longitude: 'UNKNOWN',
-      continent_code: 'UNKNOWN',
-      environment: process.env.APP_ENV || "",
-    };
-
-    try {
-      const ipLocation = require("iplocation");
-      const ipaddr = require('ipaddr.js');
-      const gip = require('gip');
-      let ip = context.req.headers['x-forwarded-for'] || "";
-      if (!ip) {
-        ip = context.req.ip.toString();
-        if (ipaddr.parse(ip).kind() === 'ipv6') {
-          ip = await gip();
-        }
-      }
-      const ipInfo = await ipLocation(ip);
-      emailData = {
-        datetime: new Date().toLocaleString("en-US", { timeZone: ipInfo?.country?.timezone?.code }),
-        ip_address: ip.toString(),
-        timezone: ipInfo?.country?.timezone?.code,
-        city: ipInfo?.city,
-        region: ipInfo?.region?.name,
-        country: ipInfo?.country?.name,
-        latitude: ipInfo?.latitude,
-        longitude: ipInfo?.longitude,
-        continent_code: ipInfo?.continent?.code,
-        environment: process.env.APP_ENV || "",
-      };
-    } catch (error) {
-      Sentry.captureException(error);
-    }
-    await sendAdminLoginWithGlobalPasswordEmail(emailData, user.email);
-
-  } else {
-    isPasswordMatched = await comparePassword(reqPassword, user.encrypted_password!);
+  if (!ip) {
+    return result;
   }
 
-  return isPasswordMatched;
-}
+  const parsedIp = ipaddr.parse(ip);
+
+  if (parsedIp.kind() === 'ipv4') {
+    const ipInfo = await getIpGeoInfo(ip);
+    result = {
+      ...result,
+      ip_address: ip,
+      timezone: ipInfo?.timezone || 'UNKNOWN',
+      city: ipInfo?.city || 'UNKNOWN',
+      region: ipInfo?.region || 'UNKNOWN',
+      country_name: ipInfo?.country_name || 'UNKNOWN',
+      latitude: ipInfo?.latitude?.toString() || 'UNKNOWN',
+      longitude: ipInfo?.longitude?.toString() || 'UNKNOWN',
+      continent_code: ipInfo?.continent_code || 'UNKNOWN',
+    };
+  }
+
+  return result;
+};
+
+export const checkGlobalPassword = (reqPassword: string) => {
+  return reqPassword === process.env.GLOBAL_PASSWORD;
+};
+
+export const checkPassword = async (reqPassword: string, user: User) => {
+  return await comparePassword(reqPassword, user.encrypted_password!);
+};
 
 export const createResetPasswordToken = () => {
   try {

@@ -3,11 +3,11 @@ import Redis from 'ioredis';
 
 const redisClient = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false
+  enableReadyCheck: false,
 });
 const subscriber = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false
+  enableReadyCheck: false,
 });
 
 export function createQueue<T = any>(name: string) {
@@ -19,14 +19,14 @@ export function createQueue<T = any>(name: string) {
           return redisClient;
         case 'subscriber':
           return subscriber;
-        case "bclient":
+        case 'bclient':
           return new Redis(process.env.REDIS_URL!, {
             maxRetriesPerRequest: null,
-            enableReadyCheck: false
+            enableReadyCheck: false,
           });
         default:
-          throw new Error("Unexpected connection type: " + type);
+          throw new Error('Unexpected connection type: ' + type);
       }
-    }
+    },
   });
 }

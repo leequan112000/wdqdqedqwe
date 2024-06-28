@@ -1,10 +1,18 @@
 import moment from 'moment';
 import { prisma } from '../prisma';
 import { ProjectConnectionVendorStatus } from '../helper/constant';
-import { Biotech, ProjectConnection, ProjectRequest, User } from '@prisma/client';
+import {
+  Biotech,
+  ProjectConnection,
+  ProjectRequest,
+  User,
+} from '@prisma/client';
 import { CreateVendorProjectRequestExpiringNoticeEmailJobParam } from '../queues/types';
 import { createVendorProjectRequestExpiringNoticeEmailJob } from '../queues/email.queues';
-import { NotificationJob, createNotificationQueueJob } from '../queues/notification.queues';
+import {
+  NotificationJob,
+  createNotificationQueueJob,
+} from '../queues/notification.queues';
 import { createVendorProjectRequestExpiringNotificationJob } from '../notification/projectRequestNotification';
 
 const EXPIRING_DAYS = 3;
@@ -41,38 +49,56 @@ async function main() {
     },
   });
 
-  const expiringProjectConnectionsGroupByUserId: { [userId: string]: { projectConnections: (ProjectConnection & { project_request: ProjectRequest & { biotech: Biotech } })[]; userData: User } } = {};
+  const expiringProjectConnectionsGroupByUserId: {
+    [userId: string]: {
+      projectConnections: (ProjectConnection & {
+        project_request: ProjectRequest & { biotech: Biotech };
+      })[];
+      userData: User;
+    };
+  } = {};
 
   expiringProjectConnections.forEach((pc) => {
     pc.vendor_member_connections.forEach((vmc) => {
       const userId = vmc.vendor_member.user_id;
-      if (vmc.vendor_member.user.deactivated_at === null || vmc.vendor_member.user.deactivated_at > new Date()) {
+      if (
+        vmc.vendor_member.user.deactivated_at === null ||
+        vmc.vendor_member.user.deactivated_at > new Date()
+      ) {
         if (!expiringProjectConnectionsGroupByUserId[userId]) {
-          expiringProjectConnectionsGroupByUserId[userId] = { projectConnections: [], userData: vmc.vendor_member.user };
+          expiringProjectConnectionsGroupByUserId[userId] = {
+            projectConnections: [],
+            userData: vmc.vendor_member.user,
+          };
         }
-        expiringProjectConnectionsGroupByUserId[userId].projectConnections.unshift(pc);
+        expiringProjectConnectionsGroupByUserId[
+          userId
+        ].projectConnections.unshift(pc);
       }
     });
   });
 
-  const toSendExpiringNoticeEmail: CreateVendorProjectRequestExpiringNoticeEmailJobParam[] = Object.entries(expiringProjectConnectionsGroupByUserId).map(([_, data]) => {
-    const { projectConnections, userData } = data;
-    return {
-      receiverEmail: userData.email,
-      receiverName: `${userData.first_name} ${userData.last_name}`,
-      expiringIn: `${EXPIRING_DAYS} days`,
-      requests: projectConnections.map((pc) => ({
-        project_request_title: pc.project_request.title,
-        biotech_full_name: pc.project_request.biotech.name,
-      }))
-    }
-  });
+  const toSendExpiringNoticeEmail: CreateVendorProjectRequestExpiringNoticeEmailJobParam[] =
+    Object.entries(expiringProjectConnectionsGroupByUserId).map(([_, data]) => {
+      const { projectConnections, userData } = data;
+      return {
+        receiverEmail: userData.email,
+        receiverName: `${userData.first_name} ${userData.last_name}`,
+        expiringIn: `${EXPIRING_DAYS} days`,
+        requests: projectConnections.map((pc) => ({
+          project_request_title: pc.project_request.title,
+          biotech_full_name: pc.project_request.biotech.name,
+        })),
+      };
+    });
 
   const sendEmailTasks = toSendExpiringNoticeEmail.map((d) => {
     return createVendorProjectRequestExpiringNoticeEmailJob(d);
   });
 
-  const vendorRequestExpiringNotificationJobData = Object.entries(expiringProjectConnectionsGroupByUserId).reduce<NotificationJob['data']>((acc, [_, data]) => {
+  const vendorRequestExpiringNotificationJobData = Object.entries(
+    expiringProjectConnectionsGroupByUserId,
+  ).reduce<NotificationJob['data']>((acc, [_, data]) => {
     const { projectConnections, userData } = data;
     const jobs: NotificationJob['data'] = projectConnections.map((pc) => {
       return createVendorProjectRequestExpiringNotificationJob({
@@ -82,10 +108,12 @@ async function main() {
         recipient_id: userData.id,
         expiring_in: `${EXPIRING_DAYS} days`,
       });
-    })
-    return [...acc, ...jobs]
+    });
+    return [...acc, ...jobs];
   }, []);
-  const notificationTask = createNotificationQueueJob({ data: vendorRequestExpiringNotificationJobData });
+  const notificationTask = createNotificationQueueJob({
+    data: vendorRequestExpiringNotificationJobData,
+  });
 
   await Promise.all([...sendEmailTasks, notificationTask]);
 
