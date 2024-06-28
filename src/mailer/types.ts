@@ -69,19 +69,6 @@ export type AdminCroInterestNoticeData = {
   admin_name: string;
 };
 
-export type AdminLoginWithGlobalPasswordData = {
-  datetime: string;
-  ip_address: string;
-  timezone: string;
-  city: string;
-  region: string;
-  country: string;
-  latitude: string;
-  longitude: string;
-  continent_code: string;
-  environment: string;
-};
-
 export type AdminZeroAcceptedProjectNoticeData = {
   zeroAcceptedList: string;
   lowAcceptanceList: string;
