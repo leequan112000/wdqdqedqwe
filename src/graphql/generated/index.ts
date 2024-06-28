@@ -426,6 +426,7 @@ export type ExternalParticipantInput = {
 
 export type InitialVendorSurveyData = {
   __typename?: 'InitialVendorSurveyData';
+  certifications?: Maybe<Array<Maybe<Scalars['String']>>>;
   company_description?: Maybe<Scalars['String']>;
   company_ipo_status?: Maybe<Scalars['String']>;
   company_revenue?: Maybe<Scalars['String']>;
@@ -3026,6 +3027,7 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type InitialVendorSurveyDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitialVendorSurveyData'] = ResolversParentTypes['InitialVendorSurveyData']> = ResolversObject<{
+  certifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

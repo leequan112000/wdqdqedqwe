@@ -27,6 +27,7 @@ const resolvers: Resolvers<Context> = {
           vendor_company_locations: true,
           vendor_company_subspecialties: true,
           vendor_company_types: true,
+          vendor_company_certifications: true,
           vendor_survey: true,
         },
       });
@@ -48,6 +49,9 @@ const resolvers: Resolvers<Context> = {
       const countries = vendorCompany.vendor_company_locations.map(
         (l) => l.country,
       );
+      const ceritifcations = vendorCompany.vendor_company_certifications.map(
+        (c) => c.certification_name,
+      );
 
       return {
         id: vendorCompany.id,
@@ -61,6 +65,7 @@ const resolvers: Resolvers<Context> = {
         subspecialty_ids: subspecialtyIds,
         website: vendorCompany.website_url,
         vendor_type: [...new Set(vendorType)],
+        certifications: ceritifcations,
         has_submitted: false,
       };
     },
