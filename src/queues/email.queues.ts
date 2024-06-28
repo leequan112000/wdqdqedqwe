@@ -2,23 +2,17 @@ import {
   CompanyCollaboratorRoleType,
   EmailType,
   MilestoneEventType,
-  NotificationType,
   QuoteNotificationActionContent,
 } from '../helper/constant';
 import { createQueue } from '../helper/queue';
 import { prisma } from '../prisma';
 import { app_env } from '../environment';
-import { sendNewMessageNoticeEmail } from '../mailer/message';
-import { sendVendorAcceptProjectNoticeEmail } from '../mailer/projectRequest';
-import createAcceptRequestNotification from '../notification/acceptRequestNotification';
-import createMessageNotification from '../notification/messageNotification';
 import createQuoteNotification from '../notification/quoteNotification';
 import {
   createMilestoneNotification,
   createMilestonePaymentFailedNotification,
 } from '../notification/milestoneNotification';
 import { sendMilestoneNoticeEmail } from '../mailer/milestone';
-import { sendNewSubscriptionEmail } from '../mailer/newsletter';
 import { sendQuoteNoticeEmail } from '../mailer/quote';
 import { getReceiversByProjectConnection } from './utils';
 import {
@@ -26,8 +20,6 @@ import {
   CreateInvoicePaymentNoticeEmailJobParam,
   CreateInvoicePaymentOverdueNoticeEmailJobParam,
   CreateInvoicePaymentReminderEmailJobParam,
-  CreateSendUserExpiredQuoteNoticeEmailJobParam,
-  CreateSendUserExpiringQuoteNoticeEmailJobParam,
 } from './types';
 import {
   sendBillingNoticeEmail,
@@ -55,163 +47,6 @@ emailQueue.process(async (job, done) => {
 
   try {
     switch (type) {
-      case EmailType.USER_NEW_MESSAGE_NOTICE: {
-        const { projectConnectionId, senderUserId, messageText } = data;
-
-        const { receivers, projectConnection, senderCompanyName } =
-          await getReceiversByProjectConnection(
-            projectConnectionId,
-            senderUserId,
-          );
-
-        await Promise.all(
-          receivers.map(async (receiver) => {
-            const notification = await prisma.notification.findFirst({
-              where: {
-                recipient_id: receiver.id,
-                notification_type: NotificationType.MESSAGE_NOTIFICATION,
-                read_at: null,
-                params: {
-                  path: ['project_connection_id'],
-                  equals: projectConnection.id,
-                },
-              },
-            });
-
-            if (!notification) {
-              await sendNewMessageNoticeEmail(
-                {
-                  button_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-                  receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-                  project_title: projectConnection.project_request.title,
-                  company_name: senderCompanyName,
-                  message_text: messageText,
-                },
-                receiver.email,
-              );
-              await createMessageNotification(
-                senderUserId,
-                receiver.id,
-                projectConnection.id,
-              );
-            }
-          }),
-        );
-
-        done();
-        break;
-      }
-      case EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE: {
-        const { projectConnectionId, senderUserId } = data;
-
-        const projectConnection =
-          await prisma.projectConnection.findFirstOrThrow({
-            where: {
-              id: projectConnectionId,
-            },
-            include: {
-              customer_connections: true,
-              vendor_member_connections: true,
-              project_request: true,
-            },
-          });
-
-        const vendor = await prisma.vendorMember.findFirst({
-          where: {
-            user_id: senderUserId,
-          },
-          include: {
-            vendor_company: true,
-          },
-        });
-
-        if (vendor) {
-          // notify biotech members
-          const receivers = await prisma.user.findMany({
-            where: {
-              customer: {
-                id: {
-                  in: projectConnection.customer_connections.map(
-                    (cc) => cc.customer_id,
-                  ),
-                },
-              },
-              OR: [
-                { deactivated_at: null },
-                {
-                  deactivated_at: {
-                    gt: new Date(),
-                  },
-                },
-              ],
-            },
-          });
-
-          await Promise.all(
-            receivers.map(async (receiver) => {
-              await sendVendorAcceptProjectNoticeEmail(
-                {
-                  login_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}`,
-                  receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-                  project_title: projectConnection.project_request.title,
-                  vendor_company_name: vendor.vendor_company?.name as string,
-                },
-                receiver.email,
-              );
-
-              await createAcceptRequestNotification(
-                senderUserId,
-                receiver.id,
-                projectConnection.id,
-              );
-            }),
-          );
-        }
-
-        done();
-        break;
-      }
-      case EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL: {
-        const { receiverEmail } = data;
-        const resp = await sendNewSubscriptionEmail(receiverEmail);
-
-        done(null, resp);
-        break;
-      }
-      case EmailType.USER_QUOTE_NOTICE_EMAIL: {
-        const { projectConnectionId, quoteId, senderUserId, action } = data;
-        const { receivers, projectConnection, senderCompanyName } =
-          await getReceiversByProjectConnection(
-            projectConnectionId,
-            senderUserId,
-          );
-        await Promise.all(
-          receivers.map(async (receiver) => {
-            await sendQuoteNoticeEmail(
-              {
-                sender_name: senderCompanyName,
-                project_title: projectConnection.project_request.title,
-                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-                action,
-                quotation_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
-              },
-              receiver.email,
-            );
-
-            await createQuoteNotification(
-              senderUserId,
-              senderCompanyName,
-              quoteId,
-              action,
-              receiver.id,
-              projectConnection.id,
-            );
-          }),
-        );
-
-        done();
-        break;
-      }
       case EmailType.USER_MILESTONE_NOTICE_EMAIL: {
         const {
           projectConnectionId,
@@ -563,14 +398,6 @@ emailQueue.process(async (job, done) => {
   }
 });
 
-export const createSendUserNewMessageNoticeJob = (data: {
-  projectConnectionId: string;
-  senderUserId: string;
-  messageText: string;
-}) => {
-  emailQueue.add({ type: EmailType.USER_NEW_MESSAGE_NOTICE, data });
-};
-
 export const createSendUserQuoteNoticeJob = (data: {
   projectConnectionId: string;
   senderUserId: string;
@@ -597,19 +424,6 @@ export const createSendUserMilestonePaymentFailedNoticeJob = (data: {
     type: EmailType.USER_MILESTONE_PAYMENT_FAILED_NOTICE_EMAIL,
     data,
   });
-};
-
-export const createSendUserAcceptProjectRequestNoticeJob = (data: {
-  projectConnectionId: string;
-  senderUserId: string;
-}) => {
-  emailQueue.add({ type: EmailType.USER_ACCEPT_PROJECT_REQUEST_NOTICE, data });
-};
-
-export const createSendNewBlogSubscriptionEmailJob = (data: {
-  receiverEmail: string;
-}) => {
-  emailQueue.add({ type: EmailType.USER_NEW_BLOG_SUBSCRIBPTION_EMAIL, data });
 };
 
 export const createBillingNoticeEmailJob = (

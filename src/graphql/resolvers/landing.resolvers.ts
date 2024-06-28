@@ -1,10 +1,10 @@
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
-import { createSendNewBlogSubscriptionEmailJob } from '../../queues/email.queues';
 import { AdminTeam } from '../../helper/constant';
 import { searchContact, upsertContacts } from '../../helper/sendgrid';
 import { PublicError } from '../errors/PublicError';
 import { bulkCroInterestAdminNoticeEmail } from '../../mailer/admin';
+import { sendNewSubscriptionEmail } from '../../mailer/newsletter';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -69,7 +69,8 @@ const resolvers: Resolvers<Context> = {
       const { statusCode } = response;
 
       if (statusCode === 202) {
-        createSendNewBlogSubscriptionEmailJob({ receiverEmail: email });
+        await sendNewSubscriptionEmail(email);
+        // createSendNewBlogSubscriptionEmailJob({ receiverEmail: email });
         return true;
       }
 

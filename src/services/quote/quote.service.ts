@@ -8,7 +8,10 @@ import {
   QuoteNotificationActionContent,
   QuoteStatus,
 } from '../../helper/constant';
-import { createSendUserQuoteNoticeJob } from '../../queues/email.queues';
+import { getReceiversByProjectConnection } from '../../queues/utils';
+import { sendQuoteNoticeEmail } from '../../mailer/quote';
+import createQuoteNotification from '../../notification/quoteNotification';
+import { app_env } from '../../environment';
 
 const EXPIRY_DAYS = 7;
 
@@ -81,12 +84,35 @@ export const createQuote = async (
   }
 
   if (send_to_biotech) {
-    createSendUserQuoteNoticeJob({
-      projectConnectionId: project_connection_id,
-      senderUserId: current_user_id,
-      quoteId: newQuote.id,
-      action: QuoteNotificationActionContent.SUBMITTED,
-    });
+    const { receivers, projectConnection, senderCompanyName } =
+      await getReceiversByProjectConnection(
+        project_connection_id,
+        current_user_id,
+      );
+
+    await Promise.all(
+      receivers.map(async (receiver) => {
+        await sendQuoteNoticeEmail(
+          {
+            sender_name: senderCompanyName,
+            project_title: projectConnection.project_request.title,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            action: QuoteNotificationActionContent.SUBMITTED,
+            quotation_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}/quote/${newQuote.id}`,
+          },
+          receiver.email,
+        );
+
+        await createQuoteNotification(
+          current_user_id,
+          senderCompanyName,
+          newQuote.id,
+          QuoteNotificationActionContent.SUBMITTED,
+          receiver.id,
+          projectConnection.id,
+        );
+      }),
+    );
   }
 
   return {

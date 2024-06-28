@@ -77,7 +77,6 @@ export const bulkVendorProjectRequestExpiredNoticeEmail = async (
   );
   return await createBulkSendMailJobs(bulks);
 };
-
 type BulkVendorProjectRequestExpiringNoticeEmailData = BulkEmailJobData<{
   receiver_full_name: string;
   button_url: string;

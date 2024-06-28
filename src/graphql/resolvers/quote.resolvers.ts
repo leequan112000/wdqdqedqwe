@@ -9,10 +9,13 @@ import {
   QuoteNotificationActionContent,
   QuoteStatus,
 } from '../../helper/constant';
-import { createSendUserQuoteNoticeJob } from '../../queues/email.queues';
 import { PublicError } from '../errors/PublicError';
 import invariant from '../../helper/invariant';
 import { QuoteNotFoundError } from '../errors/QuoteNotFoundError';
+import { getReceiversByProjectConnection } from '../../queues/utils';
+import { sendQuoteNoticeEmail } from '../../mailer/quote';
+import { app_env } from '../../environment';
+import createQuoteNotification from '../../notification/quoteNotification';
 
 const EXPIRY_DAYS = 7;
 
@@ -261,12 +264,35 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (send_to_biotech) {
-        createSendUserQuoteNoticeJob({
-          projectConnectionId: project_connection_id,
-          senderUserId: context.req.user_id!,
-          quoteId: newQuote.id,
-          action: QuoteNotificationActionContent.SUBMITTED,
-        });
+        const { receivers, projectConnection, senderCompanyName } =
+          await getReceiversByProjectConnection(
+            project_connection_id,
+            context.req.user_id!,
+          );
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendQuoteNoticeEmail(
+              {
+                sender_name: senderCompanyName,
+                project_title: projectConnection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                action: QuoteNotificationActionContent.SUBMITTED,
+                quotation_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}/quote/${newQuote.id}`,
+              },
+              receiver.email,
+            );
+
+            await createQuoteNotification(
+              context.req.user_id!,
+              senderCompanyName,
+              newQuote.id,
+              QuoteNotificationActionContent.SUBMITTED,
+              receiver.id,
+              projectConnection.id,
+            );
+          }),
+        );
       }
 
       return newQuote;
@@ -376,12 +402,35 @@ const resolvers: Resolvers<Context> = {
       });
 
       if (send_to_biotech) {
-        createSendUserQuoteNoticeJob({
-          projectConnectionId: updatedQuote.project_connection_id!,
-          senderUserId: context.req.user_id!,
-          quoteId: id,
-          action: QuoteNotificationActionContent.SUBMITTED,
-        });
+        const { receivers, projectConnection, senderCompanyName } =
+          await getReceiversByProjectConnection(
+            updatedQuote.project_connection_id!,
+            context.req.user_id!,
+          );
+
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendQuoteNoticeEmail(
+              {
+                sender_name: senderCompanyName,
+                project_title: projectConnection.project_request.title,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                action: QuoteNotificationActionContent.SUBMITTED,
+                quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
+              },
+              receiver.email,
+            );
+
+            await createQuoteNotification(
+              context.req.user_id!,
+              senderCompanyName,
+              id,
+              QuoteNotificationActionContent.SUBMITTED,
+              receiver.id,
+              projectConnection.id,
+            );
+          }),
+        );
       }
 
       return updatedQuote;
@@ -409,14 +458,35 @@ const resolvers: Resolvers<Context> = {
           status: QuoteStatus.ACCEPTED,
         },
       });
+      const { receivers, projectConnection, senderCompanyName } =
+        await getReceiversByProjectConnection(
+          updatedQuote.project_connection_id!,
+          context.req.user_id!,
+        );
 
-      createSendUserQuoteNoticeJob({
-        projectConnectionId: updatedQuote.project_connection_id!,
-        senderUserId: context.req.user_id!,
-        quoteId: id,
-        action: QuoteNotificationActionContent.ACCEPTED,
-      });
+      await Promise.all(
+        receivers.map(async (receiver) => {
+          await sendQuoteNoticeEmail(
+            {
+              sender_name: senderCompanyName,
+              project_title: projectConnection.project_request.title,
+              receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+              action: QuoteNotificationActionContent.ACCEPTED,
+              quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
+            },
+            receiver.email,
+          );
 
+          await createQuoteNotification(
+            context.req.user_id!,
+            senderCompanyName,
+            id,
+            QuoteNotificationActionContent.ACCEPTED,
+            receiver.id,
+            projectConnection.id,
+          );
+        }),
+      );
       return {
         ...updatedQuote,
         amount: updatedQuote.amount.toNumber(),
@@ -445,13 +515,35 @@ const resolvers: Resolvers<Context> = {
           status: QuoteStatus.DECLINED,
         },
       });
+      const { receivers, projectConnection, senderCompanyName } =
+        await getReceiversByProjectConnection(
+          updatedQuote.project_connection_id!,
+          context.req.user_id!,
+        );
 
-      createSendUserQuoteNoticeJob({
-        projectConnectionId: updatedQuote.project_connection_id!,
-        senderUserId: context.req.user_id!,
-        quoteId: id,
-        action: QuoteNotificationActionContent.DECLINED,
-      });
+      await Promise.all(
+        receivers.map(async (receiver) => {
+          await sendQuoteNoticeEmail(
+            {
+              sender_name: senderCompanyName,
+              project_title: projectConnection.project_request.title,
+              receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+              action: QuoteNotificationActionContent.ACCEPTED,
+              quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
+            },
+            receiver.email,
+          );
+
+          await createQuoteNotification(
+            context.req.user_id!,
+            senderCompanyName,
+            id,
+            QuoteNotificationActionContent.DECLINED,
+            receiver.id,
+            projectConnection.id,
+          );
+        }),
+      );
 
       return {
         ...updatedQuote,
