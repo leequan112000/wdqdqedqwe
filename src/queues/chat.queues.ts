@@ -54,7 +54,20 @@ chatQueue.process(async (job, done) => {
         return undefined;
       }),
     );
-    const validatedEmailData = emailData.filter((e) => e !== undefined);
+    const validatedEmailData = emailData.filter(
+      (
+        e,
+      ): e is {
+        emailData: {
+          button_url: string;
+          receiver_full_name: string;
+          project_title: string;
+          company_name: string;
+          message_text: string;
+        };
+        receiverEmail: string;
+      } => e !== undefined,
+    );
     bulkNewMessageNoticeEmail(validatedEmailData);
     done();
   } catch (error) {
