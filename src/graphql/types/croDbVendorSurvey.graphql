@@ -9,6 +9,7 @@ type CroDbVendorSurvey {
   custom_specialties: [String]
   certifications: [String]
   product: String
+  email: String
   note: String
   attachment_key: String
   attachment_file_name: String
@@ -29,6 +30,7 @@ type InitialVendorSurveyData {
   company_ipo_status: String
   logo_url: String
   vendor_type: [String]
+  certifications: [String]
   website: String
   countries: [String]
   subspecialty_ids: [String]
@@ -54,6 +56,7 @@ type Mutation {
     custom_specialties: [String]
     certifications: [String]
     products: [String]
+    email: String!
     note: String
     logo: Upload!
     attachment: Upload

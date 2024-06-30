@@ -13,7 +13,6 @@ import { Admin } from '@prisma/client';
 import {
   AdminCroInterestNoticeData,
   AdminNewProjectRequestCommentNoticeData,
-  AdminLoginWithGlobalPasswordData,
   AdminZeroAcceptedProjectNoticeData,
   AdminGeneralNoticeData,
   AdminBiotechInviteVendorNoticeData,
@@ -57,30 +56,29 @@ export const bulkZeroAcceptedProjectAdminNoticeEmail = async (
   await createBulkSendMailJobs(bulks);
 };
 
-export const sendAdminLoginWithGlobalPasswordEmail = async (
-  data: AdminLoginWithGlobalPasswordData,
-  login_email: string,
-) => {
-  const mailData = createMailData({
-    to: CROMATIC_ADMIN_EMAIL,
-    templateId: adminLoginWithGlobalPasswordTemplate,
-    dynamicTemplateData: {
-      sign_in_email: login_email,
-      time: data.datetime,
-      ip_address: data.ip_address,
-      timezone: data.timezone,
-      city: data.city,
-      region: data.region,
-      country_name: data.country,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      continent_code: data.continent_code,
-      environment:
-        data.environment.charAt(0).toUpperCase() + data.environment.slice(1),
-    },
-  });
+type AdminLoginWithGlobalPasswordData = {
+  sign_in_email: string;
+  time: string;
+  ip_address: string;
+  timezone: string;
+  city: string;
+  region: string;
+  country_name: string;
+  latitude: string;
+  longitude: string;
+  continent_code: string;
+  environment: string;
+};
 
-  sendMail(mailData);
+export const sendAdminLoginWithGlobalPasswordEmail = async (
+  emailData: AdminLoginWithGlobalPasswordData,
+  receiverEmail: string,
+) => {
+  createSendMailJob({
+    emailData,
+    receiverEmail,
+    templateId: adminLoginWithGlobalPasswordTemplate,
+  });
 };
 
 export const sendAdminGeneralNoticeEmail = async (
