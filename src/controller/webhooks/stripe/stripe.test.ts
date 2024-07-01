@@ -26,11 +26,10 @@ import {
 import { processStripeEvent } from './stripe';
 import { prisma } from '../../../__mocks__/prisma';
 import stripe from '../../../helper/__mocks__/stripe';
-import {
-  createInvoicePaymentNoticeEmailJob,
-  createSendUserMilestoneNoticeJob,
-  createSendUserMilestonePaymentFailedNoticeJob,
-} from '../../../queues/email.queues';
+import * as milestoneMailerModule from '../../../mailer/milestone';
+import * as milestoneNotificationModule from '../../../notification/milestoneNotification';
+import * as invoiceMailerModule from '../../../mailer/invoice';
+import * as invoiceNotificationModule from '../../../notification/invoiceNotification';
 import {
   InvoicePaymentStatus,
   MilestonePaymentStatus,
@@ -39,10 +38,7 @@ import {
   QuoteStatus,
 } from '../../../helper/constant';
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
-import {
-  NotificationJob,
-  createNotificationQueueJob,
-} from '../../../queues/notification.queues';
+import { createNotificationQueueJob } from '../../../queues/notification.queues';
 
 vi.mock('../../../prisma.ts');
 
@@ -52,7 +48,6 @@ vi.mock('@sendgrid/mail');
 
 vi.mock('../../../queues/email.queues.ts', () => ({
   createInvoicePaymentNoticeEmailJob: vi.fn(),
-  createSendUserMilestoneNoticeJob: vi.fn(),
   createSendUserMilestonePaymentFailedNoticeJob: vi.fn(),
 }));
 
@@ -338,15 +333,21 @@ describe('process stripe event', () => {
           'uuid';
 
         prisma.invoice.update.mockResolvedValue(invoice);
-        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(
-          () => true,
-        );
+
+        const sendInvoicePaymentNoticeEmailSpy = vi
+          .spyOn(invoiceMailerModule, 'sendInvoicePaymentNoticeEmail')
+          .mockResolvedValue();
+
+        const createInvoicePaymentNotificationSpy = vi
+          .spyOn(invoiceNotificationModule, 'createInvoicePaymentNotification')
+          .mockResolvedValue();
 
         const { message, status } = await processStripeEvent(event);
 
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
-        expect(createInvoicePaymentNoticeEmailJob).toBeCalled();
+        expect(sendInvoicePaymentNoticeEmailSpy).toBeCalled();
+        expect(createInvoicePaymentNotificationSpy).toBeCalled();
       });
     });
     describe('mode: payment, type: milestone', () => {
@@ -438,9 +439,13 @@ describe('process stripe event', () => {
           bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail,
         ).mockImplementation(() => Promise.resolve());
         vi.mocked(createNotificationQueueJob);
-        vi.mocked(createSendUserMilestoneNoticeJob).mockImplementation(
-          () => true,
-        );
+        const sendMilestoneNoticeEmailSpy = vi
+          .spyOn(milestoneMailerModule, 'sendMilestoneNoticeEmail')
+          .mockResolvedValue();
+
+        const createMilestoneNotificationSpy = vi
+          .spyOn(milestoneNotificationModule, 'createMilestoneNotification')
+          .mockResolvedValue();
 
         const { message, status } = await processStripeEvent(event);
 
@@ -462,7 +467,8 @@ describe('process stripe event', () => {
             status: MilestoneStatus.IN_PROGRESS,
           },
         });
-        expect(createSendUserMilestoneNoticeJob).toBeCalled();
+        expect(sendMilestoneNoticeEmailSpy).toBeCalled();
+        expect(createMilestoneNotificationSpy).toBeCalled();
       });
     });
     describe('mode: payment, type: unhandled', () => {
@@ -520,9 +526,13 @@ describe('process stripe event', () => {
           'uuid';
 
         prisma.invoice.update.mockResolvedValue(invoice);
-        vi.mocked(createInvoicePaymentNoticeEmailJob).mockImplementation(
-          () => true,
-        );
+        const sendInvoicePaymentNoticeEmailSpy = vi
+          .spyOn(invoiceMailerModule, 'sendInvoicePaymentNoticeEmail')
+          .mockResolvedValue();
+
+        const createInvoicePaymentNotificationSpy = vi
+          .spyOn(invoiceNotificationModule, 'createInvoicePaymentNotification')
+          .mockResolvedValue();
 
         const { message, status } = await processStripeEvent(event);
 
@@ -536,7 +546,8 @@ describe('process stripe event', () => {
         });
         expect(status).toEqual(200);
         expect(message).toEqual('OK');
-        expect(createInvoicePaymentNoticeEmailJob).toBeCalled();
+        expect(sendInvoicePaymentNoticeEmailSpy).toBeCalled();
+        expect(createInvoicePaymentNotificationSpy).toBeCalled();
       });
     });
     describe('mode: payment, type: milestone', () => {
@@ -564,9 +575,17 @@ describe('process stripe event', () => {
           'uuid';
 
         prisma.customer.findFirst.mockResolvedValue(customer);
-        vi.mocked(
-          createSendUserMilestonePaymentFailedNoticeJob,
-        ).mockImplementation(() => true);
+
+        const sendMilestoneNoticeEmailSpy = vi
+          .spyOn(milestoneMailerModule, 'sendMilestoneNoticeEmail')
+          .mockResolvedValue();
+
+        const createMilestonePaymentFailedNotificationSpy = vi
+          .spyOn(
+            milestoneNotificationModule,
+            'createMilestonePaymentFailedNotification',
+          )
+          .mockResolvedValue();
 
         const { message, status } = await processStripeEvent(event);
 
@@ -580,7 +599,8 @@ describe('process stripe event', () => {
             payment_status: MilestonePaymentStatus.UNPAID,
           },
         });
-        expect(createSendUserMilestonePaymentFailedNoticeJob).toBeCalled();
+        expect(sendMilestoneNoticeEmailSpy).toBeCalled();
+        expect(createMilestonePaymentFailedNotificationSpy).toBeCalled();
       });
     });
     describe('mode: payment, type: unhandled', () => {

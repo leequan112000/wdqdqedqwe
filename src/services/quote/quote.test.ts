@@ -8,13 +8,10 @@ import {
   MilestoneStatus,
   QuoteStatus,
 } from '../../helper/constant';
-import { createSendUserQuoteNoticeJob } from '../../queues/email.queues';
 import { toDollar } from '../../helper/money';
 
-vi.mock('../../queues/email.queues.ts', () => ({
-  createSendUserQuoteNoticeJob: vi.fn(),
-}));
-
+import * as quoteNotificationModule from '../../notification/quoteNotification';
+import * as quoteMailerModule from '../../mailer/quote';
 vi.mock('@sendgrid/mail');
 
 let mockCtx: MockContext;
@@ -28,7 +25,13 @@ describe('quote.service', () => {
 
   describe('createQuote', () => {
     test('should create new quote without sending notification', async () => {
-      vi.mocked(createSendUserQuoteNoticeJob).mockImplementation(() => true);
+      const sendQuoteNoticeEmailSpy = vi
+        .spyOn(quoteMailerModule, 'sendQuoteNoticeEmail')
+        .mockResolvedValue();
+
+      const createQuoteNotificationSpy = vi
+        .spyOn(quoteNotificationModule, 'default')
+        .mockResolvedValue();
       const createQuoteInput: CreateQuoteArgs = {
         amount: 1000.0,
         milestones: [
@@ -93,12 +96,19 @@ describe('quote.service', () => {
         ...newQuote,
         amount: toDollar(newQuote.amount.toNumber()),
       });
-
-      expect(createSendUserQuoteNoticeJob).not.toHaveBeenCalled();
+      expect(sendQuoteNoticeEmailSpy).not.toHaveBeenCalled();
+      expect(createQuoteNotificationSpy).not.toHaveBeenCalled();
     });
 
     test('should create new quote and send notification', async () => {
-      vi.mocked(createSendUserQuoteNoticeJob).mockImplementation(() => true);
+      const sendQuoteNoticeEmailSpy = vi
+        .spyOn(quoteMailerModule, 'sendQuoteNoticeEmail')
+        .mockResolvedValue();
+
+      const createQuoteNotificationSpy = vi
+        .spyOn(quoteNotificationModule, 'default')
+        .mockResolvedValue();
+
       const createQuoteInput: CreateQuoteArgs = {
         amount: 1000.0,
         milestones: [
@@ -167,7 +177,8 @@ describe('quote.service', () => {
         amount: toDollar(newQuote.amount.toNumber()),
       });
 
-      expect(createSendUserQuoteNoticeJob).toHaveBeenCalled();
+      expect(sendQuoteNoticeEmailSpy).toHaveBeenCalled();
+      expect(createQuoteNotificationSpy).toHaveBeenCalled();
     });
   });
 });

@@ -16,7 +16,7 @@ export const sendQuoteNoticeEmail = async (
   emailData: QuoteNoticeData,
   receiverEmail: string,
 ) => {
-  return await createSendMailJob({
+  await createSendMailJob({
     emailData,
     receiverEmail,
     templateId: quoteNoticeTemplate,

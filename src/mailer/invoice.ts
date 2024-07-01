@@ -28,7 +28,7 @@ export const sendInvoicePaymentNoticeEmail = async (
   emailData: InvoicePaymentNoticeData,
   receiverEmail: string,
 ) => {
-  return await createSendMailJob({
+  await createSendMailJob({
     emailData,
     receiverEmail,
     templateId: invoicePaymentNoticeTemplate,

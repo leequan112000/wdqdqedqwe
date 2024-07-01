@@ -7,7 +7,7 @@ export const sendMilestoneNoticeEmail = async (
   emailData: MilestoneNoticeData,
   receiverEmail: string,
 ) => {
-  return await createSendMailJob({
+  await createSendMailJob({
     emailData,
     receiverEmail,
     templateId: milestoneNoticeTemplate,

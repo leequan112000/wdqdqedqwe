@@ -6,7 +6,6 @@ import { ServiceContext } from '../../types/context';
 import {
   CompanyCollaboratorRoleType,
   InvoicePaymentStatus,
-  MilestoneEventType,
   MilestonePaymentStatus,
   MilestoneStatus,
 } from '../../helper/constant';
@@ -14,7 +13,9 @@ import {
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../mailer/biotechInvoice';
 import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../notification/biotechInvoiceNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
-import { createSendUserMilestoneNoticeJob } from '../../queues/email.queues';
+import { sendMilestoneNoticeEmail } from '../../mailer/milestone';
+import { createMilestoneNotification } from '../../notification/milestoneNotification';
+import { getReceiversByProjectConnection } from '../../queues/utils';
 
 type UpdateMilestoneAsPaidArgs = {
   milestone_id: string;
@@ -114,13 +115,37 @@ const updateMilestoneAsPaid = async (
   bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
   createNotificationQueueJob({ data: notificationData });
 
-  createSendUserMilestoneNoticeJob({
-    projectConnectionId: updatedMilestone.quote.project_connection_id,
-    milestoneTitle: updatedMilestone.title,
-    quoteId: updatedMilestone.quote.id,
-    senderUserId: user_id,
-    milestoneEventType: MilestoneEventType.BIOTECH_PAID,
-  });
+  const projectConnectionId = updatedMilestone.quote.project_connection_id;
+  const quoteId = updatedMilestone.quote.id;
+  const {
+    receivers: biotechs,
+    projectConnection,
+    senderCompanyName,
+  } = await getReceiversByProjectConnection(projectConnectionId, user_id!);
+  let milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${updatedMilestone.title}`;
+
+  await Promise.all(
+    biotechs.map(async (receiver) => {
+      await sendMilestoneNoticeEmail(
+        {
+          sender_name: senderCompanyName,
+          project_title: projectConnection.project_request.title,
+          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          milestone_update_content: milestoneUpdateContent,
+          milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+        },
+        receiver.email,
+      );
+
+      await createMilestoneNotification(
+        user_id,
+        quoteId,
+        milestoneUpdateContent,
+        receiver.id,
+        projectConnection.id,
+      );
+    }),
+  );
 
   return {
     updatedMilestone,
