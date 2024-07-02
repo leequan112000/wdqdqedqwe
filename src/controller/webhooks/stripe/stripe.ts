@@ -11,15 +11,15 @@ import {
   StripeWebhookPaymentType,
   SubscriptionStatus,
 } from '../../../helper/constant';
-import invariant from '../../../helper/invariant';
 import { ga } from '../../../helper/googleAnalytics';
+import invariant from '../../../helper/invariant';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
-import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { app_env } from '../../../environment';
-import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 import { sendInvoicePaymentNoticeEmail } from '../../../mailer/invoice';
+import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
+import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -467,8 +467,6 @@ export const processStripeEvent = async (
                     payment_status: MilestonePaymentStatus.UNPAID,
                   },
                 });
-
-                /////
 
                 const milestone = await prisma.milestone.findFirstOrThrow({
                   where: {

@@ -1,17 +1,17 @@
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
-import { toCent, toDollar } from '../../helper/money';
 import {
   MilestonePaymentStatus,
   MilestoneStatus,
   QuoteNotificationActionContent,
   QuoteStatus,
 } from '../../helper/constant';
-import { getReceiversByProjectConnection } from '../../queues/utils';
+import { toCent, toDollar } from '../../helper/money';
 import { sendQuoteNoticeEmail } from '../../mailer/quote';
 import createQuoteNotification from '../../notification/quoteNotification';
-import { app_env } from '../../environment';
+import { getReceiversByProjectConnection } from '../../queues/utils';
 
 const EXPIRY_DAYS = 7;
 

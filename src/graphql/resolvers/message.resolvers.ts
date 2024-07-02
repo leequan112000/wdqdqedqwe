@@ -1,8 +1,8 @@
-import { pubsub } from '../../helper/pubsub';
+import { Resolvers, MessageEdge } from '../generated';
 import { Context } from '../../types/context';
 import { PublicError } from '../errors/PublicError';
-import { Resolvers, MessageEdge } from '../generated';
 import invariant from '../../helper/invariant';
+import { pubsub } from '../../helper/pubsub';
 import { UserStatus, UserType } from '../../helper/constant';
 import { createChatQueueJob } from '../../queues/chat.queues';
 const resolvers: Resolvers<Context> = {

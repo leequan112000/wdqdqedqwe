@@ -1,6 +1,5 @@
 import moment from 'moment';
 import currency from 'currency.js';
-
 import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
 import {
@@ -9,12 +8,11 @@ import {
   MilestonePaymentStatus,
   MilestoneStatus,
 } from '../../helper/constant';
-
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../mailer/biotechInvoice';
-import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../notification/biotechInvoiceNotification';
-import { createNotificationQueueJob } from '../../queues/notification.queues';
 import { sendMilestoneNoticeEmail } from '../../mailer/milestone';
+import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../notification/biotechInvoiceNotification';
 import { createMilestoneNotification } from '../../notification/milestoneNotification';
+import { createNotificationQueueJob } from '../../queues/notification.queues';
 import { getReceiversByProjectConnection } from '../../queues/utils';
 
 type UpdateMilestoneAsPaidArgs = {

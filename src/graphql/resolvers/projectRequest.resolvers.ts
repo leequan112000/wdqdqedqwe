@@ -1,8 +1,14 @@
 import { parseResolveInfo, type ResolveTree } from 'graphql-parse-resolve-info';
+import { Prisma } from '@prisma/client';
 import { Context } from '../../types/context';
-import { nonNullable } from '../../helper/filter';
+import {
+  Resolvers,
+  ProjectRequestComment,
+  ProjectRequestProjectConnectionFilter,
+} from '../generated';
 import { PublicError } from '../errors/PublicError';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
+import { nonNullable } from '../../helper/filter';
 import {
   CasbinAct,
   CasbinObj,
@@ -11,20 +17,14 @@ import {
   ProjectConnectionCollaborationStatus,
   ProjectRequestStatus,
 } from '../../helper/constant';
-import { Prisma } from '@prisma/client';
-import {
-  Resolvers,
-  ProjectRequestComment,
-  ProjectRequestProjectConnectionFilter,
-} from '../generated';
+import { filterByCollaborationStatus } from '../../helper/projectConnection';
+import invariant from '../../helper/invariant';
+import { hasPermission } from '../../helper/casbin';
 import {
   bulkNewProjectRequestAdminNoticeEmail,
   sendPrivateProjectRequestSubmissionEmail,
   sendProjectRequestSubmissionEmail,
 } from '../../mailer/projectRequest';
-import { filterByCollaborationStatus } from '../../helper/projectConnection';
-import invariant from '../../helper/invariant';
-import { hasPermission } from '../../helper/casbin';
 import { sendAdminBiotechInviteVendorNoticeEmail } from '../../mailer/admin';
 
 const resolvers: Resolvers<Context> = {

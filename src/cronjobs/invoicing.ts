@@ -1,17 +1,17 @@
 import moment from 'moment';
-import { prisma } from '../prisma';
-import {
-  CompanyCollaboratorRoleType,
-  InvoicePaymentStatus,
-  MilestoneStatus,
-} from '../helper/constant';
 import * as _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import currency from 'currency.js';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import { generateInvoiceNumber } from '../helper/invoice';
+import { prisma } from '../prisma';
 import { app_env } from '../environment';
+import {
+  CompanyCollaboratorRoleType,
+  InvoicePaymentStatus,
+  MilestoneStatus,
+} from '../helper/constant';
+import { generateInvoiceNumber } from '../helper/invoice';
 import invariant from '../helper/invariant';
 import { sendBillingNoticeEmail } from '../mailer/invoice';
 import { createBillingNotification } from '../notification/invoiceNotification';

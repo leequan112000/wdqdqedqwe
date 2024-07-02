@@ -1,8 +1,5 @@
 import moment from 'moment';
 import * as lodash from 'lodash';
-import { prisma } from '../prisma';
-import { CreateSendUserExpiringQuoteNoticeEmailJobParam } from '../queues/types';
-import { QuoteStatus } from '../helper/constant';
 import {
   ProjectConnection,
   ProjectRequest,
@@ -10,13 +7,15 @@ import {
   User,
   VendorCompany,
 } from '@prisma/client';
+import { prisma } from '../prisma';
+import { app_env } from '../environment';
+import { QuoteStatus } from '../helper/constant';
+import { bulkQuoteExpiringNoticeEmail } from '../mailer/quote';
 import {
   NotificationJob,
   createNotificationQueueJob,
 } from '../queues/notification.queues';
 import { createExpiringQuoteNotificationJob } from '../notification/quoteNotification';
-import { app_env } from '../environment';
-import { bulkQuoteExpiringNoticeEmail } from '../mailer/quote';
 
 const EXPIRING_DAYS = 3;
 

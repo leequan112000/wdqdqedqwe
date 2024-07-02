@@ -1,4 +1,3 @@
-import { createMailData, sendMail } from './config';
 import type { QuoteNoticeData } from './types';
 import {
   quoteExpiredNoticeTemplate,

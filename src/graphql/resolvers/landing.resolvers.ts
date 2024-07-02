@@ -1,8 +1,8 @@
-import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
+import { Context } from '../../types/context';
+import { PublicError } from '../errors/PublicError';
 import { AdminTeam } from '../../helper/constant';
 import { searchContact, upsertContacts } from '../../helper/sendgrid';
-import { PublicError } from '../errors/PublicError';
 import { bulkCroInterestAdminNoticeEmail } from '../../mailer/admin';
 import { sendNewSubscriptionEmail } from '../../mailer/newsletter';
 

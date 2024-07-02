@@ -1,20 +1,20 @@
 import moment from 'moment';
+import { nanoid } from 'nanoid';
 import { toCent, toDollar } from '../../helper/money';
 import { Resolvers } from '../generated';
 import { Context } from '../../types/context';
-import { nanoid } from 'nanoid';
+import { app_env } from '../../environment';
 import {
   MilestonePaymentStatus,
   MilestoneStatus,
   QuoteNotificationActionContent,
   QuoteStatus,
 } from '../../helper/constant';
-import { PublicError } from '../errors/PublicError';
 import invariant from '../../helper/invariant';
+import { PublicError } from '../errors/PublicError';
 import { QuoteNotFoundError } from '../errors/QuoteNotFoundError';
 import { getReceiversByProjectConnection } from '../../queues/utils';
 import { sendQuoteNoticeEmail } from '../../mailer/quote';
-import { app_env } from '../../environment';
 import createQuoteNotification from '../../notification/quoteNotification';
 
 const EXPIRY_DAYS = 7;

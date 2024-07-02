@@ -1,19 +1,20 @@
-import { app_env } from '../../environment';
-import createCollaboratedNotification from '../../notification/collaboratedNotification';
-import { Context } from '../../types/context';
 import { Prisma } from '@prisma/client';
 import { Resolvers } from '../generated';
-
+import { app_env } from '../../environment';
+import { Context } from '../../types/context';
 import { InternalError } from '../errors/InternalError';
 import { PublicError } from '../errors/PublicError';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
-
-import { customerInvitationEmail } from '../../mailer/customer';
 import {
   projectCollaboratorInvitationEmail,
   vendorMemberInvitationByUserEmail,
 } from '../../mailer';
-
+import { customerInvitationEmail } from '../../mailer/customer';
+import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
+import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
+import createCollaboratedNotification from '../../notification/collaboratedNotification';
+import chatService from '../../services/chat/chat.service';
+import collaboratorService from '../../services/collaborator/collaborator.service';
 import { createResetPasswordToken } from '../../helper/auth';
 import {
   checkAllowAddProjectCollaborator,
@@ -30,20 +31,15 @@ import {
   ProjectConnectionVendorExperimentStatus,
   NotificationType,
   ProjectConnectionVendorDisplayStatus,
-  CasbinRole,
   CasbinObj,
   CasbinAct,
   CompanyCollaboratorRoleType,
 } from '../../helper/constant';
+import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import { hasPermission } from '../../helper/casbin';
 import { toDollar } from '../../helper/money';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import invariant from '../../helper/invariant';
-import chatService from '../../services/chat/chat.service';
-import collaboratorService from '../../services/collaborator/collaborator.service';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
-import { hasPermission } from '../../helper/casbin';
-import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
-import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {

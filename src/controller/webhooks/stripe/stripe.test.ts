@@ -26,10 +26,6 @@ import {
 import { processStripeEvent } from './stripe';
 import { prisma } from '../../../__mocks__/prisma';
 import stripe from '../../../helper/__mocks__/stripe';
-import * as milestoneMailerModule from '../../../mailer/milestone';
-import * as milestoneNotificationModule from '../../../notification/milestoneNotification';
-import * as invoiceMailerModule from '../../../mailer/invoice';
-import * as invoiceNotificationModule from '../../../notification/invoiceNotification';
 import {
   InvoicePaymentStatus,
   MilestonePaymentStatus,
@@ -37,6 +33,10 @@ import {
   ProjectConnectionVendorStatus,
   QuoteStatus,
 } from '../../../helper/constant';
+import * as milestoneMailerModule from '../../../mailer/milestone';
+import * as invoiceMailerModule from '../../../mailer/invoice';
+import * as milestoneNotificationModule from '../../../notification/milestoneNotification';
+import * as invoiceNotificationModule from '../../../notification/invoiceNotification';
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
 import { createNotificationQueueJob } from '../../../queues/notification.queues';
 

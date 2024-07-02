@@ -1,13 +1,7 @@
 import { Resolvers, UploadResult } from '../generated';
+import { app_env } from '../../environment';
 import { Context } from '../../types/context';
-
 import { PublicError } from '../errors/PublicError';
-
-import { payVendorJob } from '../../queues/payout.queues';
-
-import biotechInvoiceService from '../../services/biotechInvoice/biotechInvoice.service';
-import blanketPurchaseOrderService from '../../services/blanketPurchaseOrder/blanketPurchaseOrder.service';
-
 import { checkPassword } from '../../helper/auth';
 import {
   checkAllowCustomerOnlyPermission,
@@ -31,10 +25,12 @@ import storeUpload from '../../helper/storeUpload';
 import invariant from '../../helper/invariant';
 import { hasPermission } from '../../helper/casbin';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
-import { getReceiversByProjectConnection } from '../../queues/utils';
 import { sendMilestoneNoticeEmail } from '../../mailer/milestone';
-import { app_env } from '../../environment';
 import { createMilestoneNotification } from '../../notification/milestoneNotification';
+import { payVendorJob } from '../../queues/payout.queues';
+import { getReceiversByProjectConnection } from '../../queues/utils';
+import biotechInvoiceService from '../../services/biotechInvoice/biotechInvoice.service';
+import blanketPurchaseOrderService from '../../services/blanketPurchaseOrder/blanketPurchaseOrder.service';
 
 const resolvers: Resolvers<Context> = {
   Milestone: {

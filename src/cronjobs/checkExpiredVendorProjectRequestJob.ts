@@ -1,19 +1,19 @@
 import moment from 'moment';
-import { prisma } from '../prisma';
-import { ProjectConnectionVendorStatus } from '../helper/constant';
 import {
   Biotech,
   ProjectConnection,
   ProjectRequest,
   User,
 } from '@prisma/client';
+import { prisma } from '../prisma';
+import { ProjectConnectionVendorStatus } from '../helper/constant';
+import { app_env } from '../environment';
+import { bulkVendorProjectRequestExpiredNoticeEmail } from '../mailer/projectRequest';
 import { createVendorProjectRequestExpiredNotificationJob } from '../notification/projectRequestNotification';
 import {
   NotificationJob,
   createNotificationQueueJob,
 } from '../queues/notification.queues';
-import { bulkVendorProjectRequestExpiredNoticeEmail } from '../mailer/projectRequest';
-import { app_env } from '../environment';
 
 async function main() {
   const today = moment();

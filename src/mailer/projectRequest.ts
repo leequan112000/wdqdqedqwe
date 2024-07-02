@@ -1,4 +1,5 @@
 import { User } from '@prisma/client';
+import { createMailData, sendMail } from './config';
 import {
   acceptProjectRequestNoticeTemplate,
   adminNewProjectRequestCommentNoticeTemplate,
@@ -9,7 +10,6 @@ import {
   vendorRequestExpiringNoticeTemplate,
 } from './templates';
 import { app_env } from '../environment';
-import { createMailData, sendMail } from './config';
 import {
   BulkEmailJobData,
   createBulkEmailJobData,

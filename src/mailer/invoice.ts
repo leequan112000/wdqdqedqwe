@@ -1,4 +1,3 @@
-import { createMailData, sendMail } from './config';
 import {
   BillingNoticeData,
   InvoicePaymentNoticeData,

@@ -1,6 +1,6 @@
+import { Admin } from '@prisma/client';
 import { createMailData, sendMail } from './config';
 import {
-  adminNewProjectRequestCommentNoticeTemplate,
   adminNewCROInterestNoticeTemplate,
   adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,
@@ -9,15 +9,10 @@ import {
   adminBiotechInvoicePaymentNoticeTemplate,
   adminShortlistSubmissionTemplate,
 } from './templates';
-import { Admin } from '@prisma/client';
 import {
-  AdminCroInterestNoticeData,
-  AdminNewProjectRequestCommentNoticeData,
-  AdminZeroAcceptedProjectNoticeData,
   AdminGeneralNoticeData,
   AdminBiotechInviteVendorNoticeData,
 } from './types';
-import { CROMATIC_ADMIN_EMAIL } from '../helper/constant';
 import {
   createBulkSendMailJobs,
   createSendMailJob,

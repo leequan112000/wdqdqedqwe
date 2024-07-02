@@ -1,10 +1,10 @@
+import { getReceiversByProjectConnection } from './utils';
+import { app_env } from '../environment';
+import { prisma } from '../prisma';
 import { NotificationType } from '../helper/constant';
 import { createQueue } from '../helper/queue';
-import { prisma } from '../prisma';
-import { getReceiversByProjectConnection } from './utils';
-import createMessageNotification from '../notification/messageNotification';
-import { app_env } from '../environment';
 import { bulkNewMessageNoticeEmail } from '../mailer/message';
+import createMessageNotification from '../notification/messageNotification';
 
 export type chatJob = {
   project_connection_id: string;

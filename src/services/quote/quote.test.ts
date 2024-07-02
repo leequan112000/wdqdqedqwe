@@ -1,17 +1,17 @@
+import { expect, test, vi, beforeEach, describe } from 'vitest';
+import { Milestone, Prisma, Quote } from '@prisma/client';
 import { ServiceContext } from '../../types/context';
 import { MockContext, createMockContext } from '../../testContext';
-import { expect, test, vi, beforeEach, describe } from 'vitest';
 import quoteService, { CreateQuoteArgs } from './quote.service';
-import { Milestone, Prisma, Quote } from '@prisma/client';
 import {
   MilestonePaymentStatus,
   MilestoneStatus,
   QuoteStatus,
 } from '../../helper/constant';
 import { toDollar } from '../../helper/money';
-
 import * as quoteNotificationModule from '../../notification/quoteNotification';
 import * as quoteMailerModule from '../../mailer/quote';
+
 vi.mock('@sendgrid/mail');
 
 let mockCtx: MockContext;

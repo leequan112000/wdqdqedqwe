@@ -1,4 +1,3 @@
-import { createMailData, sendMail } from './config';
 import type { MilestoneNoticeData } from './types';
 import { milestoneNoticeTemplate } from './templates';
 import { createSendMailJob } from '../queues/sendMail.queues';

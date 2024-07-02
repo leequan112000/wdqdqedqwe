@@ -1,19 +1,19 @@
 import moment from 'moment';
-import { prisma } from '../prisma';
-import { ProjectConnectionVendorStatus } from '../helper/constant';
 import {
   Biotech,
   ProjectConnection,
   ProjectRequest,
   User,
 } from '@prisma/client';
+import { prisma } from '../prisma';
+import { app_env } from '../environment';
+import { ProjectConnectionVendorStatus } from '../helper/constant';
+import { bulkVendorProjectRequestExpiringNoticeEmail } from '../mailer/projectRequest';
 import {
   NotificationJob,
   createNotificationQueueJob,
 } from '../queues/notification.queues';
 import { createVendorProjectRequestExpiringNotificationJob } from '../notification/projectRequestNotification';
-import { app_env } from '../environment';
-import { bulkVendorProjectRequestExpiringNoticeEmail } from '../mailer/projectRequest';
 
 const EXPIRING_DAYS = 3;
 
