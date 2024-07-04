@@ -13,6 +13,7 @@ import {
   VendorMember,
   CustomerConnection,
   ProjectRequest,
+  VendorMemberConnection,
 } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
@@ -83,16 +84,19 @@ let milestone: Milestone & {
   quote: Quote & {
     project_connection: ProjectConnection & {
       customer_connections: CustomerConnection[];
+      vendor_member_connections: VendorMemberConnection[];
       project_request: ProjectRequest;
     };
   };
 };
 let projectConnection: ProjectConnection & {
   customer_connections: CustomerConnection[];
+  vendor_member_connections: VendorMemberConnection[];
   project_request: ProjectRequest;
 };
 let user: User;
 let vendorMember: VendorMember & { user: User };
+let vendorMemberConnection: VendorMemberConnection;
 beforeEach(() => {
   mockCtx = createMockContext();
   ctx = mockCtx as unknown as ServiceContext;
@@ -207,17 +211,25 @@ beforeEach(() => {
     customer_id: faker.string.uuid(),
     sourcing_session_id: null,
   };
-  projectConnection = {
-    id: 'uuid',
+  vendorMemberConnection = {
+    id: faker.string.uuid(),
+    vendor_member_id: user.id,
+    project_connection_id: projectConnection.id,
     created_at: new Date(),
-    expired_at: new Date(),
+    updated_at: new Date(),
+  };
+  projectConnection = {
+    id: faker.string.uuid(),
+    project_request_id: projectRequest.id,
+    vendor_status: 'ACCEPTED',
+    vendor_company_id: faker.string.uuid(),
+    created_at: new Date(),
     updated_at: new Date(),
     final_contract_uploaded_at: null,
-    project_request_id: 'uuid',
-    vendor_company_id: 'uuid',
-    vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+    expired_at: null,
     biotech_invite_vendor_id: null,
-    customer_connections: [customerConnection],
+    customer_connections: [],
+    vendor_member_connections: [vendorMemberConnection],
     project_request: projectRequest,
   };
   user = {
