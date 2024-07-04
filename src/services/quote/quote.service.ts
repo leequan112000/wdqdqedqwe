@@ -47,7 +47,6 @@ export const createQuote = async (
     send_to_biotech,
     current_user_id,
   } = args;
-
   const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
   const newQuote = await context.prisma.quote.create({
     data: {
@@ -90,6 +89,7 @@ export const createQuote = async (
         current_user_id,
       );
 
+    console.log({ receivers, projectConnection });
     await Promise.all(
       receivers.map(async (receiver) => {
         await sendQuoteNoticeEmail(

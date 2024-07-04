@@ -10,7 +10,11 @@ import {
   Quote,
   User,
   CustomerSubscription,
+  VendorMember,
+  CustomerConnection,
+  ProjectRequest,
 } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 import { expect, test, vi, beforeEach, describe, afterEach } from 'vitest';
 import Stripe from 'stripe';
 import { MockContext, createMockContext } from '../../../testContext';
@@ -24,6 +28,7 @@ import {
   customerSubscriptionDeleted,
 } from './stripe-mock-data/stripeMockData';
 import { processStripeEvent } from './stripe';
+import * as utils from '../../../queues/utils';
 import { prisma } from '../../../__mocks__/prisma';
 import stripe from '../../../helper/__mocks__/stripe';
 import {
@@ -68,13 +73,26 @@ const API_VERSION = '2022-08-01';
 let mockCtx: MockContext;
 let ctx: ServiceContext;
 let customer: Customer;
+let customerConnection: CustomerConnection;
 let customerSubscription: CustomerSubscription;
 let biotech: Biotech;
 let invoice: Invoice;
 let quote: Quote;
-let milestone: Milestone;
-let projectConnection: ProjectConnection;
-
+let projectRequest: ProjectRequest;
+let milestone: Milestone & {
+  quote: Quote & {
+    project_connection: ProjectConnection & {
+      customer_connections: CustomerConnection[];
+      project_request: ProjectRequest;
+    };
+  };
+};
+let projectConnection: ProjectConnection & {
+  customer_connections: CustomerConnection[];
+  project_request: ProjectRequest;
+};
+let user: User;
+let vendorMember: VendorMember & { user: User };
 beforeEach(() => {
   mockCtx = createMockContext();
   ctx = mockCtx as unknown as ServiceContext;
@@ -101,7 +119,6 @@ beforeEach(() => {
     stripe_subscription_id: checkoutSessionCompleted.data.object.subscription,
     stripe_customer_id: checkoutSessionCompleted.data.object.customer,
   };
-
   biotech = {
     id: 'uuid',
     name: 'Biotech Name',
@@ -157,6 +174,81 @@ beforeEach(() => {
     status: QuoteStatus.ACCEPTED,
     updated_at: new Date(),
   };
+  customerConnection = {
+    id: faker.string.uuid(),
+    customer_id: faker.string.uuid(),
+    project_connection_id: faker.string.uuid(),
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  projectRequest = {
+    id: faker.string.uuid(),
+    title: faker.lorem.words(3),
+    vendor_requirement: faker.lorem.sentence(),
+    objective_description: faker.lorem.sentence(),
+    preparation_description: faker.lorem.sentence(),
+    in_contact_with_vendor: faker.datatype.boolean(),
+    existing_vendor_contact_description: faker.lorem.sentence(),
+    project_challenge_description: faker.lorem.sentence(),
+    vendor_search_timeframe: faker.string.sample(),
+    max_budget: new Prisma.Decimal(
+      faker.datatype.number({ min: 1000, max: 50000 }),
+    ),
+    vendor_location_requirement: faker.address.countryCode(),
+    project_start_time_requirement: faker.date.future().toISOString(),
+    project_deadline_requirement: faker.date.future().toISOString(),
+    status: 'OPEN',
+    created_at: new Date(),
+    updated_at: new Date(),
+    initial_assigned_at: null,
+    is_private: faker.datatype.boolean(),
+    biotech_id: faker.string.uuid(),
+    customer_id: faker.string.uuid(),
+    sourcing_session_id: null,
+  };
+  projectConnection = {
+    id: 'uuid',
+    created_at: new Date(),
+    expired_at: new Date(),
+    updated_at: new Date(),
+    final_contract_uploaded_at: null,
+    project_request_id: 'uuid',
+    vendor_company_id: 'uuid',
+    vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+    biotech_invite_vendor_id: null,
+    customer_connections: [customerConnection],
+    project_request: projectRequest,
+  };
+  user = {
+    id: 'user-123',
+    email: 'john.doe@example.com',
+    first_name: 'John',
+    last_name: 'Doe',
+    encrypted_password: null,
+    reset_password_token: null,
+    reset_password_expiration: null,
+    reset_password_sent_at: null,
+    remember_created_at: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+    is_active: true,
+    phone_number: null,
+    country_code: null,
+    deactivated_at: null,
+  };
+  vendorMember = {
+    id: faker.string.uuid(),
+    user_id: faker.string.uuid(),
+    title: 'title',
+    created_at: new Date(),
+    updated_at: new Date(),
+    department: 'department',
+    vendor_company_id: 'uuid',
+    phone: '1234567890',
+    role: 'role',
+    user,
+  };
 
   milestone = {
     id: 'uuid',
@@ -172,18 +264,45 @@ beforeEach(() => {
     title: 'Title',
     updated_at: new Date(),
     vendor_payment_status: MilestonePaymentStatus.UNPAID,
-  };
-
-  projectConnection = {
-    id: 'uuid',
-    created_at: new Date(),
-    expired_at: new Date(),
-    updated_at: new Date(),
-    final_contract_uploaded_at: null,
-    project_request_id: 'uuid',
-    vendor_company_id: 'uuid',
-    vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
-    biotech_invite_vendor_id: null,
+    quote: {
+      id: 'uuid',
+      amount: new Prisma.Decimal(1000),
+      created_at: new Date(),
+      expired_at: new Date(),
+      project_connection_id: 'uuid',
+      short_id: 'uuid',
+      status: QuoteStatus.ACCEPTED,
+      updated_at: new Date(),
+      project_connection: {
+        ...projectConnection,
+        customer_connections: [customerConnection],
+        project_request: {
+          id: faker.string.uuid(),
+          title: faker.lorem.words(3),
+          vendor_requirement: faker.lorem.sentence(),
+          objective_description: faker.lorem.sentence(),
+          preparation_description: faker.lorem.sentence(),
+          in_contact_with_vendor: faker.datatype.boolean(),
+          existing_vendor_contact_description: faker.lorem.sentence(),
+          project_challenge_description: faker.lorem.sentence(),
+          vendor_search_timeframe: faker.string.sample(),
+          max_budget: new Prisma.Decimal(
+            faker.datatype.number({ min: 1000, max: 50000 }),
+          ),
+          vendor_location_requirement: faker.address.countryCode(),
+          project_start_time_requirement: faker.date.future().toISOString(),
+          project_deadline_requirement: faker.date.future().toISOString(),
+          status: 'OPEN',
+          created_at: new Date(),
+          updated_at: new Date(),
+          initial_assigned_at: null,
+          is_private: faker.datatype.boolean(),
+          biotech_id: faker.string.uuid(),
+          customer_id: faker.string.uuid(),
+          sourcing_session_id: null,
+        },
+      },
+    },
   };
 });
 
@@ -213,7 +332,6 @@ describe('process stripe event', () => {
         (event.data.object as Stripe.Checkout.Session).metadata!.payment_type =
           'milestone';
         prisma.customer.findFirst.mockResolvedValue(customer);
-
         const result = await processStripeEvent(event);
 
         expect(result.status).toEqual(200);
@@ -333,7 +451,7 @@ describe('process stripe event', () => {
           'uuid';
 
         prisma.invoice.update.mockResolvedValue(invoice);
-
+        prisma.vendorMember.findMany.mockResolvedValue([vendorMember]);
         const sendInvoicePaymentNoticeEmailSpy = vi
           .spyOn(invoiceMailerModule, 'sendInvoicePaymentNoticeEmail')
           .mockResolvedValue();
@@ -446,9 +564,14 @@ describe('process stripe event', () => {
         const createMilestoneNotificationSpy = vi
           .spyOn(milestoneNotificationModule, 'createMilestoneNotification')
           .mockResolvedValue();
-
-        const { message, status } = await processStripeEvent(event);
-
+        vi.spyOn(utils, 'getReceiversByProjectConnection').mockResolvedValue({
+          projectConnection,
+          receivers: [user],
+          senderCompanyName: biotech.name,
+        });
+        const response = await processStripeEvent(event);
+        console.log(response);
+        const { message, status } = response;
         expect(message).contain('OK');
         expect(status).toEqual(200);
         expect(prisma.milestone.update).toBeCalledWith({
@@ -493,7 +616,6 @@ describe('process stripe event', () => {
       test('should return 200', async () => {
         const event = checkoutSessionAsyncPaymentFailed as Stripe.Event;
         (event.data.object as Stripe.Checkout.Session).mode = 'setup';
-
         const { message, status } = await processStripeEvent(event);
 
         expect(status).toEqual(200);
@@ -533,7 +655,7 @@ describe('process stripe event', () => {
         const createInvoicePaymentNotificationSpy = vi
           .spyOn(invoiceNotificationModule, 'createInvoicePaymentNotification')
           .mockResolvedValue();
-
+        prisma.vendorMember.findMany.mockResolvedValue([vendorMember]);
         const { message, status } = await processStripeEvent(event);
 
         expect(prisma.invoice.update).toBeCalledWith({
@@ -575,7 +697,7 @@ describe('process stripe event', () => {
           'uuid';
 
         prisma.customer.findFirst.mockResolvedValue(customer);
-
+        prisma.user.findMany.mockResolvedValue([user]);
         const sendMilestoneNoticeEmailSpy = vi
           .spyOn(milestoneMailerModule, 'sendMilestoneNoticeEmail')
           .mockResolvedValue();
@@ -586,7 +708,7 @@ describe('process stripe event', () => {
             'createMilestonePaymentFailedNotification',
           )
           .mockResolvedValue();
-
+        prisma.milestone.findFirstOrThrow.mockResolvedValue(milestone);
         const { message, status } = await processStripeEvent(event);
 
         expect(message).contain('OK');
