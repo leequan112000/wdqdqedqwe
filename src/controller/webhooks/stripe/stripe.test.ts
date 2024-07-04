@@ -113,9 +113,9 @@ beforeEach(() => {
   };
 
   customerSubscription = {
-    id: 'uuid',
+    id: faker.string.uuid(),
     created_at: new Date(),
-    customer_id: 'uuid',
+    customer_id: faker.string.uuid(),
     ended_at: null,
     updated_at: new Date(),
     plan_name: 'sourcing_plan',
@@ -124,7 +124,7 @@ beforeEach(() => {
     stripe_customer_id: checkoutSessionCompleted.data.object.customer,
   };
   biotech = {
-    id: 'uuid',
+    id: faker.string.uuid(),
     name: 'Biotech Name',
     about: 'Description',
     account_type: 'standard',
@@ -154,7 +154,7 @@ beforeEach(() => {
   };
 
   invoice = {
-    id: 'uuid',
+    id: faker.string.uuid(),
     created_at: new Date(),
     updated_at: new Date(),
     commission_rate: 5,
@@ -165,16 +165,16 @@ beforeEach(() => {
     payment_status: 'status',
     stripe_txn_id: 'stripe_id',
     to_date: new Date(),
-    vendor_company_id: 'uuid',
+    vendor_company_id: faker.string.uuid(),
   };
 
   quote = {
-    id: 'uuid',
+    id: faker.string.uuid(),
     amount: new Prisma.Decimal(1000),
     created_at: new Date(),
     expired_at: new Date(),
-    project_connection_id: 'uuid',
-    short_id: 'uuid',
+    project_connection_id: faker.string.uuid(),
+    short_id: faker.string.uuid(),
     status: QuoteStatus.ACCEPTED,
     updated_at: new Date(),
   };
@@ -213,14 +213,14 @@ beforeEach(() => {
   };
   vendorMemberConnection = {
     id: faker.string.uuid(),
-    vendor_member_id: user.id,
-    project_connection_id: projectConnection.id,
+    vendor_member_id: faker.string.uuid(),
+    project_connection_id: faker.string.uuid(),
     created_at: new Date(),
     updated_at: new Date(),
   };
   projectConnection = {
     id: faker.string.uuid(),
-    project_request_id: projectRequest.id,
+    project_request_id: faker.string.uuid(),
     vendor_status: 'ACCEPTED',
     vendor_company_id: faker.string.uuid(),
     created_at: new Date(),
@@ -233,7 +233,7 @@ beforeEach(() => {
     project_request: projectRequest,
   };
   user = {
-    id: 'user-123',
+    id: faker.string.uuid(),
     email: 'john.doe@example.com',
     first_name: 'John',
     last_name: 'Doe',
@@ -256,20 +256,20 @@ beforeEach(() => {
     created_at: new Date(),
     updated_at: new Date(),
     department: 'department',
-    vendor_company_id: 'uuid',
+    vendor_company_id: faker.string.uuid(),
     phone: '1234567890',
     role: 'role',
     user,
   };
 
   milestone = {
-    id: 'uuid',
+    id: faker.string.uuid(),
     amount: new Prisma.Decimal(1000),
     created_at: new Date(),
     description: 'Description',
     ordinal: 0,
     payment_status: MilestonePaymentStatus.UNPAID,
-    quote_id: 'uuid',
+    quote_id: faker.string.uuid(),
     short_id: 'short_uuid',
     status: MilestoneStatus.NOT_STARTED,
     timeline: '1 month',
@@ -277,12 +277,12 @@ beforeEach(() => {
     updated_at: new Date(),
     vendor_payment_status: MilestonePaymentStatus.UNPAID,
     quote: {
-      id: 'uuid',
+      id: faker.string.uuid(),
       amount: new Prisma.Decimal(1000),
       created_at: new Date(),
       expired_at: new Date(),
-      project_connection_id: 'uuid',
-      short_id: 'uuid',
+      project_connection_id: faker.string.uuid(),
+      short_id: faker.string.uuid(),
       status: QuoteStatus.ACCEPTED,
       updated_at: new Date(),
       project_connection: {
@@ -311,7 +311,7 @@ beforeEach(() => {
           is_private: faker.datatype.boolean(),
           biotech_id: faker.string.uuid(),
           customer_id: faker.string.uuid(),
-          sourcing_session_id: null,
+          sourcing_session_id: faker.string.uuid(),
         },
       },
     },

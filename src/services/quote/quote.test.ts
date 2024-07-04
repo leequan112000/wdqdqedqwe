@@ -42,7 +42,7 @@ describe('quote.service', () => {
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as ServiceContext;
     user = {
-      id: 'user-123',
+      id: faker.string.uuid(),
       email: 'john.doe@example.com',
       first_name: 'John',
       last_name: 'Doe',
@@ -99,21 +99,18 @@ describe('quote.service', () => {
     };
     customerConnection = {
       id: faker.string.uuid(),
-      customer_id: user.id,
-      project_connection_id: projectConnection.id,
+      customer_id: faker.string.uuid(),
+      project_connection_id: faker.string.uuid(),
       created_at: new Date(),
       updated_at: new Date(),
     };
     vendorMemberConnection = {
       id: faker.string.uuid(),
-      vendor_member_id: user.id,
-      project_connection_id: projectConnection.id,
+      vendor_member_id: faker.string.uuid(),
+      project_connection_id: faker.string.uuid(),
       created_at: new Date(),
       updated_at: new Date(),
     };
-    mockCtx.prisma.projectConnection.create.mockResolvedValueOnce(
-      projectConnection,
-    );
   });
 
   describe('createQuote', () => {
