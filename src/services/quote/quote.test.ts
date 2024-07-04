@@ -29,7 +29,6 @@ let mockCtx: MockContext;
 let ctx: ServiceContext;
 let projectRequest: ProjectRequest;
 let vendorMemberConnection: VendorMemberConnection;
-let customerConnection: CustomerConnection;
 let projectConnection: ProjectConnection & {
   customer_connections: CustomerConnection[];
   vendor_member_connections: VendorMemberConnection[];
@@ -83,9 +82,16 @@ describe('quote.service', () => {
       customer_id: faker.string.uuid(),
       sourcing_session_id: null,
     };
+    vendorMemberConnection = {
+      id: faker.string.uuid(),
+      vendor_member_id: faker.string.uuid(),
+      project_connection_id: faker.string.uuid(),
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
     projectConnection = {
       id: faker.string.uuid(),
-      project_request_id: projectRequest.id,
+      project_request_id: faker.string.uuid(),
       vendor_status: 'ACCEPTED',
       vendor_company_id: faker.string.uuid(),
       created_at: new Date(),
@@ -96,20 +102,6 @@ describe('quote.service', () => {
       customer_connections: [],
       vendor_member_connections: [vendorMemberConnection],
       project_request: projectRequest,
-    };
-    customerConnection = {
-      id: faker.string.uuid(),
-      customer_id: faker.string.uuid(),
-      project_connection_id: faker.string.uuid(),
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
-    vendorMemberConnection = {
-      id: faker.string.uuid(),
-      vendor_member_id: faker.string.uuid(),
-      project_connection_id: faker.string.uuid(),
-      created_at: new Date(),
-      updated_at: new Date(),
     };
   });
 

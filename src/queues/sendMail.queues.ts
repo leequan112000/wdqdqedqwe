@@ -16,7 +16,7 @@ emailQueue.process(async (job, done) => {
 
   try {
     const mailData = createMailData({
-      to: 'leequan@cromatic.bio',
+      to: receiverEmail,
       templateId,
       dynamicTemplateData: emailData,
     });

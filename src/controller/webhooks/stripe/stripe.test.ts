@@ -36,15 +36,14 @@ import {
   InvoicePaymentStatus,
   MilestonePaymentStatus,
   MilestoneStatus,
-  ProjectConnectionVendorStatus,
   QuoteStatus,
 } from '../../../helper/constant';
+import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
+import { createNotificationQueueJob } from '../../../queues/notification.queues';
 import * as milestoneMailerModule from '../../../mailer/milestone';
 import * as invoiceMailerModule from '../../../mailer/invoice';
 import * as milestoneNotificationModule from '../../../notification/milestoneNotification';
 import * as invoiceNotificationModule from '../../../notification/invoiceNotification';
-import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../../mailer/biotechInvoice';
-import { createNotificationQueueJob } from '../../../queues/notification.queues';
 
 vi.mock('../../../prisma.ts');
 
