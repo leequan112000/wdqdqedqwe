@@ -306,7 +306,6 @@ export const processStripeEvent = async (
                   '[Stripe Webhook] Missing metadata: milestone_id.',
                 );
 
-                console.log('checkoutSession', 'MILESTONEEEEEEEEEEE');
                 const customer = await prisma.customer.findFirst({
                   where: {
                     id: checkoutSession.client_reference_id!,
@@ -323,7 +322,6 @@ export const processStripeEvent = async (
                     message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
                   };
                 }
-                console.log('BEFORE!!');
                 const { quote_id, milestone_id } = checkoutSession.metadata;
                 await milestoneService.updateMilestoneAsPaid(
                   {
@@ -332,7 +330,6 @@ export const processStripeEvent = async (
                   },
                   { prisma },
                 );
-                console.log('AFTER!!');
                 console.info(
                   `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
                 );
