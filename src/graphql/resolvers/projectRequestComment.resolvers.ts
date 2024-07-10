@@ -1,9 +1,10 @@
 import moment from 'moment';
-import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
-import { createSendAdminNewProjectRequestCommentJob } from '../../queues/email.queues';
-import invariant from '../../helper/invariant';
 import { PublicError } from '../errors/PublicError';
+import { Context } from '../../types/context';
+import { AdminTeam } from '../../helper/constant';
+import invariant from '../../helper/invariant';
+import { bulkNewProjectRequestCommentAdminNoticeEmail } from '../../mailer/projectRequest';
 
 const resolvers: Resolvers<Context> = {
   ProjectRequestComment: {
@@ -69,10 +70,21 @@ const resolvers: Resolvers<Context> = {
           // Simple anti spam mechanism.
           // Only send if there is no email sent in the past 15 minutes.
           if (!commentsWithinThePast15Min) {
-            createSendAdminNewProjectRequestCommentJob({
-              biotechName: projectRequest.biotech.name,
-              projectRequestName: projectRequest.title,
+            const receivers = await context.prisma.admin.findMany({
+              where: {
+                team: AdminTeam.SCIENCE,
+              },
             });
+            const emailData = receivers.map((r) => ({
+              emailData: {
+                project_request_name: projectRequest.title,
+                biotech_name: projectRequest.biotech.name,
+                admin_name: r.username,
+                retool_url: process.env.RETOOL_PROJECT_URL,
+              },
+              receiverEmail: r.email,
+            }));
+            bulkNewProjectRequestCommentAdminNoticeEmail(emailData);
           }
           return newComment;
         });

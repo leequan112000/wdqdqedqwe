@@ -1,14 +1,14 @@
 import moment from 'moment';
-import { prisma } from '../prisma';
-import { createVendorProjectRequestExpiredNoticeEmailJob } from '../queues/email.queues';
-import { CreateVendorProjectRequestExpiredNoticeEmailJobParam } from '../queues/types';
-import { ProjectConnectionVendorStatus } from '../helper/constant';
 import {
   Biotech,
   ProjectConnection,
   ProjectRequest,
   User,
 } from '@prisma/client';
+import { prisma } from '../prisma';
+import { ProjectConnectionVendorStatus } from '../helper/constant';
+import { app_env } from '../environment';
+import { bulkVendorProjectRequestExpiredNoticeEmail } from '../mailer/projectRequest';
 import { createVendorProjectRequestExpiredNotificationJob } from '../notification/projectRequestNotification';
 import {
   NotificationJob,
@@ -74,22 +74,24 @@ async function main() {
     });
   });
 
-  const toSendExpiredNoticeEmail: CreateVendorProjectRequestExpiredNoticeEmailJobParam[] =
-    Object.entries(expiredProjectConnectionsGroupByUserId).map(([_, data]) => {
+  const buttonUrl = `${app_env.APP_URL}/app/projects/expired`;
+  const emailData = Object.entries(expiredProjectConnectionsGroupByUserId).map(
+    ([_, data]) => {
       const { projectConnections, userData } = data;
       return {
+        emailData: {
+          button_url: buttonUrl,
+          receiver_full_name: `${userData.first_name} ${userData.last_name}`,
+          requests: projectConnections.map((pc) => ({
+            project_request_title: pc.project_request.title,
+            biotech_full_name: pc.project_request.biotech.name,
+          })),
+        },
         receiverEmail: userData.email,
-        receiverName: `${userData.first_name} ${userData.last_name}`,
-        requests: projectConnections.map((pc) => ({
-          project_request_title: pc.project_request.title,
-          biotech_full_name: pc.project_request.biotech.name,
-        })),
       };
-    });
-
-  const sendEmailTasks = toSendExpiredNoticeEmail.map((d) => {
-    return createVendorProjectRequestExpiredNoticeEmailJob(d);
-  });
+    },
+  );
+  bulkVendorProjectRequestExpiredNoticeEmail(emailData);
 
   const vendorRequestExpiredNotificationJobData = Object.entries(
     expiredProjectConnectionsGroupByUserId,
@@ -109,7 +111,7 @@ async function main() {
     data: vendorRequestExpiredNotificationJobData,
   });
 
-  await Promise.all([...sendEmailTasks, notificationTask]);
+  await Promise.all([notificationTask]);
 
   process.exit(0);
 }

@@ -1,24 +1,28 @@
 import moment from 'moment';
+import currency from 'currency.js';
 import { app_env } from '../environment';
 import { prisma } from '../prisma';
-import currency from 'currency.js';
+import {
+  CompanyCollaboratorRoleType,
+  InvoicePaymentStatus,
+} from '../helper/constant';
 import {
   bulkBiotechInvoicePaymentOverdueNoticeEmail,
   bulkBiotechInvoicePaymentReminderEmail,
 } from '../mailer/biotechInvoice';
+import {
+  sendInvoicePaymentOverdueNoticeEmail,
+  sendInvoicePaymentReminderEmail,
+} from '../mailer/invoice';
 import {
   createBiotechInvoicePaymentOverdueNotificationJob,
   createBiotechInvoicePaymentReminderNotificationJob,
 } from '../notification/biotechInvoiceNotification';
 import { createNotificationQueueJob } from '../queues/notification.queues';
 import {
-  createInvoicePaymentOverdueNoticeEmailJob,
-  createInvoicePaymentReminderEmailJob,
-} from '../queues/email.queues';
-import {
-  CompanyCollaboratorRoleType,
-  InvoicePaymentStatus,
-} from '../helper/constant';
+  createInvoicePaymentOverdueNotification,
+  createInvoicePaymentReminderNotification,
+} from '../notification/invoiceNotification';
 
 const today = moment();
 
@@ -44,31 +48,87 @@ async function sendInvoicePaymentReminder(
 
   await Promise.all(
     invoices.map(async (invoice) => {
+      const vendorCompanyId = invoice.vendor_company_id;
       const totalAmount = invoice.invoice_items.reduce(
         (acc, cur) => acc + cur.amount.toNumber(),
         0,
       );
+      const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoice.id}`;
+      const invoiceDate = moment(invoice.created_at).format('ll');
+      const invoiceTotalAmount = currency(totalAmount, {
+        fromCents: true,
+      }).format();
+      const receivers = await prisma.vendorMember.findMany({
+        where: {
+          vendor_company_id: vendorCompanyId,
+          role: {
+            in: [
+              CompanyCollaboratorRoleType.OWNER,
+              CompanyCollaboratorRoleType.ADMIN,
+            ],
+          },
+          user: {
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
+          },
+        },
+        include: {
+          user: true,
+          vendor_company: true,
+        },
+      });
       if (overdue) {
-        createInvoicePaymentOverdueNoticeEmailJob({
-          invoiceId: invoice.id,
-          vendorCompanyId: invoice.vendor_company_id,
-          overduePeriod: duePeriod,
-          invoiceDate: moment(invoice.created_at).format('ll'),
-          invoiceTotalAmount: currency(totalAmount, {
-            fromCents: true,
-          }).format(),
-        });
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentOverdueNoticeEmail(
+              {
+                button_url: buttonUrl,
+                invoice_date: invoiceDate,
+                overdue_period: duePeriod,
+                invoice_total_amount: invoiceTotalAmount,
+                vendor_company_name: receiver.vendor_company!.name,
+              },
+              receiver.user.email,
+            );
+
+            await createInvoicePaymentOverdueNotification({
+              invoice_id: invoice.id,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              overdue_period: duePeriod,
+            });
+          }),
+        );
       } else {
-        createInvoicePaymentReminderEmailJob({
-          invoiceId: invoice.id,
-          vendorCompanyId: invoice.vendor_company_id,
-          invoiceDueAt: moment(invoice.due_at).format('ll'),
-          invoiceDate: moment(invoice.created_at).format('ll'),
-          duePeriod,
-          invoiceTotalAmount: currency(totalAmount, {
-            fromCents: true,
-          }).format(),
-        });
+        const invoiceDueAt = moment(invoice.due_at).format('ll');
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendInvoicePaymentReminderEmail(
+              {
+                button_url: buttonUrl,
+                invoice_date: invoiceDate,
+                due_at: invoiceDueAt,
+                due_period: duePeriod,
+                invoice_total_amount: invoiceTotalAmount,
+                vendor_company_name: receiver.vendor_company!.name,
+              },
+              receiver.user.email,
+            );
+
+            await createInvoicePaymentReminderNotification({
+              invoice_id: invoice.id,
+              invoice_date: invoiceDate,
+              recipient_id: receiver.user_id,
+              due_at: invoiceDueAt,
+            });
+          }),
+        );
       }
     }),
   );

@@ -1,20 +1,19 @@
 import moment from 'moment';
 import currency from 'currency.js';
-
 import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
 import {
   CompanyCollaboratorRoleType,
   InvoicePaymentStatus,
-  MilestoneEventType,
   MilestonePaymentStatus,
   MilestoneStatus,
 } from '../../helper/constant';
-
 import { bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail } from '../../mailer/biotechInvoice';
+import { sendMilestoneNoticeEmail } from '../../mailer/milestone';
 import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../notification/biotechInvoiceNotification';
+import { createMilestoneNotification } from '../../notification/milestoneNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
-import { createSendUserMilestoneNoticeJob } from '../../queues/email.queues';
+import { getReceiversByProjectConnection } from '../../queues/utils';
 
 type UpdateMilestoneAsPaidArgs = {
   milestone_id: string;
@@ -111,16 +110,51 @@ const updateMilestoneAsPaid = async (
       invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
     });
   });
+  console.log('emailData', emailData);
   bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
   createNotificationQueueJob({ data: notificationData });
+  console.log('AFTER!!!!!');
+  const projectConnectionId = updatedMilestone.quote.project_connection_id;
+  const quoteId = updatedMilestone.quote.id;
+  const {
+    receivers: biotechs,
+    projectConnection,
+    senderCompanyName,
+  } = await getReceiversByProjectConnection(projectConnectionId, user_id!);
+  let milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${updatedMilestone.title}`;
+  console.log('biotechs', projectConnection);
+  await Promise.all(
+    biotechs.map(async (receiver) => {
+      console.log(
+        {
+          sender_name: senderCompanyName,
+          project_title: projectConnection.project_request.title,
+          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          milestone_update_content: milestoneUpdateContent,
+          milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+        },
+        receiver.email,
+      );
+      await sendMilestoneNoticeEmail(
+        {
+          sender_name: senderCompanyName,
+          project_title: projectConnection.project_request.title,
+          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          milestone_update_content: milestoneUpdateContent,
+          milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
+        },
+        receiver.email,
+      );
 
-  createSendUserMilestoneNoticeJob({
-    projectConnectionId: updatedMilestone.quote.project_connection_id,
-    milestoneTitle: updatedMilestone.title,
-    quoteId: updatedMilestone.quote.id,
-    senderUserId: user_id,
-    milestoneEventType: MilestoneEventType.BIOTECH_PAID,
-  });
+      await createMilestoneNotification(
+        user_id,
+        quoteId,
+        milestoneUpdateContent,
+        receiver.id,
+        projectConnection.id,
+      );
+    }),
+  );
 
   return {
     updatedMilestone,

@@ -1,11 +1,10 @@
-import { createMailData, sendMail } from './config';
+import { createSendMailJob } from '../queues/sendMail.queues';
 import { blogNewSubscriptionTemplate } from './templates';
 
-export const sendNewSubscriptionEmail = (receiverEmail: string) => {
-  const mailData = createMailData({
-    to: receiverEmail,
+export const sendNewSubscriptionEmail = async (receiverEmail: string) => {
+  return await createSendMailJob({
+    emailData: {},
+    receiverEmail,
     templateId: blogNewSubscriptionTemplate,
   });
-
-  return sendMail(mailData);
 };
