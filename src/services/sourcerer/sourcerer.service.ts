@@ -97,6 +97,21 @@ export const extractPdfToRfp = async (
         await deleteObject(existingRfp.key);
       }
 
+      const existingSubspecialties =
+        await ctx.prismaCRODb!.sourcingSubspecialty.findMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+
+      if (existingSubspecialties.length > 0) {
+        await ctx.prismaCRODb!.sourcingSubspecialty.deleteMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+      }
+
       return await ctx.prismaCRODb!.sourcingSession.update({
         where: {
           id: sourcing_session_id,
