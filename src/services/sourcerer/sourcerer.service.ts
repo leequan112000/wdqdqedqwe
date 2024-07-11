@@ -112,6 +112,21 @@ export const extractPdfToRfp = async (
         });
       }
 
+      const existingSourcedVendors = await ctx.prismaCRODb!.sourcedCro.findMany(
+        {
+          where: {
+            sourcing_session_id,
+          },
+        },
+      );
+      if (existingSourcedVendors.length > 0) {
+        await ctx.prismaCRODb!.sourcedCro.deleteMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+      }
+
       return await ctx.prismaCRODb!.sourcingSession.update({
         where: {
           id: sourcing_session_id,
