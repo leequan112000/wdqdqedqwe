@@ -136,6 +136,23 @@ export const extractPdfToRfp = async (
           project_desc,
           preparation_details,
           vendor_requirement,
+
+          sourcing_extracted_rfp: {
+            upsert: {
+              create: {
+                project_title,
+                project_desc,
+                preparation_details,
+                vendor_requirement,
+              },
+              update: {
+                project_title,
+                project_desc,
+                preparation_details,
+                vendor_requirement,
+              },
+            },
+          },
         },
       });
     } else {
@@ -147,6 +164,15 @@ export const extractPdfToRfp = async (
           preparation_details,
           vendor_requirement,
           user_id,
+
+          sourcing_extracted_rfp: {
+            create: {
+              project_title,
+              project_desc,
+              preparation_details,
+              vendor_requirement,
+            },
+          },
 
           sourcing_attachments: {
             create: {
