@@ -97,6 +97,36 @@ export const extractPdfToRfp = async (
         await deleteObject(existingRfp.key);
       }
 
+      const existingSubspecialties =
+        await ctx.prismaCRODb!.sourcingSubspecialty.findMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+
+      if (existingSubspecialties.length > 0) {
+        await ctx.prismaCRODb!.sourcingSubspecialty.deleteMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+      }
+
+      const existingSourcedVendors = await ctx.prismaCRODb!.sourcedCro.findMany(
+        {
+          where: {
+            sourcing_session_id,
+          },
+        },
+      );
+      if (existingSourcedVendors.length > 0) {
+        await ctx.prismaCRODb!.sourcedCro.deleteMany({
+          where: {
+            sourcing_session_id,
+          },
+        });
+      }
+
       return await ctx.prismaCRODb!.sourcingSession.update({
         where: {
           id: sourcing_session_id,
@@ -106,6 +136,23 @@ export const extractPdfToRfp = async (
           project_desc,
           preparation_details,
           vendor_requirement,
+
+          sourcing_extracted_rfp: {
+            upsert: {
+              create: {
+                project_title,
+                project_desc,
+                preparation_details,
+                vendor_requirement,
+              },
+              update: {
+                project_title,
+                project_desc,
+                preparation_details,
+                vendor_requirement,
+              },
+            },
+          },
         },
       });
     } else {
@@ -117,6 +164,15 @@ export const extractPdfToRfp = async (
           preparation_details,
           vendor_requirement,
           user_id,
+
+          sourcing_extracted_rfp: {
+            create: {
+              project_title,
+              project_desc,
+              preparation_details,
+              vendor_requirement,
+            },
+          },
 
           sourcing_attachments: {
             create: {

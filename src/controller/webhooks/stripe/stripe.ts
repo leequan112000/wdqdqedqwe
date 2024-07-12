@@ -11,14 +11,15 @@ import {
   StripeWebhookPaymentType,
   SubscriptionStatus,
 } from '../../../helper/constant';
-import invariant from '../../../helper/invariant';
 import { ga } from '../../../helper/googleAnalytics';
+import invariant from '../../../helper/invariant';
 import { getStripeInstance } from '../../../helper/stripe';
 import Sentry from '../../../sentry';
-import {
-  createInvoicePaymentNoticeEmailJob,
-  createSendUserMilestonePaymentFailedNoticeJob,
-} from '../../../queues/email.queues';
+import { app_env } from '../../../environment';
+import { sendInvoicePaymentNoticeEmail } from '../../../mailer/invoice';
+import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
+import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
+import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -245,13 +246,54 @@ export const processStripeEvent = async (
                     paid_at: new Date(),
                   },
                 });
-
-                createInvoicePaymentNoticeEmailJob({
-                  invoiceId: invoice.id,
-                  invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
-                  paymentStatus: 'successful',
-                  vendorCompanyId: invoice.vendor_company_id,
+                const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoice.id}`;
+                const invoiceMonth = moment(invoice.from_date).format(
+                  'MMM YYYY',
+                );
+                const receivers = await prisma.vendorMember.findMany({
+                  where: {
+                    vendor_company_id: invoice.vendor_company_id,
+                    role: {
+                      in: [
+                        CompanyCollaboratorRoleType.OWNER,
+                        CompanyCollaboratorRoleType.ADMIN,
+                      ],
+                    },
+                    user: {
+                      OR: [
+                        { deactivated_at: null },
+                        {
+                          deactivated_at: {
+                            gt: new Date(),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                  include: {
+                    user: true,
+                  },
                 });
+
+                await Promise.all(
+                  receivers.map(async (receiver) => {
+                    await sendInvoicePaymentNoticeEmail(
+                      {
+                        button_url: buttonUrl,
+                        invoice_month: invoiceMonth,
+                        payment_status: 'successful',
+                      },
+                      receiver.user.email,
+                    );
+
+                    await createInvoicePaymentNotification({
+                      invoice_id: invoice.id,
+                      invoice_month: invoiceMonth,
+                      recipient_id: receiver.user_id,
+                      payment_status: 'successful',
+                    });
+                  }),
+                );
 
                 console.info(
                   `Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`,
@@ -280,9 +322,7 @@ export const processStripeEvent = async (
                     message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
                   };
                 }
-
                 const { quote_id, milestone_id } = checkoutSession.metadata;
-
                 await milestoneService.updateMilestoneAsPaid(
                   {
                     milestone_id,
@@ -290,7 +330,6 @@ export const processStripeEvent = async (
                   },
                   { prisma },
                 );
-
                 console.info(
                   `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
                 );
@@ -340,14 +379,54 @@ export const processStripeEvent = async (
                     payment_status: InvoicePaymentStatus.FAILED,
                   },
                 });
-
-                createInvoicePaymentNoticeEmailJob({
-                  invoiceId: invoice.id,
-                  invoiceMonth: moment(invoice.from_date).format('MMM YYYY'),
-                  paymentStatus: 'failed',
-                  vendorCompanyId: invoice.vendor_company_id,
+                const buttonUrl = `${app_env.APP_URL}/app/invoices/${invoice.id}`;
+                const invoiceMonth = moment(invoice.from_date).format(
+                  'MMM YYYY',
+                );
+                const receivers = await prisma.vendorMember.findMany({
+                  where: {
+                    vendor_company_id: invoice.vendor_company_id,
+                    role: {
+                      in: [
+                        CompanyCollaboratorRoleType.OWNER,
+                        CompanyCollaboratorRoleType.ADMIN,
+                      ],
+                    },
+                    user: {
+                      OR: [
+                        { deactivated_at: null },
+                        {
+                          deactivated_at: {
+                            gt: new Date(),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                  include: {
+                    user: true,
+                  },
                 });
 
+                await Promise.all(
+                  receivers.map(async (receiver) => {
+                    await sendInvoicePaymentNoticeEmail(
+                      {
+                        button_url: buttonUrl,
+                        invoice_month: invoiceMonth,
+                        payment_status: 'failed',
+                      },
+                      receiver.user.email,
+                    );
+
+                    await createInvoicePaymentNotification({
+                      invoice_id: invoice.id,
+                      invoice_month: invoiceMonth,
+                      recipient_id: receiver.user_id,
+                      payment_status: 'failed',
+                    });
+                  }),
+                );
                 console.info(
                   `Processed webhook: type=${event.type} user_id=${user_id} invoice_id=${invoice_id} invoice_number=${invoice_number}`,
                 );
@@ -386,9 +465,68 @@ export const processStripeEvent = async (
                   },
                 });
 
-                createSendUserMilestonePaymentFailedNoticeJob({
-                  milestoneId: milestone_id,
+                const milestone = await prisma.milestone.findFirstOrThrow({
+                  where: {
+                    id: milestone_id,
+                  },
+                  include: {
+                    quote: {
+                      include: {
+                        project_connection: {
+                          include: {
+                            customer_connections: true,
+                            project_request: true,
+                          },
+                        },
+                      },
+                    },
+                  },
                 });
+
+                const receivers = await prisma.user.findMany({
+                  where: {
+                    customer: {
+                      id: {
+                        in: milestone.quote.project_connection.customer_connections.map(
+                          (cc) => cc.customer_id,
+                        ),
+                      },
+                    },
+                    OR: [
+                      { deactivated_at: null },
+                      {
+                        deactivated_at: {
+                          gt: new Date(),
+                        },
+                      },
+                    ],
+                  },
+                });
+
+                const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
+                await Promise.all(
+                  receivers.map(async (receiver) => {
+                    await sendMilestoneNoticeEmail(
+                      {
+                        sender_name: 'Cromatic Admin',
+                        project_title:
+                          milestone.quote.project_connection.project_request
+                            .title,
+                        receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                        milestone_update_content: milestoneUpdateContent,
+                        milestone_url: `${app_env.APP_URL}/app/project-connection/${milestone.quote.project_connection_id}/quote/${milestone.quote.id}`,
+                      },
+                      receiver.email,
+                    );
+
+                    await createMilestonePaymentFailedNotification(
+                      milestone.quote_id,
+                      milestoneUpdateContent,
+                      receiver.id,
+                      milestone.quote.project_connection_id,
+                    );
+                  }),
+                );
                 console.info(
                   `Processed webhook: type=${event.type} customer=${customer.id} quote=${quote_id} milestone=${milestone_id}`,
                 );

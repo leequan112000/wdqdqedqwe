@@ -1,14 +1,17 @@
 import moment from 'moment';
 import { nanoid } from 'nanoid';
+import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
-import { toCent, toDollar } from '../../helper/money';
 import {
   MilestonePaymentStatus,
   MilestoneStatus,
   QuoteNotificationActionContent,
   QuoteStatus,
 } from '../../helper/constant';
-import { createSendUserQuoteNoticeJob } from '../../queues/email.queues';
+import { toCent, toDollar } from '../../helper/money';
+import { sendQuoteNoticeEmail } from '../../mailer/quote';
+import createQuoteNotification from '../../notification/quoteNotification';
+import { getReceiversByProjectConnection } from '../../queues/utils';
 
 const EXPIRY_DAYS = 7;
 
@@ -44,7 +47,6 @@ export const createQuote = async (
     send_to_biotech,
     current_user_id,
   } = args;
-
   const expiryDate = moment().endOf('d').add(EXPIRY_DAYS, 'd');
   const newQuote = await context.prisma.quote.create({
     data: {
@@ -81,12 +83,36 @@ export const createQuote = async (
   }
 
   if (send_to_biotech) {
-    createSendUserQuoteNoticeJob({
-      projectConnectionId: project_connection_id,
-      senderUserId: current_user_id,
-      quoteId: newQuote.id,
-      action: QuoteNotificationActionContent.SUBMITTED,
-    });
+    const { receivers, projectConnection, senderCompanyName } =
+      await getReceiversByProjectConnection(
+        project_connection_id,
+        current_user_id,
+      );
+
+    console.log({ receivers, projectConnection });
+    await Promise.all(
+      receivers.map(async (receiver) => {
+        await sendQuoteNoticeEmail(
+          {
+            sender_name: senderCompanyName,
+            project_title: projectConnection.project_request.title,
+            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            action: QuoteNotificationActionContent.SUBMITTED,
+            quotation_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}/quote/${newQuote.id}`,
+          },
+          receiver.email,
+        );
+
+        await createQuoteNotification(
+          current_user_id,
+          senderCompanyName,
+          newQuote.id,
+          QuoteNotificationActionContent.SUBMITTED,
+          receiver.id,
+          projectConnection.id,
+        );
+      }),
+    );
   }
 
   return {

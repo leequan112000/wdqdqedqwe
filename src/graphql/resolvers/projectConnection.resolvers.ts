@@ -1,20 +1,20 @@
-import { app_env } from '../../environment';
-import createCollaboratedNotification from '../../notification/collaboratedNotification';
-import { Context } from '../../types/context';
 import { Prisma } from '@prisma/client';
 import { Resolvers } from '../generated';
-
+import { app_env } from '../../environment';
+import { Context } from '../../types/context';
 import { InternalError } from '../errors/InternalError';
 import { PublicError } from '../errors/PublicError';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
-
-import { createSendUserAcceptProjectRequestNoticeJob } from '../../queues/email.queues';
-import { customerInvitationEmail } from '../../mailer/customer';
 import {
   projectCollaboratorInvitationEmail,
   vendorMemberInvitationByUserEmail,
 } from '../../mailer';
-
+import { customerInvitationEmail } from '../../mailer/customer';
+import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
+import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
+import createCollaboratedNotification from '../../notification/collaboratedNotification';
+import chatService from '../../services/chat/chat.service';
+import collaboratorService from '../../services/collaborator/collaborator.service';
 import { createResetPasswordToken } from '../../helper/auth';
 import {
   checkAllowAddProjectCollaborator,
@@ -31,18 +31,15 @@ import {
   ProjectConnectionVendorExperimentStatus,
   NotificationType,
   ProjectConnectionVendorDisplayStatus,
-  CasbinRole,
   CasbinObj,
   CasbinAct,
   CompanyCollaboratorRoleType,
 } from '../../helper/constant';
+import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import { hasPermission } from '../../helper/casbin';
 import { toDollar } from '../../helper/money';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import invariant from '../../helper/invariant';
-import chatService from '../../services/chat/chat.service';
-import collaboratorService from '../../services/collaborator/collaborator.service';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
-import { hasPermission } from '../../helper/casbin';
 
 const resolvers: Resolvers<Context> = {
   ProjectConnection: {
@@ -658,6 +655,7 @@ const resolvers: Resolvers<Context> = {
           },
           include: {
             customer_connections: true,
+            vendor_member_connections: true,
             project_request: true,
           },
         });
@@ -729,10 +727,58 @@ const resolvers: Resolvers<Context> = {
         },
       );
 
-      createSendUserAcceptProjectRequestNoticeJob({
-        projectConnectionId: projectConnection.id,
-        senderUserId: currentUserId,
+      const vendor = await context.prisma.vendorMember.findFirst({
+        where: {
+          user_id: currentUserId,
+        },
+        include: {
+          vendor_company: true,
+        },
       });
+
+      if (vendor) {
+        // notify biotech members
+        const receivers = await context.prisma.user.findMany({
+          where: {
+            customer: {
+              id: {
+                in: projectConnection.customer_connections.map(
+                  (cc) => cc.customer_id,
+                ),
+              },
+            },
+            OR: [
+              { deactivated_at: null },
+              {
+                deactivated_at: {
+                  gt: new Date(),
+                },
+              },
+            ],
+          },
+        });
+
+        // send email and notification to biotech members
+        await Promise.all(
+          receivers.map(async (receiver) => {
+            await sendVendorAcceptProjectNoticeEmail(
+              {
+                login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}`,
+                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                project_title: projectConnection.project_request.title,
+                vendor_company_name: vendor.vendor_company?.name as string,
+              },
+              receiver.email,
+            );
+
+            await createAcceptRequestNotification(
+              currentUserId,
+              receiver.id,
+              projectConnection.id,
+            );
+          }),
+        );
+      }
 
       return updatedProjectConnection;
     },

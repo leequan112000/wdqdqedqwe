@@ -1,11 +1,10 @@
-import { pubsub } from '../../helper/pubsub';
+import { Resolvers, MessageEdge } from '../generated';
 import { Context } from '../../types/context';
 import { PublicError } from '../errors/PublicError';
-import { Resolvers, MessageEdge } from '../generated';
-import { createSendUserNewMessageNoticeJob } from '../../queues/email.queues';
 import invariant from '../../helper/invariant';
+import { pubsub } from '../../helper/pubsub';
 import { UserStatus, UserType } from '../../helper/constant';
-
+import { createChatQueueJob } from '../../queues/chat.queues';
 const resolvers: Resolvers<Context> = {
   Message: {
     user: async (parent, _, context) => {
@@ -40,6 +39,9 @@ const resolvers: Resolvers<Context> = {
           await context.prisma.projectConnection.findFirst({
             where: {
               id: args.project_connection_id,
+            },
+            include: {
+              project_request: true,
             },
           });
         invariant(projectConnection, 'Project connection not found.');
@@ -89,13 +91,11 @@ const resolvers: Resolvers<Context> = {
         };
 
         pubsub.publish('NEW_MESSAGE', { newMessage: edge, chat_id: chat.id });
-
-        createSendUserNewMessageNoticeJob({
-          projectConnectionId: chat.project_connection_id,
-          senderUserId: context.req.user_id,
-          messageText: newMessage.content,
+        createChatQueueJob({
+          project_connection_id: args.project_connection_id,
+          sender_id: context.req.user_id,
+          message: args.content,
         });
-
         return newMessage;
       });
     },
