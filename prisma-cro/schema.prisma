@@ -315,8 +315,23 @@ model SourcingSession {
   sourcing_attachments    SourcingAttachment[]
   created_at              DateTime               @default(now())
   updated_at              DateTime               @default(now()) @updatedAt
+  sourcing_extracted_rfp  SourcingExtractedRfp?
 
   @@map("sourcing_sessions")
+}
+
+model SourcingExtractedRfp {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  project_title       String
+  project_desc        String
+  preparation_details String
+  vendor_requirement  String
+  sourcing_session_id String          @unique @db.Uuid
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @default(now()) @updatedAt
+  sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
+
+  @@map("sourcing_extracted_rfps")
 }
 
 model SourcingSubspecialty {
