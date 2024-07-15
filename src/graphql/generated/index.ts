@@ -1675,6 +1675,7 @@ export type Query = {
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   searchVendorByService?: Maybe<SearchVendorByServicePaginatedResult>;
+  sourcedCros?: Maybe<SourcedCroConnection>;
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
@@ -1873,6 +1874,15 @@ export type QuerySearchVendorByServiceArgs = {
 };
 
 
+export type QuerySourcedCrosArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  filterCountryBy?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  sortBy?: InputMaybe<Scalars['String']>;
+  sourcing_session_id: Scalars['String'];
+};
+
+
 export type QuerySourcingSessionArgs = {
   id: Scalars['String'];
 };
@@ -2067,7 +2077,7 @@ export type SourcingSession = {
   project_desc?: Maybe<Scalars['String']>;
   project_title?: Maybe<Scalars['String']>;
   shortlisted_cros?: Maybe<Array<Maybe<SourcedCro>>>;
-  sourced_cros?: Maybe<SourcedCroConnection>;
+  sourced_cros?: Maybe<Array<Maybe<SourcedCro>>>;
   sourcing_attachments?: Maybe<Array<Maybe<SourcingAttachment>>>;
   sourcing_subspecialties?: Maybe<Array<Maybe<SourcingSubspecialty>>>;
   task_id?: Maybe<Scalars['String']>;
@@ -2075,14 +2085,6 @@ export type SourcingSession = {
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']>;
   vendor_requirement?: Maybe<Scalars['String']>;
-};
-
-
-export type SourcingSessionSourced_CrosArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  filterCountryBy?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  sortBy?: InputMaybe<Scalars['String']>;
 };
 
 export type SourcingSubspecialty = {
@@ -3576,6 +3578,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
   searchVendorByService?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServiceArgs, 'first' | 'keyword'>>;
+  sourcedCros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<QuerySourcedCrosArgs, 'first' | 'sourcing_session_id'>>;
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3745,7 +3748,7 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
   project_desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   shortlisted_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
-  sourced_cros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<SourcingSessionSourced_CrosArgs, 'first'>>;
+  sourced_cros?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCro']>>>, ParentType, ContextType>;
   sourcing_attachments?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingAttachment']>>>, ParentType, ContextType>;
   sourcing_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSubspecialty']>>>, ParentType, ContextType>;
   task_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
