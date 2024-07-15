@@ -10,6 +10,7 @@ import invariant from '../../helper/invariant';
 import { pubsub } from '../../helper/pubsub';
 import { PublicError } from '../errors/PublicError';
 import { Prisma } from '../../../prisma-cro/generated/client';
+import { hasField } from '../../helper/resolverInfo';
 
 const resolvers: Resolvers<Context> = {
   SourcingSession: {
@@ -47,7 +48,7 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
       }));
     },
-    shortlisted_cros: async (parent, _, context) => {
+    shortlisted_cros: async (parent, _, context, info) => {
       invariant(parent.id, 'Missing session id.');
       return (
         (await context.prismaCRODb.sourcingSession
@@ -63,10 +64,30 @@ const resolvers: Resolvers<Context> = {
             orderBy: {
               score: 'desc',
             },
+            include: {
+              vendor_company: {
+                include: {
+                  vendor_company_locations: hasField(
+                    info,
+                    'vendor_company_locations',
+                  ),
+                  vendor_company_subspecialties: {
+                    include: {
+                      subspecialty: hasField(info, 'subspecialty'),
+                    },
+                  },
+                  vendor_company_types: hasField(info, 'vendor_company_types'),
+                  vendor_company_certifications: hasField(
+                    info,
+                    'vendor_company_certifications',
+                  ),
+                },
+              },
+            },
           })) || []
       );
     },
-    sourced_cros: async (parent, _, context) => {
+    sourced_cros: async (parent, _, context, info) => {
       if (parent.sourced_cros) return parent.sourced_cros;
 
       invariant(parent.id, 'Missing session id.');
@@ -80,6 +101,26 @@ const resolvers: Resolvers<Context> = {
         .sourced_cros({
           orderBy: {
             score: 'desc',
+          },
+          include: {
+            vendor_company: {
+              include: {
+                vendor_company_locations: hasField(
+                  info,
+                  'vendor_company_locations',
+                ),
+                vendor_company_subspecialties: {
+                  include: {
+                    subspecialty: hasField(info, 'subspecialty'),
+                  },
+                },
+                vendor_company_types: hasField(info, 'vendor_company_types'),
+                vendor_company_certifications: hasField(
+                  info,
+                  'vendor_company_certifications',
+                ),
+              },
+            },
           },
         });
     },
@@ -154,7 +195,7 @@ const resolvers: Resolvers<Context> = {
 
       return sourcingSession;
     },
-    sourcingSessions: async (_, __, context, info) => {
+    sourcingSessions: async (_, __, context) => {
       const sessions = await context.prismaCRODb.sourcingSession.findMany({
         where: {
           user_id: context.req.user_id,
@@ -166,7 +207,7 @@ const resolvers: Resolvers<Context> = {
 
       return sessions;
     },
-    sourcedCros: async (_, args, context) => {
+    sourcedCros: async (_, args, context, info) => {
       const { first, after, sortBy, filterCountryBy, sourcing_session_id } =
         args;
 
@@ -241,6 +282,26 @@ const resolvers: Resolvers<Context> = {
             cursor: after ? { id: after } : undefined,
             orderBy: sourcedCroSorting,
             where: sourcedCroFilter,
+            include: {
+              vendor_company: {
+                include: {
+                  vendor_company_locations: hasField(
+                    info,
+                    'vendor_company_locations',
+                  ),
+                  vendor_company_subspecialties: {
+                    include: {
+                      subspecialty: hasField(info, 'subspecialty'),
+                    },
+                  },
+                  vendor_company_types: hasField(info, 'vendor_company_types'),
+                  vendor_company_certifications: hasField(
+                    info,
+                    'vendor_company_certifications',
+                  ),
+                },
+              },
+            },
           })) || [];
 
       const edges = sourcedCros.map((c) => ({
