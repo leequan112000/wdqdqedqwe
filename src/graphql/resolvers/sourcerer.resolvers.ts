@@ -10,6 +10,7 @@ import invariant from '../../helper/invariant';
 import { pubsub } from '../../helper/pubsub';
 import { PublicError } from '../errors/PublicError';
 import { Prisma } from '../../../prisma-cro/generated/client';
+import { hasField } from '../../helper/resolverInfo';
 
 const resolvers: Resolvers<Context> = {
   SourcingSession: {
@@ -22,6 +23,7 @@ const resolvers: Resolvers<Context> = {
       });
     },
     sourcing_subspecialties: async (parent, _, context) => {
+      if (parent.sourcing_subspecialties) return parent.sourcing_subspecialties;
       invariant(parent.id, 'Missing session id.');
       return await context.prismaCRODb.sourcingSession
         .findUnique({
@@ -46,7 +48,7 @@ const resolvers: Resolvers<Context> = {
         byte_size: Number(a.byte_size),
       }));
     },
-    shortlisted_cros: async (parent, _, context) => {
+    shortlisted_cros: async (parent, _, context, info) => {
       invariant(parent.id, 'Missing session id.');
       return (
         (await context.prismaCRODb.sourcingSession
@@ -62,121 +64,65 @@ const resolvers: Resolvers<Context> = {
             orderBy: {
               score: 'desc',
             },
+            include: {
+              vendor_company: {
+                include: {
+                  vendor_company_locations: hasField(
+                    info,
+                    'vendor_company_locations',
+                  ),
+                  vendor_company_subspecialties: {
+                    include: {
+                      subspecialty: hasField(info, 'subspecialty'),
+                    },
+                  },
+                  vendor_company_types: hasField(info, 'vendor_company_types'),
+                  vendor_company_certifications: hasField(
+                    info,
+                    'vendor_company_certifications',
+                  ),
+                },
+              },
+            },
           })) || []
       );
     },
-    sourced_cros: async (parent, args, context) => {
+    sourced_cros: async (parent, _, context, info) => {
+      if (parent.sourced_cros) return parent.sourced_cros;
+
       invariant(parent.id, 'Missing session id.');
-      const { first, after, sortBy, filterCountryBy } = args;
 
-      const sourcedCroFilter: Prisma.SourcedCroWhereInput = {
-        vendor_company: {
-          NOT: {
-            company_description: null,
-            company_ipo_status: null,
-          },
-          is_active: true,
-          ...(!filterCountryBy || filterCountryBy === CountryRegion.ALL
-            ? {}
-            : {
-                vendor_company_locations: {
-                  some: {
-                    country: {
-                      in: Object.keys(countryRegionMap).filter(
-                        (countryCode) =>
-                          getRegionByCountryCode(countryCode) ===
-                          filterCountryBy,
-                      ),
-                    },
-                  },
-                },
-              }),
-        },
-      };
-
-      const sourcingSession =
-        await context.prismaCRODb.sourcingSession.findUnique({
+      return await context.prismaCRODb.sourcingSession
+        .findUnique({
           where: {
             id: parent.id,
           },
+        })
+        .sourced_cros({
+          orderBy: {
+            score: 'desc',
+          },
           include: {
-            _count: {
-              select: {
-                sourced_cros: {
-                  where: sourcedCroFilter,
+            vendor_company: {
+              include: {
+                vendor_company_locations: hasField(
+                  info,
+                  'vendor_company_locations',
+                ),
+                vendor_company_subspecialties: {
+                  include: {
+                    subspecialty: hasField(info, 'subspecialty'),
+                  },
                 },
+                vendor_company_types: hasField(info, 'vendor_company_types'),
+                vendor_company_certifications: hasField(
+                  info,
+                  'vendor_company_certifications',
+                ),
               },
             },
           },
         });
-
-      const total_count = sourcingSession!._count.sourced_cros;
-
-      const sourcedCroSorting: Prisma.SourcedCroOrderByWithRelationInput =
-        (() => {
-          switch (sortBy) {
-            case SourcingResultSortBy.ALPHABETICAL:
-              return { name: 'asc' };
-            case SourcingResultSortBy.REVENUE:
-              return { vendor_company: { company_revenue_value: 'desc' } };
-            case SourcingResultSortBy.TEAM_SIZE:
-              return { vendor_company: { company_average_size: 'desc' } };
-            case SourcingResultSortBy.BEST_MATCH:
-            default:
-              return { score: 'desc' };
-          }
-        })();
-
-      const sourcedCros =
-        (await context.prismaCRODb.sourcingSession
-          .findUnique({
-            where: {
-              id: parent.id,
-            },
-          })
-          .sourced_cros({
-            take: first,
-            skip: after ? 1 : undefined, // Skip the cursor
-            cursor: after ? { id: after } : undefined,
-            orderBy: sourcedCroSorting,
-            where: sourcedCroFilter,
-          })) || [];
-
-      const edges = sourcedCros.map((c) => ({
-        cursor: c.id,
-        node: c,
-      }));
-
-      const endCursor =
-        edges.length > 0 ? edges[edges.length - 1].cursor : null;
-      let hasNextPage = false;
-
-      if (endCursor) {
-        const nextSourcedCros =
-          (await context.prismaCRODb.sourcingSession
-            .findUnique({
-              where: {
-                id: parent.id,
-              },
-            })
-            .sourced_cros({
-              take: first,
-              skip: 1,
-              cursor: { id: endCursor },
-              orderBy: sourcedCroSorting,
-              where: sourcedCroFilter,
-            })) || [];
-        hasNextPage = nextSourcedCros.length > 0;
-      }
-
-      return {
-        edges,
-        page_info: {
-          end_cursor: endCursor || '',
-          has_next_page: hasNextPage,
-          total_count,
-        },
-      };
     },
   },
   SourcingSubspecialty: {
@@ -260,6 +206,139 @@ const resolvers: Resolvers<Context> = {
       });
 
       return sessions;
+    },
+    sourcedCros: async (_, args, context, info) => {
+      const { first, after, sortBy, filterCountryBy, sourcing_session_id } =
+        args;
+
+      const sourcedCroFilter: Prisma.SourcedCroWhereInput = {
+        vendor_company: {
+          NOT: {
+            company_description: null,
+            company_ipo_status: null,
+          },
+          is_active: true,
+          ...(!filterCountryBy || filterCountryBy === CountryRegion.ALL
+            ? {}
+            : {
+                vendor_company_locations: {
+                  some: {
+                    country: {
+                      in: Object.keys(countryRegionMap).filter(
+                        (countryCode) =>
+                          getRegionByCountryCode(countryCode) ===
+                          filterCountryBy,
+                      ),
+                    },
+                  },
+                },
+              }),
+        },
+      };
+
+      const sourcingSession =
+        await context.prismaCRODb.sourcingSession.findUnique({
+          where: {
+            id: sourcing_session_id,
+          },
+          include: {
+            _count: {
+              select: {
+                sourced_cros: {
+                  where: sourcedCroFilter,
+                },
+              },
+            },
+          },
+        });
+
+      const total_count = sourcingSession!._count.sourced_cros;
+
+      const sourcedCroSorting: Prisma.SourcedCroOrderByWithRelationInput =
+        (() => {
+          switch (sortBy) {
+            case SourcingResultSortBy.ALPHABETICAL:
+              return { name: 'asc' };
+            case SourcingResultSortBy.REVENUE:
+              return { vendor_company: { company_revenue_value: 'desc' } };
+            case SourcingResultSortBy.TEAM_SIZE:
+              return { vendor_company: { company_average_size: 'desc' } };
+            case SourcingResultSortBy.BEST_MATCH:
+            default:
+              return { score: 'desc' };
+          }
+        })();
+
+      const sourcedCros =
+        (await context.prismaCRODb.sourcingSession
+          .findUnique({
+            where: {
+              id: sourcing_session_id,
+            },
+          })
+          .sourced_cros({
+            take: first,
+            skip: after ? 1 : undefined, // Skip the cursor
+            cursor: after ? { id: after } : undefined,
+            orderBy: sourcedCroSorting,
+            where: sourcedCroFilter,
+            include: {
+              vendor_company: {
+                include: {
+                  vendor_company_locations: hasField(
+                    info,
+                    'vendor_company_locations',
+                  ),
+                  vendor_company_subspecialties: {
+                    include: {
+                      subspecialty: hasField(info, 'subspecialty'),
+                    },
+                  },
+                  vendor_company_types: hasField(info, 'vendor_company_types'),
+                  vendor_company_certifications: hasField(
+                    info,
+                    'vendor_company_certifications',
+                  ),
+                },
+              },
+            },
+          })) || [];
+
+      const edges = sourcedCros.map((c) => ({
+        cursor: c.id,
+        node: c,
+      }));
+
+      const endCursor =
+        edges.length > 0 ? edges[edges.length - 1].cursor : null;
+      let hasNextPage = false;
+
+      if (endCursor) {
+        const nextSourcedCros =
+          (await context.prismaCRODb.sourcingSession
+            .findUnique({
+              where: {
+                id: sourcing_session_id,
+              },
+            })
+            .sourced_cros({
+              take: first,
+              skip: 1,
+              cursor: { id: endCursor },
+              orderBy: sourcedCroSorting,
+              where: sourcedCroFilter,
+            })) || [];
+        hasNextPage = nextSourcedCros.length > 0;
+      }
+
+      return {
+        edges,
+        page_info: {
+          end_cursor: endCursor || '',
+          has_next_page: hasNextPage,
+          total_count,
+        },
+      };
     },
   },
   Mutation: {

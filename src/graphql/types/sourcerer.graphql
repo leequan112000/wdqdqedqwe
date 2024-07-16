@@ -10,12 +10,7 @@ type SourcingSession {
   biotech: Biotech
   sourcing_subspecialties: [SourcingSubspecialty]
   sourcing_attachments: [SourcingAttachment]
-  sourced_cros(
-    first: Int = 5,
-    after: String
-    sortBy: String
-    filterCountryBy: String
-  ): SourcedCroConnection
+  sourced_cros: [SourcedCro]
   shortlisted_cros: [SourcedCro]
   updated_at: Date
   created_at: Date
@@ -94,6 +89,13 @@ type SourceCroSubscriptionPayload {
 type Query {
   sourcingSession(id: String!): SourcingSession
   sourcingSessions: [SourcingSession]
+  sourcedCros(
+    sourcing_session_id: String!
+    first: Int = 5,
+    after: String
+    sortBy: String
+    filterCountryBy: String
+  ): SourcedCroConnection
 }
 
 type Mutation {
