@@ -56,6 +56,7 @@ model Subspecialty {
   id                            String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                          String
   definition                    String?
+  embedding                     Json?
   specialty_id                  String                      @db.Uuid
   specialty                     Specialty                   @relation(fields: [specialty_id], references: [id])
   vendor_company_subspecialties VendorCompanySubspecialty[]
