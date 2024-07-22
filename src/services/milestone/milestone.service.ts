@@ -110,10 +110,8 @@ const updateMilestoneAsPaid = async (
       invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
     });
   });
-  console.log('emailData', emailData);
   bulkBiotechInvoicePaymentVerifiedByCromaticAdminEmail(emailData);
   createNotificationQueueJob({ data: notificationData });
-  console.log('AFTER!!!!!');
   const projectConnectionId = updatedMilestone.quote.project_connection_id;
   const quoteId = updatedMilestone.quote.id;
   const {
@@ -122,19 +120,8 @@ const updateMilestoneAsPaid = async (
     senderCompanyName,
   } = await getReceiversByProjectConnection(projectConnectionId, user_id!);
   let milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${updatedMilestone.title}`;
-  console.log('biotechs', projectConnection);
   await Promise.all(
     biotechs.map(async (receiver) => {
-      console.log(
-        {
-          sender_name: senderCompanyName,
-          project_title: projectConnection.project_request.title,
-          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
-          milestone_update_content: milestoneUpdateContent,
-          milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
-        },
-        receiver.email,
-      );
       await sendMilestoneNoticeEmail(
         {
           sender_name: senderCompanyName,

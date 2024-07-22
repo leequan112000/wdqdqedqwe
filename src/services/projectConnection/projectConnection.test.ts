@@ -1,8 +1,10 @@
 import { expect, test, vi, beforeEach, describe } from 'vitest';
 import { faker } from '@faker-js/faker';
 import {
+  Chat,
   CustomerConnection,
   Prisma,
+  PrismaClient,
   ProjectConnection,
   ProjectRequest,
   User,
@@ -20,9 +22,20 @@ import * as casbinModule from '../../helper/casbin';
 import * as projectRequestMailerModule from '../../mailer/projectRequest';
 import * as acceptRequestNotificationModule from '../../notification/acceptRequestNotification';
 import * as chatService from '../chat/chat.service';
+import { mockDeep } from 'vitest-mock-extended';
 
 vi.mock('@sendgrid/mail');
-
+vi.mock('../chat/chat.service');
+vi.mocked(chatService.default.createSystemMessage).mockResolvedValue({
+  id: faker.string.uuid(),
+  user_id: faker.string.uuid(),
+  chat_id: faker.string.uuid(),
+  content:
+    "You've found a match! Start a conversation with your partner to kick off your project.",
+  type: 'SYSTEM',
+  created_at: new Date(),
+  updated_at: new Date(),
+});
 let mockCtx: MockContext;
 let ctx: Context;
 let projectRequest: ProjectRequest;
@@ -34,10 +47,42 @@ let projectConnection: ProjectConnection & {
   project_request: ProjectRequest;
 };
 let user: User;
+let chat: Chat;
 
 describe('projectConnection.service', () => {
   beforeEach(() => {
+    const prismaClientMock = mockDeep<PrismaClient>();
+    prismaClientMock.$transaction.mockImplementation(async (callback) => {
+      const trx = {
+        projectRequest: {
+          update: vi.fn().mockResolvedValue({
+            ...projectRequest,
+            status: ProjectRequestStatus.MATCHED,
+          }),
+        },
+        chat: {
+          findFirst: vi.fn().mockResolvedValue(chat),
+          create: vi.fn().mockResolvedValue(chat),
+        },
+        projectConnection: {
+          update: vi.fn().mockResolvedValue({
+            ...projectConnection,
+            vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+          }),
+        },
+      } as unknown as Omit<
+        PrismaClient,
+        | '$connect'
+        | '$disconnect'
+        | '$on'
+        | '$transaction'
+        | '$use'
+        | '$extends'
+      >;
+      return callback(trx);
+    });
     mockCtx = createMockContext();
+    mockCtx.prisma = prismaClientMock;
     ctx = {
       ...mockCtx,
       req: { user_id: faker.string.uuid() },
@@ -116,6 +161,22 @@ describe('projectConnection.service', () => {
       vendor_member_connections: [vendorMemberConnection],
       project_request: projectRequest,
     };
+    chat = {
+      id: faker.string.uuid(),
+      biotech_id: projectConnection.project_request.biotech_id,
+      vendor_company_id: projectConnection.vendor_company_id,
+      project_connection_id: projectConnection.id,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    chat = {
+      id: faker.string.uuid(),
+      biotech_id: projectConnection.project_request.biotech_id,
+      vendor_company_id: projectConnection.vendor_company_id,
+      project_connection_id: projectConnection.id,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
   });
 
   describe('checkIfUserInProjectConnection', () => {
@@ -162,23 +223,26 @@ describe('projectConnection.service', () => {
   describe('acceptProjectConnection', () => {
     test('should accept project connection and send notifications', async () => {
       vi.spyOn(casbinModule, 'hasPermission').mockResolvedValue(true);
-      vi.spyOn(chatService, 'createSystemMessage').mockResolvedValue({} as any);
 
       const sendVendorAcceptProjectNoticeEmailSpy = vi
         .spyOn(projectRequestMailerModule, 'sendVendorAcceptProjectNoticeEmail')
-        .mockResolvedValue();
+        .mockResolvedValue({} as any);
 
       const createAcceptRequestNotificationSpy = vi
         .spyOn(acceptRequestNotificationModule, 'default')
         .mockResolvedValue();
 
+      const updatedProjectConnection = {
+        ...projectConnection,
+        vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
+      };
+
       mockCtx.prisma.projectConnection.findFirst.mockResolvedValueOnce(
         projectConnection,
       );
-      mockCtx.prisma.projectConnection.update.mockResolvedValueOnce({
-        ...projectConnection,
-        vendor_status: ProjectConnectionVendorStatus.ACCEPTED,
-      });
+      mockCtx.prisma.projectConnection.update.mockResolvedValueOnce(
+        updatedProjectConnection,
+      );
       mockCtx.prisma.vendorMember.findFirst.mockResolvedValueOnce(vendorMember);
       mockCtx.prisma.user.findMany.mockResolvedValueOnce([user]);
 
@@ -186,7 +250,6 @@ describe('projectConnection.service', () => {
         { id: projectConnection.id },
         ctx,
       );
-
       expect(result.vendor_status).toBe(ProjectConnectionVendorStatus.ACCEPTED);
       expect(sendVendorAcceptProjectNoticeEmailSpy).toHaveBeenCalled();
       expect(createAcceptRequestNotificationSpy).toHaveBeenCalled();
@@ -257,14 +320,21 @@ describe('projectConnection.service', () => {
   describe('getProjectConnections', () => {
     test('should return filtered project connections', async () => {
       mockCtx.prisma.vendorMember.findFirst.mockResolvedValueOnce(vendorMember);
-      mockCtx.prisma.vendorMemberConnection.findMany.mockResolvedValueOnce([
-        {
-          ...vendorMemberConnection,
-          project_connection: {
-            ...projectConnection,
-            quotes: [],
+
+      const mockVendorMemberConnectionWithIncludes = {
+        ...vendorMemberConnection,
+        project_connection: {
+          ...projectConnection,
+          project_request: {
+            ...projectRequest,
+            status: ProjectRequestStatus.PROCESSING,
           },
+          quotes: [],
         },
+      };
+
+      mockCtx.prisma.vendorMemberConnection.findMany.mockResolvedValueOnce([
+        mockVendorMemberConnectionWithIncludes,
       ]);
 
       const result = await projectConnectionService.getProjectConnections(

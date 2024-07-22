@@ -89,7 +89,6 @@ export const createQuote = async (
         current_user_id,
       );
 
-    console.log({ receivers, projectConnection });
     await Promise.all(
       receivers.map(async (receiver) => {
         await sendQuoteNoticeEmail(

@@ -95,7 +95,6 @@ export const acceptProjectConnection = async (
       ) {
         throw new PublicError('Project request has been withdrawn');
       }
-
       if (
         projectConnection.project_request.status ===
         ProjectRequestStatus.PROCESSING
@@ -198,7 +197,6 @@ export const acceptProjectConnection = async (
       }),
     );
   }
-
   return updatedProjectConnection;
 };
 
@@ -282,7 +280,6 @@ export const getProjectConnections = async (
     (vmc) => vmc.project_connection,
   );
   let result = [...projectConnections];
-
   if (filter?.status) {
     // not expired project connections
     const validProjectConnections = projectConnections.filter(
