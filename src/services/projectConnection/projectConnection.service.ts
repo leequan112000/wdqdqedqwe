@@ -5,10 +5,14 @@ import { hasPermission } from '../../helper/casbin';
 import {
   CasbinAct,
   CasbinObj,
+  NotificationType,
+  ProjectConnectionCollaborationStatus,
+  ProjectConnectionVendorExperimentStatus,
   ProjectConnectionVendorStatus,
   ProjectRequestStatus,
 } from '../../helper/constant';
 import invariant from '../../helper/invariant';
+import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
 import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
 import { ServiceContext, Context } from '../../types/context';
@@ -238,8 +242,175 @@ export const declineProjectConnection = async (
   return updatedProjectConnection;
 };
 
+export const getProjectConnections = async (
+  args: { filter?: { status?: string | null } | null },
+  context: Context,
+) => {
+  const { filter } = args;
+  // find vendor member id
+  const vendorMember = await context.prisma.vendorMember.findFirst({
+    where: {
+      user_id: context.req.user_id,
+    },
+  });
+  invariant(vendorMember, 'Vendor member not found.');
+  // find vendor member connections
+  const vendorMemberConnections =
+    await context.prisma.vendorMemberConnection.findMany({
+      where: {
+        vendor_member_id: vendorMember.id,
+      },
+      include: {
+        project_connection: {
+          include: {
+            quotes: {
+              include: {
+                milestones: true,
+              },
+            },
+            project_request: true,
+          },
+        },
+      },
+      orderBy: {
+        project_connection: { created_at: 'desc' },
+      },
+    });
+
+  const now = new Date();
+  const projectConnections = vendorMemberConnections.map(
+    (vmc) => vmc.project_connection,
+  );
+  let result = [...projectConnections];
+
+  if (filter?.status) {
+    // not expired project connections
+    const validProjectConnections = projectConnections.filter(
+      (pc) => (pc?.expired_at && now < pc.expired_at) || pc.expired_at === null,
+    );
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.UNOPEN) {
+      const notiQueryTasks = validProjectConnections.map(async (pc) => {
+        const notifications = await context.prisma.notification.findMany({
+          where: {
+            params: {
+              path: ['project_connection_id'],
+              equals: pc.id,
+            },
+            read_at: null,
+            notification_type: NotificationType.ADMIN_INVITE_NOTIFICATION,
+          },
+        });
+        return {
+          ...pc,
+          notifications,
+        };
+      });
+      const projectConnectionWithNotifications =
+        await Promise.all(notiQueryTasks);
+
+      result = projectConnectionWithNotifications.filter(
+        (pc) => pc.notifications.length > 0,
+      );
+    }
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.PENDING) {
+      result = validProjectConnections.filter(
+        (pc) =>
+          pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+          pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
+      );
+    }
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.ONGOING) {
+      result = filterByCollaborationStatus(
+        projectConnections,
+        ProjectConnectionCollaborationStatus.ONGOING,
+      ).filter(
+        (pc) =>
+          pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED &&
+          pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
+      );
+    }
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.COMPLETED) {
+      result = filterByCollaborationStatus(
+        projectConnections,
+        ProjectConnectionCollaborationStatus.COMPLETED,
+      );
+    }
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.DECLINED) {
+      result = projectConnections.filter(
+        (pc) => pc.vendor_status === ProjectConnectionVendorStatus.DECLINED,
+      );
+    }
+
+    if (filter.status === ProjectConnectionVendorExperimentStatus.EXPIRED) {
+      result = projectConnections.filter(
+        (pc) =>
+          pc.project_request.status === ProjectRequestStatus.WITHDRAWN ||
+          (pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+            pc?.expired_at &&
+            now >= pc.expired_at),
+      );
+    }
+  }
+
+  // Sort & group result
+  result = [
+    // Accepted
+    ...result.filter(
+      (pc) =>
+        pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED &&
+        pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
+    ),
+    // Pending decision (Non expired)
+    ...result.filter(
+      (pc) =>
+        pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+        pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
+        (pc.expired_at === null || (pc.expired_at && now < pc.expired_at)),
+    ),
+    // Expired
+    ...result.filter(
+      (pc) =>
+        pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
+        pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
+        pc.expired_at &&
+        now >= pc.expired_at,
+    ),
+    // Withdrawn
+    ...result.filter(
+      (pc) =>
+        pc.vendor_status === ProjectConnectionVendorStatus.DECLINED &&
+        pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
+    ),
+    ...result.filter(
+      (pc) => pc.project_request.status === ProjectRequestStatus.WITHDRAWN,
+    ),
+  ];
+
+  return result.map((pc) => ({
+    ...pc,
+    project_request: {
+      ...pc.project_request,
+      max_budget: pc.project_request.max_budget?.toNumber() || 0,
+    },
+    quotes: pc.quotes.map((q) => ({
+      ...q,
+      amount: q.amount.toNumber(),
+      milestones: q.milestones.map((m) => ({
+        ...m,
+        amount: m.amount.toNumber(),
+      })),
+    })),
+  }));
+};
+
 export const projectConnectionService = {
   checkIfUserInProjectConnection,
   acceptProjectConnection,
   declineProjectConnection,
+  getProjectConnections,
 };

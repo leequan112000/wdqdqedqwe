@@ -1,26 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { Resolvers } from '../generated';
-import { app_env } from '../../environment';
 import { Context } from '../../types/context';
 import { InternalError } from '../errors/InternalError';
-import { PublicError } from '../errors/PublicError';
-import { PermissionDeniedError } from '../errors/PermissionDeniedError';
-import {
-  projectCollaboratorInvitationEmail,
-  vendorMemberInvitationByUserEmail,
-} from '../../mailer';
-import { customerInvitationEmail } from '../../mailer/customer';
-import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
-import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
-import createCollaboratedNotification from '../../notification/collaboratedNotification';
-import chatService from '../../services/chat/chat.service';
 import collaboratorService from '../../services/collaborator/collaborator.service';
-import { createResetPasswordToken } from '../../helper/auth';
-import {
-  checkAllowAddProjectCollaborator,
-  checkAllowRemoveProjectCollaborator,
-  checkProjectConnectionPermission,
-} from '../../helper/accessControl';
+import { checkProjectConnectionPermission } from '../../helper/accessControl';
 import {
   ProjectAttachmentDocumentType,
   ProjectConnectionVendorStatus,
@@ -31,12 +14,7 @@ import {
   ProjectConnectionVendorExperimentStatus,
   NotificationType,
   ProjectConnectionVendorDisplayStatus,
-  CasbinObj,
-  CasbinAct,
-  CompanyCollaboratorRoleType,
 } from '../../helper/constant';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
-import { hasPermission } from '../../helper/casbin';
 import { toDollar } from '../../helper/money';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import invariant from '../../helper/invariant';
@@ -435,171 +413,7 @@ const resolvers: Resolvers<Context> = {
       return projectConnection;
     },
     projectConnections: async (parent, args, context) => {
-      const { filter } = args;
-      // find vendor member id
-      const vendorMember = await context.prisma.vendorMember.findFirst({
-        where: {
-          user_id: context.req.user_id,
-        },
-      });
-      invariant(vendorMember, 'Vendor member not found.');
-      // find vendor member connections
-      const vendorMemberConnections =
-        await context.prisma.vendorMemberConnection.findMany({
-          where: {
-            vendor_member_id: vendorMember.id,
-          },
-          include: {
-            project_connection: {
-              include: {
-                quotes: {
-                  include: {
-                    milestones: true,
-                  },
-                },
-                project_request: true,
-              },
-            },
-          },
-          orderBy: {
-            project_connection: { created_at: 'desc' },
-          },
-        });
-
-      const now = new Date();
-      const projectConnections = vendorMemberConnections.map(
-        (vmc) => vmc.project_connection,
-      );
-      let result = [...projectConnections];
-
-      if (filter?.status) {
-        // not expired project connections
-        const validProjectConnections = projectConnections.filter(
-          (pc) =>
-            (pc?.expired_at && now < pc.expired_at) || pc.expired_at === null,
-        );
-
-        if (filter.status === ProjectConnectionVendorExperimentStatus.UNOPEN) {
-          const notiQueryTasks = validProjectConnections.map(async (pc) => {
-            const notifications = await context.prisma.notification.findMany({
-              where: {
-                params: {
-                  path: ['project_connection_id'],
-                  equals: pc.id,
-                },
-                read_at: null,
-                notification_type: NotificationType.ADMIN_INVITE_NOTIFICATION,
-              },
-            });
-            return {
-              ...pc,
-              notifications,
-            };
-          });
-          const projectConnectionWithNotifications =
-            await Promise.all(notiQueryTasks);
-
-          result = projectConnectionWithNotifications.filter(
-            (pc) => pc.notifications.length > 0,
-          );
-        }
-
-        if (filter.status === ProjectConnectionVendorExperimentStatus.PENDING) {
-          result = validProjectConnections.filter(
-            (pc) =>
-              pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
-              pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
-          );
-        }
-
-        if (filter.status === ProjectConnectionVendorExperimentStatus.ONGOING) {
-          result = filterByCollaborationStatus(
-            projectConnections,
-            ProjectConnectionCollaborationStatus.ONGOING,
-          ).filter(
-            (pc) =>
-              pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED &&
-              pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
-          );
-        }
-
-        if (
-          filter.status === ProjectConnectionVendorExperimentStatus.COMPLETED
-        ) {
-          result = filterByCollaborationStatus(
-            projectConnections,
-            ProjectConnectionCollaborationStatus.COMPLETED,
-          );
-        }
-
-        if (
-          filter.status === ProjectConnectionVendorExperimentStatus.DECLINED
-        ) {
-          result = projectConnections.filter(
-            (pc) => pc.vendor_status === ProjectConnectionVendorStatus.DECLINED,
-          );
-        }
-
-        if (filter.status === ProjectConnectionVendorExperimentStatus.EXPIRED) {
-          result = projectConnections.filter(
-            (pc) =>
-              pc.project_request.status === ProjectRequestStatus.WITHDRAWN ||
-              (pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
-                pc?.expired_at &&
-                now >= pc.expired_at),
-          );
-        }
-      }
-
-      // Sort & group result
-      result = [
-        // Accepted
-        ...result.filter(
-          (pc) =>
-            pc.vendor_status === ProjectConnectionVendorStatus.ACCEPTED &&
-            pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
-        ),
-        // Pending decision (Non expired)
-        ...result.filter(
-          (pc) =>
-            pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
-            pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
-            (pc.expired_at === null || (pc.expired_at && now < pc.expired_at)),
-        ),
-        // Expired
-        ...result.filter(
-          (pc) =>
-            pc.vendor_status === ProjectConnectionVendorStatus.PENDING &&
-            pc.project_request.status !== ProjectRequestStatus.WITHDRAWN &&
-            pc.expired_at &&
-            now >= pc.expired_at,
-        ),
-        // Withdrawn
-        ...result.filter(
-          (pc) =>
-            pc.vendor_status === ProjectConnectionVendorStatus.DECLINED &&
-            pc.project_request.status !== ProjectRequestStatus.WITHDRAWN,
-        ),
-        ...result.filter(
-          (pc) => pc.project_request.status === ProjectRequestStatus.WITHDRAWN,
-        ),
-      ];
-
-      return result.map((pc) => ({
-        ...pc,
-        project_request: {
-          ...pc.project_request,
-          max_budget: pc.project_request.max_budget?.toNumber() || 0,
-        },
-        quotes: pc.quotes.map((q) => ({
-          ...q,
-          amount: q.amount.toNumber(),
-          milestones: q.milestones.map((m) => ({
-            ...m,
-            amount: m.amount.toNumber(),
-          })),
-        })),
-      }));
+      return projectConnectionService.getProjectConnections(args, context);
     },
     bioInvitedProjectConnections: async (parent, args, context) => {
       if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
