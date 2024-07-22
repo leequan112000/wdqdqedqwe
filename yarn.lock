@@ -4485,11 +4485,6 @@ function-bind@^1.1.1:
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
   integrity sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==
 
-fuzzysort@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/fuzzysort/-/fuzzysort-3.0.2.tgz#22c84fb8776ad3646d9ac9bae500ee12370c770e"
-  integrity sha512-ZyahVgxvckB1Qosn7YGWLDJJp2XlyaQ2WmZeI+d0AzW0AMqVYnz5N89G6KAKa6m/LOtv+kzJn4lhDF/yVg11Cg==
-
 gaxios@^5.0.0, gaxios@^5.0.1:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/gaxios/-/gaxios-5.1.0.tgz#133b77b45532be71eec72012b7e97c2320b6140a"
