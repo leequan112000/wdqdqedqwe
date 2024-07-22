@@ -1,7 +1,7 @@
-import fuzzysort from 'fuzzysort';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
+import { Prisma as PrismaCRODb } from '../../../prisma-cro/generated/client';
 
 const resolvers: Resolvers<Context> = {
   CroDbSubspecialty: {
@@ -16,19 +16,19 @@ const resolvers: Resolvers<Context> = {
   },
   Query: {
     croDbSubspecialties: async (_, args, context) => {
-      const allSubspecialties =
-        await context.prismaCRODb.subspecialty.findMany();
-
-      let filteredSubspecialties = allSubspecialties;
-
+      const filter: PrismaCRODb.SubspecialtyWhereInput = {};
       if (args.filter?.search) {
-        const results = fuzzysort.go(args.filter.search, allSubspecialties, {
-          key: 'name',
-        });
-        filteredSubspecialties = results.map((result) => result.obj);
+        filter.name = {
+          contains: args.filter.search,
+          mode: 'insensitive',
+        };
       }
 
-      return filteredSubspecialties.slice(0, 5);
+      return (
+        await context.prismaCRODb.subspecialty.findMany({
+          where: filter,
+        })
+      ).slice(0, 5);
     },
   },
 };
