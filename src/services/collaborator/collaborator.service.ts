@@ -555,7 +555,6 @@ export const inviteProjectCollaboratorViaEmail = async (
 
   invariant(currentUserId, 'Current user id not found.');
 
-  // Check if current user has the permission to set the role.
   if (castedRole) {
     const roleEnum = Object.values(CompanyCollaboratorRoleType);
     invariant(
@@ -591,7 +590,6 @@ export const inviteProjectCollaboratorViaEmail = async (
       vendor_member: true,
     },
   });
-
   if (existingUser) {
     // If user exists and same company as the current user.
     if (

@@ -11,7 +11,7 @@ import {
   VendorMember,
   VendorMemberConnection,
 } from '@prisma/client';
-import { ServiceContext, Context } from '../../types/context';
+import { Context } from '../../types/context';
 import { MockContext, createMockContext } from '../../testContext';
 import { projectConnectionService } from './projectConnection.service';
 import {
