@@ -35,7 +35,7 @@ const resolvers: Resolvers<Context> = {
       return [
         {
           id: CustomerSubscriptionPlanName.SOURCING_PLAN,
-          name: 'Sourcerer™ Search',
+          name: 'Sourcerer Search',
           description:
             'Empowers you to independently conduct vendor searches and establish connections.',
           prices: [
@@ -62,7 +62,7 @@ const resolvers: Resolvers<Context> = {
           ],
           features: [
             {
-              name: 'Sourcerer™ Matchmaker',
+              name: 'Sourcerer life sciences outsourcing tool',
               items: [
                 { description: 'RFP analysis for vendor matching' },
                 { description: 'Unlimited search requests' },
@@ -70,7 +70,7 @@ const resolvers: Resolvers<Context> = {
               ],
             },
             {
-              name: 'Sourcerer™ Lite Search',
+              name: 'Sourcerer lite search',
               items: [
                 {
                   description: 'Unlimited search requests for a single service',
@@ -87,7 +87,7 @@ const resolvers: Resolvers<Context> = {
           prices: [],
           features: [
             {
-              name: 'Everything in Sourcerer™ Search Plan plus...',
+              name: 'Everything in Sourcerer Search Plan plus...',
               items: [],
             },
             {
