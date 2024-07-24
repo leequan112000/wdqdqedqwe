@@ -1,6 +1,6 @@
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
-import sourcererLiteService from '../../services/sourcererLite/sourcererLite.services';
+import sourcererLiteService from '../../services/sourcererLite/sourcererLite.service';
 
 const resolvers: Resolvers<Context> = {
   Query: {
