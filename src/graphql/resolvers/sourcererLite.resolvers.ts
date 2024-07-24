@@ -19,6 +19,16 @@ const resolvers: Resolvers<Context> = {
         context,
       );
     },
+    searchVendorByServices: async (_, args, context) => {
+      const { subspecialty_ids, first, after } = args;
+
+      const is_paid_user = await sourcererLiteService.checkIsPaidUser(context);
+
+      return await sourcererLiteService.matchVendorByServices(
+        { subspecialty_ids, first, after, is_paid_user },
+        context,
+      );
+    },
   },
 };
 

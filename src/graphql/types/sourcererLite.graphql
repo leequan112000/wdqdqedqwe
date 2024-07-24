@@ -22,4 +22,9 @@ type Query {
     after: String
     first: Int = 15
   ): SearchVendorByServicePaginatedResult
+  searchVendorByServices(
+    subspecialty_ids: [String!]!
+    after: String
+    first: Int = 15
+  ): SearchVendorByServicePaginatedResult
 }

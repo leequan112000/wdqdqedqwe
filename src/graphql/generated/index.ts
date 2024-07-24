@@ -1675,6 +1675,7 @@ export type Query = {
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
   searchVendorByService?: Maybe<SearchVendorByServicePaginatedResult>;
+  searchVendorByServices?: Maybe<SearchVendorByServicePaginatedResult>;
   sourcedCros?: Maybe<SourcedCroConnection>;
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
@@ -1871,6 +1872,13 @@ export type QuerySearchVendorByServiceArgs = {
   first?: InputMaybe<Scalars['Int']>;
   ip_address?: InputMaybe<Scalars['String']>;
   keyword: Scalars['String'];
+};
+
+
+export type QuerySearchVendorByServicesArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  subspecialty_ids: Array<Scalars['String']>;
 };
 
 
@@ -3578,6 +3586,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
   searchVendorByService?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServiceArgs, 'first' | 'keyword'>>;
+  searchVendorByServices?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServicesArgs, 'first' | 'subspecialty_ids'>>;
   sourcedCros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<QuerySourcedCrosArgs, 'first' | 'sourcing_session_id'>>;
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
