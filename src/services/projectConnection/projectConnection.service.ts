@@ -200,8 +200,12 @@ export const acceptProjectConnection = async (
   return updatedProjectConnection;
 };
 
+type DeclineProjectConnectionArgs = {
+  id: string;
+};
+
 export const declineProjectConnection = async (
-  args: AcceptProjectConnectionArgs,
+  args: DeclineProjectConnectionArgs,
   context: Context,
 ) => {
   const currentUserId = context.req.user_id;
@@ -240,8 +244,14 @@ export const declineProjectConnection = async (
   return updatedProjectConnection;
 };
 
+type GetProjectConnectionsArgs = {
+  filter?: {
+    status?: string | null;
+  } | null;
+};
+
 export const getProjectConnections = async (
-  args: { filter?: { status?: string | null } | null },
+  args: GetProjectConnectionsArgs,
   context: Context,
 ) => {
   const { filter } = args;

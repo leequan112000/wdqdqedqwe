@@ -10,13 +10,9 @@ import {
   ProjectRequestStatus,
   PROJECT_ATTACHMENT_DOCUMENT_TYPE,
   QuoteStatus,
-  ProjectConnectionCollaborationStatus,
-  ProjectConnectionVendorExperimentStatus,
-  NotificationType,
   ProjectConnectionVendorDisplayStatus,
 } from '../../helper/constant';
 import { toDollar } from '../../helper/money';
-import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import invariant from '../../helper/invariant';
 import { projectConnectionService } from '../../services/projectConnection/projectConnection.service';
 
@@ -402,7 +398,7 @@ const resolvers: Resolvers<Context> = {
     },
   },
   Query: {
-    projectConnection: async (parent, args, context) => {
+    projectConnection: async (_, args, context) => {
       await checkProjectConnectionPermission(context, args.id);
       const projectConnection =
         await context.prisma.projectConnection.findFirst({
@@ -412,10 +408,10 @@ const resolvers: Resolvers<Context> = {
         });
       return projectConnection;
     },
-    projectConnections: async (parent, args, context) => {
+    projectConnections: async (_, args, context) => {
       return projectConnectionService.getProjectConnections(args, context);
     },
-    bioInvitedProjectConnections: async (parent, args, context) => {
+    bioInvitedProjectConnections: async (_, args, context) => {
       if (process.env.ENABLE_BIOTECH_INVITE_CRO === 'true') {
         const { project_request_id } = args;
         invariant(project_request_id, 'Project request id is required.');
@@ -458,10 +454,10 @@ const resolvers: Resolvers<Context> = {
     declinedProjectConnection: async (_, args, context) => {
       return projectConnectionService.declineProjectConnection(args, context);
     },
-    addProjectCollaborator: async (parent, args, context) => {
+    addProjectCollaborator: async (_, args, context) => {
       return collaboratorService.addProjectCollaborator(args, context);
     },
-    removeProjectCollaborator: async (parent, args, context) => {
+    removeProjectCollaborator: async (_, args, context) => {
       return collaboratorService.removeProjectCollaborator(args, context);
     },
     inviteProjectCollaboratorViaEmail: async (parent, args, context) => {

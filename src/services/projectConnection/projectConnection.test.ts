@@ -26,16 +26,6 @@ import { mockDeep } from 'vitest-mock-extended';
 
 vi.mock('@sendgrid/mail');
 vi.mock('../chat/chat.service');
-vi.mocked(chatService.default.createSystemMessage).mockResolvedValue({
-  id: faker.string.uuid(),
-  user_id: faker.string.uuid(),
-  chat_id: faker.string.uuid(),
-  content:
-    "You've found a match! Start a conversation with your partner to kick off your project.",
-  type: 'SYSTEM',
-  created_at: new Date(),
-  updated_at: new Date(),
-});
 let mockCtx: MockContext;
 let ctx: Context;
 let projectRequest: ProjectRequest;
