@@ -4,7 +4,7 @@ import sourcererLiteService from '../../services/sourcererLite/sourcererLite.ser
 
 const resolvers: Resolvers<Context> = {
   Query: {
-    searchVendorByService: async (_, args, context) => {
+    sourcererLiteSearch: async (_, args, context) => {
       const { keyword, fingerprint, ip_address, first, after } = args;
 
       await sourcererLiteService.checkRateLimit(
@@ -14,18 +14,28 @@ const resolvers: Resolvers<Context> = {
 
       const is_paid_user = await sourcererLiteService.checkIsPaidUser(context);
 
+      const isSubspecialtyExist =
+        await context.prismaCRODb.subspecialty.findFirst({
+          where: {
+            name: keyword,
+          },
+        });
+
+      if (!isSubspecialtyExist) {
+        const subspecialties =
+          (await sourcererLiteService.searchSubspecialtiesSemantically({
+            search_term: keyword,
+          })) as { id: string; name: string }[];
+
+        const subspecialty_ids = subspecialties.map((s) => s.id);
+        return await sourcererLiteService.matchVendorByServices(
+          { subspecialty_ids, first, after, is_paid_user },
+          context,
+        );
+      }
+
       return await sourcererLiteService.matchVendorByService(
         { keyword, first, after, is_paid_user },
-        context,
-      );
-    },
-    searchVendorByServices: async (_, args, context) => {
-      const { subspecialty_ids, first, after } = args;
-
-      const is_paid_user = await sourcererLiteService.checkIsPaidUser(context);
-
-      return await sourcererLiteService.matchVendorByServices(
-        { subspecialty_ids, first, after, is_paid_user },
         context,
       );
     },
