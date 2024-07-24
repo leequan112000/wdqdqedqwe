@@ -1643,6 +1643,7 @@ export type Query = {
   croDbSpecialties?: Maybe<Array<Maybe<CroDbSpecialty>>>;
   croDbSpecialty?: Maybe<CroDbSpecialty>;
   croDbSubspecialties?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
+  croDbSubspecialtiesBySemanticSearch?: Maybe<Array<Maybe<CroDbSubspecialty>>>;
   croDbVendorCompany?: Maybe<CroDbVendorCompany>;
   customer?: Maybe<Customer>;
   featuredNews?: Maybe<Array<Maybe<News>>>;
@@ -1741,6 +1742,11 @@ export type QueryCroDbSpecialtyArgs = {
 
 export type QueryCroDbSubspecialtiesArgs = {
   filter?: InputMaybe<CroDbSubspecialtiesFilterInput>;
+};
+
+
+export type QueryCroDbSubspecialtiesBySemanticSearchArgs = {
+  search: Scalars['String'];
 };
 
 
@@ -3554,6 +3560,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   croDbSpecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSpecialty']>>>, ParentType, ContextType>;
   croDbSpecialty?: Resolver<Maybe<ResolversTypes['CroDbSpecialty']>, ParentType, ContextType, RequireFields<QueryCroDbSpecialtyArgs, 'name'>>;
   croDbSubspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSubspecialty']>>>, ParentType, ContextType, Partial<QueryCroDbSubspecialtiesArgs>>;
+  croDbSubspecialtiesBySemanticSearch?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbSubspecialty']>>>, ParentType, ContextType, RequireFields<QueryCroDbSubspecialtiesBySemanticSearchArgs, 'search'>>;
   croDbVendorCompany?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType, RequireFields<QueryCroDbVendorCompanyArgs, 'id'>>;
   customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   featuredNews?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;

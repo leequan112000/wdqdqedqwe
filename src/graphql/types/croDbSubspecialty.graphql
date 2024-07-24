@@ -12,4 +12,5 @@ input CroDbSubspecialtiesFilterInput {
 
 type Query {
   croDbSubspecialties(filter: CroDbSubspecialtiesFilterInput): [CroDbSubspecialty]
+  croDbSubspecialtiesBySemanticSearch(search: String!): [CroDbSubspecialty]
 }
