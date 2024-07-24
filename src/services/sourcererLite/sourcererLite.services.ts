@@ -236,7 +236,7 @@ export const matchVendorByService = async (
     } else if (endSlice >= MAX_FREE_RESULT_COUNT) {
       hasNextPage = false;
       edges = edges.map((edge, index) => {
-        if (index < 3) {
+        if (index < 25) {
           return edge;
         } else {
           return {
@@ -254,7 +254,7 @@ export const matchVendorByService = async (
       });
     } else {
       edges = edges.map((edge, index) => {
-        if (index < 3) {
+        if (index < 25) {
           return edge;
         } else {
           return {
@@ -394,7 +394,7 @@ export const matchVendorByServices = async (
     } else if (endSlice >= MAX_FREE_RESULT_COUNT) {
       hasNextPage = false;
       edges = edges.map((edge, index) => {
-        if (index < 3) {
+        if (index < 25) {
           return edge;
         } else {
           return {
@@ -412,7 +412,7 @@ export const matchVendorByServices = async (
       });
     } else {
       edges = edges.map((edge, index) => {
-        if (index < 3) {
+        if (index < 25) {
           return edge;
         } else {
           return {
