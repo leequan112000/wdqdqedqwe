@@ -4,6 +4,10 @@ import { InputMaybe } from '../../graphql/generated';
 import { Prisma } from '../../../prisma-cro/generated/client';
 import { PublicError } from '../../graphql/errors/PublicError';
 import Sentry from '../../sentry';
+import {
+  CustomerSubscriptionPlanName,
+  SubscriptionStatus,
+} from '../../helper/constant';
 
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
@@ -98,6 +102,62 @@ export const checkRateLimit = async (
       }
     }
   }
+};
+
+export const checkIsPaidUser = async (ctx: Context) => {
+  const userId = ctx.req.user_id;
+  let isPaidUser = false;
+  if (userId) {
+    const customer = (
+      await ctx.prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          customer: {
+            include: {
+              biotech: {
+                include: {
+                  subscriptions: {
+                    where: {
+                      status: SubscriptionStatus.ACTIVE,
+                      OR: [
+                        { ended_at: null },
+                        {
+                          ended_at: {
+                            gt: new Date(),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              customer_subscriptions: {
+                where: {
+                  status: SubscriptionStatus.ACTIVE,
+                  plan_name: {
+                    in: [
+                      CustomerSubscriptionPlanName.SOURCING_PLAN,
+                      CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+    )?.customer;
+    const has_active_legacy_plan =
+      !!customer?.biotech?.subscriptions &&
+      customer?.biotech?.subscriptions.length > 0;
+    const has_active_sourcerer_or_white_glove_plan =
+      !!customer?.customer_subscriptions &&
+      customer?.customer_subscriptions.length > 0;
+    isPaidUser =
+      has_active_legacy_plan || has_active_sourcerer_or_white_glove_plan;
+  }
+
+  return isPaidUser;
 };
 
 export type MatchVendorByServiceArgs = {
@@ -232,6 +292,7 @@ export const matchVendorByService = async (
 
 const sourcererLiteService = {
   checkRateLimit,
+  checkIsPaidUser,
   matchVendorByService,
 };
 
