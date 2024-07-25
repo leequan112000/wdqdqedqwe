@@ -12,6 +12,7 @@ type SourcererLiteSearchResultPageInfo {
 type SourcererLiteSearchPaginatedResult {
   edges: [SourcererLiteSearchResultEdge]
   page_info: SourcererLiteSearchResultPageInfo
+  related_subspecialty_names: [String]
 }
 
 type Query {

@@ -289,11 +289,13 @@ export const matchVendorByService = async (
       has_next_page: hasNextPage,
       total_count: vendorCompanies.length,
     },
+    related_subspecialty_names: [keyword],
   };
 };
 
 export type MatchVendorByServicesArgs = {
   subspecialty_ids: string[];
+  subspecialty_names: string[];
   first: number;
   after: InputMaybe<string> | undefined;
   is_paid_user: boolean;
@@ -303,7 +305,8 @@ export const matchVendorByServices = async (
   args: MatchVendorByServicesArgs,
   ctx: Context,
 ) => {
-  const { subspecialty_ids, first, after, is_paid_user } = args;
+  const { subspecialty_ids, subspecialty_names, first, after, is_paid_user } =
+    args;
   const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
     vendor_company_subspecialties: {
       some: {
@@ -447,6 +450,7 @@ export const matchVendorByServices = async (
       has_next_page: hasNextPage,
       total_count: vendorCompanies.length,
     },
+    related_subspecialty_names: subspecialty_names,
   };
 };
 

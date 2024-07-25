@@ -2040,6 +2040,7 @@ export type SourcererLiteSearchPaginatedResult = {
   __typename?: 'SourcererLiteSearchPaginatedResult';
   edges?: Maybe<Array<Maybe<SourcererLiteSearchResultEdge>>>;
   page_info?: Maybe<SourcererLiteSearchResultPageInfo>;
+  related_subspecialty_names?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
 export type SourcererLiteSearchResultEdge = {
@@ -3711,6 +3712,7 @@ export type SourcedCroPageInfoResolvers<ContextType = any, ParentType extends Re
 export type SourcererLiteSearchPaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcererLiteSearchPaginatedResult'] = ResolversParentTypes['SourcererLiteSearchPaginatedResult']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcererLiteSearchResultEdge']>>>, ParentType, ContextType>;
   page_info?: Resolver<Maybe<ResolversTypes['SourcererLiteSearchResultPageInfo']>, ParentType, ContextType>;
+  related_subspecialty_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

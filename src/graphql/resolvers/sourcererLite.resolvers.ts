@@ -28,8 +28,9 @@ const resolvers: Resolvers<Context> = {
           })) as { id: string; name: string }[];
 
         const subspecialty_ids = subspecialties.map((s) => s.id);
+        const subspecialty_names = subspecialties.map((s) => s.name);
         return await sourcererLiteService.matchVendorByServices(
-          { subspecialty_ids, first, after, is_paid_user },
+          { subspecialty_ids, subspecialty_names, first, after, is_paid_user },
           context,
         );
       }
