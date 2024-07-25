@@ -1,25 +1,26 @@
-type SearchVendorByServiceResultEdge {
+type SourcererLiteSearchResultEdge {
   cursor: String!
   node: CroDbVendorCompany
 }
 
-type SearchVendorByServiceResultPageInfo {
+type SourcererLiteSearchResultPageInfo {
   end_cursor: String
   has_next_page: Boolean
   total_count: Int
 }
 
-type SearchVendorByServicePaginatedResult {
-  edges: [SearchVendorByServiceResultEdge]
-  page_info: SearchVendorByServiceResultPageInfo
+type SourcererLiteSearchPaginatedResult {
+  edges: [SourcererLiteSearchResultEdge]
+  page_info: SourcererLiteSearchResultPageInfo
+  related_subspecialty_names: [String]
 }
 
 type Query {
-  searchVendorByService(
+  sourcererLiteSearch(
     keyword: String!
     fingerprint: String
     ip_address: String
     after: String
     first: Int = 15
-  ): SearchVendorByServicePaginatedResult
+  ): SourcererLiteSearchPaginatedResult
 }
