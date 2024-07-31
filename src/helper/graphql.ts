@@ -21,6 +21,8 @@ export const operationWhitelist = [
   'Public_SourcererLiteSearch_Query',
   `Public_SourcererLiteSearchServices_Query`,
   'Public_PricingPageQuery',
+  'Public_VendorSurveyData_Query',
+  'Public_SubmitVendorSurvey_Mutation',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({

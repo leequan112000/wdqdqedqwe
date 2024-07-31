@@ -130,6 +130,8 @@ export const createVendorSurvey = async (
   } catch (error) {
     Sentry.captureException(error);
   }
+
+  return vendorSurvey;
 };
 
 const vendorSurveyService = {

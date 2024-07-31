@@ -14,6 +14,9 @@ const envSchema = z.object({
       discount_percentage: z.coerce.number().optional(),
     }),
   ),
+  ENABLE_VENDOR_SURVEY_REMINDER: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true'),
 });
 
 export const env = envSchema.parse(process.env);
