@@ -238,7 +238,7 @@ export async function startServer() {
   httpServer.listen(process.env.PORT || '9000', () => {
     if (env.ENABLE_VENDOR_SURVEY_REMINDER) {
       vendorSurveyReminderJob.start();
-      console.log('Started CRON job: vendorSurveyReminderJob');
+      console.log('Scheduled CRON job: vendorSurveyReminderJob');
     }
   });
 }

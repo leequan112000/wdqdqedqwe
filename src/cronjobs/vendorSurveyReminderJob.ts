@@ -10,6 +10,7 @@ import Sentry from '../sentry';
 export const vendorSurveyReminderJob = new CronJob(
   '0 0 9-17 * * *', // At minute 0 past every hour from 9 through 17.
   async function () {
+    console.log('Started CRON Job: vendorSurveyReminderJob');
     const oneHourAgo = moment().subtract(1, 'hour').toDate();
     const surveys = await prismaCRODb.vendorSurvey.findMany({
       where: {
@@ -52,6 +53,7 @@ export const vendorSurveyReminderJob = new CronJob(
     });
 
     await Promise.all(reminderTasks);
+    console.log('Completed CRON Job: vendorSurveyReminderJob');
   },
   null,
   false,
