@@ -30,6 +30,8 @@ import sentryMiddleware from './middlewares/sentry';
 import Sentry from './sentry';
 import { GqlErrorCode } from './helper/constant';
 import { redis } from './redis';
+import { vendorSurveyReminderJob } from './cronjobs/vendorSurveyReminderJob';
+import { env } from './env';
 
 const app = express();
 
@@ -233,5 +235,10 @@ export async function startServer() {
 
   app.use(Sentry.Handlers.errorHandler());
 
-  httpServer.listen(process.env.PORT || '9000');
+  httpServer.listen(process.env.PORT || '9000', () => {
+    if (env.ENABLE_VENDOR_SURVEY_REMINDER) {
+      vendorSurveyReminderJob.start();
+      console.log('Started CRON job: vendorSurveyReminderJob');
+    }
+  });
 }

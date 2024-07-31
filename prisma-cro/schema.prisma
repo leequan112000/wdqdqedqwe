@@ -295,6 +295,7 @@ model VendorSurvey {
   attachment_content_type String?
   status                  String
   step                    String?
+  reminder_counts         Int      @default(0)
   created_at              DateTime @default(now())
   updated_at              DateTime @updatedAt
 

@@ -2818,6 +2818,11 @@
   resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.3.0.tgz#a61043a62c0a72696c73a0a305c544c96501e006"
   integrity sha512-uKRI5QORDnrGFYgcdAVnHvEIvEZ8noTpP/Bg+HeUzZghwinDlIS87DEenV5r1YoOF9G4x600YsUXLWZ19rmTmg==
 
+"@types/luxon@~3.4.0":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.4.2.tgz#e4fc7214a420173cea47739c33cdf10874694db7"
+  integrity sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==
+
 "@types/mime-types@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@types/mime-types/-/mime-types-2.1.1.tgz#d9ba43490fa3a3df958759adf69396c3532cf2c1"
@@ -3910,12 +3915,13 @@ cron-parser@^4.2.1:
   dependencies:
     luxon "^3.2.1"
 
-cron@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/cron/-/cron-2.3.1.tgz#71caa566ffef60ada9183b8677df4afa9a214ad7"
-  integrity sha512-1eRRlIT0UfIqauwbG9pkg3J6CX9A6My2ytJWqAXoK0T9oJnUZTzGBNPxao0zjodIbPgf8UQWjE62BMb9eVllSQ==
+cron@^3.1.7:
+  version "3.1.7"
+  resolved "https://registry.yarnpkg.com/cron/-/cron-3.1.7.tgz#3423d618ba625e78458fff8cb67001672d49ba0d"
+  integrity sha512-tlBg7ARsAMQLzgwqVxy8AZl/qlTc5nibqYwtNGoCrd+cV+ugI+tvZC1oT/8dFH8W455YrywGykx/KMmAqOr7Jw==
   dependencies:
-    luxon "^3.2.1"
+    "@types/luxon" "~3.4.0"
+    luxon "~3.4.0"
 
 cross-fetch@^3.1.5:
   version "3.1.5"
@@ -5468,6 +5474,11 @@ luxon@^3.2.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.3.0.tgz#d73ab5b5d2b49a461c47cedbc7e73309b4805b48"
   integrity sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==
+
+luxon@~3.4.0:
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.4.tgz#cf20dc27dc532ba41a169c43fdcc0063601577af"
+  integrity sha512-zobTr7akeGHnv7eBOXcRgMeCP6+uyYsczwmeRCauvpvaAltgNyTbLH/+VaEAPUeWBT+1GuNmz4wC/6jtQzbbVA==
 
 magic-string@^0.30.1:
   version "0.30.2"
