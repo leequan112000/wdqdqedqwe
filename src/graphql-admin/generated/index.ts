@@ -158,6 +158,7 @@ export type Mutation = {
   createLabSpecialization?: Maybe<LabSpecialization>;
   createLabSpecializationConnection?: Maybe<LabSpecializationConnection>;
   createNews?: Maybe<News>;
+  createPaidVendor?: Maybe<PaidVendor>;
   createPerk?: Maybe<Perk>;
   createPerkCategory?: Maybe<PerkCategory>;
   createProjectRequest?: Maybe<ProjectRequest>;
@@ -184,6 +185,7 @@ export type Mutation = {
   removeReviewQuestionSet?: Maybe<ReviewQuestionSet>;
   resendCustomerInvitationByAdmin?: Maybe<Scalars['Boolean']>;
   resendVendorMemberInvitationByAdmin?: Maybe<Scalars['Boolean']>;
+  sendPaidVendorSignUpLink?: Maybe<Scalars['Boolean']>;
   transferBiotechOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
   transferVendorCompanyOwnershipByAdmin?: Maybe<Scalars['Boolean']>;
   unpublishNews?: Maybe<News>;
@@ -309,6 +311,12 @@ export type MutationCreateNewsArgs = {
   published_at?: InputMaybe<Scalars['Date']>;
   title: Scalars['String'];
   url?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationCreatePaidVendorArgs = {
+  company_name?: InputMaybe<Scalars['String']>;
+  email: Scalars['String'];
 };
 
 
@@ -476,6 +484,11 @@ export type MutationResendVendorMemberInvitationByAdminArgs = {
 };
 
 
+export type MutationSendPaidVendorSignUpLinkArgs = {
+  id: Scalars['String'];
+};
+
+
 export type MutationTransferBiotechOwnershipByAdminArgs = {
   biotech_id: Scalars['String'];
   user_id: Scalars['String'];
@@ -625,6 +638,11 @@ export type MutationVerifyBiotechInvoicePaymentArgs = {
 
 export type News = {
   __typename?: 'News';
+  id?: Maybe<Scalars['String']>;
+};
+
+export type PaidVendor = {
+  __typename?: 'PaidVendor';
   id?: Maybe<Scalars['String']>;
 };
 
@@ -836,6 +854,7 @@ export type ResolversTypes = ResolversObject<{
   Milestone: ResolverTypeWrapper<Milestone>;
   Mutation: ResolverTypeWrapper<{}>;
   News: ResolverTypeWrapper<News>;
+  PaidVendor: ResolverTypeWrapper<PaidVendor>;
   Perk: ResolverTypeWrapper<Perk>;
   PerkCategory: ResolverTypeWrapper<PerkCategory>;
   ProjectRequest: ResolverTypeWrapper<ProjectRequest>;
@@ -871,6 +890,7 @@ export type ResolversParentTypes = ResolversObject<{
   Milestone: Milestone;
   Mutation: {};
   News: News;
+  PaidVendor: PaidVendor;
   Perk: Perk;
   PerkCategory: PerkCategory;
   ProjectRequest: ProjectRequest;
@@ -1033,6 +1053,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationArgs, 'full_name'>>;
   createLabSpecializationConnection?: Resolver<Maybe<ResolversTypes['LabSpecializationConnection']>, ParentType, ContextType, RequireFields<MutationCreateLabSpecializationConnectionArgs, 'lab_specialization_id' | 'vendor_company_id'>>;
   createNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationCreateNewsArgs, 'title'>>;
+  createPaidVendor?: Resolver<Maybe<ResolversTypes['PaidVendor']>, ParentType, ContextType, RequireFields<MutationCreatePaidVendorArgs, 'email'>>;
   createPerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationCreatePerkArgs, 'description' | 'how_to_redeem' | 'image' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
   createPerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationCreatePerkCategoryArgs, 'description' | 'name'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'title'>>;
@@ -1059,6 +1080,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeReviewQuestionSet?: Resolver<Maybe<ResolversTypes['ReviewQuestionSet']>, ParentType, ContextType, RequireFields<MutationRemoveReviewQuestionSetArgs, 'review_question_set_id'>>;
   resendCustomerInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendCustomerInvitationByAdminArgs, 'user_id'>>;
   resendVendorMemberInvitationByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationResendVendorMemberInvitationByAdminArgs, 'user_id'>>;
+  sendPaidVendorSignUpLink?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendPaidVendorSignUpLinkArgs, 'id'>>;
   transferBiotechOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipByAdminArgs, 'biotech_id' | 'user_id'>>;
   transferVendorCompanyOwnershipByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipByAdminArgs, 'user_id' | 'vendor_company_id'>>;
   unpublishNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUnpublishNewsArgs, 'news_id'>>;
@@ -1080,6 +1102,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type NewsResolvers<ContextType = any, ParentType extends ResolversParentTypes['News'] = ResolversParentTypes['News']> = ResolversObject<{
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PaidVendorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaidVendor'] = ResolversParentTypes['PaidVendor']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -1208,6 +1235,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Milestone?: MilestoneResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   News?: NewsResolvers<ContextType>;
+  PaidVendor?: PaidVendorResolvers<ContextType>;
   Perk?: PerkResolvers<ContextType>;
   PerkCategory?: PerkCategoryResolvers<ContextType>;
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
