@@ -10,7 +10,7 @@ const resolvers: Resolvers<Context> = {
       const { email: emailArgs, company_name } = args;
       const email = emailArgs.toLowerCase();
 
-      const paidVendor = await context.prisma.paidVendors.create({
+      const paidVendor = await context.prisma.paidVendor.create({
         data: {
           email,
           company_name: company_name || undefined,
@@ -27,7 +27,7 @@ const resolvers: Resolvers<Context> = {
     sendPaidVendorSignUpLink: async (_, args, context) => {
       const { id } = args;
 
-      const paidVendor = await context.prisma.paidVendors.findUnique({
+      const paidVendor = await context.prisma.paidVendor.findUnique({
         where: {
           id,
         },
@@ -39,7 +39,7 @@ const resolvers: Resolvers<Context> = {
         new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
 
-      await context.prisma.paidVendors.update({
+      await context.prisma.paidVendor.update({
         data: {
           user: {
             update: {
