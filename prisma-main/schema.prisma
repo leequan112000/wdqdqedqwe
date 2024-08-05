@@ -42,7 +42,7 @@ model User {
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
   availability                        Availability[]
-  PaidVendors                         PaidVendors?
+  paid_vendor                         PaidVendors?
 
   @@map("users")
 }
