@@ -1,6 +1,7 @@
 import { createResetPasswordToken } from '../../helper/auth';
 import { createResetPasswordUrl } from '../../helper/email';
 import invariant from '../../helper/invariant';
+import { sendPaidVendorSignUpLink } from '../../mailer/paidVendor';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 
@@ -26,7 +27,6 @@ const resolvers: Resolvers<Context> = {
     },
     sendPaidVendorSignUpLink: async (_, args, context) => {
       const { id } = args;
-
       const paidVendor = await context.prisma.paidVendor.findUnique({
         where: {
           id,
@@ -55,9 +55,16 @@ const resolvers: Resolvers<Context> = {
       });
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
+      console.log(resetPasswordUrl);
 
       // TODO: Send email
-      console.log(resetPasswordUrl);
+      await sendPaidVendorSignUpLink(
+        {
+          sign_up_link: resetPasswordUrl,
+          company_name: paidVendor.company_name!,
+        },
+        paidVendor.email!,
+      );
 
       return true;
     },
