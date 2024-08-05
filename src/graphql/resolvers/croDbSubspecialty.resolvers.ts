@@ -22,6 +22,7 @@ const resolvers: Resolvers<Context> = {
           contains: args.filter.search,
           mode: 'insensitive',
         };
+        filter.is_linked_to_vendor = true;
       }
 
       return (
