@@ -1,0 +1,13 @@
+type PaidVendor {
+  id: String
+}
+
+type Mutation {
+  createPaidVendor(
+    email: String!
+    company_name: String
+  ): PaidVendor
+  sendPaidVendorSignUpLink(
+    id: String!
+  ): Boolean
+}
