@@ -2113,6 +2113,7 @@ export type SourcingSubspecialty = {
   __typename?: 'SourcingSubspecialty';
   id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  related_subspecialties?: Maybe<Array<Maybe<Scalars['String']>>>;
   sourcing_session?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
 };
@@ -3822,6 +3823,7 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
 export type SourcingSubspecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSubspecialty'] = ResolversParentTypes['SourcingSubspecialty']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  related_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

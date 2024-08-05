@@ -338,8 +338,9 @@ model SourcingExtractedRfp {
 }
 
 model SourcingSubspecialty {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  related_subspecialties String[]
 
   sourcing_session_id String          @db.Uuid
   sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)
