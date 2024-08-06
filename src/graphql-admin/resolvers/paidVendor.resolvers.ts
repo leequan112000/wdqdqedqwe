@@ -1,3 +1,4 @@
+import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
 import { createResetPasswordUrl } from '../../helper/email';
 import invariant from '../../helper/invariant';
@@ -10,6 +11,14 @@ const resolvers: Resolvers<Context> = {
     createPaidVendor: async (_, args, context) => {
       const { email: emailArgs, company_name } = args;
       const email = emailArgs.toLowerCase();
+
+      const user = await context.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      invariant(user === null, new PublicError('Email already exists.'));
 
       const paidVendor = await context.prisma.paidVendor.create({
         data: {
