@@ -21,6 +21,8 @@ type CroDbVendorSurvey {
   custom_specialties: [String!]
   certifications: [String!]
   products: [String!]
+  respondent_name: String
+  respondent_company_role: String
   email: String
   note: String
   attachment_key: String
@@ -72,6 +74,8 @@ input VendorSurveyPayload {
   note: String
   logo: Upload
   attachment: Upload
+  respondent_name: String
+  respondent_company_role: String
 }
 
 type Mutation {

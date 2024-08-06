@@ -263,6 +263,12 @@ const resolvers: Resolvers<Context> = {
             ...(payload.note && {
               note: payload.note,
             }),
+            ...(payload.respondent_name && {
+              respondent_name: payload.respondent_name,
+            }),
+            ...(payload.respondent_company_role && {
+              respondent_company_role: payload.respondent_company_role,
+            }),
             attachment_key,
             attachment_file_name,
             attachment_content_type,

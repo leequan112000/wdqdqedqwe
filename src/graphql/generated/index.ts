@@ -370,6 +370,8 @@ export type CroDbVendorSurvey = {
   logo_url?: Maybe<Scalars['String']>;
   note?: Maybe<Scalars['String']>;
   products?: Maybe<Array<Scalars['String']>>;
+  respondent_company_role?: Maybe<Scalars['String']>;
+  respondent_name?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   step?: Maybe<VendorSurveyStep>;
   subspecialty_ids?: Maybe<Array<Scalars['String']>>;
@@ -2361,6 +2363,8 @@ export type VendorSurveyPayload = {
   logo?: InputMaybe<Scalars['Upload']>;
   note?: InputMaybe<Scalars['String']>;
   products?: InputMaybe<Array<Scalars['String']>>;
+  respondent_company_role?: InputMaybe<Scalars['String']>;
+  respondent_name?: InputMaybe<Scalars['String']>;
   subspecialty_ids?: InputMaybe<Array<Scalars['String']>>;
   website?: InputMaybe<Scalars['String']>;
 };
@@ -3032,6 +3036,8 @@ export type CroDbVendorSurveyResolvers<ContextType = any, ParentType extends Res
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   products?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  respondent_company_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  respondent_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   step?: Resolver<Maybe<ResolversTypes['VendorSurveyStep']>, ParentType, ContextType>;
   subspecialty_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
