@@ -2,8 +2,8 @@ import { createSendMailJob } from '../queues/sendMail.queues';
 import { paidVendorSignUpTemplate } from './templates';
 
 type sendPaidVendorSignUpLinkData = {
+  button_url: string;
   company_name: string;
-  sign_up_link: string;
 };
 export const sendPaidVendorSignUpLink = async (
   emailData: sendPaidVendorSignUpLinkData,
