@@ -60,7 +60,7 @@ const resolvers: Resolvers<Context> = {
       // TODO: Send email
       await sendPaidVendorSignUpLink(
         {
-          sign_up_link: resetPasswordUrl,
+          button_url: resetPasswordUrl,
           company_name: paidVendor.company_name!,
         },
         paidVendor.email!,
