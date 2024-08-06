@@ -16,6 +16,7 @@ type CroDbVendorSurvey {
   company_size: String
   logo_url: String
   website: String
+  hq_locations: [String!]
   countries: [String!]
   subspecialty_ids: [String!]
   custom_specialties: [String!]
@@ -65,6 +66,7 @@ input VendorSurveyPayload {
   company_revenue: String
   company_ipo_status: String
   website: String
+  hq_locations: [String!]
   countries: [String!]
   subspecialty_ids: [String!]
   custom_specialties: [String!]
