@@ -1,0 +1,71 @@
+enum PaidVendorOnboardingStep {
+  INTRO
+  COMPANY_INFORMATION
+  COMPANY_DETAILS
+  SERVICES
+  ADDITIONAL_INFORMATION
+  SUBSCRIPTION
+  THANK_YOU
+}
+
+type PaidVendor {
+  id: String
+  user_id: String
+  user: User
+  user_company_role: String
+  company_name: String
+  company_description: String
+  company_types: [String!]
+  company_ipo_status: String
+  company_revenue: String
+  company_size: String
+  logo_url: String
+  website: String
+  hq_locations: [String!]
+  other_facility_locations: [String!]
+  subspecialty_ids: [String!]
+  custom_specialties: [String!]
+  certifications: [String!]
+  products: [String!]
+  email: String
+  note: String
+  attachment_key: String
+  attachment_file_name: String
+  attachment_file_size: Int
+  attachment_content_type: String
+  onboarding_step: PaidVendorOnboardingStep
+}
+
+input PaidVendorOnboardingPayload {
+  user_name: String
+  user_company_role: String
+  company_name: String
+  company_types: [String!]
+  company_description: String
+  company_size: String
+  company_revenue: String
+  company_ipo_status: String
+  website: String
+  hq_locations: [String!]
+  other_facility_locations: [String!]
+  subspecialty_ids: [String!]
+  custom_specialties: [String!]
+  certifications: [String!]
+  products: [String!]
+  email: String
+  note: String
+  logo: Upload
+  attachment: Upload
+}
+
+
+type Query {
+  paidVendor: PaidVendor
+}
+
+type Mutation {
+    submitPaidVendorOnboarding(
+    onboarding_step: PaidVendorOnboardingStep!
+    payload: PaidVendorOnboardingPayload!
+  ): PaidVendor
+}

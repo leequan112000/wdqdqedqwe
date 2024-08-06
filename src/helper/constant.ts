@@ -288,6 +288,7 @@ export enum OrdinalAction {
 export enum UserType {
   CUSTOMER = 'customer',
   VENDOR = 'vendor',
+  PAID_VENDOR = 'paid-vendor',
   CROMATIC_ADMIN = 'cromatic-admin',
 }
 
@@ -396,4 +397,9 @@ export enum SourcingResultSortBy {
   TEAM_SIZE = 'Team size',
   REVENUE = 'Revenue',
   ALPHABETICAL = 'A - Z',
+}
+
+export enum PaidVendorProfileFilePath {
+  LOGO = 'paid_vendor/vendor_logo',
+  ATTACHMENT = 'paid_vendor/vendor_attachment',
 }

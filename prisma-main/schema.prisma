@@ -979,28 +979,32 @@ model Availability {
 }
 
 model PaidVendor {
-  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id                 String   @unique @db.Uuid
-  user                    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  company_name            String?
-  company_types           String[]
-  company_description     String?
-  company_ipo_status      String?
-  company_revenue         String?
-  company_size            String?
-  logo_url                String?
-  website                 String?
-  countries               String[]
-  subspecialty_ids        String[]
-  custom_specialties      String[]
-  certifications          String[]
-  products                String[]
-  email                   String?
-  note                    String?
-  attachment_key          String?
-  attachment_file_name    String?
-  attachment_content_type String?
-  edit_counts             Int      @default(0)
+  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                  String   @unique @db.Uuid
+  user                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_company_role        String?
+  company_name             String?
+  company_types            String[]
+  company_description      String?
+  company_ipo_status       String?
+  company_revenue          String?
+  company_size             String?
+  logo_url                 String?
+  website                  String?
+  hq_locations             String[]
+  other_facility_locations String[]
+  subspecialty_ids         String[]
+  custom_specialties       String[]
+  certifications           String[]
+  products                 String[]
+  email                    String?
+  note                     String?
+  attachment_key           String?
+  attachment_file_name     String?
+  attachment_content_type  String?
+  attachment_file_size     Int?
+  onboarding_step          String?
+  edit_counts              Int      @default(0)
 
   stripe_subscription_id String?
   stripe_customer_id     String?
