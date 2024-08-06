@@ -302,6 +302,7 @@ export enum BlanketPurchaseOrderTransactionType {
 }
 
 export enum VendorSurveyStatus {
+  INCOMPLETE = 'incomplete',
   PENDING = 'pending',
   REVIEWED = 'reviewed',
 }

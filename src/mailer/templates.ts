@@ -84,3 +84,6 @@ export const updatedMeetingNotificationTemplate =
   'd-d834816983b84f8abaff496743dfd958';
 export const canceledMeetingNotificationTemplate =
   'd-f183ecd8cc504d7691f91d4ec465335a';
+
+export const vendorSurveyReminderTemplate =
+  'd-daa72f1919314552acd2210e8fed2361';

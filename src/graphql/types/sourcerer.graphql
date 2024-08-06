@@ -35,6 +35,7 @@ type SourcedCroConnection {
 type SourcingSubspecialty {
   id: String
   name: String
+  related_subspecialties: [String]
   sourcing_session_id: String
   sourcing_session: SourcingSession
 }

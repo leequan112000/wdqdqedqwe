@@ -355,19 +355,27 @@ export type CroDbVendorSurvey = {
   attachment_content_type?: Maybe<Scalars['String']>;
   attachment_file_name?: Maybe<Scalars['String']>;
   attachment_key?: Maybe<Scalars['String']>;
-  certifications?: Maybe<Array<Maybe<Scalars['String']>>>;
+  certifications?: Maybe<Array<Scalars['String']>>;
+  company_description?: Maybe<Scalars['String']>;
+  company_ipo_status?: Maybe<Scalars['String']>;
   company_name?: Maybe<Scalars['String']>;
-  company_types?: Maybe<Array<Maybe<Scalars['String']>>>;
-  countries?: Maybe<Array<Maybe<Scalars['String']>>>;
+  company_revenue?: Maybe<Scalars['String']>;
+  company_size?: Maybe<Scalars['String']>;
+  company_types?: Maybe<Array<Scalars['String']>>;
+  countries?: Maybe<Array<Scalars['String']>>;
   created_at?: Maybe<Scalars['Date']>;
-  custom_specialties?: Maybe<Array<Maybe<Scalars['String']>>>;
+  custom_specialties?: Maybe<Array<Scalars['String']>>;
   email?: Maybe<Scalars['String']>;
+  hq_locations?: Maybe<Array<Scalars['String']>>;
   id?: Maybe<Scalars['String']>;
   logo_url?: Maybe<Scalars['String']>;
   note?: Maybe<Scalars['String']>;
-  product?: Maybe<Scalars['String']>;
+  products?: Maybe<Array<Scalars['String']>>;
+  respondent_company_role?: Maybe<Scalars['String']>;
+  respondent_name?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
-  subspecialty_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  step?: Maybe<VendorSurveyStep>;
+  subspecialty_ids?: Maybe<Array<Scalars['String']>>;
   updated_at?: Maybe<Scalars['Date']>;
   vendor_company?: Maybe<CroDbVendorCompany>;
   vendor_company_id?: Maybe<Scalars['String']>;
@@ -426,18 +434,18 @@ export type ExternalParticipantInput = {
 
 export type InitialVendorSurveyData = {
   __typename?: 'InitialVendorSurveyData';
-  certifications?: Maybe<Array<Maybe<Scalars['String']>>>;
+  certifications?: Maybe<Array<Scalars['String']>>;
   company_description?: Maybe<Scalars['String']>;
   company_ipo_status?: Maybe<Scalars['String']>;
   company_revenue?: Maybe<Scalars['String']>;
   company_size?: Maybe<Scalars['String']>;
-  countries?: Maybe<Array<Maybe<Scalars['String']>>>;
+  countries?: Maybe<Array<Scalars['String']>>;
   has_submitted: Scalars['Boolean'];
   id: Scalars['String'];
   logo_url?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
-  subspecialty_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-  vendor_type?: Maybe<Array<Maybe<Scalars['String']>>>;
+  subspecialty_ids?: Maybe<Array<Scalars['String']>>;
+  vendor_type?: Maybe<Array<Scalars['String']>>;
   website?: Maybe<Scalars['String']>;
 };
 
@@ -662,6 +670,7 @@ export type Mutation = {
   sourceRfpSpecialties?: Maybe<SourcingTask>;
   startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
+  submitVendorSurvey?: Maybe<CroDbVendorSurvey>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   transferBiotechOwnership?: Maybe<User>;
   transferVendorCompanyOwnership?: Maybe<User>;
@@ -1149,6 +1158,14 @@ export type MutationSubmitCroInterestArgs = {
   last_name: Scalars['String'];
   phone_number?: InputMaybe<Scalars['String']>;
   service: Scalars['String'];
+};
+
+
+export type MutationSubmitVendorSurveyArgs = {
+  payload: VendorSurveyPayload;
+  step: VendorSurveyStep;
+  survey_id?: InputMaybe<Scalars['String']>;
+  token?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1674,8 +1691,8 @@ export type Query = {
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
-  searchVendorByService?: Maybe<SearchVendorByServicePaginatedResult>;
   sourcedCros?: Maybe<SourcedCroConnection>;
+  sourcererLiteSearch?: Maybe<SourcererLiteSearchPaginatedResult>;
   sourcingSession?: Maybe<SourcingSession>;
   sourcingSessions?: Maybe<Array<Maybe<SourcingSession>>>;
   stripePricingTableId?: Maybe<Scalars['String']>;
@@ -1690,6 +1707,7 @@ export type Query = {
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
+  vendorSurveyData?: Maybe<CroDbVendorSurvey>;
 };
 
 
@@ -1865,21 +1883,21 @@ export type QuerySearchLabSpecializationsArgs = {
 };
 
 
-export type QuerySearchVendorByServiceArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  fingerprint?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  ip_address?: InputMaybe<Scalars['String']>;
-  keyword: Scalars['String'];
-};
-
-
 export type QuerySourcedCrosArgs = {
   after?: InputMaybe<Scalars['String']>;
   filterCountryBy?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   sortBy?: InputMaybe<Scalars['String']>;
   sourcing_session_id: Scalars['String'];
+};
+
+
+export type QuerySourcererLiteSearchArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  fingerprint?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  ip_address?: InputMaybe<Scalars['String']>;
+  keyword: Scalars['String'];
 };
 
 
@@ -1904,6 +1922,12 @@ export type QueryUpcomingMeetingEventsArgs = {
 export type QueryVendorCompanyStripeConnectUrlArgs = {
   refresh_url?: InputMaybe<Scalars['String']>;
   return_url?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryVendorSurveyDataArgs = {
+  survey_id?: InputMaybe<Scalars['String']>;
+  token?: InputMaybe<Scalars['String']>;
 };
 
 export type Quote = {
@@ -1989,25 +2013,6 @@ export type SaveAvailabilityRulesInput = {
   timezone: Scalars['String'];
 };
 
-export type SearchVendorByServicePaginatedResult = {
-  __typename?: 'SearchVendorByServicePaginatedResult';
-  edges?: Maybe<Array<Maybe<SearchVendorByServiceResultEdge>>>;
-  page_info?: Maybe<SearchVendorByServiceResultPageInfo>;
-};
-
-export type SearchVendorByServiceResultEdge = {
-  __typename?: 'SearchVendorByServiceResultEdge';
-  cursor: Scalars['String'];
-  node?: Maybe<CroDbVendorCompany>;
-};
-
-export type SearchVendorByServiceResultPageInfo = {
-  __typename?: 'SearchVendorByServiceResultPageInfo';
-  end_cursor?: Maybe<Scalars['String']>;
-  has_next_page?: Maybe<Scalars['Boolean']>;
-  total_count?: Maybe<Scalars['Int']>;
-};
-
 export type SourceCroSubscriptionPayload = {
   __typename?: 'SourceCroSubscriptionPayload';
   data?: Maybe<SourcingSession>;
@@ -2055,6 +2060,26 @@ export type SourcedCroPageInfo = {
   total_count?: Maybe<Scalars['Int']>;
 };
 
+export type SourcererLiteSearchPaginatedResult = {
+  __typename?: 'SourcererLiteSearchPaginatedResult';
+  edges?: Maybe<Array<Maybe<SourcererLiteSearchResultEdge>>>;
+  page_info?: Maybe<SourcererLiteSearchResultPageInfo>;
+  related_subspecialty_names?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+export type SourcererLiteSearchResultEdge = {
+  __typename?: 'SourcererLiteSearchResultEdge';
+  cursor: Scalars['String'];
+  node?: Maybe<CroDbVendorCompany>;
+};
+
+export type SourcererLiteSearchResultPageInfo = {
+  __typename?: 'SourcererLiteSearchResultPageInfo';
+  end_cursor?: Maybe<Scalars['String']>;
+  has_next_page?: Maybe<Scalars['Boolean']>;
+  total_count?: Maybe<Scalars['Int']>;
+};
+
 export type SourcingAttachment = {
   __typename?: 'SourcingAttachment';
   byte_size?: Maybe<Scalars['Float']>;
@@ -2091,6 +2116,7 @@ export type SourcingSubspecialty = {
   __typename?: 'SourcingSubspecialty';
   id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  related_subspecialties?: Maybe<Array<Maybe<Scalars['String']>>>;
   sourcing_session?: Maybe<SourcingSession>;
   sourcing_session_id?: Maybe<Scalars['String']>;
 };
@@ -2323,6 +2349,36 @@ export type VendorMemberConnection = {
   vendor_member_id?: Maybe<Scalars['String']>;
 };
 
+export type VendorSurveyPayload = {
+  attachment?: InputMaybe<Scalars['Upload']>;
+  certifications?: InputMaybe<Array<Scalars['String']>>;
+  company_description?: InputMaybe<Scalars['String']>;
+  company_ipo_status?: InputMaybe<Scalars['String']>;
+  company_name?: InputMaybe<Scalars['String']>;
+  company_revenue?: InputMaybe<Scalars['String']>;
+  company_size?: InputMaybe<Scalars['String']>;
+  company_types?: InputMaybe<Array<Scalars['String']>>;
+  countries?: InputMaybe<Array<Scalars['String']>>;
+  custom_specialties?: InputMaybe<Array<Scalars['String']>>;
+  email?: InputMaybe<Scalars['String']>;
+  hq_locations?: InputMaybe<Array<Scalars['String']>>;
+  logo?: InputMaybe<Scalars['Upload']>;
+  note?: InputMaybe<Scalars['String']>;
+  products?: InputMaybe<Array<Scalars['String']>>;
+  respondent_company_role?: InputMaybe<Scalars['String']>;
+  respondent_name?: InputMaybe<Scalars['String']>;
+  subspecialty_ids?: InputMaybe<Array<Scalars['String']>>;
+  website?: InputMaybe<Scalars['String']>;
+};
+
+export enum VendorSurveyStep {
+  AdditionalInformation = 'ADDITIONAL_INFORMATION',
+  CompanyDetails = 'COMPANY_DETAILS',
+  CompanyInformation = 'COMPANY_INFORMATION',
+  Intro = 'INTRO',
+  Services = 'SERVICES'
+}
+
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
@@ -2483,15 +2539,15 @@ export type ResolversTypes = ResolversObject<{
   RuleInterval: ResolverTypeWrapper<RuleInterval>;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
-  SearchVendorByServicePaginatedResult: ResolverTypeWrapper<SearchVendorByServicePaginatedResult>;
-  SearchVendorByServiceResultEdge: ResolverTypeWrapper<SearchVendorByServiceResultEdge>;
-  SearchVendorByServiceResultPageInfo: ResolverTypeWrapper<SearchVendorByServiceResultPageInfo>;
   SourceCroSubscriptionPayload: ResolverTypeWrapper<SourceCroSubscriptionPayload>;
   SourceRfpSpecialtySubscriptionPayload: ResolverTypeWrapper<SourceRfpSpecialtySubscriptionPayload>;
   SourcedCro: ResolverTypeWrapper<SourcedCro>;
   SourcedCroConnection: ResolverTypeWrapper<SourcedCroConnection>;
   SourcedCroEdge: ResolverTypeWrapper<SourcedCroEdge>;
   SourcedCroPageInfo: ResolverTypeWrapper<SourcedCroPageInfo>;
+  SourcererLiteSearchPaginatedResult: ResolverTypeWrapper<SourcererLiteSearchPaginatedResult>;
+  SourcererLiteSearchResultEdge: ResolverTypeWrapper<SourcererLiteSearchResultEdge>;
+  SourcererLiteSearchResultPageInfo: ResolverTypeWrapper<SourcererLiteSearchResultPageInfo>;
   SourcingAttachment: ResolverTypeWrapper<SourcingAttachment>;
   SourcingSession: ResolverTypeWrapper<SourcingSession>;
   SourcingSubspecialty: ResolverTypeWrapper<SourcingSubspecialty>;
@@ -2517,6 +2573,8 @@ export type ResolversTypes = ResolversObject<{
   VendorCompany: ResolverTypeWrapper<VendorCompany>;
   VendorMember: ResolverTypeWrapper<VendorMember>;
   VendorMemberConnection: ResolverTypeWrapper<VendorMemberConnection>;
+  VendorSurveyPayload: VendorSurveyPayload;
+  VendorSurveyStep: VendorSurveyStep;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2611,15 +2669,15 @@ export type ResolversParentTypes = ResolversObject<{
   RuleInterval: RuleInterval;
   RuleIntervalInput: RuleIntervalInput;
   SaveAvailabilityRulesInput: SaveAvailabilityRulesInput;
-  SearchVendorByServicePaginatedResult: SearchVendorByServicePaginatedResult;
-  SearchVendorByServiceResultEdge: SearchVendorByServiceResultEdge;
-  SearchVendorByServiceResultPageInfo: SearchVendorByServiceResultPageInfo;
   SourceCroSubscriptionPayload: SourceCroSubscriptionPayload;
   SourceRfpSpecialtySubscriptionPayload: SourceRfpSpecialtySubscriptionPayload;
   SourcedCro: SourcedCro;
   SourcedCroConnection: SourcedCroConnection;
   SourcedCroEdge: SourcedCroEdge;
   SourcedCroPageInfo: SourcedCroPageInfo;
+  SourcererLiteSearchPaginatedResult: SourcererLiteSearchPaginatedResult;
+  SourcererLiteSearchResultEdge: SourcererLiteSearchResultEdge;
+  SourcererLiteSearchResultPageInfo: SourcererLiteSearchResultPageInfo;
   SourcingAttachment: SourcingAttachment;
   SourcingSession: SourcingSession;
   SourcingSubspecialty: SourcingSubspecialty;
@@ -2645,6 +2703,7 @@ export type ResolversParentTypes = ResolversObject<{
   VendorCompany: VendorCompany;
   VendorMember: VendorMember;
   VendorMemberConnection: VendorMemberConnection;
+  VendorSurveyPayload: VendorSurveyPayload;
 }>;
 
 export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
@@ -2964,19 +3023,27 @@ export type CroDbVendorSurveyResolvers<ContextType = any, ParentType extends Res
   attachment_content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attachment_file_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attachment_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  certifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  certifications?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  company_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  countries?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  countries?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  custom_specialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  custom_specialties?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hq_locations?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  products?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  respondent_company_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  respondent_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  subspecialty_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  step?: Resolver<Maybe<ResolversTypes['VendorSurveyStep']>, ParentType, ContextType>;
+  subspecialty_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   vendor_company?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
   vendor_company_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3029,18 +3096,18 @@ export type ExternalGuestResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type InitialVendorSurveyDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitialVendorSurveyData'] = ResolversParentTypes['InitialVendorSurveyData']> = ResolversObject<{
-  certifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  certifications?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  countries?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  countries?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   has_submitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  subspecialty_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  vendor_type?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  subspecialty_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  vendor_type?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -3259,6 +3326,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sourceRfpSpecialties?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceRfpSpecialtiesArgs, 'preparation_details' | 'project_desc' | 'project_title' | 'vendor_requirement'>>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
+  submitVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationSubmitVendorSurveyArgs, 'payload' | 'step'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   transferBiotechOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipArgs, 'biotech_id' | 'user_id'>>;
   transferVendorCompanyOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferVendorCompanyOwnershipArgs, 'user_id' | 'vendor_company_id'>>;
@@ -3577,8 +3645,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
-  searchVendorByService?: Resolver<Maybe<ResolversTypes['SearchVendorByServicePaginatedResult']>, ParentType, ContextType, RequireFields<QuerySearchVendorByServiceArgs, 'first' | 'keyword'>>;
   sourcedCros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<QuerySourcedCrosArgs, 'first' | 'sourcing_session_id'>>;
+  sourcererLiteSearch?: Resolver<Maybe<ResolversTypes['SourcererLiteSearchPaginatedResult']>, ParentType, ContextType, RequireFields<QuerySourcererLiteSearchArgs, 'first' | 'keyword'>>;
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
   sourcingSessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcingSession']>>>, ParentType, ContextType>;
   stripePricingTableId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3593,6 +3661,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorCompanyStripeAccount?: Resolver<Maybe<ResolversTypes['StripeAccountData']>, ParentType, ContextType>;
   vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryVendorCompanyStripeConnectUrlArgs>>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
+  vendorSurveyData?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, Partial<QueryVendorSurveyDataArgs>>;
 }>;
 
 export type QuoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Quote'] = ResolversParentTypes['Quote']> = ResolversObject<{
@@ -3661,25 +3730,6 @@ export type RuleIntervalResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type SearchVendorByServicePaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchVendorByServicePaginatedResult'] = ResolversParentTypes['SearchVendorByServicePaginatedResult']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SearchVendorByServiceResultEdge']>>>, ParentType, ContextType>;
-  page_info?: Resolver<Maybe<ResolversTypes['SearchVendorByServiceResultPageInfo']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type SearchVendorByServiceResultEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchVendorByServiceResultEdge'] = ResolversParentTypes['SearchVendorByServiceResultEdge']> = ResolversObject<{
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type SearchVendorByServiceResultPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchVendorByServiceResultPageInfo'] = ResolversParentTypes['SearchVendorByServiceResultPageInfo']> = ResolversObject<{
-  end_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  has_next_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  total_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type SourceCroSubscriptionPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCroSubscriptionPayload'] = ResolversParentTypes['SourceCroSubscriptionPayload']> = ResolversObject<{
   data?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3727,6 +3777,26 @@ export type SourcedCroPageInfoResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SourcererLiteSearchPaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcererLiteSearchPaginatedResult'] = ResolversParentTypes['SourcererLiteSearchPaginatedResult']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcererLiteSearchResultEdge']>>>, ParentType, ContextType>;
+  page_info?: Resolver<Maybe<ResolversTypes['SourcererLiteSearchResultPageInfo']>, ParentType, ContextType>;
+  related_subspecialty_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcererLiteSearchResultEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcererLiteSearchResultEdge'] = ResolversParentTypes['SourcererLiteSearchResultEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['CroDbVendorCompany']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourcererLiteSearchResultPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcererLiteSearchResultPageInfo'] = ResolversParentTypes['SourcererLiteSearchResultPageInfo']> = ResolversObject<{
+  end_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  has_next_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  total_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SourcingAttachmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingAttachment'] = ResolversParentTypes['SourcingAttachment']> = ResolversObject<{
   byte_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
@@ -3762,6 +3832,7 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
 export type SourcingSubspecialtyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcingSubspecialty'] = ResolversParentTypes['SourcingSubspecialty']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  related_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   sourcing_session?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType>;
   sourcing_session_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4046,15 +4117,15 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReviewQuestionOption?: ReviewQuestionOptionResolvers<ContextType>;
   ReviewQuestionSet?: ReviewQuestionSetResolvers<ContextType>;
   RuleInterval?: RuleIntervalResolvers<ContextType>;
-  SearchVendorByServicePaginatedResult?: SearchVendorByServicePaginatedResultResolvers<ContextType>;
-  SearchVendorByServiceResultEdge?: SearchVendorByServiceResultEdgeResolvers<ContextType>;
-  SearchVendorByServiceResultPageInfo?: SearchVendorByServiceResultPageInfoResolvers<ContextType>;
   SourceCroSubscriptionPayload?: SourceCroSubscriptionPayloadResolvers<ContextType>;
   SourceRfpSpecialtySubscriptionPayload?: SourceRfpSpecialtySubscriptionPayloadResolvers<ContextType>;
   SourcedCro?: SourcedCroResolvers<ContextType>;
   SourcedCroConnection?: SourcedCroConnectionResolvers<ContextType>;
   SourcedCroEdge?: SourcedCroEdgeResolvers<ContextType>;
   SourcedCroPageInfo?: SourcedCroPageInfoResolvers<ContextType>;
+  SourcererLiteSearchPaginatedResult?: SourcererLiteSearchPaginatedResultResolvers<ContextType>;
+  SourcererLiteSearchResultEdge?: SourcererLiteSearchResultEdgeResolvers<ContextType>;
+  SourcererLiteSearchResultPageInfo?: SourcererLiteSearchResultPageInfoResolvers<ContextType>;
   SourcingAttachment?: SourcingAttachmentResolvers<ContextType>;
   SourcingSession?: SourcingSessionResolvers<ContextType>;
   SourcingSubspecialty?: SourcingSubspecialtyResolvers<ContextType>;
