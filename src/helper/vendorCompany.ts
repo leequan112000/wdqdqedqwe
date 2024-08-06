@@ -10,6 +10,15 @@ export const extractAndGetAvgCompanySize = (companySize: string | null) => {
   return avg; // Use the average value for comparison
 };
 
+export const parseCompanySize = (size: string) => {
+  if (size.endsWith('+')) {
+    const min = parseInt(size.slice(0, -1));
+    return { min, max: Infinity };
+  }
+  const [min, max] = size.split('-').map((num) => parseInt(num));
+  return { min, max: max || min };
+};
+
 export const extractRevenueValue = (revenueCode: string | null): number => {
   switch (revenueCode) {
     case 'r_00000000':

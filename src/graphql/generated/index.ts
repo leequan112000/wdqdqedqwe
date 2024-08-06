@@ -1705,6 +1705,7 @@ export type Query = {
   vendorCompany?: Maybe<VendorCompany>;
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
+  vendorListingSubscriptionCheckoutLink?: Maybe<Scalars['String']>;
   vendorMember?: Maybe<VendorMember>;
   vendorSurveyData?: Maybe<CroDbVendorSurvey>;
 };
@@ -1921,6 +1922,14 @@ export type QueryUpcomingMeetingEventsArgs = {
 export type QueryVendorCompanyStripeConnectUrlArgs = {
   refresh_url?: InputMaybe<Scalars['String']>;
   return_url?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryVendorListingSubscriptionCheckoutLinkArgs = {
+  cancel_url: Scalars['String'];
+  ga_client_id?: InputMaybe<Scalars['String']>;
+  price_id: Scalars['String'];
+  success_url: Scalars['String'];
 };
 
 
@@ -3657,6 +3666,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorCompanyStripeAccount?: Resolver<Maybe<ResolversTypes['StripeAccountData']>, ParentType, ContextType>;
   vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryVendorCompanyStripeConnectUrlArgs>>;
+  vendorListingSubscriptionCheckoutLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorListingSubscriptionCheckoutLinkArgs, 'cancel_url' | 'price_id' | 'success_url'>>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
   vendorSurveyData?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, Partial<QueryVendorSurveyDataArgs>>;
 }>;

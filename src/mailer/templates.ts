@@ -87,3 +87,5 @@ export const canceledMeetingNotificationTemplate =
 
 export const vendorSurveyReminderTemplate =
   'd-daa72f1919314552acd2210e8fed2361';
+
+export const paidVendorSignUpTemplate = 'd-b66a52fd2eea4b3b879aed81250ff385';
