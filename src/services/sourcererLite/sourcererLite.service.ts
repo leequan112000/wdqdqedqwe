@@ -1,10 +1,12 @@
 import axios from 'axios';
+import { VendorCompany } from '@prisma/client';
 import { app_env } from '../../environment';
 import { Context } from '../../types/context';
 import invariant from '../../helper/invariant';
 import { InputMaybe } from '../../graphql/generated';
 import { Prisma } from '../../../prisma-cro/generated/client';
 import { PublicError } from '../../graphql/errors/PublicError';
+import { prismaCRODb } from '../../prisma';
 import Sentry from '../../sentry';
 import {
   CustomerSubscriptionPlanName,
@@ -307,57 +309,40 @@ export const matchVendorByServices = async (
 ) => {
   const { subspecialty_ids, subspecialty_names, first, after, is_paid_user } =
     args;
-  const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
-    vendor_company_subspecialties: {
-      some: {
-        subspecialty: {
-          id: {
-            in: subspecialty_ids,
-          },
-        },
-      },
-    },
-    NOT: {
-      company_description: null,
-      company_ipo_status: null,
-    },
-    is_active: true,
-  };
-
-  const vendorCompanies = await ctx.prismaCRODb!.vendorCompany.findMany({
-    where: vendorCompanyFilter,
-    take: 50,
-    include: {
-      vendor_company_subspecialties: true,
-      vendor_company_locations: true,
-      vendor_company_certifications: true,
-      vendor_company_types: true,
-    },
-  });
-
-  const sortedVendorCompanies = vendorCompanies
-    .map((company) => {
-      const match_count = company.vendor_company_subspecialties.filter(
-        (subspecialty) =>
-          subspecialty_ids.includes(subspecialty.subspecialty_id),
-      ).length;
-
-      return {
-        ...company,
-        match_count,
-      };
-    })
-    .sort((a, b) => {
-      // First sort by match_count
-      if (b.match_count !== a.match_count) {
-        return b.match_count - a.match_count;
-      }
-      // If match_count is the same, sort by the length of vendor_company_subspecialties
-      return (
-        b.vendor_company_subspecialties.length -
-        a.vendor_company_subspecialties.length
-      );
-    });
+  const sortedVendorCompanies: VendorCompany[] =
+    await prismaCRODb.$queryRaw(Prisma.sql`
+    WITH VendorScores AS (
+      SELECT 
+        vc.company_name, 
+        vcs.vendor_company_id, 
+        COUNT(*) * 0.5 AS score
+      FROM vendor_company_subspecialties vcs
+      JOIN vendor_companies vc ON vcs.vendor_company_id = vc.id
+      WHERE 
+        vcs.subspecialty_id = ANY(${subspecialty_ids}::uuid[]) 
+        AND vc.is_active = true
+      GROUP BY 
+        vc.company_name, 
+        vcs.vendor_company_id
+    ),
+    VendorTotalServiceCounts AS (
+      SELECT 
+        vcs.vendor_company_id,
+        COUNT(*) AS total_count
+      FROM vendor_company_subspecialties vcs
+      GROUP BY vcs.vendor_company_id
+    )
+    SELECT 
+      vc.*
+    FROM VendorScores vs
+    JOIN VendorTotalServiceCounts vtsc ON vs.vendor_company_id = vtsc.vendor_company_id
+    JOIN vendor_companies vc ON  vs.vendor_company_id = vc.id
+    GROUP BY vc.id, vs.score, vtsc.total_count
+    ORDER BY 
+      vs.score DESC, 
+      vtsc.total_count DESC
+    LIMIT 50;
+  `);
 
   const startSlice = after
     ? sortedVendorCompanies.findIndex((v) => {
@@ -381,16 +366,17 @@ export const matchVendorByServices = async (
   const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
   let hasNextPage = false;
 
-  if (endCursor) {
-    const nextVendorCompanies = await ctx.prismaCRODb!.vendorCompany.findMany({
-      where: vendorCompanyFilter,
-      take: first,
-      skip: after ? 1 : undefined,
-      cursor: endCursor ? { id: endCursor } : undefined,
-    });
+  // TODO: implement real pagination
+  // if (endCursor) {
+  //   const nextVendorCompanies = await ctx.prismaCRODb!.vendorCompany.findMany({
+  //     where: vendorCompanyFilter,
+  //     take: first,
+  //     skip: after ? 1 : undefined,
+  //     cursor: endCursor ? { id: endCursor } : undefined,
+  //   });
 
-    hasNextPage = nextVendorCompanies.length > 0;
-  }
+  //   hasNextPage = nextVendorCompanies.length > 0;
+  // }
 
   if (!is_paid_user) {
     if (startSlice >= MAX_FREE_RESULT_COUNT) {
@@ -448,7 +434,7 @@ export const matchVendorByServices = async (
     page_info: {
       end_cursor: endCursor,
       has_next_page: hasNextPage,
-      total_count: vendorCompanies.length,
+      total_count: sortedVendorCompanies.length,
     },
     related_subspecialty_names: subspecialty_names,
   };

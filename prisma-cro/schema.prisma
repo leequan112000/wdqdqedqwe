@@ -56,6 +56,7 @@ model Subspecialty {
   id                            String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                          String
   definition                    String?
+  is_linked_to_vendor           Boolean                     @default(false)
   embedding                     Json?
   specialty_id                  String                      @db.Uuid
   specialty                     Specialty                   @relation(fields: [specialty_id], references: [id])
@@ -288,6 +289,8 @@ model VendorSurvey {
   custom_specialties      String[]
   certifications          String[]
   products                String[]
+  respondent_name         String?
+  respondent_company_role String?
   email                   String?
   note                    String?
   attachment_key          String?
@@ -338,8 +341,9 @@ model SourcingExtractedRfp {
 }
 
 model SourcingSubspecialty {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  related_subspecialties String[]
 
   sourcing_session_id String          @db.Uuid
   sourcing_session    SourcingSession @relation(fields: [sourcing_session_id], references: [id], onDelete: Cascade)

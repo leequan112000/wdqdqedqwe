@@ -254,20 +254,30 @@ const resolvers: Resolvers<Context> = {
 
       const total_count = sourcingSession!._count.sourced_cros;
 
-      const sourcedCroSorting: Prisma.SourcedCroOrderByWithRelationInput =
-        (() => {
-          switch (sortBy) {
-            case SourcingResultSortBy.ALPHABETICAL:
-              return { name: 'asc' };
-            case SourcingResultSortBy.REVENUE:
-              return { vendor_company: { company_revenue_value: 'desc' } };
-            case SourcingResultSortBy.TEAM_SIZE:
-              return { vendor_company: { company_average_size: 'desc' } };
-            case SourcingResultSortBy.BEST_MATCH:
-            default:
-              return { score: 'desc' };
-          }
-        })();
+      const sourcedCroSorting:
+        | Prisma.SourcedCroOrderByWithRelationInput
+        | Prisma.SourcedCroOrderByWithRelationInput[] = (() => {
+        switch (sortBy) {
+          case SourcingResultSortBy.ALPHABETICAL:
+            return { name: 'asc' };
+          case SourcingResultSortBy.REVENUE:
+            return { vendor_company: { company_revenue_value: 'desc' } };
+          case SourcingResultSortBy.TEAM_SIZE:
+            return { vendor_company: { company_average_size: 'desc' } };
+          case SourcingResultSortBy.BEST_MATCH:
+          default:
+            return [
+              { score: 'desc' },
+              {
+                vendor_company: {
+                  vendor_company_subspecialties: {
+                    _count: 'desc',
+                  },
+                },
+              },
+            ];
+        }
+      })();
 
       const sourcedCros =
         (await context.prismaCRODb.sourcingSession
