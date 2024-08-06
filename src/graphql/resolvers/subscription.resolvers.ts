@@ -164,22 +164,11 @@ const resolvers: Resolvers<Context> = {
       return session.url;
     },
     vendorListingSubscriptionCheckoutLink: async (_, args, context) => {
-      const { ga_client_id } = args;
+      const { ga_client_id, cancel_url, success_url } = args;
       const userId = context.req.user_id;
       const paidVendor = await context.prisma.paidVendor.findFirst({
         where: {
           user_id: userId,
-        },
-        include: {
-          user: {
-            include: {
-              customer: {
-                include: {
-                  customer_subscriptions: true,
-                },
-              },
-            },
-          },
         },
       });
 
@@ -212,8 +201,8 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         mode: 'subscription',
-        success_url: '',
-        cancel_url: '',
+        success_url,
+        cancel_url,
         metadata: {
           plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),

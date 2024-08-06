@@ -32,7 +32,6 @@ type Query {
     cancel_url: String!
   ): String
   vendorListingSubscriptionCheckoutLink(
-    price_id: String!
     ga_client_id: String
     success_url: String!
     cancel_url: String!
