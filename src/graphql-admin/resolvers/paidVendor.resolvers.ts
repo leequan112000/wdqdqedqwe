@@ -22,7 +22,19 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-
+      return paidVendor;
+    },
+    updatePaidVendor: async (_, args, context) => {
+      const { id, company_name, email } = args;
+      const paidVendor = await context.prisma.paidVendor.update({
+        data: {
+          company_name: company_name || undefined,
+          email: email || undefined,
+        },
+        where: {
+          id,
+        },
+      });
       return paidVendor;
     },
     sendPaidVendorSignUpLink: async (_, args, context) => {

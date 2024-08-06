@@ -163,7 +163,7 @@ const resolvers: Resolvers<Context> = {
 
       return session.url;
     },
-    subscriptionCheckoutLink: async (_, args, context) => {
+    vendorListingSubscriptionCheckoutLink: async (_, args, context) => {
       const { ga_client_id } = args;
       const userId = context.req.user_id;
       const paidVendor = await context.prisma.paidVendor.findFirst({
@@ -187,10 +187,6 @@ const resolvers: Resolvers<Context> = {
 
       invariant(paidVendor.company_size, 'Missing company size.');
 
-      const customer = paidVendor?.user?.customer;
-
-      invariant(customer, 'Missing customer.');
-
       const size = parseCompanySize(paidVendor.company_size);
 
       let price_id: string | null | undefined;
@@ -202,22 +198,13 @@ const resolvers: Resolvers<Context> = {
 
       invariant(price_id, 'Missing price id.');
 
-      const customerId = customer.id;
       const stripe = await getStripeInstance();
       const price = await stripe.prices.retrieve(price_id);
       const product = await stripe.products.retrieve(price.product.toString());
       const { plan_name } = product.metadata;
 
-      let stripeCusId: string | null = null;
-      if (customer.customer_subscriptions.length > 0) {
-        stripeCusId = customer.customer_subscriptions[0].stripe_customer_id;
-      }
-
       const session = await stripe.checkout.sessions.create({
-        client_reference_id: customerId,
-        ...(stripeCusId
-          ? { customer: stripeCusId }
-          : { customer_email: paidVendor.email! }),
+        client_reference_id: paidVendor.id,
         line_items: [
           {
             price: price_id,

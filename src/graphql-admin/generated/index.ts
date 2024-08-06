@@ -197,6 +197,7 @@ export type Mutation = {
   updateCustomerByAdmin?: Maybe<Scalars['Boolean']>;
   updateLabSpecialization?: Maybe<LabSpecialization>;
   updateNews?: Maybe<News>;
+  updatePaidVendor?: Maybe<PaidVendor>;
   updatePerk?: Maybe<Perk>;
   updatePerkCategory?: Maybe<PerkCategory>;
   updateReviewQuestion?: Maybe<ReviewQuestion>;
@@ -572,6 +573,13 @@ export type MutationUpdateNewsArgs = {
   published_at?: InputMaybe<Scalars['Date']>;
   title?: InputMaybe<Scalars['String']>;
   url?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdatePaidVendorArgs = {
+  company_name?: InputMaybe<Scalars['String']>;
+  email?: InputMaybe<Scalars['String']>;
+  id: Scalars['String'];
 };
 
 
@@ -1092,6 +1100,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCustomerByAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUpdateCustomerByAdminArgs, 'user_id'>>;
   updateLabSpecialization?: Resolver<Maybe<ResolversTypes['LabSpecialization']>, ParentType, ContextType, RequireFields<MutationUpdateLabSpecializationArgs, 'full_name' | 'id'>>;
   updateNews?: Resolver<Maybe<ResolversTypes['News']>, ParentType, ContextType, RequireFields<MutationUpdateNewsArgs, 'news_id'>>;
+  updatePaidVendor?: Resolver<Maybe<ResolversTypes['PaidVendor']>, ParentType, ContextType, RequireFields<MutationUpdatePaidVendorArgs, 'id'>>;
   updatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationUpdatePerkArgs, 'description' | 'how_to_redeem' | 'id' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
   updatePerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationUpdatePerkCategoryArgs, 'description' | 'id' | 'name'>>;
   updateReviewQuestion?: Resolver<Maybe<ResolversTypes['ReviewQuestion']>, ParentType, ContextType, RequireFields<MutationUpdateReviewQuestionArgs, 'ordinal' | 'question_text' | 'question_type' | 'review_question_id'>>;
