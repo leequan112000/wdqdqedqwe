@@ -7,6 +7,11 @@ type Mutation {
     email: String!
     company_name: String
   ): PaidVendor
+  updatePaidVendor(
+    id: String!
+    email: String
+    company_name: String
+  ): PaidVendor
   sendPaidVendorSignUpLink(
     id: String!
   ): Boolean
