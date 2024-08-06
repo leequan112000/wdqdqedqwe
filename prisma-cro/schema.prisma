@@ -289,6 +289,8 @@ model VendorSurvey {
   custom_specialties      String[]
   certifications          String[]
   products                String[]
+  respondent_name         String?
+  respondent_company_role String?
   email                   String?
   note                    String?
   attachment_key          String?
