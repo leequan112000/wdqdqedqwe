@@ -6,6 +6,7 @@ import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
 import { CustomerSubscriptionPlanName } from '../../helper/constant';
 import { env } from '../../env';
+import { parseCompanySize } from '../../helper/vendorCompany';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -153,6 +154,79 @@ const resolvers: Resolvers<Context> = {
         mode: 'subscription',
         success_url,
         cancel_url,
+        metadata: {
+          plan_name,
+          ...(ga_client_id ? { client_id: ga_client_id } : {}),
+        },
+        payment_method_types: ['card'],
+      });
+
+      return session.url;
+    },
+    subscriptionCheckoutLink: async (_, args, context) => {
+      const { ga_client_id } = args;
+      const userId = context.req.user_id;
+      const paidVendor = await context.prisma.paidVendor.findFirst({
+        where: {
+          user_id: userId,
+        },
+        include: {
+          user: {
+            include: {
+              customer: {
+                include: {
+                  customer_subscriptions: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      invariant(paidVendor, 'Missing paid vendor.');
+
+      invariant(paidVendor.company_size, 'Missing company size.');
+
+      const customer = paidVendor?.user?.customer;
+
+      invariant(customer, 'Missing customer.');
+
+      const size = parseCompanySize(paidVendor.company_size);
+
+      let price_id: string | null | undefined;
+      if (size.max <= 50) {
+        price_id = process.env.STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID;
+      } else {
+        price_id = process.env.STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID;
+      }
+
+      invariant(price_id, 'Missing price id.');
+
+      const customerId = customer.id;
+      const stripe = await getStripeInstance();
+      const price = await stripe.prices.retrieve(price_id);
+      const product = await stripe.products.retrieve(price.product.toString());
+      const { plan_name } = product.metadata;
+
+      let stripeCusId: string | null = null;
+      if (customer.customer_subscriptions.length > 0) {
+        stripeCusId = customer.customer_subscriptions[0].stripe_customer_id;
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        client_reference_id: customerId,
+        ...(stripeCusId
+          ? { customer: stripeCusId }
+          : { customer_email: paidVendor.email! }),
+        line_items: [
+          {
+            price: price_id,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: '',
+        cancel_url: '',
         metadata: {
           plan_name,
           ...(ga_client_id ? { client_id: ga_client_id } : {}),

@@ -31,6 +31,12 @@ type Query {
     success_url: String!
     cancel_url: String!
   ): String
+  subscriptionCheckoutLink(
+    price_id: String!
+    ga_client_id: String
+    success_url: String!
+    cancel_url: String!
+  ): String
 }
 
 type Mutation {
