@@ -670,6 +670,7 @@ export type Mutation = {
   sourceRfpSpecialties?: Maybe<SourcingTask>;
   startChat?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
+  submitPaidVendorOnboarding?: Maybe<PaidVendor>;
   submitVendorSurvey?: Maybe<CroDbVendorSurvey>;
   subscribeEmailUpdates?: Maybe<Scalars['Boolean']>;
   transferBiotechOwnership?: Maybe<User>;
@@ -1161,6 +1162,12 @@ export type MutationSubmitCroInterestArgs = {
 };
 
 
+export type MutationSubmitPaidVendorOnboardingArgs = {
+  onboarding_step: PaidVendorOnboardingStep;
+  payload: PaidVendorOnboardingPayload;
+};
+
+
 export type MutationSubmitVendorSurveyArgs = {
   payload: VendorSurveyPayload;
   step: VendorSurveyStep;
@@ -1430,6 +1437,67 @@ export type NotificationPageInfo = {
   hasPreviousPage?: Maybe<Scalars['Boolean']>;
 };
 
+export type PaidVendor = {
+  __typename?: 'PaidVendor';
+  attachment_content_type?: Maybe<Scalars['String']>;
+  attachment_file_name?: Maybe<Scalars['String']>;
+  attachment_file_size?: Maybe<Scalars['Int']>;
+  attachment_key?: Maybe<Scalars['String']>;
+  certifications?: Maybe<Array<Scalars['String']>>;
+  company_description?: Maybe<Scalars['String']>;
+  company_ipo_status?: Maybe<Scalars['String']>;
+  company_name?: Maybe<Scalars['String']>;
+  company_revenue?: Maybe<Scalars['String']>;
+  company_size?: Maybe<Scalars['String']>;
+  company_types?: Maybe<Array<Scalars['String']>>;
+  custom_specialties?: Maybe<Array<Scalars['String']>>;
+  email?: Maybe<Scalars['String']>;
+  hq_locations?: Maybe<Array<Scalars['String']>>;
+  id?: Maybe<Scalars['String']>;
+  logo_url?: Maybe<Scalars['String']>;
+  note?: Maybe<Scalars['String']>;
+  onboarding_step?: Maybe<PaidVendorOnboardingStep>;
+  other_facility_locations?: Maybe<Array<Scalars['String']>>;
+  products?: Maybe<Array<Scalars['String']>>;
+  subspecialty_ids?: Maybe<Array<Scalars['String']>>;
+  user?: Maybe<User>;
+  user_company_role?: Maybe<Scalars['String']>;
+  user_id?: Maybe<Scalars['String']>;
+  website?: Maybe<Scalars['String']>;
+};
+
+export type PaidVendorOnboardingPayload = {
+  attachment?: InputMaybe<Scalars['Upload']>;
+  certifications?: InputMaybe<Array<Scalars['String']>>;
+  company_description?: InputMaybe<Scalars['String']>;
+  company_ipo_status?: InputMaybe<Scalars['String']>;
+  company_name?: InputMaybe<Scalars['String']>;
+  company_revenue?: InputMaybe<Scalars['String']>;
+  company_size?: InputMaybe<Scalars['String']>;
+  company_types?: InputMaybe<Array<Scalars['String']>>;
+  custom_specialties?: InputMaybe<Array<Scalars['String']>>;
+  email?: InputMaybe<Scalars['String']>;
+  hq_locations?: InputMaybe<Array<Scalars['String']>>;
+  logo?: InputMaybe<Scalars['Upload']>;
+  note?: InputMaybe<Scalars['String']>;
+  other_facility_locations?: InputMaybe<Array<Scalars['String']>>;
+  products?: InputMaybe<Array<Scalars['String']>>;
+  subspecialty_ids?: InputMaybe<Array<Scalars['String']>>;
+  user_company_role?: InputMaybe<Scalars['String']>;
+  user_name?: InputMaybe<Scalars['String']>;
+  website?: InputMaybe<Scalars['String']>;
+};
+
+export enum PaidVendorOnboardingStep {
+  AdditionalInformation = 'ADDITIONAL_INFORMATION',
+  CompanyDetails = 'COMPANY_DETAILS',
+  CompanyInformation = 'COMPANY_INFORMATION',
+  Intro = 'INTRO',
+  Services = 'SERVICES',
+  Subscription = 'SUBSCRIPTION',
+  ThankYou = 'THANK_YOU'
+}
+
 export type PaymentMethod = {
   __typename?: 'PaymentMethod';
   display_brand?: Maybe<Scalars['String']>;
@@ -1679,6 +1747,7 @@ export type Query = {
   news?: Maybe<Array<Maybe<News>>>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   notificationsConnection?: Maybe<NotificationConnection>;
+  paidVendor?: Maybe<PaidVendor>;
   perkCategories?: Maybe<Array<Maybe<PerkCategory>>>;
   projectConnection?: Maybe<ProjectConnection>;
   projectConnections?: Maybe<Array<Maybe<ProjectConnection>>>;
@@ -1929,7 +1998,6 @@ export type QueryVendorCompanyStripeConnectUrlArgs = {
 export type QueryVendorListingSubscriptionCheckoutLinkArgs = {
   cancel_url: Scalars['String'];
   ga_client_id?: InputMaybe<Scalars['String']>;
-  price_id: Scalars['String'];
   success_url: Scalars['String'];
 };
 
@@ -2520,6 +2588,9 @@ export type ResolversTypes = ResolversObject<{
   NotificationConnection: ResolverTypeWrapper<NotificationConnection>;
   NotificationEdge: ResolverTypeWrapper<NotificationEdge>;
   NotificationPageInfo: ResolverTypeWrapper<NotificationPageInfo>;
+  PaidVendor: ResolverTypeWrapper<PaidVendor>;
+  PaidVendorOnboardingPayload: PaidVendorOnboardingPayload;
+  PaidVendorOnboardingStep: PaidVendorOnboardingStep;
   PaymentMethod: ResolverTypeWrapper<PaymentMethod>;
   Perk: ResolverTypeWrapper<Perk>;
   PerkCategory: ResolverTypeWrapper<PerkCategory>;
@@ -2650,6 +2721,8 @@ export type ResolversParentTypes = ResolversObject<{
   NotificationConnection: NotificationConnection;
   NotificationEdge: NotificationEdge;
   NotificationPageInfo: NotificationPageInfo;
+  PaidVendor: PaidVendor;
+  PaidVendorOnboardingPayload: PaidVendorOnboardingPayload;
   PaymentMethod: PaymentMethod;
   Perk: Perk;
   PerkCategory: PerkCategory;
@@ -3335,6 +3408,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sourceRfpSpecialties?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceRfpSpecialtiesArgs, 'preparation_details' | 'project_desc' | 'project_title' | 'vendor_requirement'>>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
+  submitPaidVendorOnboarding?: Resolver<Maybe<ResolversTypes['PaidVendor']>, ParentType, ContextType, RequireFields<MutationSubmitPaidVendorOnboardingArgs, 'onboarding_step' | 'payload'>>;
   submitVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationSubmitVendorSurveyArgs, 'payload' | 'step'>>;
   subscribeEmailUpdates?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubscribeEmailUpdatesArgs, 'email'>>;
   transferBiotechOwnership?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationTransferBiotechOwnershipArgs, 'biotech_id' | 'user_id'>>;
@@ -3405,6 +3479,35 @@ export type NotificationPageInfoResolvers<ContextType = any, ParentType extends 
   endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hasNextPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hasPreviousPage?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PaidVendorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaidVendor'] = ResolversParentTypes['PaidVendor']> = ResolversObject<{
+  attachment_content_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  attachment_file_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  attachment_file_size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  attachment_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  certifications?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  company_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_ipo_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_revenue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  company_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  custom_specialties?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hq_locations?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  onboarding_step?: Resolver<Maybe<ResolversTypes['PaidVendorOnboardingStep']>, ParentType, ContextType>;
+  other_facility_locations?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  products?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  subspecialty_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  user_company_role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -3642,6 +3745,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   news?: Resolver<Maybe<Array<Maybe<ResolversTypes['News']>>>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType, Partial<QueryNotificationsArgs>>;
   notificationsConnection?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, RequireFields<QueryNotificationsConnectionArgs, 'first'>>;
+  paidVendor?: Resolver<Maybe<ResolversTypes['PaidVendor']>, ParentType, ContextType>;
   perkCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['PerkCategory']>>>, ParentType, ContextType>;
   projectConnection?: Resolver<Maybe<ResolversTypes['ProjectConnection']>, ParentType, ContextType, RequireFields<QueryProjectConnectionArgs, 'id'>>;
   projectConnections?: Resolver<Maybe<Array<Maybe<ResolversTypes['ProjectConnection']>>>, ParentType, ContextType, Partial<QueryProjectConnectionsArgs>>;
@@ -3669,7 +3773,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorCompanyStripeAccount?: Resolver<Maybe<ResolversTypes['StripeAccountData']>, ParentType, ContextType>;
   vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryVendorCompanyStripeConnectUrlArgs>>;
-  vendorListingSubscriptionCheckoutLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorListingSubscriptionCheckoutLinkArgs, 'cancel_url' | 'price_id' | 'success_url'>>;
+  vendorListingSubscriptionCheckoutLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorListingSubscriptionCheckoutLinkArgs, 'cancel_url' | 'success_url'>>;
   vendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
   vendorSurveyData?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, Partial<QueryVendorSurveyDataArgs>>;
 }>;
@@ -4104,6 +4208,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotificationConnection?: NotificationConnectionResolvers<ContextType>;
   NotificationEdge?: NotificationEdgeResolvers<ContextType>;
   NotificationPageInfo?: NotificationPageInfoResolvers<ContextType>;
+  PaidVendor?: PaidVendorResolvers<ContextType>;
   PaymentMethod?: PaymentMethodResolvers<ContextType>;
   Perk?: PerkResolvers<ContextType>;
   PerkCategory?: PerkCategoryResolvers<ContextType>;
