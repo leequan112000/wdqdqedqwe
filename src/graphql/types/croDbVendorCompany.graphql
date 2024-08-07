@@ -16,6 +16,7 @@ type CroDbVendorCompany {
   vendor_company_locations: [CroDbVendorCompanyLocation]
   vendor_company_types: [CroDbVendorCompanyType]
   vendor_company_certifications: [CroDbVendorCompanyCertification]
+  is_confirmed: Boolean
   verified_at: Date
 }
 
