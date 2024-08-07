@@ -691,6 +691,8 @@ export type Mutation = {
   updateVendorCompanyLabSpecializations?: Maybe<VendorCompany>;
   updateVendorCompanyProfile?: Maybe<VendorCompany>;
   updateVendorMember?: Maybe<VendorMember>;
+  updateVendorProfile?: Maybe<Vendor>;
+  updateVendorUserProfile?: Maybe<Vendor>;
   uploadBiotechInvoicePaymentReceipt?: Maybe<BiotechInvoice>;
   uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
@@ -1355,6 +1357,16 @@ export type MutationUpdateVendorMemberArgs = {
   phone?: InputMaybe<Scalars['String']>;
   timezone?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateVendorProfileArgs = {
+  payload: UpdateVendorProfilePayload;
+};
+
+
+export type MutationUpdateVendorUserProfileArgs = {
+  payload: UpdateVendorUserProfilePayload;
 };
 
 
@@ -2267,6 +2279,34 @@ export type UpdateMilestoneInput = {
   title: Scalars['String'];
 };
 
+export type UpdateVendorProfilePayload = {
+  attachment?: InputMaybe<Scalars['Upload']>;
+  certifications?: InputMaybe<Array<Scalars['String']>>;
+  company_description?: InputMaybe<Scalars['String']>;
+  company_ipo_status?: InputMaybe<Scalars['String']>;
+  company_name?: InputMaybe<Scalars['String']>;
+  company_revenue?: InputMaybe<Scalars['String']>;
+  company_size?: InputMaybe<Scalars['String']>;
+  company_types?: InputMaybe<Array<Scalars['String']>>;
+  custom_specialties?: InputMaybe<Array<Scalars['String']>>;
+  email?: InputMaybe<Scalars['String']>;
+  hq_locations?: InputMaybe<Array<Scalars['String']>>;
+  logo?: InputMaybe<Scalars['Upload']>;
+  note?: InputMaybe<Scalars['String']>;
+  other_facility_locations?: InputMaybe<Array<Scalars['String']>>;
+  products?: InputMaybe<Array<Scalars['String']>>;
+  subspecialty_ids?: InputMaybe<Array<Scalars['String']>>;
+  website?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateVendorUserProfilePayload = {
+  country_code?: InputMaybe<Scalars['String']>;
+  first_name?: InputMaybe<Scalars['String']>;
+  last_name?: InputMaybe<Scalars['String']>;
+  phone_number?: InputMaybe<Scalars['String']>;
+  user_company_role?: InputMaybe<Scalars['String']>;
+};
+
 export type UploadResult = {
   __typename?: 'UploadResult';
   data?: Maybe<ProjectAttachment>;
@@ -2644,6 +2684,8 @@ export type ResolversTypes = ResolversObject<{
   SubscriptionPrice: ResolverTypeWrapper<SubscriptionPrice>;
   SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
+  UpdateVendorProfilePayload: UpdateVendorProfilePayload;
+  UpdateVendorUserProfilePayload: UpdateVendorUserProfilePayload;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   UploadResult: ResolverTypeWrapper<UploadResult>;
   User: ResolverTypeWrapper<User>;
@@ -2777,6 +2819,8 @@ export type ResolversParentTypes = ResolversObject<{
   SubscriptionPrice: SubscriptionPrice;
   SubspecialtyNameWithWeight: SubspecialtyNameWithWeight;
   UpdateMilestoneInput: UpdateMilestoneInput;
+  UpdateVendorProfilePayload: UpdateVendorProfilePayload;
+  UpdateVendorUserProfilePayload: UpdateVendorUserProfilePayload;
   Upload: Scalars['Upload'];
   UploadResult: UploadResult;
   User: User;
@@ -3429,6 +3473,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorCompanyLabSpecializations?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyLabSpecializationsArgs>>;
   updateVendorCompanyProfile?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, Partial<MutationUpdateVendorCompanyProfileArgs>>;
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
+  updateVendorProfile?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationUpdateVendorProfileArgs, 'payload'>>;
+  updateVendorUserProfile?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationUpdateVendorUserProfileArgs, 'payload'>>;
   uploadBiotechInvoicePaymentReceipt?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<MutationUploadBiotechInvoicePaymentReceiptArgs, 'file' | 'id'>>;
   uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;
