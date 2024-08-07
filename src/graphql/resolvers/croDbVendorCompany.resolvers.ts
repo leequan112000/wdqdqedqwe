@@ -71,6 +71,14 @@ const resolvers: Resolvers<Context> = {
 
       return companySize ? companySize.replace('-', ' – ') : null;
     },
+    is_confirmed: async (parent, _, context) => {
+      const verifiedAt = parent.verified_at;
+      const SIX_MONTHS_IN_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+      return verifiedAt
+        ? new Date().getTime() - new Date(verifiedAt).getTime() <
+            SIX_MONTHS_IN_MS
+        : false;
+    },
   },
   CroDbVendorCompanyLocation: {
     country: async (parent, _, __) => {

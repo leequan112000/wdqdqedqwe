@@ -306,6 +306,7 @@ export type CroDbVendorCompany = {
   crunchbase_url?: Maybe<Scalars['String']>;
   id: Scalars['String'];
   is_active?: Maybe<Scalars['Boolean']>;
+  is_confirmed?: Maybe<Scalars['Boolean']>;
   is_cromatic_vendor?: Maybe<Scalars['Boolean']>;
   linkedin_url?: Maybe<Scalars['String']>;
   logo_url?: Maybe<Scalars['String']>;
@@ -3055,6 +3056,7 @@ export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends Re
   crunchbase_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  is_confirmed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_cromatic_vendor?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
