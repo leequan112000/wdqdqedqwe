@@ -9,6 +9,7 @@ import {
   BillingInfoStatus,
   BillingInvoiceStatus,
   CompanyCollaboratorRoleType,
+  VendorSubscriptionPlanname,
 } from '../../helper/constant';
 import { Context } from '../../types/context';
 import { BillingInfo, Resolvers } from '../generated';
@@ -37,6 +38,10 @@ const getPlanName = (accType: string | null) => {
       return 'White Glove Service';
     case CustomerSubscriptionPlanName.CROMATIC_CONSULTANT:
       return 'Cromatic Consultant';
+    case VendorSubscriptionPlanname.STARTER_CROMATIC_VENDOR_LISTING:
+      return 'Starter Cromatic Vendor Listing';
+    case VendorSubscriptionPlanname.CROMATIC_VENDOR_LISTING:
+      return 'Cromatic Vendor Listing';
     default:
       return 'Standard Plan';
   }
@@ -293,19 +298,30 @@ const resolvers: Resolvers<Context> = {
               customer_subscriptions: true,
             },
           },
+          vendor: true,
         },
       });
 
-      const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
-      const customerSubscription = user?.customer?.customer_subscriptions?.[0];
-      const endedAt = customerSubscription
-        ? customerSubscription.ended_at
-        : biotechSubscription?.ended_at ?? null;
-      const subscriptionStatus = customerSubscription
-        ? customerSubscription.status
-        : biotechSubscription?.status ?? null;
-      const now = new Date();
+      let endedAt: Date | null, subscriptionStatus: string | null;
+
       let status: string | null = null;
+
+      if (user?.vendor) {
+        subscriptionStatus = user.vendor.subscription_status;
+        endedAt = user.vendor.subscription_ended_at;
+      } else {
+        const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
+        const customerSubscription =
+          user?.customer?.customer_subscriptions?.[0];
+        endedAt = customerSubscription
+          ? customerSubscription.ended_at
+          : biotechSubscription?.ended_at ?? null;
+        subscriptionStatus = customerSubscription
+          ? customerSubscription.status
+          : biotechSubscription?.status ?? null;
+      }
+
+      const now = new Date();
 
       if (subscriptionStatus === SubscriptionStatus.ACTIVE) {
         if (endedAt === null) {
@@ -339,12 +355,15 @@ const resolvers: Resolvers<Context> = {
               customer_subscriptions: true,
             },
           },
+          vendor: true,
         },
       });
       const biotechSubscription = user?.customer?.biotech?.subscriptions?.[0];
       const customerSubscription = user?.customer?.customer_subscriptions?.[0];
+      const vendorStripeCusId = user?.vendor?.stripe_customer_id;
       const stripe_customer_id = (customerSubscription?.stripe_customer_id ||
-        biotechSubscription?.stripe_customer_id) as string;
+        biotechSubscription?.stripe_customer_id ||
+        vendorStripeCusId) as string;
       const stripe = await getStripeInstance();
       const stripeCus = await stripe.customers.retrieve(stripe_customer_id, {
         expand: ['invoice_settings.default_payment_method'],
@@ -452,6 +471,7 @@ const resolvers: Resolvers<Context> = {
               customer_subscriptions: true,
             },
           },
+          vendor: true,
         },
       });
 
@@ -462,8 +482,9 @@ const resolvers: Resolvers<Context> = {
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
       const customerStripeCusId =
         user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
+      const vendorStripeCusId = user?.vendor?.stripe_customer_id;
 
-      if (!biotechStripeCusId && !customerStripeCusId) {
+      if (!biotechStripeCusId && !customerStripeCusId && !vendorStripeCusId) {
         return null;
       }
 
@@ -485,6 +506,14 @@ const resolvers: Resolvers<Context> = {
             })
           ).data.filter((d) => d.status !== 'draft')
         : [];
+      const vendorStripeInvoices = vendorStripeCusId
+        ? (
+            await stripe.invoices.list({
+              customer: vendorStripeCusId,
+              expand: ['data.payment_intent'],
+            })
+          ).data.filter((d) => d.status !== 'draft')
+        : [];
 
       const processedCustomerInvoices = await processStripeInvoice(
         customerStripeInvoices,
@@ -494,8 +523,16 @@ const resolvers: Resolvers<Context> = {
         biotechStripeInvoices,
         stripe,
       );
+      const processedVendorInvoices = await processStripeInvoice(
+        vendorStripeInvoices,
+        stripe,
+      );
 
-      return [...processedCustomerInvoices, ...processedBiotechInvoices];
+      return [
+        ...processedCustomerInvoices,
+        ...processedBiotechInvoices,
+        ...processedVendorInvoices,
+      ];
     },
     billingPortalUrl: async (_, args, context) => {
       const { return_url } = args;
@@ -567,6 +604,62 @@ const resolvers: Resolvers<Context> = {
 
       return setupIntent.client_secret;
     },
+    vendorBillingInfo: async (_, __, context) => {
+      const userId = context.req.user_id;
+
+      const vendor = await context.prisma.vendor.findUnique({
+        where: {
+          user_id: userId,
+        },
+      });
+
+      invariant(vendor, 'Missing vendor');
+
+      if (!vendor.stripe_subscription_id) {
+        return NO_BILLING_INFO;
+      }
+
+      const stripe = await getStripeInstance();
+      const stripeSub = await safeGetStripeSub(
+        vendor.stripe_subscription_id,
+        stripe,
+      );
+      if (stripeSub === null) {
+        return {
+          ...NO_BILLING_INFO,
+          plan_id: vendor.plan_name,
+          plan: getPlanName(vendor.plan_name),
+        };
+      }
+      const subItem = stripeSub.items.data[0];
+
+      const upcomingInvoice = await getUpcomingInvoice(stripeSub.id, stripe);
+
+      const upcomingBillAmount = upcomingInvoice
+        ? currency(upcomingInvoice.amount_due, {
+            fromCents: true,
+          }).dollars()
+        : null;
+      const upcomingBillDate = upcomingInvoice
+        ? moment.unix(upcomingInvoice.period_end)
+        : null;
+
+      const schedule = stripeSub.schedule as Stripe.SubscriptionSchedule | null;
+      const metadataTrigger = schedule?.metadata?.trigger;
+
+      return {
+        id: HARDCODED_BILLING_INFO_ID,
+        has_active_legacy_plan: false,
+        has_active_sourcerer_plan: false,
+        has_active_white_glove_plan: false,
+        plan_id: vendor.plan_name,
+        plan: getPlanName(vendor.plan_name),
+        bill_cycle: subItem.plan.interval,
+        upcoming_bill_amount: upcomingBillAmount,
+        upcoming_bill_date: upcomingBillDate,
+        has_scheduled_for_interval_change: metadataTrigger === 'user',
+      };
+    },
   },
   Mutation: {
     cancelSubscription: async (_, __, context) => {
@@ -597,9 +690,18 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
+      const vendor = await context.prisma.vendor.findUnique({
+        where: {
+          user_id: userId,
+          subscription_status: SubscriptionStatus.ACTIVE,
+        },
+      });
+
       // Get Stripe subscription end date.
       invariant(
-        biotechSubscription !== null || customerSubscription !== null,
+        biotechSubscription !== null ||
+          customerSubscription !== null ||
+          vendor !== null,
         'No active Stripe subscription found.',
       );
 
@@ -661,6 +763,30 @@ const resolvers: Resolvers<Context> = {
             },
           );
         }
+
+        if (vendor?.stripe_subscription_id) {
+          const stripeSub = await stripe.subscriptions.retrieve(
+            vendor.stripe_subscription_id,
+          );
+          const stripeSubPeriodEnd = stripeSub.current_period_end;
+          const subscriptionEndDate = moment.unix(stripeSubPeriodEnd).toDate();
+          await trx.vendor.update({
+            where: {
+              id: vendor.id,
+            },
+            data: {
+              subscription_ended_at: subscriptionEndDate,
+            },
+          });
+          // Release any schedule
+          if (stripeSub.schedule) {
+            const scheduleId = stripeSub.schedule as string;
+            await stripe.subscriptionSchedules.release(scheduleId);
+          }
+          await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+            cancel_at_period_end: true,
+          });
+        }
       });
 
       return true;
@@ -690,6 +816,13 @@ const resolvers: Resolvers<Context> = {
             },
           },
         });
+
+      const vendor = await context.prisma.vendor.findUnique({
+        where: {
+          user_id: userId,
+          subscription_status: SubscriptionStatus.ACTIVE,
+        },
+      });
 
       /**
        * Update subscription end date to current Stripe subscription period end.
@@ -728,6 +861,20 @@ const resolvers: Resolvers<Context> = {
               cancel_at_period_end: false,
             },
           );
+        }
+
+        if (vendor?.stripe_subscription_id) {
+          await trx.vendor.update({
+            where: {
+              id: vendor.id,
+            },
+            data: {
+              subscription_ended_at: null,
+            },
+          });
+          await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+            cancel_at_period_end: false,
+          });
         }
       });
 

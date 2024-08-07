@@ -1725,6 +1725,7 @@ export type Query = {
   upcomingMeetingEvents?: Maybe<Array<Maybe<MeetingEvent>>>;
   user?: Maybe<User>;
   vendor?: Maybe<Vendor>;
+  vendorBillingInfo?: Maybe<BillingInfo>;
   vendorCompany?: Maybe<VendorCompany>;
   vendorCompanyStripeAccount?: Maybe<StripeAccountData>;
   vendorCompanyStripeConnectUrl?: Maybe<Scalars['String']>;
@@ -3791,6 +3792,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   upcomingMeetingEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['MeetingEvent']>>>, ParentType, ContextType, Partial<QueryUpcomingMeetingEventsArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   vendor?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType>;
+  vendorBillingInfo?: Resolver<Maybe<ResolversTypes['BillingInfo']>, ParentType, ContextType>;
   vendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType>;
   vendorCompanyStripeAccount?: Resolver<Maybe<ResolversTypes['StripeAccountData']>, ParentType, ContextType>;
   vendorCompanyStripeConnectUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<QueryVendorCompanyStripeConnectUrlArgs>>;
