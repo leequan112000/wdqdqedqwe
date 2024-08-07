@@ -20,7 +20,7 @@ import { sendInvoicePaymentNoticeEmail } from '../../../mailer/invoice';
 import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
 import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
-import { PaidVendorOnboardingStep } from '../../../graphql/generated';
+import { VendorOnboardingStep } from '../../../graphql/generated';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -53,12 +53,12 @@ export const processStripeEvent = async (
                   'starter_cromatic_vendor_listing',
                 ].includes(planName!)
               ) {
-                const paidVendor = await prisma.paidVendor.findUnique({
+                const vendor = await prisma.vendor.findUnique({
                   where: {
                     id: checkoutSession.client_reference_id!,
                   },
                 });
-                if (!paidVendor) {
+                if (!vendor) {
                   // This can happen in because stripe sends webhooks for both staging and production traffic.
                   console.info(
                     `Skipped webhook: reason=vendor_not_found type=${event.type} vendor=${checkoutSession.client_reference_id}`,
@@ -69,9 +69,9 @@ export const processStripeEvent = async (
                   };
                 }
 
-                await prisma.paidVendor.update({
+                await prisma.vendor.update({
                   where: {
-                    id: paidVendor.id,
+                    id: vendor.id,
                   },
                   data: {
                     stripe_subscription_id:
@@ -80,7 +80,7 @@ export const processStripeEvent = async (
                     subscription_status: SubscriptionStatus.ACTIVE,
                     plan_name: checkoutSession.metadata?.plan_name as string,
                     subscription_ended_at: null,
-                    onboarding_step: PaidVendorOnboardingStep.Subscription,
+                    onboarding_step: VendorOnboardingStep.Subscription,
                   },
                 });
               } else {

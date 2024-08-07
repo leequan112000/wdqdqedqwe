@@ -1,18 +1,18 @@
-type PaidVendor {
+type Vendor {
   id: String
 }
 
 type Mutation {
-  createPaidVendor(
+  createVendor(
     email: String!
     company_name: String
-  ): PaidVendor
-  updatePaidVendor(
+  ): Vendor
+  updateVendor(
     id: String!
     email: String
     company_name: String
-  ): PaidVendor
-  sendPaidVendorSignUpLink(
+  ): Vendor
+  sendVendorSignUpLink(
     id: String!
   ): Boolean
 }
