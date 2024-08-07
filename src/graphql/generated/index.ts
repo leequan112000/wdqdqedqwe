@@ -306,6 +306,7 @@ export type CroDbVendorCompany = {
   crunchbase_url?: Maybe<Scalars['String']>;
   id: Scalars['String'];
   is_active?: Maybe<Scalars['Boolean']>;
+  is_confirmed?: Maybe<Scalars['Boolean']>;
   is_cromatic_vendor?: Maybe<Scalars['Boolean']>;
   linkedin_url?: Maybe<Scalars['String']>;
   logo_url?: Maybe<Scalars['String']>;
@@ -314,6 +315,7 @@ export type CroDbVendorCompany = {
   vendor_company_locations?: Maybe<Array<Maybe<CroDbVendorCompanyLocation>>>;
   vendor_company_subspecialties?: Maybe<Array<Maybe<CroDbVendorCompanySubspecialty>>>;
   vendor_company_types?: Maybe<Array<Maybe<CroDbVendorCompanyType>>>;
+  verified_at?: Maybe<Scalars['Date']>;
   website_url?: Maybe<Scalars['String']>;
 };
 
@@ -3054,6 +3056,7 @@ export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends Re
   crunchbase_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  is_confirmed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_cromatic_vendor?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   linkedin_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3062,6 +3065,7 @@ export type CroDbVendorCompanyResolvers<ContextType = any, ParentType extends Re
   vendor_company_locations?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyLocation']>>>, ParentType, ContextType>;
   vendor_company_subspecialties?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanySubspecialty']>>>, ParentType, ContextType>;
   vendor_company_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['CroDbVendorCompanyType']>>>, ParentType, ContextType>;
+  verified_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   website_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
