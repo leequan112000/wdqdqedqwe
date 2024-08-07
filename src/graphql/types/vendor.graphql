@@ -58,14 +58,48 @@ input VendorOnboardingPayload {
   attachment: Upload
 }
 
+input UpdateVendorUserProfilePayload {
+  first_name: String
+  last_name: String
+  phone_number: String
+  country_code: String
+  user_company_role: String
+}
+
+input UpdateVendorProfilePayload {
+  company_name: String
+  company_types: [String!]
+  company_description: String
+  company_size: String
+  company_revenue: String
+  company_ipo_status: String
+  website: String
+  hq_locations: [String!]
+  other_facility_locations: [String!]
+  subspecialty_ids: [String!]
+  custom_specialties: [String!]
+  certifications: [String!]
+  products: [String!]
+  email: String
+  note: String
+  logo: Upload
+  attachment: Upload
+}
+
 
 type Query {
   vendor: Vendor
 }
 
 type Mutation {
-    submitVendorOnboarding(
+  submitVendorOnboarding(
     onboarding_step: VendorOnboardingStep!
     payload: VendorOnboardingPayload!
+  ): Vendor
+  updateVendorUserProfile(
+    payload: UpdateVendorUserProfilePayload!
+  ): Vendor
+  updateVendorProfile(
+    payload: UpdateVendorProfilePayload!
   ): Vendor
 }
