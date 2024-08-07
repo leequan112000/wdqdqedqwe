@@ -1,4 +1,4 @@
-enum PaidVendorOnboardingStep {
+enum VendorOnboardingStep {
   INTRO
   COMPANY_INFORMATION
   COMPANY_DETAILS
@@ -8,7 +8,7 @@ enum PaidVendorOnboardingStep {
   THANK_YOU
 }
 
-type PaidVendor {
+type Vendor {
   id: String
   user_id: String
   user: User
@@ -33,10 +33,10 @@ type PaidVendor {
   attachment_file_name: String
   attachment_file_size: Int
   attachment_content_type: String
-  onboarding_step: PaidVendorOnboardingStep
+  onboarding_step: VendorOnboardingStep
 }
 
-input PaidVendorOnboardingPayload {
+input VendorOnboardingPayload {
   user_name: String
   user_company_role: String
   company_name: String
@@ -60,12 +60,12 @@ input PaidVendorOnboardingPayload {
 
 
 type Query {
-  paidVendor: PaidVendor
+  vendor: Vendor
 }
 
 type Mutation {
-    submitPaidVendorOnboarding(
-    onboarding_step: PaidVendorOnboardingStep!
-    payload: PaidVendorOnboardingPayload!
-  ): PaidVendor
+    submitVendorOnboarding(
+    onboarding_step: VendorOnboardingStep!
+    payload: VendorOnboardingPayload!
+  ): Vendor
 }

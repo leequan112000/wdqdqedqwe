@@ -2,13 +2,13 @@ import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
 import { createResetPasswordUrl } from '../../helper/email';
 import invariant from '../../helper/invariant';
-import { sendPaidVendorSignUpLink } from '../../mailer/paidVendor';
+import { sendVendorSignUpLink } from '../../mailer/vendor';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
-    createPaidVendor: async (_, args, context) => {
+    createVendor: async (_, args, context) => {
       const { email: emailArgs, company_name } = args;
       const email = emailArgs.toLowerCase();
 
@@ -20,7 +20,7 @@ const resolvers: Resolvers<Context> = {
 
       invariant(user === null, new PublicError('Email already exists.'));
 
-      const paidVendor = await context.prisma.paidVendor.create({
+      const vendor = await context.prisma.vendor.create({
         data: {
           email,
           company_name: company_name || undefined,
@@ -31,11 +31,11 @@ const resolvers: Resolvers<Context> = {
           },
         },
       });
-      return paidVendor;
+      return vendor;
     },
-    updatePaidVendor: async (_, args, context) => {
+    updateVendor: async (_, args, context) => {
       const { id, company_name, email } = args;
-      const paidVendor = await context.prisma.paidVendor.update({
+      const vendor = await context.prisma.vendor.update({
         data: {
           company_name: company_name || undefined,
           email: email || undefined,
@@ -44,23 +44,23 @@ const resolvers: Resolvers<Context> = {
           id,
         },
       });
-      return paidVendor;
+      return vendor;
     },
-    sendPaidVendorSignUpLink: async (_, args, context) => {
+    sendVendorSignUpLink: async (_, args, context) => {
       const { id } = args;
-      const paidVendor = await context.prisma.paidVendor.findUnique({
+      const vendor = await context.prisma.vendor.findUnique({
         where: {
           id,
         },
       });
 
-      invariant(paidVendor, 'Vendor not found.');
+      invariant(vendor, 'Vendor not found.');
 
       const resetTokenExpiration =
         new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
       const resetToken = createResetPasswordToken();
 
-      await context.prisma.paidVendor.update({
+      await context.prisma.vendor.update({
         data: {
           user: {
             update: {
@@ -79,12 +79,12 @@ const resolvers: Resolvers<Context> = {
       console.log(resetPasswordUrl);
 
       // TODO: Send email
-      await sendPaidVendorSignUpLink(
+      await sendVendorSignUpLink(
         {
           button_url: resetPasswordUrl,
-          company_name: paidVendor.company_name!,
+          company_name: vendor.company_name!,
         },
-        paidVendor.email!,
+        vendor.email!,
       );
 
       return true;
