@@ -9,7 +9,7 @@ import {
 } from '../../helper/auth';
 import { verify } from 'jsonwebtoken';
 import { Request } from 'express';
-import { Resolvers, PaidVendorOnboardingStep } from '../generated';
+import { Resolvers, VendorOnboardingStep } from '../generated';
 import { InternalError } from '../errors/InternalError';
 import {
   CasbinRole,
@@ -38,15 +38,15 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: true,
           vendor_member: true,
-          paid_vendor: true,
+          vendor: true,
         },
       });
       const isVendor = !!user?.vendor_member;
       const isBiotech = !!user?.customer;
-      const isPaidVendor = !!user?.paid_vendor;
+      const isSourcererVendor = !!user?.vendor;
 
-      if (isPaidVendor) {
-        return UserType.PAID_VENDOR;
+      if (isSourcererVendor) {
+        return UserType.SOURCERER_VENDOR;
       }
       if (isVendor) {
         return UserType.VENDOR;
@@ -84,7 +84,7 @@ const resolvers: Resolvers<Context> = {
               },
             },
           },
-          paid_vendor: true,
+          vendor: true,
         },
       });
 
@@ -123,10 +123,9 @@ const resolvers: Resolvers<Context> = {
       }
 
       if (
-        result?.paid_vendor &&
-        (result.paid_vendor.onboarding_step !==
-          PaidVendorOnboardingStep.Subscription ||
-          result.paid_vendor.stripe_customer_id == null)
+        result?.vendor &&
+        (result.vendor.onboarding_step !== VendorOnboardingStep.Subscription ||
+          result.vendor.stripe_customer_id == null)
       ) {
         return false;
       }

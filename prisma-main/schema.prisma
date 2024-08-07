@@ -42,7 +42,7 @@ model User {
   biotech_invoice_attachments         BiotechInvoiceAttachment[]
   oauth                               Oauth[]
   availability                        Availability[]
-  paid_vendor                         PaidVendor?
+  vendor                              Vendor?
 
   @@map("users")
 }
@@ -978,7 +978,7 @@ model Availability {
   @@map("availabilities")
 }
 
-model PaidVendor {
+model Vendor {
   id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id                  String   @unique @db.Uuid
   user                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -1015,5 +1015,5 @@ model PaidVendor {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@map("paid_vendors")
+  @@map("vendors")
 }

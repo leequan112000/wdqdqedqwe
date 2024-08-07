@@ -1,15 +1,15 @@
-import { PaidVendorProfileFilePath } from '../../helper/constant';
+import { VendorProfileFilePath } from '../../helper/constant';
 import invariant from '../../helper/invariant';
 import storeUpload from '../../helper/storeUpload';
 import { Context } from '../../types/context';
-import { PaidVendorOnboardingStep, Resolvers } from '../generated';
+import { VendorOnboardingStep, Resolvers } from '../generated';
 
 const resolvers: Resolvers<Context> = {
   Query: {
-    paidVendor: async (_, __, context) => {
+    vendor: async (_, __, context) => {
       const userId = context.req.user_id;
 
-      const paidVendor = await context.prisma.paidVendor.findUnique({
+      const vendor = await context.prisma.vendor.findUnique({
         where: {
           user_id: userId,
         },
@@ -18,26 +18,26 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      invariant(paidVendor, "Vendor data doesn't exists");
+      invariant(vendor, "Vendor data doesn't exists");
 
       return {
-        ...paidVendor,
-        onboarding_step: paidVendor.onboarding_step as PaidVendorOnboardingStep,
+        ...vendor,
+        onboarding_step: vendor.onboarding_step as VendorOnboardingStep,
       };
     },
   },
 
   Mutation: {
-    submitPaidVendorOnboarding: async (_, args, context) => {
+    submitVendorOnboarding: async (_, args, context) => {
       const { payload, onboarding_step } = args;
       const userId = context.req.user_id;
-      const paidVendor = await context.prisma.paidVendor.findUnique({
+      const vendor = await context.prisma.vendor.findUnique({
         where: {
           user_id: userId,
         },
       });
 
-      invariant(paidVendor, "Vendor record doesn't exist");
+      invariant(vendor, "Vendor record doesn't exist");
 
       let logoUrl: string | undefined,
         attachment_key: string | undefined,
@@ -48,7 +48,7 @@ const resolvers: Resolvers<Context> = {
       if (payload.logo) {
         const { bucket, key } = await storeUpload(
           await payload.logo,
-          PaidVendorProfileFilePath.LOGO,
+          VendorProfileFilePath.LOGO,
           true,
         );
 
@@ -58,7 +58,7 @@ const resolvers: Resolvers<Context> = {
       if (payload.attachment) {
         const { filename, key, contentType, filesize } = await storeUpload(
           await payload.attachment,
-          PaidVendorProfileFilePath.ATTACHMENT,
+          VendorProfileFilePath.ATTACHMENT,
         );
 
         attachment_key = key;
@@ -74,9 +74,9 @@ const resolvers: Resolvers<Context> = {
         lastName = nameParts[nameParts.length - 1];
       }
       console.log(payload);
-      const updatedPaidVendor = await context.prisma.paidVendor.update({
+      const updatedVendor = await context.prisma.vendor.update({
         where: {
-          id: paidVendor.id,
+          id: vendor.id,
         },
         data: {
           ...(payload.user_company_role && {
@@ -141,9 +141,8 @@ const resolvers: Resolvers<Context> = {
       });
 
       return {
-        ...updatedPaidVendor,
-        onboarding_step:
-          updatedPaidVendor.onboarding_step as PaidVendorOnboardingStep,
+        ...updatedVendor,
+        onboarding_step: updatedVendor.onboarding_step as VendorOnboardingStep,
       };
     },
   },
