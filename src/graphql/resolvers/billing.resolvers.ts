@@ -542,6 +542,7 @@ const resolvers: Resolvers<Context> = {
           id: userId,
         },
         include: {
+          vendor: true,
           customer: {
             include: {
               biotech: {
@@ -557,7 +558,8 @@ const resolvers: Resolvers<Context> = {
 
       const stripe_customer_id =
         user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id ||
-        user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id;
+        user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id ||
+        user?.vendor?.stripe_customer_id;
 
       if (!stripe_customer_id) {
         return null;

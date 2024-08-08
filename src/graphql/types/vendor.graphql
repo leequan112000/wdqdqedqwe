@@ -34,6 +34,7 @@ type Vendor {
   attachment_file_size: Int
   attachment_content_type: String
   onboarding_step: VendorOnboardingStep
+  department: String
 }
 
 input VendorOnboardingPayload {
@@ -64,6 +65,7 @@ input UpdateVendorUserProfilePayload {
   phone_number: String
   country_code: String
   user_company_role: String
+  department: String
 }
 
 input UpdateVendorProfilePayload {
