@@ -2356,6 +2356,7 @@ export type Vendor = {
   company_size?: Maybe<Scalars['String']>;
   company_types?: Maybe<Array<Scalars['String']>>;
   custom_specialties?: Maybe<Array<Scalars['String']>>;
+  department?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['String']>;
   hq_locations?: Maybe<Array<Scalars['String']>>;
   id?: Maybe<Scalars['String']>;
@@ -4122,6 +4123,7 @@ export type VendorResolvers<ContextType = any, ParentType extends ResolversParen
   company_size?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   company_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   custom_specialties?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  department?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hq_locations?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

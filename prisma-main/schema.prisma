@@ -998,6 +998,7 @@ model Vendor {
   certifications           String[]
   products                 String[]
   email                    String?
+  department               String?
   note                     String?
   attachment_key           String?
   attachment_file_name     String?
