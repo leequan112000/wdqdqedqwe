@@ -178,6 +178,12 @@ const resolvers: Resolvers<Context> = {
                 user_company_role: payload.user_company_role,
               }
             : {}),
+          ...(payload?.department
+            ? {
+                department: payload.department,
+              }
+            : {}),
+
           user: {
             update: {
               ...(payload?.first_name

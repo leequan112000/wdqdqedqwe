@@ -65,6 +65,7 @@ input UpdateVendorUserProfilePayload {
   phone_number: String
   country_code: String
   user_company_role: String
+  department: String
 }
 
 input UpdateVendorProfilePayload {

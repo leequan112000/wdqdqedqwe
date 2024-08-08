@@ -2303,6 +2303,7 @@ export type UpdateVendorProfilePayload = {
 
 export type UpdateVendorUserProfilePayload = {
   country_code?: InputMaybe<Scalars['String']>;
+  department?: InputMaybe<Scalars['String']>;
   first_name?: InputMaybe<Scalars['String']>;
   last_name?: InputMaybe<Scalars['String']>;
   phone_number?: InputMaybe<Scalars['String']>;
