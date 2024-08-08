@@ -1712,6 +1712,7 @@ export type Query = {
   quoteReviewQuestions?: Maybe<Array<Maybe<ReviewQuestion>>>;
   searchCertificationTags?: Maybe<Array<Maybe<CertificationTag>>>;
   searchLabSpecializations?: Maybe<Array<Maybe<LabSpecialization>>>;
+  signedUrl?: Maybe<Scalars['String']>;
   sourcedCros?: Maybe<SourcedCroConnection>;
   sourcererLiteSearch?: Maybe<SourcererLiteSearchPaginatedResult>;
   sourcingSession?: Maybe<SourcingSession>;
@@ -1904,6 +1905,11 @@ export type QuerySearchCertificationTagsArgs = {
 
 export type QuerySearchLabSpecializationsArgs = {
   search_content?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QuerySignedUrlArgs = {
+  key: Scalars['String'];
 };
 
 
@@ -3781,6 +3787,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   quoteReviewQuestions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReviewQuestion']>>>, ParentType, ContextType, RequireFields<QueryQuoteReviewQuestionsArgs, 'quote_id'>>;
   searchCertificationTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['CertificationTag']>>>, ParentType, ContextType, Partial<QuerySearchCertificationTagsArgs>>;
   searchLabSpecializations?: Resolver<Maybe<Array<Maybe<ResolversTypes['LabSpecialization']>>>, ParentType, ContextType, Partial<QuerySearchLabSpecializationsArgs>>;
+  signedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySignedUrlArgs, 'key'>>;
   sourcedCros?: Resolver<Maybe<ResolversTypes['SourcedCroConnection']>, ParentType, ContextType, RequireFields<QuerySourcedCrosArgs, 'first' | 'sourcing_session_id'>>;
   sourcererLiteSearch?: Resolver<Maybe<ResolversTypes['SourcererLiteSearchPaginatedResult']>, ParentType, ContextType, RequireFields<QuerySourcererLiteSearchArgs, 'first' | 'keyword'>>;
   sourcingSession?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<QuerySourcingSessionArgs, 'id'>>;
