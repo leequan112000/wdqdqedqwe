@@ -246,6 +246,9 @@ const resolvers: Resolvers<Context> = {
             ...(payload.company_types && {
               company_types: payload.company_types || [],
             }),
+            ...(payload.hq_locations && {
+              hq_locations: payload.hq_locations || [],
+            }),
             ...(payload.countries && { countries: payload.countries || [] }),
             ...(payload.website && { website: payload.website }),
             ...(payload.subspecialty_ids && {
