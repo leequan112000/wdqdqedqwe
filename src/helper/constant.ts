@@ -175,6 +175,11 @@ export enum CustomerSubscriptionPlanName {
   CROMATIC_CONSULTANT = 'cromatic_consultant',
 }
 
+export enum VendorSubscriptionPlanname {
+  STARTER_CROMATIC_VENDOR_LISTING = 'starter_cromatic_vendor_listing',
+  CROMATIC_VENDOR_LISTING = 'cromatic_vendor_listing',
+}
+
 export enum EmailType {
   ADMIN_NEW_PROJECT_REQUEST = 'admin:new-project-request',
   ADMIN_PROJECT_INVITATION = 'admin:project-invitation',
