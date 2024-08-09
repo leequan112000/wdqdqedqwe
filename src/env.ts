@@ -17,6 +17,8 @@ const envSchema = z.object({
   ENABLE_VENDOR_SURVEY_REMINDER: z
     .enum(['true', 'false'])
     .transform((v) => v === 'true'),
+  STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID: z.string(),
+  STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

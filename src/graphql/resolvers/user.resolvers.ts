@@ -9,7 +9,7 @@ import {
 } from '../../helper/auth';
 import { verify } from 'jsonwebtoken';
 import { Request } from 'express';
-import { Resolvers } from '../generated';
+import { Resolvers, VendorOnboardingStep } from '../generated';
 import { InternalError } from '../errors/InternalError';
 import {
   CasbinRole,
@@ -38,10 +38,16 @@ const resolvers: Resolvers<Context> = {
         include: {
           customer: true,
           vendor_member: true,
+          vendor: true,
         },
       });
       const isVendor = !!user?.vendor_member;
       const isBiotech = !!user?.customer;
+      const isSourcererVendor = !!user?.vendor;
+
+      if (isSourcererVendor) {
+        return UserType.SOURCERER_VENDOR;
+      }
       if (isVendor) {
         return UserType.VENDOR;
       }
@@ -78,6 +84,7 @@ const resolvers: Resolvers<Context> = {
               },
             },
           },
+          vendor: true,
         },
       });
 
@@ -111,6 +118,14 @@ const resolvers: Resolvers<Context> = {
         result?.customer &&
         result.customer.biotech.subscriptions.length === 0 &&
         result.customer.customer_subscriptions.length === 0
+      ) {
+        return false;
+      }
+
+      if (
+        result?.vendor &&
+        (result.vendor.onboarding_step !== VendorOnboardingStep.Subscription ||
+          result.vendor.stripe_customer_id == null)
       ) {
         return false;
       }
@@ -232,7 +247,8 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
     full_name: async (parent, args, context) => {
-      return `${parent.first_name} ${parent.last_name}`;
+      if (!parent.first_name && !parent.last_name) return null;
+      return [parent.first_name || '', parent.last_name || ''].join(' ');
     },
     company_collaborator_role: async (parent, args, context) => {
       if (parent.company_collaborator_role) {

@@ -175,6 +175,11 @@ export enum CustomerSubscriptionPlanName {
   CROMATIC_CONSULTANT = 'cromatic_consultant',
 }
 
+export enum VendorSubscriptionPlanname {
+  STARTER_CROMATIC_VENDOR_LISTING = 'starter_cromatic_vendor_listing',
+  CROMATIC_VENDOR_LISTING = 'cromatic_vendor_listing',
+}
+
 export enum EmailType {
   ADMIN_NEW_PROJECT_REQUEST = 'admin:new-project-request',
   ADMIN_PROJECT_INVITATION = 'admin:project-invitation',
@@ -288,6 +293,7 @@ export enum OrdinalAction {
 export enum UserType {
   CUSTOMER = 'customer',
   VENDOR = 'vendor',
+  SOURCERER_VENDOR = 'sourcerer-vendor',
   CROMATIC_ADMIN = 'cromatic-admin',
 }
 
@@ -396,4 +402,9 @@ export enum SourcingResultSortBy {
   TEAM_SIZE = 'Team size',
   REVENUE = 'Revenue',
   ALPHABETICAL = 'A - Z',
+}
+
+export enum VendorProfileFilePath {
+  LOGO = 'vendor/vendor_logo',
+  ATTACHMENT = 'vendor/vendor_attachment',
 }
