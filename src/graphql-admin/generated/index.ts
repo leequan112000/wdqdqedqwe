@@ -163,6 +163,7 @@ export type Mutation = {
   createProjectRequest?: Maybe<ProjectRequest>;
   createVendor?: Maybe<Vendor>;
   createVendorCompany?: Maybe<VendorCompany>;
+  createVendorFromSurvey?: Maybe<Scalars['Boolean']>;
   deactivatePerk?: Maybe<Perk>;
   deleteAdmin?: Maybe<Scalars['Boolean']>;
   deleteCertificationTag?: Maybe<Scalars['Boolean']>;
@@ -357,6 +358,11 @@ export type MutationCreateVendorCompanyArgs = {
   name: Scalars['String'];
   vendor_type?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationCreateVendorFromSurveyArgs = {
+  survey_id: Scalars['String'];
 };
 
 
@@ -1066,6 +1072,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'title'>>;
   createVendor?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationCreateVendorArgs, 'email'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
+  createVendorFromSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationCreateVendorFromSurveyArgs, 'survey_id'>>;
   deactivatePerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationDeactivatePerkArgs, 'id'>>;
   deleteAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteAdminArgs, 'id'>>;
   deleteCertificationTag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteCertificationTagArgs, 'id'>>;
