@@ -592,12 +592,19 @@ const resolvers: Resolvers<Context> = {
               customer_subscriptions: true,
             },
           },
+          vendor: true,
         },
       });
 
       const stripe_customer_id =
         user?.customer?.customer_subscriptions?.[0]?.stripe_customer_id ||
-        user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id;
+        user?.customer?.biotech?.subscriptions?.[0]?.stripe_customer_id ||
+        user?.vendor?.stripe_customer_id;
+
+      if (!stripe_customer_id) {
+        return null;
+      }
+
       const stripe = await getStripeInstance();
       const setupIntent = await stripe.setupIntents.create({
         payment_method_types: ['card'],
