@@ -76,9 +76,7 @@ const resolvers: Resolvers<Context> = {
       });
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      console.log(resetPasswordUrl);
 
-      // TODO: Send email
       await sendVendorSignUpLink(
         {
           button_url: resetPasswordUrl,
