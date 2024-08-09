@@ -190,6 +190,12 @@ const resolvers: Resolvers<Context> = {
             status: VendorSurveyStatus.INCOMPLETE,
             step,
             vendor_company_id: vendor_company_id || undefined,
+            ...(payload.respondent_name && {
+              respondent_name: payload.respondent_name,
+            }),
+            ...(payload.respondent_company_role && {
+              respondent_company_role: payload.respondent_company_role,
+            }),
           },
         });
         return {
