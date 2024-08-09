@@ -6,6 +6,7 @@ import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
 import { CustomerSubscriptionPlanName } from '../../helper/constant';
 import { env } from '../../env';
+import { parseCompanySize } from '../../helper/vendorCompany';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -144,6 +145,55 @@ const resolvers: Resolvers<Context> = {
         ...(stripeCusId
           ? { customer: stripeCusId }
           : { customer_email: user.email }),
+        line_items: [
+          {
+            price: price_id,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url,
+        cancel_url,
+        metadata: {
+          plan_name,
+          ...(ga_client_id ? { client_id: ga_client_id } : {}),
+        },
+        payment_method_types: ['card'],
+      });
+
+      return session.url;
+    },
+    vendorListingSubscriptionCheckoutLink: async (_, args, context) => {
+      const { ga_client_id, cancel_url, success_url } = args;
+      const userId = context.req.user_id;
+      const vendor = await context.prisma.vendor.findFirst({
+        where: {
+          user_id: userId,
+        },
+      });
+
+      invariant(vendor, 'Missing paid vendor.');
+
+      invariant(vendor.company_size, 'Missing company size.');
+
+      const size = parseCompanySize(vendor.company_size);
+
+      let price_id: string | null | undefined;
+      if (size.max <= 50) {
+        price_id = process.env.STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID;
+      } else {
+        price_id = process.env.STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID;
+      }
+
+      invariant(price_id, 'Missing price id.');
+
+      const stripe = await getStripeInstance();
+      const price = await stripe.prices.retrieve(price_id);
+      const product = await stripe.products.retrieve(price.product.toString());
+      const { plan_name } = product.metadata;
+
+      const session = await stripe.checkout.sessions.create({
+        client_reference_id: vendor.id,
         line_items: [
           {
             price: price_id,

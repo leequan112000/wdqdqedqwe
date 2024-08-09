@@ -1,0 +1,18 @@
+type Vendor {
+  id: String
+}
+
+type Mutation {
+  createVendor(
+    email: String!
+    company_name: String
+  ): Vendor
+  updateVendor(
+    id: String!
+    email: String
+    company_name: String
+  ): Vendor
+  sendVendorSignUpLink(
+    id: String!
+  ): Boolean
+}

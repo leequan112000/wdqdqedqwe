@@ -17,4 +17,7 @@ type Mutation {
     certifications: [String!]!
     subspecialty_ids: [String!]!
   ): Boolean
+  createVendorFromSurvey(
+    survey_id: String!
+  ): Boolean
 }

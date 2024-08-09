@@ -34,6 +34,7 @@ type Query {
   billingInvoices: [BillingInvoice]
   billingPortalUrl(return_url: String!): String
   stripeSetupIntent: String
+  vendorBillingInfo: BillingInfo
 }
 
 type Mutation {

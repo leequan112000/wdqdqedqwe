@@ -8,6 +8,7 @@ import { VendorSurveyStatus } from '../../helper/constant';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { InternalError } from '../../graphql/errors/InternalError';
+import { PublicError } from '../../graphql/errors/PublicError';
 
 const resolver: Resolvers<Context> = {
   Query: {
@@ -128,6 +129,74 @@ const resolver: Resolvers<Context> = {
       });
 
       return true;
+    },
+    createVendorFromSurvey: async (_, args, context) => {
+      const { survey_id } = args;
+
+      const vendorSurvey = await context.prismaCRODb.vendorSurvey.findUnique({
+        where: {
+          id: survey_id,
+        },
+      });
+
+      invariant(vendorSurvey, 'Survey record not found.');
+
+      invariant(
+        vendorSurvey.email,
+        'There is no email address submitted in this survey.',
+      );
+
+      const user = await context.prisma.user.findUnique({
+        where: {
+          email: vendorSurvey.email,
+        },
+      });
+
+      invariant(
+        user === null,
+        new PublicError('User with the same email exists.'),
+      );
+
+      let firstName: string | undefined, lastName: string | undefined;
+      if (vendorSurvey.respondent_name) {
+        const nameParts = vendorSurvey.respondent_name.split(' ');
+        firstName = nameParts[0];
+        lastName = nameParts[nameParts.length - 1];
+      }
+
+      const vendor = await context.prisma.vendor.create({
+        data: {
+          email: vendorSurvey.email,
+          company_name: vendorSurvey.company_name,
+          company_revenue: vendorSurvey.company_revenue,
+          company_description: vendorSurvey.company_description,
+          company_ipo_status: vendorSurvey.company_ipo_status,
+          company_size: vendorSurvey.company_size,
+          company_types: vendorSurvey.company_types,
+          certifications: vendorSurvey.certifications,
+          custom_specialties: vendorSurvey.custom_specialties,
+          note: vendorSurvey.note,
+          hq_locations: vendorSurvey.hq_locations,
+          other_facility_locations: vendorSurvey.countries,
+          logo_url: vendorSurvey.logo_url,
+          subspecialty_ids: vendorSurvey.subspecialty_ids,
+          website: vendorSurvey.website,
+          attachment_key: vendorSurvey.attachment_key,
+          attachment_content_type: vendorSurvey.attachment_content_type,
+          attachment_file_name: vendorSurvey.attachment_file_name,
+          user_company_role: vendorSurvey.respondent_company_role,
+          user: {
+            create: {
+              email: vendorSurvey.email,
+              first_name: firstName,
+              last_name: lastName,
+            },
+          },
+        },
+      });
+
+      if (vendor) return true;
+      return false;
     },
   },
 };

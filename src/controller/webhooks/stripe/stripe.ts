@@ -20,6 +20,7 @@ import { sendInvoicePaymentNoticeEmail } from '../../../mailer/invoice';
 import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
 import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
+import { VendorOnboardingStep } from '../../../graphql/generated';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -32,56 +33,102 @@ export const processStripeEvent = async (
 
         switch (checkoutSession.mode) {
           case 'subscription': {
-            const customer = await prisma.customer.findFirst({
-              where: {
-                id: checkoutSession.client_reference_id!,
-              },
-              include: {
-                customer_subscriptions: true,
-              },
-            });
-            if (!customer) {
-              // This can happen in because stripe sends webhooks for both staging and production traffic.
-              console.info(
-                `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
-              );
-              return {
-                status: 200,
-                message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
-              };
-            }
             if (checkoutSession.subscription) {
-              if (!checkoutSession.metadata?.plan_name) {
+              const planName = checkoutSession.metadata?.plan_name;
+              if (!planName) {
                 Sentry.captureMessage(
                   '[Stripe Webhook] Missing plan name metadata.',
                 );
               }
 
-              if (customer.customer_subscriptions.length > 0) {
-                await prisma.customerSubscription.update({
+              /**
+               * TODO: find a simpler way to differentiate between different user type.
+               * Potentially change client reference id to user id. Then, we can query
+               * customer and vendor using that user id. Finally, check the existance of
+               * customer or vendor.
+               */
+              if (
+                [
+                  'cromatic_vendor_listing',
+                  'starter_cromatic_vendor_listing',
+                ].includes(planName!)
+              ) {
+                const vendor = await prisma.vendor.findUnique({
                   where: {
-                    id: customer.customer_subscriptions[0].id,
+                    id: checkoutSession.client_reference_id!,
+                  },
+                });
+                if (!vendor) {
+                  // This can happen in because stripe sends webhooks for both staging and production traffic.
+                  console.info(
+                    `Skipped webhook: reason=vendor_not_found type=${event.type} vendor=${checkoutSession.client_reference_id}`,
+                  );
+                  return {
+                    status: 200,
+                    message: `Skipped webhook: reason=vendor_not_found type=${event.type} vendor=${checkoutSession.client_reference_id}`,
+                  };
+                }
+
+                await prisma.vendor.update({
+                  where: {
+                    id: vendor.id,
                   },
                   data: {
                     stripe_subscription_id:
                       checkoutSession.subscription as string,
                     stripe_customer_id: checkoutSession.customer as string,
-                    status: SubscriptionStatus.ACTIVE,
+                    subscription_status: SubscriptionStatus.ACTIVE,
                     plan_name: checkoutSession.metadata?.plan_name as string,
-                    ended_at: null,
+                    subscription_ended_at: null,
+                    onboarding_step: VendorOnboardingStep.Subscription,
                   },
                 });
               } else {
-                await prisma.customerSubscription.create({
-                  data: {
-                    stripe_subscription_id:
-                      checkoutSession.subscription as string,
-                    stripe_customer_id: checkoutSession.customer as string,
-                    status: SubscriptionStatus.ACTIVE,
-                    plan_name: checkoutSession.metadata?.plan_name as string,
-                    customer_id: customer.id,
+                const customer = await prisma.customer.findFirst({
+                  where: {
+                    id: checkoutSession.client_reference_id!,
+                  },
+                  include: {
+                    customer_subscriptions: true,
                   },
                 });
+                if (!customer) {
+                  // This can happen in because stripe sends webhooks for both staging and production traffic.
+                  console.info(
+                    `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  );
+                  return {
+                    status: 200,
+                    message: `Skipped webhook: reason=customer_not_found type=${event.type} customer=${checkoutSession.client_reference_id}`,
+                  };
+                }
+
+                if (customer.customer_subscriptions.length > 0) {
+                  await prisma.customerSubscription.update({
+                    where: {
+                      id: customer.customer_subscriptions[0].id,
+                    },
+                    data: {
+                      stripe_subscription_id:
+                        checkoutSession.subscription as string,
+                      stripe_customer_id: checkoutSession.customer as string,
+                      status: SubscriptionStatus.ACTIVE,
+                      plan_name: checkoutSession.metadata?.plan_name as string,
+                      ended_at: null,
+                    },
+                  });
+                } else {
+                  await prisma.customerSubscription.create({
+                    data: {
+                      stripe_subscription_id:
+                        checkoutSession.subscription as string,
+                      stripe_customer_id: checkoutSession.customer as string,
+                      status: SubscriptionStatus.ACTIVE,
+                      plan_name: checkoutSession.metadata?.plan_name as string,
+                      customer_id: customer.id,
+                    },
+                  });
+                }
               }
 
               await ga.trackEvent(
@@ -118,11 +165,9 @@ export const processStripeEvent = async (
               } catch (error) {
                 Sentry.captureException(error);
               }
+              return { status: 200, message: 'OK' };
             }
-            console.info(
-              `Processed webhook: type=${event.type} customer=${customer.id}`,
-            );
-            return { status: 200, message: 'OK' };
+            return { status: 200, message: 'Missing subscription' };
           }
           case 'payment': {
             invariant(
@@ -585,78 +630,102 @@ export const processStripeEvent = async (
             },
           });
 
-        if (subscription === null && customerSubscription === null) {
+        const vendor = await prisma.vendor.findFirst({
+          where: {
+            stripe_customer_id: stripeCustomerId,
+          },
+        });
+
+        if (
+          subscription === null &&
+          customerSubscription === null &&
+          vendor === null
+        ) {
           return {
             status: 200,
             message: 'Skipped webhook: reason=subscription_not_found',
           };
         }
 
-        /**
-         * Move legacy customer's subscription to customer_subscriptions table.
-         * This logic can be safely remove if all customer has been migrated.
-         */
-        const isUpgradingLegacyCustomer =
-          customerSubscription === null &&
-          !!subscription &&
-          [
-            CustomerSubscriptionPlanName.SOURCING_PLAN,
-            CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
-          ].includes(plan_name as CustomerSubscriptionPlanName);
-        if (isUpgradingLegacyCustomer) {
-          const firstOwner = subscription.biotech.customers[0];
-          await prisma.$transaction(async (trx) => {
-            await trx.customerSubscription.create({
-              data: {
-                plan_name,
-                status,
-                stripe_customer_id: subscription.stripe_customer_id,
-                stripe_subscription_id: subscription.stripe_subscription_id,
-                customer_id: firstOwner.id,
-              },
-            });
-            await trx.subscription.delete({
-              where: {
-                id: subscription.id,
-              },
-            });
+        // Update vendor subscription
+        if (vendor) {
+          await prisma.vendor.update({
+            where: {
+              id: vendor.id,
+            },
+            data: {
+              plan_name,
+              subscription_ended_at: cancelAtDate,
+              subscription_status: status,
+            },
           });
         } else {
-          if (customerSubscription) {
-            invariant(plan_name, 'Missing metadata: plan_name.');
-            await prisma.customerSubscription.update({
-              where: {
-                id: customerSubscription.id,
-              },
-              data: {
-                plan_name,
-                ended_at: cancelAtDate,
-                status,
-              },
+          /**
+           * Move legacy customer's subscription to customer_subscriptions table.
+           * This logic can be safely remove if all customer has been migrated.
+           */
+          const isUpgradingLegacyCustomer =
+            customerSubscription === null &&
+            !!subscription &&
+            [
+              CustomerSubscriptionPlanName.SOURCING_PLAN,
+              CustomerSubscriptionPlanName.WHITE_GLOVE_PLAN,
+            ].includes(plan_name as CustomerSubscriptionPlanName);
+          if (isUpgradingLegacyCustomer) {
+            const firstOwner = subscription.biotech.customers[0];
+            await prisma.$transaction(async (trx) => {
+              await trx.customerSubscription.create({
+                data: {
+                  plan_name,
+                  status,
+                  stripe_customer_id: subscription.stripe_customer_id,
+                  stripe_subscription_id: subscription.stripe_subscription_id,
+                  customer_id: firstOwner.id,
+                },
+              });
+              await trx.subscription.delete({
+                where: {
+                  id: subscription.id,
+                },
+              });
             });
-          }
+          } else {
+            if (customerSubscription) {
+              invariant(plan_name, 'Missing metadata: plan_name.');
+              await prisma.customerSubscription.update({
+                where: {
+                  id: customerSubscription.id,
+                },
+                data: {
+                  plan_name,
+                  ended_at: cancelAtDate,
+                  status,
+                },
+              });
+            }
 
-          if (subscription) {
-            invariant(account_type, 'Missing metadata: account_type.');
-            await prisma.biotech.update({
-              where: {
-                id: subscription.biotech_id,
-              },
-              data: {
-                account_type,
-                subscriptions: {
-                  update: {
-                    where: {
-                      id: subscription.id,
-                    },
-                    data: {
-                      ended_at: cancelAtDate,
-                      status,
+            if (subscription) {
+              invariant(account_type, 'Missing metadata: account_type.');
+              await prisma.biotech.update({
+                where: {
+                  id: subscription.biotech_id,
+                },
+                data: {
+                  account_type,
+                  subscriptions: {
+                    update: {
+                      where: {
+                        id: subscription.id,
+                      },
+                      data: {
+                        ended_at: cancelAtDate,
+                        status,
+                      },
                     },
                   },
                 },
-              },
-            });
+              });
+            }
           }
         }
 
