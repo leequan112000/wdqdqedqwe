@@ -45,6 +45,10 @@ const resolvers: Resolvers<Context> = {
       const isBiotech = !!user?.customer;
       const isSourcererVendor = !!user?.vendor;
 
+      if (isVendor && isSourcererVendor) {
+        return UserType.SOURCERER_VENDOR_FROM_PM;
+      }
+
       if (isSourcererVendor) {
         return UserType.SOURCERER_VENDOR;
       }
