@@ -28,4 +28,7 @@ type Mutation {
     biotech_invite_vendor_id: String!
     vendor_type: String!
   ): Boolean
+  createSourcererVendorProfileForOldVendor(
+    vendor_company_id: String!
+  ): Boolean
 }

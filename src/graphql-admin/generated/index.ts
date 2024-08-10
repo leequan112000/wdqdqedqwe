@@ -161,6 +161,7 @@ export type Mutation = {
   createPerk?: Maybe<Perk>;
   createPerkCategory?: Maybe<PerkCategory>;
   createProjectRequest?: Maybe<ProjectRequest>;
+  createSourcererVendorProfileForOldVendor?: Maybe<Scalars['Boolean']>;
   createVendor?: Maybe<Vendor>;
   createVendorCompany?: Maybe<VendorCompany>;
   createVendorFromSurvey?: Maybe<Scalars['Boolean']>;
@@ -342,6 +343,11 @@ export type MutationCreateProjectRequestArgs = {
   sourcing_session_id?: InputMaybe<Scalars['String']>;
   title: Scalars['String'];
   vendor_requirement?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationCreateSourcererVendorProfileForOldVendorArgs = {
+  vendor_company_id: Scalars['String'];
 };
 
 
@@ -1070,6 +1076,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPerk?: Resolver<Maybe<ResolversTypes['Perk']>, ParentType, ContextType, RequireFields<MutationCreatePerkArgs, 'description' | 'how_to_redeem' | 'image' | 'is_active' | 'perk_category_id' | 'reward_description' | 'terms' | 'title'>>;
   createPerkCategory?: Resolver<Maybe<ResolversTypes['PerkCategory']>, ParentType, ContextType, RequireFields<MutationCreatePerkCategoryArgs, 'description' | 'name'>>;
   createProjectRequest?: Resolver<Maybe<ResolversTypes['ProjectRequest']>, ParentType, ContextType, RequireFields<MutationCreateProjectRequestArgs, 'title'>>;
+  createSourcererVendorProfileForOldVendor?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationCreateSourcererVendorProfileForOldVendorArgs, 'vendor_company_id'>>;
   createVendor?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationCreateVendorArgs, 'email'>>;
   createVendorCompany?: Resolver<Maybe<ResolversTypes['VendorCompany']>, ParentType, ContextType, RequireFields<MutationCreateVendorCompanyArgs, 'name'>>;
   createVendorFromSurvey?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationCreateVendorFromSurveyArgs, 'survey_id'>>;
