@@ -201,6 +201,7 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         mode: 'subscription',
+        ...(vendor.email ? { customer_email: vendor.email } : {}),
         success_url,
         cancel_url,
         metadata: {
