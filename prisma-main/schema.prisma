@@ -1006,6 +1006,7 @@ model Vendor {
   attachment_file_size     Int?
   onboarding_step          String?
   edit_counts              Int      @default(0)
+  is_profile_approved      Boolean  @default(false)
 
   stripe_subscription_id String?
   stripe_customer_id     String?

@@ -2369,6 +2369,7 @@ export type Vendor = {
   has_active_subscription?: Maybe<Scalars['Boolean']>;
   hq_locations?: Maybe<Array<Scalars['String']>>;
   id: Scalars['String'];
+  is_profile_approved?: Maybe<Scalars['Boolean']>;
   logo_url?: Maybe<Scalars['String']>;
   note?: Maybe<Scalars['String']>;
   onboarding_step?: Maybe<VendorOnboardingStep>;
@@ -4142,6 +4143,7 @@ export type VendorResolvers<ContextType = any, ParentType extends ResolversParen
   has_active_subscription?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   hq_locations?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  is_profile_approved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   logo_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   onboarding_step?: Resolver<Maybe<ResolversTypes['VendorOnboardingStep']>, ParentType, ContextType>;
