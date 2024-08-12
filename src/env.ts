@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { stringToJSON } from './zod/stringToJson';
 
 const envSchema = z.object({
+  APP_ENV: z.enum(['development', 'staging', 'production']),
   STRIPE_SOURCERER_MONTHLY_PLAN: stringToJSON().pipe(
     z.object({
       price_id: z.string(),
@@ -19,6 +20,8 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID: z.string(),
   STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID: z.string(),
+  CROMATIC_NOTIFY_SLACK_OAUTH_TOKEN: z.string(),
+  CROMATIC_NOTIFY_SLACK_CHANNEL_ID: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
