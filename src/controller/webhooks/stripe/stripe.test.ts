@@ -47,6 +47,8 @@ import * as invoiceNotificationModule from '../../../notification/invoiceNotific
 
 vi.mock('../../../prisma.ts');
 
+vi.mock('../../../env.ts');
+
 vi.mock('../../../services/biotechInvoice/biotechInvoice.service');
 
 vi.mock('@sendgrid/mail');
