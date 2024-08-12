@@ -9,6 +9,7 @@ import {
 } from '../../helper/constant';
 import storeUpload from '../../helper/storeUpload';
 import { VendorSurvey } from '../../../prisma-cro/generated/client';
+import { sendCromaticNotifyMessage } from '../../helper/slack';
 
 const resolvers: Resolvers<Context> = {
   CroDbVendorSurvey: {
@@ -198,6 +199,11 @@ const resolvers: Resolvers<Context> = {
             }),
           },
         });
+
+        await sendCromaticNotifyMessage(
+          `A vendor has started their survey:\n*${newVendorSurvey.company_name}*`,
+        );
+
         return {
           ...newVendorSurvey,
           step: newVendorSurvey.step as VendorSurveyStep,
@@ -289,6 +295,12 @@ const resolvers: Resolvers<Context> = {
             step,
           },
         });
+
+      if (step === VendorSurveyStep.AdditionalInformation) {
+        await sendCromaticNotifyMessage(
+          `A vendor has completed their survey:\n*${updatedVendorSurvey.company_name}*`,
+        );
+      }
 
       return {
         ...updatedVendorSurvey,

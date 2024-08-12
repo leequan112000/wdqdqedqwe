@@ -1,6 +1,7 @@
 import { deleteObject } from '../../helper/awsS3';
 import { VendorProfileFilePath } from '../../helper/constant';
 import invariant from '../../helper/invariant';
+import { sendCromaticNotifyMessage } from '../../helper/slack';
 import storeUpload from '../../helper/storeUpload';
 import { Context } from '../../types/context';
 import { VendorOnboardingStep, Resolvers } from '../generated';
@@ -320,6 +321,10 @@ const resolvers: Resolvers<Context> = {
         if (attachment_key_to_delete) {
           await deleteObject(attachment_key_to_delete);
         }
+
+        await sendCromaticNotifyMessage(
+          `A vendor has updated their listing profile:\n*${updatedVendor.company_name}*`,
+        );
 
         return {
           ...updatedVendor,
