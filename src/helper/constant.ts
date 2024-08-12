@@ -294,6 +294,7 @@ export enum UserType {
   CUSTOMER = 'customer',
   VENDOR = 'vendor',
   SOURCERER_VENDOR = 'sourcerer-vendor',
+  SOURCERER_VENDOR_FROM_PM = 'sourcerer-vendor-from-project-management',
   CROMATIC_ADMIN = 'cromatic-admin',
 }
 

@@ -9,7 +9,7 @@ enum VendorOnboardingStep {
 }
 
 type Vendor {
-  id: String
+  id: String!
   user_id: String
   user: User
   user_company_role: String
@@ -35,6 +35,10 @@ type Vendor {
   attachment_content_type: String
   onboarding_step: VendorOnboardingStep
   department: String
+  stripe_subscription_id: String
+  subscription_status: String
+  has_active_subscription: Boolean
+  is_profile_approved: Boolean
 }
 
 input VendorOnboardingPayload {

@@ -21,6 +21,7 @@ import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
 import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 import { VendorOnboardingStep } from '../../../graphql/generated';
+import { sendCromaticNotifyMessage } from '../../../helper/slack';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -69,7 +70,7 @@ export const processStripeEvent = async (
                   };
                 }
 
-                await prisma.vendor.update({
+                const updatedVendor = await prisma.vendor.update({
                   where: {
                     id: vendor.id,
                   },
@@ -83,6 +84,9 @@ export const processStripeEvent = async (
                     onboarding_step: VendorOnboardingStep.Subscription,
                   },
                 });
+                await sendCromaticNotifyMessage(
+                  `A vendor has completed their onboarding:\n*${updatedVendor.company_name}*`,
+                );
               } else {
                 const customer = await prisma.customer.findFirst({
                   where: {

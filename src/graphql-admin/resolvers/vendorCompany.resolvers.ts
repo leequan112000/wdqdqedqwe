@@ -512,6 +512,57 @@ const resolvers: Resolvers<Context> = {
 
       return null;
     },
+    createSourcererVendorProfileForOldVendor: async (_, args, context) => {
+      const { vendor_company_id } = args;
+
+      const vendorCompany = await context.prisma.vendorCompany.findUnique({
+        where: {
+          id: vendor_company_id,
+        },
+        include: {
+          vendor_members: {
+            where: {
+              role: {
+                equals: CompanyCollaboratorRoleType.OWNER,
+              },
+            },
+            orderBy: {
+              created_at: 'desc',
+            },
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      invariant(
+        vendorCompany?.vendor_members?.[0]?.user,
+        new PublicError('Missing owner user record.'),
+      );
+
+      const ownerVendorMember = vendorCompany.vendor_members[0];
+      const ownerUser = ownerVendorMember.user;
+
+      await context.prisma.vendor.create({
+        data: {
+          user: {
+            connect: {
+              id: ownerUser.id,
+            },
+          },
+          company_name: vendorCompany.name,
+          company_description: vendorCompany.description,
+          company_size: vendorCompany.team_size,
+          website: vendorCompany.website,
+          user_company_role: ownerVendorMember.title,
+          department: ownerVendorMember.department,
+          email: ownerUser.email,
+        },
+      });
+
+      return true;
+    },
   },
 };
 

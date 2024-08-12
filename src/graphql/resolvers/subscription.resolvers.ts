@@ -2,11 +2,12 @@ import currency from 'currency.js';
 import Stripe from 'stripe';
 import { getStripeInstance } from '../../helper/stripe';
 import { Context } from '../../types/context';
-import { Resolvers } from '../generated';
+import { Resolvers, VendorOnboardingStep } from '../generated';
 import invariant from '../../helper/invariant';
 import { CustomerSubscriptionPlanName } from '../../helper/constant';
 import { env } from '../../env';
 import { parseCompanySize } from '../../helper/vendorCompany';
+import Sentry from '../../sentry';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -176,6 +177,24 @@ const resolvers: Resolvers<Context> = {
 
       invariant(vendor.company_size, 'Missing company size.');
 
+      /**
+       * Edge case:
+       * Skip payment session if stripe subscription already exist.
+       * Could be remove once this edge case no longer valid.
+       */
+      if (vendor.stripe_subscription_id) {
+        Sentry.captureMessage(`Skipping payment for ${vendor.company_name}`);
+        await context.prisma.vendor.update({
+          where: {
+            id: vendor.id,
+          },
+          data: {
+            onboarding_step: VendorOnboardingStep.Subscription,
+          },
+        });
+        return success_url;
+      }
+
       const size = parseCompanySize(vendor.company_size);
 
       let price_id: string | null | undefined;
@@ -201,6 +220,7 @@ const resolvers: Resolvers<Context> = {
           },
         ],
         mode: 'subscription',
+        ...(vendor.email ? { customer_email: vendor.email } : {}),
         success_url,
         cancel_url,
         metadata: {
