@@ -38,6 +38,7 @@ type Vendor {
   stripe_subscription_id: String
   subscription_status: String
   has_active_subscription: Boolean
+  is_profile_approved: Boolean
 }
 
 input VendorOnboardingPayload {
