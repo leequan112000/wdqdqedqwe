@@ -1,5 +1,8 @@
 import { deleteObject } from '../../helper/awsS3';
-import { VendorProfileFilePath } from '../../helper/constant';
+import {
+  SubscriptionStatus,
+  VendorProfileFilePath,
+} from '../../helper/constant';
 import invariant from '../../helper/invariant';
 import { sendCromaticNotifyMessage } from '../../helper/slack';
 import storeUpload from '../../helper/storeUpload';
@@ -18,6 +21,12 @@ const resolvers: Resolvers<Context> = {
           id: parent.user_id,
         },
       });
+    },
+    has_active_subscription: async (parent) => {
+      return (
+        !!parent.stripe_subscription_id &&
+        parent.subscription_status === SubscriptionStatus.ACTIVE
+      );
     },
   },
   Query: {
