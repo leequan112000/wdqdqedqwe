@@ -201,7 +201,7 @@ const resolvers: Resolvers<Context> = {
         });
 
         await sendCromaticNotifyMessage(
-          `A vendor has started their survey:\n*${newVendorSurvey.company_name}*`,
+          `A vendor has started their survey:\n*${newVendorSurvey.respondent_name}*`,
         );
 
         return {
