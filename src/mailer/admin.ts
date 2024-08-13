@@ -7,7 +7,6 @@ import {
   adminGeneralNoticeTemplate,
   adminBiotechInviteVendorNoticeTemplate,
   adminBiotechInvoicePaymentNoticeTemplate,
-  adminShortlistSubmissionTemplate,
 } from './templates';
 import {
   AdminGeneralNoticeData,
@@ -162,14 +161,4 @@ type AdminShortlistSubmissionNotificationData = {
   project_title: string;
   shortlisted_vendors: Array<{ id: string; company_name: string }>;
   button_url: string;
-};
-
-type BulkAdminShortlistSubmissionNotificationData =
-  BulkEmailJobData<AdminShortlistSubmissionNotificationData>;
-
-export const sendAdminShortlistSubmissionNotificationEmail = async (
-  data: BulkAdminShortlistSubmissionNotificationData,
-) => {
-  const bulks = createBulkEmailJobData(data, adminShortlistSubmissionTemplate);
-  await createBulkSendMailJobs(bulks);
 };

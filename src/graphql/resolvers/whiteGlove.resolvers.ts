@@ -1,5 +1,4 @@
 import invariant from '../../helper/invariant';
-import { sendAdminShortlistSubmissionNotificationEmail } from '../../mailer/admin';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { slackNotification } from '../../helper/slack';
@@ -24,24 +23,6 @@ const resolvers: Resolvers<Context> = {
         });
 
       invariant(sourcingSession, 'No sourcing session found.');
-
-      const admins = await context.prisma.admin.findMany();
-
-      await sendAdminShortlistSubmissionNotificationEmail(
-        admins.map((admin) => ({
-          emailData: {
-            admin_name: admin.username,
-            project_title: sourcingSession.project_title,
-            shortlisted_vendors: sourcingSession.sourced_cros.map((vendor) => ({
-              id: vendor.vendor_company_id,
-              company_name: vendor.name,
-            })),
-            sourcing_session_id,
-            button_url: process.env.RETOOL_PROJECT_URL!,
-          },
-          receiverEmail: admin.email,
-        })),
-      );
 
       const user = await context.prisma.user.findUnique({
         where: {
