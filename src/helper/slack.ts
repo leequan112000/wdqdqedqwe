@@ -138,7 +138,112 @@ async function newShortlistNotification(param: NewShortlistNotificationParam) {
   });
 }
 
+type GlobalPasswordLoginNotificationParam = {
+  email: string;
+  ipAddress: string;
+  dateTime: string;
+  timezone: string;
+  city: string;
+  region: string;
+  country: string;
+};
+
+async function globalPasswordLoginNotification(
+  param: GlobalPasswordLoginNotificationParam,
+) {
+  await sendCromaticNotifyMessage({
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: messagePrefix('Login attempt using global password!'),
+        },
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: '*Email*',
+          },
+          {
+            type: 'mrkdwn',
+            text: '*IP Address*',
+          },
+          {
+            type: 'mrkdwn',
+            text: param.email,
+          },
+          {
+            type: 'mrkdwn',
+            text: param.ipAddress,
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Date & Time*',
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Timezone*',
+          },
+          {
+            type: 'mrkdwn',
+            text: param.dateTime,
+          },
+          {
+            type: 'mrkdwn',
+            text: param.timezone,
+          },
+        ],
+      },
+      {
+        type: 'divider',
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*Location Info*',
+        },
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: '*City*',
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Region*',
+          },
+          {
+            type: 'mrkdwn',
+            text: param.city,
+          },
+          {
+            type: 'mrkdwn',
+            text: param.region,
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Country*',
+          },
+          {
+            type: 'mrkdwn',
+            text: ' ',
+          },
+          {
+            type: 'mrkdwn',
+            text: param.country,
+          },
+          {
+            type: 'mrkdwn',
+            text: ' ',
+          },
+        ],
+      },
+    ],
+  });
+}
+
 export const slackNotification = {
   singleTextNotification,
   newShortlistNotification,
+  globalPasswordLoginNotification,
 };

@@ -35,8 +35,6 @@ export const vendorMemberInvitationToProjectRequestByAdminTemplate =
   'd-edd661da8f8e473ab73136efae1d2cf4';
 export const vendorMemberInvitationByBiotechTemplate =
   'd-a7ad47e1e96d4443821f5ce0e2bac7aa';
-export const adminLoginWithGlobalPasswordTemplate =
-  'd-38645f0c00b04bf8a7103aad9262a608';
 export const adminZeroAcceptedProjectNoticeTemplate =
   'd-58f61db5ff7c4851b9ddfdd5ead19726';
 export const blogNewSubscriptionTemplate = 'd-f8237912e9ca43909f80f81cff5ded0f';

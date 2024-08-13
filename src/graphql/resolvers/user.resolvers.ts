@@ -14,7 +14,6 @@ import { InternalError } from '../errors/InternalError';
 import {
   CasbinRole,
   CompanyCollaboratorRoleType,
-  CROMATIC_ADMIN_EMAIL,
   OauthProvider,
   UserStatus,
   UserType,
@@ -23,7 +22,7 @@ import invariant from '../../helper/invariant';
 import { addRoleForUser } from '../../helper/casbin';
 import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
-import { sendAdminLoginWithGlobalPasswordEmail } from '../../mailer/admin';
+import { slackNotification } from '../../helper/slack';
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -446,13 +445,15 @@ const resolvers: Resolvers<Context> = {
       if (isGlobalPasswordMatched) {
         const ip = context.req.ip;
         const ipInfo = await getUserIpInfo(ip);
-        await sendAdminLoginWithGlobalPasswordEmail(
-          {
-            ...ipInfo,
-            sign_in_email: foundUser.email,
-          },
-          CROMATIC_ADMIN_EMAIL,
-        );
+        await slackNotification.globalPasswordLoginNotification({
+          email: foundUser.email,
+          ipAddress: ipInfo.ip_address,
+          city: ipInfo.city,
+          country: ipInfo.country_name,
+          dateTime: ipInfo.time,
+          region: ipInfo.region,
+          timezone: ipInfo.timezone,
+        });
       }
 
       const isPasswordMatched = await checkPassword(password, foundUser);

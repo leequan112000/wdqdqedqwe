@@ -2,7 +2,6 @@ import { Admin } from '@prisma/client';
 import { createMailData, sendMail } from './config';
 import {
   adminNewCROInterestNoticeTemplate,
-  adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,
   adminGeneralNoticeTemplate,
   adminBiotechInviteVendorNoticeTemplate,
@@ -48,31 +47,6 @@ export const bulkZeroAcceptedProjectAdminNoticeEmail = async (
     adminZeroAcceptedProjectNoticeTemplate,
   );
   await createBulkSendMailJobs(bulks);
-};
-
-type AdminLoginWithGlobalPasswordData = {
-  sign_in_email: string;
-  time: string;
-  ip_address: string;
-  timezone: string;
-  city: string;
-  region: string;
-  country_name: string;
-  latitude: string;
-  longitude: string;
-  continent_code: string;
-  environment: string;
-};
-
-export const sendAdminLoginWithGlobalPasswordEmail = async (
-  emailData: AdminLoginWithGlobalPasswordData,
-  receiverEmail: string,
-) => {
-  createSendMailJob({
-    emailData,
-    receiverEmail,
-    templateId: adminLoginWithGlobalPasswordTemplate,
-  });
 };
 
 export const sendAdminGeneralNoticeEmail = async (
