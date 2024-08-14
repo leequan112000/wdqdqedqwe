@@ -13,6 +13,7 @@ type SourcererLiteSearchPaginatedResult {
   edges: [SourcererLiteSearchResultEdge]
   page_info: SourcererLiteSearchResultPageInfo
   related_subspecialty_names: [String]
+  did_you_mean_suggestion: String
 }
 
 type Query {

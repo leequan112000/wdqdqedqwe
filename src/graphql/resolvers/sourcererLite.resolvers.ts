@@ -29,10 +29,23 @@ const resolvers: Resolvers<Context> = {
 
         const subspecialty_ids = subspecialties.map((s) => s.id);
         const subspecialty_names = subspecialties.map((s) => s.name);
-        return await sourcererLiteService.matchVendorByServices(
+
+        let did_you_mean_suggestion = '';
+        if (subspecialty_ids.length > 0) {
+          did_you_mean_suggestion = await sourcererLiteService.checkSpelling({
+            keyword,
+          });
+        }
+
+        const result = await sourcererLiteService.matchVendorByServices(
           { subspecialty_ids, subspecialty_names, first, after, is_paid_user },
           context,
         );
+
+        return {
+          ...result,
+          did_you_mean_suggestion,
+        };
       }
 
       return await sourcererLiteService.matchVendorByService(
