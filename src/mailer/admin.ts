@@ -2,12 +2,10 @@ import { Admin } from '@prisma/client';
 import { createMailData, sendMail } from './config';
 import {
   adminNewCROInterestNoticeTemplate,
-  adminLoginWithGlobalPasswordTemplate,
   adminZeroAcceptedProjectNoticeTemplate,
   adminGeneralNoticeTemplate,
   adminBiotechInviteVendorNoticeTemplate,
   adminBiotechInvoicePaymentNoticeTemplate,
-  adminShortlistSubmissionTemplate,
 } from './templates';
 import {
   AdminGeneralNoticeData,
@@ -49,31 +47,6 @@ export const bulkZeroAcceptedProjectAdminNoticeEmail = async (
     adminZeroAcceptedProjectNoticeTemplate,
   );
   await createBulkSendMailJobs(bulks);
-};
-
-type AdminLoginWithGlobalPasswordData = {
-  sign_in_email: string;
-  time: string;
-  ip_address: string;
-  timezone: string;
-  city: string;
-  region: string;
-  country_name: string;
-  latitude: string;
-  longitude: string;
-  continent_code: string;
-  environment: string;
-};
-
-export const sendAdminLoginWithGlobalPasswordEmail = async (
-  emailData: AdminLoginWithGlobalPasswordData,
-  receiverEmail: string,
-) => {
-  createSendMailJob({
-    emailData,
-    receiverEmail,
-    templateId: adminLoginWithGlobalPasswordTemplate,
-  });
 };
 
 export const sendAdminGeneralNoticeEmail = async (
@@ -162,14 +135,4 @@ type AdminShortlistSubmissionNotificationData = {
   project_title: string;
   shortlisted_vendors: Array<{ id: string; company_name: string }>;
   button_url: string;
-};
-
-type BulkAdminShortlistSubmissionNotificationData =
-  BulkEmailJobData<AdminShortlistSubmissionNotificationData>;
-
-export const sendAdminShortlistSubmissionNotificationEmail = async (
-  data: BulkAdminShortlistSubmissionNotificationData,
-) => {
-  const bulks = createBulkEmailJobData(data, adminShortlistSubmissionTemplate);
-  await createBulkSendMailJobs(bulks);
 };
