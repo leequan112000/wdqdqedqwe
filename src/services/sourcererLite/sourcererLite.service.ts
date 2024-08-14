@@ -463,9 +463,31 @@ export const searchSubspecialtiesSemantically = async (
   }
 };
 
+export type CheckSpellingArgs = {
+  keyword: string;
+};
+
+export const checkSpelling = async (args: CheckSpellingArgs) => {
+  try {
+    const { keyword } = args;
+    const response = await axios({
+      method: 'post',
+      url: `${app_env.AI_SERVER_URL}/spelling-corrector/`,
+      data: {
+        keyword,
+      },
+    });
+
+    return response.data.results;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const sourcererLiteService = {
   checkRateLimit,
   checkIsPaidUser,
+  checkSpelling,
   matchVendorByService,
   matchVendorByServices,
   searchSubspecialtiesSemantically,
