@@ -671,6 +671,7 @@ export type Mutation = {
   sourceCros?: Maybe<SourcingTask>;
   sourceRfpSpecialties?: Maybe<SourcingTask>;
   startChat?: Maybe<Scalars['Boolean']>;
+  submitContactUsTicket?: Maybe<Scalars['Boolean']>;
   submitCroInterest?: Maybe<Scalars['Boolean']>;
   submitVendorOnboarding?: Maybe<Vendor>;
   submitVendorSurvey?: Maybe<CroDbVendorSurvey>;
@@ -1150,6 +1151,11 @@ export type MutationSourceRfpSpecialtiesArgs = {
 
 export type MutationStartChatArgs = {
   project_connection_id: Scalars['String'];
+};
+
+
+export type MutationSubmitContactUsTicketArgs = {
+  payload: SubmitContactUsTicketPayload;
 };
 
 
@@ -2223,6 +2229,15 @@ export type SubmitAttendanceResp = {
   token?: Maybe<Scalars['String']>;
 };
 
+export type SubmitContactUsTicketPayload = {
+  company_name: Scalars['String'];
+  company_type: Scalars['String'];
+  email: Scalars['String'];
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+  remark?: InputMaybe<Scalars['String']>;
+};
+
 export type Subscription = {
   __typename?: 'Subscription';
   newMessage?: Maybe<MessageEdge>;
@@ -2692,6 +2707,7 @@ export type ResolversTypes = ResolversObject<{
   StripeExternalAccount: ResolverTypeWrapper<StripeExternalAccount>;
   StripeExternalAccountData: ResolverTypeWrapper<StripeExternalAccountData>;
   SubmitAttendanceResp: ResolverTypeWrapper<SubmitAttendanceResp>;
+  SubmitContactUsTicketPayload: SubmitContactUsTicketPayload;
   Subscription: ResolverTypeWrapper<{}>;
   SubscriptionFeature: ResolverTypeWrapper<SubscriptionFeature>;
   SubscriptionFeatureItem: ResolverTypeWrapper<SubscriptionFeatureItem>;
@@ -2827,6 +2843,7 @@ export type ResolversParentTypes = ResolversObject<{
   StripeExternalAccount: StripeExternalAccount;
   StripeExternalAccountData: StripeExternalAccountData;
   SubmitAttendanceResp: SubmitAttendanceResp;
+  SubmitContactUsTicketPayload: SubmitContactUsTicketPayload;
   Subscription: {};
   SubscriptionFeature: SubscriptionFeature;
   SubscriptionFeatureItem: SubscriptionFeatureItem;
@@ -3468,6 +3485,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sourceCros?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceCrosArgs, 'names' | 'sourcing_session_id'>>;
   sourceRfpSpecialties?: Resolver<Maybe<ResolversTypes['SourcingTask']>, ParentType, ContextType, RequireFields<MutationSourceRfpSpecialtiesArgs, 'preparation_details' | 'project_desc' | 'project_title' | 'vendor_requirement'>>;
   startChat?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStartChatArgs, 'project_connection_id'>>;
+  submitContactUsTicket?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitContactUsTicketArgs, 'payload'>>;
   submitCroInterest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSubmitCroInterestArgs, 'company_name' | 'company_type' | 'email' | 'first_name' | 'interest' | 'last_name' | 'service'>>;
   submitVendorOnboarding?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationSubmitVendorOnboardingArgs, 'onboarding_step' | 'payload'>>;
   submitVendorSurvey?: Resolver<Maybe<ResolversTypes['CroDbVendorSurvey']>, ParentType, ContextType, RequireFields<MutationSubmitVendorSurveyArgs, 'payload' | 'step'>>;

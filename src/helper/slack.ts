@@ -242,8 +242,61 @@ async function globalPasswordLoginNotification(
   });
 }
 
+type ContactUsNotificationParam = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  companyName: string;
+  companyType: string;
+  remark?: string | null;
+};
+
+async function contactUsNotification(param: ContactUsNotificationParam) {
+  await sendCromaticNotifyMessage({
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: messagePrefix('We have a new contact us ticket:'),
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: `*First name:*\n${param.firstName}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Last name:*\n${param.lastName}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Email:*\n${param.email}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Company name:*\n${param.companyName}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Company type:*\n${param.companyType}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Remark:*\n${param.remark || '-'}`,
+          },
+        ],
+      },
+    ],
+  });
+}
+
 export const slackNotification = {
   singleTextNotification,
   newShortlistNotification,
   globalPasswordLoginNotification,
+  contactUsNotification,
 };
