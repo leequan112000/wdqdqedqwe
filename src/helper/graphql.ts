@@ -23,6 +23,7 @@ export const operationWhitelist = [
   'Public_PricingPageQuery',
   'Public_VendorSurveyData_Query',
   'Public_SubmitVendorSurvey_Mutation',
+  'Public_SubmitContactUs_Mutation',
 ];
 
 export const ApolloServerPluginSentryMonitor = (): ApolloServerPlugin => ({
