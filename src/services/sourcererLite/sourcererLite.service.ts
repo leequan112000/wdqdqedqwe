@@ -16,7 +16,7 @@ import {
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
 const UNIQUE_SEARCH_MAX_COUNTS = 15;
-const RATE_LIMIT_MAX_COUNTS = 15;
+const RATE_LIMIT_MAX_COUNTS = 25;
 const MAX_FREE_RESULT_COUNT = 25;
 const MAX_RESULT_COUNT = 50;
 
