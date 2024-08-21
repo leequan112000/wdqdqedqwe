@@ -4,8 +4,6 @@ export const adminNewProjectRequestTemplate =
   'd-f72cc7b30afe432f9eecf8b11a09cd2a';
 export const adminNewProjectRequestCommentNoticeTemplate =
   'd-f7b5d94910b84122b64a2d07b6a799f0';
-export const adminShortlistSubmissionTemplate =
-  'd-532f3ff74854408cb1e576b325a713da';
 export const adminGeneralNoticeTemplate = 'd-af33cb0772a541f6bdfc83b0cd99bb84';
 export const adminBiotechInviteVendorNoticeTemplate =
   'd-3e72d8b8472e45b0911634dd42debce7';
@@ -37,8 +35,6 @@ export const vendorMemberInvitationToProjectRequestByAdminTemplate =
   'd-edd661da8f8e473ab73136efae1d2cf4';
 export const vendorMemberInvitationByBiotechTemplate =
   'd-a7ad47e1e96d4443821f5ce0e2bac7aa';
-export const adminLoginWithGlobalPasswordTemplate =
-  'd-38645f0c00b04bf8a7103aad9262a608';
 export const adminZeroAcceptedProjectNoticeTemplate =
   'd-58f61db5ff7c4851b9ddfdd5ead19726';
 export const blogNewSubscriptionTemplate = 'd-f8237912e9ca43909f80f81cff5ded0f';

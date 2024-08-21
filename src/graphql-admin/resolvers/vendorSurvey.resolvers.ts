@@ -4,7 +4,10 @@ import {
   extractRevenueValue,
 } from '../../helper/vendorCompany';
 import { getSignedUrl } from '../../helper/awsS3';
-import { VendorSurveyStatus } from '../../helper/constant';
+import {
+  CompanyCollaboratorRoleType,
+  VendorSurveyStatus,
+} from '../../helper/constant';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { InternalError } from '../../graphql/errors/InternalError';
@@ -142,20 +145,41 @@ const resolver: Resolvers<Context> = {
       invariant(vendorSurvey, 'Survey record not found.');
 
       invariant(
+        vendorSurvey.status === VendorSurveyStatus.PENDING,
+        new PublicError('The survey is incomplete.'),
+      );
+
+      invariant(
         vendorSurvey.email,
-        'There is no email address submitted in this survey.',
+        new PublicError('There is no email address submitted in this survey.'),
       );
 
       const user = await context.prisma.user.findUnique({
         where: {
           email: vendorSurvey.email,
         },
+        include: {
+          vendor_member: true,
+          vendor: true,
+        },
       });
 
+      let isValidExistingVendor = false;
+
       invariant(
-        user === null,
-        new PublicError('User with the same email exists.'),
+        user?.vendor === null,
+        new PublicError('Vendor already exists.'),
       );
+
+      // Existing vendor
+      if (user && user.vendor_member) {
+        invariant(
+          user.vendor_member.role === CompanyCollaboratorRoleType.OWNER,
+          new PublicError('User is not the owner of the vendor company.'),
+        );
+
+        isValidExistingVendor = true;
+      }
 
       let firstName: string | undefined, lastName: string | undefined;
       if (vendorSurvey.respondent_name) {
@@ -186,11 +210,19 @@ const resolver: Resolvers<Context> = {
           attachment_file_name: vendorSurvey.attachment_file_name,
           user_company_role: vendorSurvey.respondent_company_role,
           user: {
-            create: {
-              email: vendorSurvey.email,
-              first_name: firstName,
-              last_name: lastName,
-            },
+            ...(isValidExistingVendor && user
+              ? {
+                  connect: {
+                    id: user.id,
+                  },
+                }
+              : {
+                  create: {
+                    email: vendorSurvey.email,
+                    first_name: firstName,
+                    last_name: lastName,
+                  },
+                }),
           },
         },
       });

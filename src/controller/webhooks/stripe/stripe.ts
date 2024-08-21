@@ -21,7 +21,7 @@ import { sendMilestoneNoticeEmail } from '../../../mailer/milestone';
 import { createInvoicePaymentNotification } from '../../../notification/invoiceNotification';
 import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 import { VendorOnboardingStep } from '../../../graphql/generated';
-import { sendCromaticNotifyMessage } from '../../../helper/slack';
+import { slackNotification } from '../../../helper/slack';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -84,7 +84,7 @@ export const processStripeEvent = async (
                     onboarding_step: VendorOnboardingStep.Subscription,
                   },
                 });
-                await sendCromaticNotifyMessage(
+                await slackNotification.singleTextNotification(
                   `A vendor has completed their onboarding:\n*${updatedVendor.company_name}*`,
                 );
               } else {
