@@ -1930,6 +1930,7 @@ export type QuerySourcedCrosArgs = {
 
 export type QuerySourcererLiteSearchArgs = {
   after?: InputMaybe<Scalars['String']>;
+  disable_spellcheck?: InputMaybe<Scalars['Boolean']>;
   fingerprint?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   ip_address?: InputMaybe<Scalars['String']>;

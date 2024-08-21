@@ -23,5 +23,6 @@ type Query {
     ip_address: String
     after: String
     first: Int = 15
+    disable_spellcheck: Boolean
   ): SourcererLiteSearchPaginatedResult
 }
