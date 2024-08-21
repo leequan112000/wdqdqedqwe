@@ -1,0 +1,12 @@
+input SubmitContactUsTicketPayload {
+  first_name: String!
+  last_name: String!
+  email: String!
+  company_name: String!
+  company_type: String!
+  remark: String
+}
+
+type Mutation {
+  submitContactUsTicket(payload: SubmitContactUsTicketPayload!): Boolean
+}
