@@ -2089,6 +2089,7 @@ export type SourcedCroConnection = {
   __typename?: 'SourcedCroConnection';
   edges?: Maybe<Array<Maybe<SourcedCroEdge>>>;
   page_info?: Maybe<SourcedCroPageInfo>;
+  top_match_vendor_company_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
 export type SourcedCroEdge = {
@@ -3931,6 +3932,7 @@ export type SourcedCroResolvers<ContextType = any, ParentType extends ResolversP
 export type SourcedCroConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcedCroConnection'] = ResolversParentTypes['SourcedCroConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcedCroEdge']>>>, ParentType, ContextType>;
   page_info?: Resolver<Maybe<ResolversTypes['SourcedCroPageInfo']>, ParentType, ContextType>;
+  top_match_vendor_company_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
