@@ -341,6 +341,29 @@ const resolvers: Resolvers<Context> = {
         hasNextPage = nextSourcedCros.length > 0;
       }
 
+      const topMatchSourcedCros =
+        await context.prismaCRODb.sourcingSession.findUnique({
+          where: {
+            id: sourcing_session_id,
+          },
+          include: {
+            sourced_cros: {
+              where: sourcedCroFilter,
+              orderBy: [
+                { score: 'desc' },
+                {
+                  vendor_company: {
+                    vendor_company_subspecialties: {
+                      _count: 'desc',
+                    },
+                  },
+                },
+              ],
+              take: 3,
+            },
+          },
+        });
+
       return {
         edges,
         page_info: {
@@ -348,6 +371,9 @@ const resolvers: Resolvers<Context> = {
           has_next_page: hasNextPage,
           total_count,
         },
+        top_match_vendor_company_ids:
+          topMatchSourcedCros?.sourced_cros?.map((c) => c.vendor_company_id) ||
+          [],
       };
     },
   },
