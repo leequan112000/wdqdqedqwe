@@ -136,5 +136,8 @@
   },
   "lint-staged": {
     "*.ts": "prettier --write"
+  },
+  "resolutions": {
+    "@graphql-codegen/cli/**/semver": "^6.3.1"
   }
 }
