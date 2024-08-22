@@ -2091,7 +2091,7 @@ export type SourcedCroConnection = {
   __typename?: 'SourcedCroConnection';
   edges?: Maybe<Array<Maybe<SourcedCroEdge>>>;
   page_info?: Maybe<SourcedCroPageInfo>;
-  top_match_vendor_company_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  top_match_vendor_company_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type SourcedCroEdge = {
