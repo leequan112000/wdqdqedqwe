@@ -1932,6 +1932,7 @@ export type QuerySourcedCrosArgs = {
 
 export type QuerySourcererLiteSearchArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
+  disable_spellcheck?: InputMaybe<Scalars['Boolean']['input']>;
   fingerprint?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   ip_address?: InputMaybe<Scalars['String']['input']>;
@@ -2107,6 +2108,7 @@ export type SourcedCroPageInfo = {
 
 export type SourcererLiteSearchPaginatedResult = {
   __typename?: 'SourcererLiteSearchPaginatedResult';
+  did_you_mean_suggestion?: Maybe<Scalars['String']['output']>;
   edges?: Maybe<Array<Maybe<SourcererLiteSearchResultEdge>>>;
   page_info?: Maybe<SourcererLiteSearchResultPageInfo>;
   related_subspecialty_names?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -3954,6 +3956,7 @@ export type SourcedCroPageInfoResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type SourcererLiteSearchPaginatedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourcererLiteSearchPaginatedResult'] = ResolversParentTypes['SourcererLiteSearchPaginatedResult']> = ResolversObject<{
+  did_you_mean_suggestion?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SourcererLiteSearchResultEdge']>>>, ParentType, ContextType>;
   page_info?: Resolver<Maybe<ResolversTypes['SourcererLiteSearchResultPageInfo']>, ParentType, ContextType>;
   related_subspecialty_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
