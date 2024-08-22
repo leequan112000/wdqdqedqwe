@@ -69,9 +69,9 @@
   },
   "dependencies": {
     "@apollo/server": "^4.9.3",
-    "@aws-sdk/client-s3": "^3.293.0",
-    "@aws-sdk/lib-storage": "^3.293.0",
-    "@aws-sdk/s3-request-presigner": "^3.293.0",
+    "@aws-sdk/client-s3": "^3.635.0",
+    "@aws-sdk/lib-storage": "^3.635.0",
+    "@aws-sdk/s3-request-presigner": "^3.635.0",
     "@faker-js/faker": "^8.4.1",
     "@googleapis/calendar": "^4.0.0",
     "@googlemaps/google-maps-services-js": "^3.3.42",
