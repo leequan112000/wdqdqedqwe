@@ -11,13 +11,18 @@ const resolvers: Resolvers<Context> = {
         ip_address,
         first,
         after,
+        sort_by,
+        filter_country_by,
         disable_spellcheck,
       } = args;
 
-      await sourcererLiteService.checkRateLimit(
-        { keyword, fingerprint, ip_address },
-        context,
-      );
+      if (!after && !sort_by && !filter_country_by) {
+        // Check rate limit when not fetch more query or changing filters
+        await sourcererLiteService.checkRateLimit(
+          { keyword, fingerprint, ip_address },
+          context,
+        );
+      }
 
       const is_paid_user = await sourcererLiteService.checkIsPaidUser(context);
 
