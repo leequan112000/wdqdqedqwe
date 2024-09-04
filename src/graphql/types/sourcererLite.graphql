@@ -23,6 +23,8 @@ type Query {
     ip_address: String
     after: String
     first: Int = 15
+    sort_by: String
+    filter_country_by: String
     disable_spellcheck: Boolean
   ): SourcererLiteSearchPaginatedResult
 }
