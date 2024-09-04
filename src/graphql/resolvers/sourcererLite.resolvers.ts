@@ -50,7 +50,15 @@ const resolvers: Resolvers<Context> = {
         const subspecialty_names = subspecialties.map((s) => s.name);
 
         const result = await sourcererLiteService.matchVendorByServices(
-          { subspecialty_ids, subspecialty_names, first, after, is_paid_user },
+          {
+            subspecialty_ids,
+            subspecialty_names,
+            first,
+            after,
+            sort_by,
+            filter_country_by,
+            is_paid_user,
+          },
           context,
         );
 
@@ -61,7 +69,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       return await sourcererLiteService.matchVendorByService(
-        { keyword, first, after, is_paid_user },
+        { keyword, first, after, sort_by, filter_country_by, is_paid_user },
         context,
       );
     },
