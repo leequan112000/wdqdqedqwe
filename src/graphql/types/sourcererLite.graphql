@@ -13,6 +13,7 @@ type SourcererLiteSearchPaginatedResult {
   edges: [SourcererLiteSearchResultEdge]
   page_info: SourcererLiteSearchResultPageInfo
   related_subspecialty_names: [String]
+  did_you_mean_suggestion: String
 }
 
 type Query {
@@ -22,5 +23,8 @@ type Query {
     ip_address: String
     after: String
     first: Int = 15
+    sort_by: String
+    filter_country_by: String
+    disable_spellcheck: Boolean
   ): SourcererLiteSearchPaginatedResult
 }

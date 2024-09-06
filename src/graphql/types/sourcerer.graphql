@@ -30,6 +30,7 @@ type SourcedCroPageInfo {
 type SourcedCroConnection {
   edges: [SourcedCroEdge]
   page_info: SourcedCroPageInfo
+  top_match_vendor_company_ids: [String]
 }
 
 type SourcingSubspecialty {
