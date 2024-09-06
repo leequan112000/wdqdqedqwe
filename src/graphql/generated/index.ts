@@ -1933,10 +1933,12 @@ export type QuerySourcedCrosArgs = {
 export type QuerySourcererLiteSearchArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   disable_spellcheck?: InputMaybe<Scalars['Boolean']['input']>;
+  filter_country_by?: InputMaybe<Scalars['String']['input']>;
   fingerprint?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   ip_address?: InputMaybe<Scalars['String']['input']>;
   keyword: Scalars['String']['input'];
+  sort_by?: InputMaybe<Scalars['String']['input']>;
 };
 
 

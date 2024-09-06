@@ -9,9 +9,12 @@ import { PublicError } from '../../graphql/errors/PublicError';
 import { prismaCRODb } from '../../prisma';
 import Sentry from '../../sentry';
 import {
+  CountryRegion,
   CustomerSubscriptionPlanName,
+  SourcingResultSortBy,
   SubscriptionStatus,
 } from '../../helper/constant';
+import { countryRegionMap, getRegionByCountryCode } from '../../helper/country';
 
 const RATE_LIMIT_FIXED_WINDOW = 1800; // in second
 const UNIQUE_SEARCH_FIXED_WINDOW = 86400; // 24 hours in second
@@ -168,6 +171,8 @@ export type MatchVendorByServiceArgs = {
   keyword: string;
   first: number;
   after: InputMaybe<string> | undefined;
+  sort_by: InputMaybe<string> | undefined;
+  filter_country_by: InputMaybe<string> | undefined;
   is_paid_user: boolean;
 };
 
@@ -175,7 +180,8 @@ export const matchVendorByService = async (
   args: MatchVendorByServiceArgs,
   ctx: Context,
 ) => {
-  const { keyword, first, after, is_paid_user } = args;
+  const { keyword, first, after, sort_by, filter_country_by, is_paid_user } =
+    args;
 
   const vendorCompanyFilter: Prisma.VendorCompanyWhereInput = {
     vendor_company_subspecialties: {
@@ -190,7 +196,38 @@ export const matchVendorByService = async (
       company_ipo_status: null,
     },
     is_active: true,
+    ...(!filter_country_by || filter_country_by === CountryRegion.ALL
+      ? {}
+      : {
+          vendor_company_locations: {
+            some: {
+              country: {
+                in: Object.keys(countryRegionMap).filter(
+                  (countryCode) =>
+                    getRegionByCountryCode(countryCode) === filter_country_by,
+                ),
+              },
+            },
+          },
+        }),
   };
+
+  const vendorCompanySorting:
+    | Prisma.VendorCompanyOrderByWithRelationInput
+    | Prisma.VendorCompanyOrderByWithRelationInput[]
+    | undefined = (() => {
+    switch (sort_by) {
+      case SourcingResultSortBy.ALPHABETICAL:
+        return { company_name: 'asc' };
+      case SourcingResultSortBy.REVENUE:
+        return { company_revenue_value: 'desc' };
+      case SourcingResultSortBy.TEAM_SIZE:
+        return { company_average_size: 'desc' };
+      case SourcingResultSortBy.BEST_MATCH:
+      default:
+        return undefined;
+    }
+  })();
 
   const vendorCompanies = await ctx.prismaCRODb!.vendorCompany.findMany({
     where: vendorCompanyFilter,
@@ -201,6 +238,7 @@ export const matchVendorByService = async (
       vendor_company_certifications: true,
       vendor_company_types: true,
     },
+    orderBy: vendorCompanySorting,
   });
 
   const startSlice = after
@@ -300,6 +338,8 @@ export type MatchVendorByServicesArgs = {
   subspecialty_names: string[];
   first: number;
   after: InputMaybe<string> | undefined;
+  sort_by: InputMaybe<string> | undefined;
+  filter_country_by: InputMaybe<string> | undefined;
   is_paid_user: boolean;
 };
 
@@ -307,8 +347,54 @@ export const matchVendorByServices = async (
   args: MatchVendorByServicesArgs,
   ctx: Context,
 ) => {
-  const { subspecialty_ids, subspecialty_names, first, after, is_paid_user } =
-    args;
+  const {
+    subspecialty_ids,
+    subspecialty_names,
+    first,
+    after,
+    sort_by,
+    filter_country_by,
+    is_paid_user,
+  } = args;
+
+  let countryFilterWhereClause = (() => {
+    if (filter_country_by && filter_country_by !== CountryRegion.ALL) {
+      const countryCodes = Object.keys(countryRegionMap).filter(
+        (countryCode) =>
+          getRegionByCountryCode(countryCode) === filter_country_by,
+      );
+
+      // If there are no matching country codes, return an empty string
+      if (countryCodes.length === 0) {
+        return '';
+      }
+
+      // Construct the WHERE clause using Prisma's SQL tagged template
+      return Prisma.sql`
+        AND vc.id IN (
+          SELECT vcl.vendor_company_id 
+          FROM vendor_company_locations vcl 
+          WHERE vcl.country IN (${Prisma.join(countryCodes)})
+        )
+      `;
+    }
+    return '';
+  })();
+
+  let orderByClause = (() => {
+    switch (sort_by) {
+      case SourcingResultSortBy.ALPHABETICAL:
+        return 'vc.company_name ASC';
+      case SourcingResultSortBy.REVENUE:
+        return 'vc.company_revenue_value DESC';
+      case SourcingResultSortBy.TEAM_SIZE:
+        return 'vc.company_average_size DESC';
+      case SourcingResultSortBy.BEST_MATCH:
+      default:
+        return 'vs.score DESC, vtsc.total_count DESC';
+    }
+  })();
+
   const sortedVendorCompanies: VendorCompany[] =
     await prismaCRODb.$queryRaw(Prisma.sql`
     WITH VendorScores AS (
@@ -321,6 +407,7 @@ export const matchVendorByServices = async (
       WHERE 
         vcs.subspecialty_id = ANY(${subspecialty_ids}::uuid[]) 
         AND vc.is_active = true
+        ${countryFilterWhereClause}
       GROUP BY 
         vc.company_name, 
         vcs.vendor_company_id
@@ -338,9 +425,7 @@ export const matchVendorByServices = async (
     JOIN VendorTotalServiceCounts vtsc ON vs.vendor_company_id = vtsc.vendor_company_id
     JOIN vendor_companies vc ON  vs.vendor_company_id = vc.id
     GROUP BY vc.id, vs.score, vtsc.total_count
-    ORDER BY 
-      vs.score DESC, 
-      vtsc.total_count DESC
+    ORDER BY ${Prisma.raw(orderByClause)}
     LIMIT 50;
   `);
 
@@ -365,18 +450,6 @@ export const matchVendorByServices = async (
   });
   const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
   let hasNextPage = false;
-
-  // TODO: implement real pagination
-  // if (endCursor) {
-  //   const nextVendorCompanies = await ctx.prismaCRODb!.vendorCompany.findMany({
-  //     where: vendorCompanyFilter,
-  //     take: first,
-  //     skip: after ? 1 : undefined,
-  //     cursor: endCursor ? { id: endCursor } : undefined,
-  //   });
-
-  //   hasNextPage = nextVendorCompanies.length > 0;
-  // }
 
   if (!is_paid_user) {
     if (startSlice >= MAX_FREE_RESULT_COUNT) {

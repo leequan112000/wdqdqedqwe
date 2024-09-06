@@ -11,13 +11,18 @@ const resolvers: Resolvers<Context> = {
         ip_address,
         first,
         after,
+        sort_by,
+        filter_country_by,
         disable_spellcheck,
       } = args;
 
-      await sourcererLiteService.checkRateLimit(
-        { keyword, fingerprint, ip_address },
-        context,
-      );
+      if (!after && !sort_by && !filter_country_by) {
+        // Check rate limit when not fetch more query or changing filters
+        await sourcererLiteService.checkRateLimit(
+          { keyword, fingerprint, ip_address },
+          context,
+        );
+      }
 
       const is_paid_user = await sourcererLiteService.checkIsPaidUser(context);
 
@@ -45,7 +50,15 @@ const resolvers: Resolvers<Context> = {
         const subspecialty_names = subspecialties.map((s) => s.name);
 
         const result = await sourcererLiteService.matchVendorByServices(
-          { subspecialty_ids, subspecialty_names, first, after, is_paid_user },
+          {
+            subspecialty_ids,
+            subspecialty_names,
+            first,
+            after,
+            sort_by,
+            filter_country_by,
+            is_paid_user,
+          },
           context,
         );
 
@@ -56,7 +69,7 @@ const resolvers: Resolvers<Context> = {
       }
 
       return await sourcererLiteService.matchVendorByService(
-        { keyword, first, after, is_paid_user },
+        { keyword, first, after, sort_by, filter_country_by, is_paid_user },
         context,
       );
     },
