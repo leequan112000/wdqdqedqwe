@@ -366,19 +366,19 @@ export const matchVendorByServices = async (
 
       // If there are no matching country codes, return an empty string
       if (countryCodes.length === 0) {
-        return '';
+        return true;
       }
 
       // Construct the WHERE clause using Prisma's SQL tagged template
       return Prisma.sql`
-        AND vc.id IN (
-          SELECT vcl.vendor_company_id 
-          FROM vendor_company_locations vcl 
+        vc.id IN (
+          SELECT vcl.vendor_company_id
+          FROM vendor_company_locations vcl
           WHERE vcl.country IN (${Prisma.join(countryCodes)})
         )
       `;
     }
-    return '';
+    return true;
   })();
 
   let orderByClause = (() => {
@@ -398,28 +398,28 @@ export const matchVendorByServices = async (
   const sortedVendorCompanies: VendorCompany[] =
     await prismaCRODb.$queryRaw(Prisma.sql`
     WITH VendorScores AS (
-      SELECT 
-        vc.company_name, 
-        vcs.vendor_company_id, 
+      SELECT
+        vc.company_name,
+        vcs.vendor_company_id,
         COUNT(*) * 0.5 AS score
       FROM vendor_company_subspecialties vcs
       JOIN vendor_companies vc ON vcs.vendor_company_id = vc.id
-      WHERE 
-        vcs.subspecialty_id = ANY(${subspecialty_ids}::uuid[]) 
+      WHERE
+        vcs.subspecialty_id = ANY(${subspecialty_ids}::uuid[])
         AND vc.is_active = true
-        ${countryFilterWhereClause}
-      GROUP BY 
-        vc.company_name, 
+        AND ${countryFilterWhereClause}
+      GROUP BY
+        vc.company_name,
         vcs.vendor_company_id
     ),
     VendorTotalServiceCounts AS (
-      SELECT 
+      SELECT
         vcs.vendor_company_id,
         COUNT(*) AS total_count
       FROM vendor_company_subspecialties vcs
       GROUP BY vcs.vendor_company_id
     )
-    SELECT 
+    SELECT
       vc.*
     FROM VendorScores vs
     JOIN VendorTotalServiceCounts vtsc ON vs.vendor_company_id = vtsc.vendor_company_id
