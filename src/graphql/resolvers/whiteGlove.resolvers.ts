@@ -2,6 +2,7 @@ import invariant from '../../helper/invariant';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { slackNotification } from '../../helper/slack';
+import { WhiteGloveStatus } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -43,6 +44,15 @@ const resolvers: Resolvers<Context> = {
           vendor_name: cro.name,
         })),
         buttonUrl,
+      });
+
+      await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status: WhiteGloveStatus.SUBMITTED,
+        },
       });
 
       return true;
