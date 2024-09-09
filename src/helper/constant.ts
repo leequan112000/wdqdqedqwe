@@ -83,6 +83,7 @@ export enum MilestonePaymentStatus {
 
 export enum WhiteGloveStatus {
   DRAFT = 'draft',
+  DOWNLOADED = 'downloaded',
   SUBMITTED = 'submitted',
   REVIEWED = 'reviewed',
 }
