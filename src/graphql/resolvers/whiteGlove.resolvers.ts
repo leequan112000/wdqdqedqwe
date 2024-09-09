@@ -57,6 +57,18 @@ const resolvers: Resolvers<Context> = {
 
       return true;
     },
+    updateWhiteGloveStatus: async (_, args, context) => {
+      const { sourcing_session_id, whiteglove_status } = args;
+
+      return await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status,
+        },
+      });
+    },
   },
 };
 

@@ -697,6 +697,7 @@ export type Mutation = {
   updateVendorMember?: Maybe<VendorMember>;
   updateVendorProfile?: Maybe<Vendor>;
   updateVendorUserProfile?: Maybe<Vendor>;
+  updateWhiteGloveStatus?: Maybe<SourcingSession>;
   uploadBiotechInvoicePaymentReceipt?: Maybe<BiotechInvoice>;
   uploadCompanyAttachment?: Maybe<CompanyAttachmentUploadResult>;
   uploadContract?: Maybe<UploadResult>;
@@ -1376,6 +1377,12 @@ export type MutationUpdateVendorProfileArgs = {
 
 export type MutationUpdateVendorUserProfileArgs = {
   payload: UpdateVendorUserProfilePayload;
+};
+
+
+export type MutationUpdateWhiteGloveStatusArgs = {
+  sourcing_session_id: Scalars['String']['input'];
+  whiteglove_status: Scalars['String']['input'];
 };
 
 
@@ -3523,6 +3530,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateVendorMember?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType, Partial<MutationUpdateVendorMemberArgs>>;
   updateVendorProfile?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationUpdateVendorProfileArgs, 'payload'>>;
   updateVendorUserProfile?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType, RequireFields<MutationUpdateVendorUserProfileArgs, 'payload'>>;
+  updateWhiteGloveStatus?: Resolver<Maybe<ResolversTypes['SourcingSession']>, ParentType, ContextType, RequireFields<MutationUpdateWhiteGloveStatusArgs, 'sourcing_session_id' | 'whiteglove_status'>>;
   uploadBiotechInvoicePaymentReceipt?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<MutationUploadBiotechInvoicePaymentReceiptArgs, 'file' | 'id'>>;
   uploadCompanyAttachment?: Resolver<Maybe<ResolversTypes['CompanyAttachmentUploadResult']>, ParentType, ContextType, RequireFields<MutationUploadCompanyAttachmentArgs, 'file' | 'vendor_company_id'>>;
   uploadContract?: Resolver<Maybe<ResolversTypes['UploadResult']>, ParentType, ContextType, RequireFields<MutationUploadContractArgs, 'file' | 'project_connection_id'>>;

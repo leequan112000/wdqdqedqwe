@@ -2,4 +2,8 @@ type Mutation {
   sendSourcingShortlist(
     sourcing_session_id: String!
   ): Boolean
+  updateWhiteGloveStatus(
+    sourcing_session_id: String!,
+    whiteglove_status: String!
+  ): SourcingSession
 }
