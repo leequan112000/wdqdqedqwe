@@ -2160,6 +2160,7 @@ export type SourcingSession = {
   user?: Maybe<User>;
   user_id?: Maybe<Scalars['String']['output']>;
   vendor_requirement?: Maybe<Scalars['String']['output']>;
+  whiteglove_status?: Maybe<Scalars['String']['output']>;
 };
 
 export type SourcingSubspecialty = {
@@ -4009,6 +4010,7 @@ export type SourcingSessionResolvers<ContextType = any, ParentType extends Resol
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   vendor_requirement?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  whiteglove_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
