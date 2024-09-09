@@ -81,6 +81,12 @@ export enum MilestonePaymentStatus {
   PAID = 'paid',
 }
 
+export enum WhiteGloveStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  REVIEWED = 'reviewed',
+}
+
 export enum AdminTeam {
   ENGINEER = 'engineer',
   PRODUCT = 'product',
