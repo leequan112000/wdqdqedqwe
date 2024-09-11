@@ -1,6 +1,7 @@
 import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
 import { createResetPasswordUrl } from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 import invariant from '../../helper/invariant';
 import { sendVendorSignUpLink } from '../../mailer/vendor';
 import { Context } from '../../types/context';
@@ -12,9 +13,11 @@ const resolvers: Resolvers<Context> = {
       const { email: emailArgs, company_name } = args;
       const email = emailArgs.toLowerCase();
 
-      const user = await context.prisma.user.findUnique({
+      const user = await context.prisma.user.findFirst({
         where: {
-          email,
+          pseudonyms: {
+            email: encrypt(email),
+          },
         },
       });
 
@@ -26,7 +29,11 @@ const resolvers: Resolvers<Context> = {
           company_name: company_name || undefined,
           user: {
             create: {
-              email,
+              pseudonyms: {
+                create: {
+                  email: encrypt(email),
+                },
+              },
             },
           },
         },

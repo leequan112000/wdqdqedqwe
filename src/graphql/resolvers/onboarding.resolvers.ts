@@ -1,3 +1,4 @@
+import { getEmailFromPseudonyms } from '../../helper/email';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 
@@ -13,13 +14,21 @@ const resolvers: Resolvers<Context> = {
         phone_number,
         country_code,
       } = args;
-
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: userId,
+        },
+      });
       const user = await context.prisma.user.update({
         data: {
-          first_name,
-          last_name,
-          phone_number,
-          country_code,
+          pseudonyms: {
+            update: {
+              first_name,
+              last_name,
+              phone_number,
+              country_code,
+            },
+          },
           customer: {
             update: {
               job_title,

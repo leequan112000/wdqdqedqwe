@@ -1,5 +1,9 @@
 import { app_env } from '../../environment';
 import { ProjectRequestStatus } from '../../helper/constant';
+import {
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 import invariant from '../../helper/invariant';
 import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
 import { sendVendorAcceptProjectAppNotification } from '../../notification/projectRequestNotification';
@@ -75,7 +79,11 @@ const resolvers: Resolvers<Context> = {
             },
             customer: {
               include: {
-                user: true,
+                user: {
+                  include: {
+                    pseudonyms: true,
+                  },
+                },
               },
             },
           },
@@ -91,10 +99,12 @@ const resolvers: Resolvers<Context> = {
         {
           login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}`,
           project_title: projectConnection.project_request.title,
-          receiver_full_name: `${customerUser.first_name} ${customerUser.last_name}`,
+          receiver_full_name: getUserFullNameFromPseudonyms(
+            customerUser.pseudonyms!,
+          ),
           vendor_company_name: vendorCompany.name,
         },
-        customerUser.email,
+        getEmailFromPseudonyms(customerUser.pseudonyms!),
       );
 
       await sendVendorAcceptProjectAppNotification({

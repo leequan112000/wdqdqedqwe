@@ -9,7 +9,13 @@ import {
   customerInvitationByAdminEmail,
   vendorMemberInvitationByAdminEmail,
 } from '../../mailer';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getEmailFromPseudonyms,
+  getUserFullName,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 
 function ignoreEmptyString(data: string | undefined | null) {
   if (data === '') {
@@ -52,6 +58,10 @@ const resolvers: Resolvers<Context> = {
           reset_password_token: resetToken,
           reset_password_expiration: new Date(resetTokenExpiration),
         },
+        include: {
+          pseudonyms: true,
+          vendor_member: true,
+        },
       });
 
       invariant(
@@ -60,14 +70,16 @@ const resolvers: Resolvers<Context> = {
       );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+      const updatedNewUserFullName = getUserFullNameFromPseudonyms(
+        updatedNewUser.pseudonyms!,
+      );
 
       vendorMemberInvitationByAdminEmail(
         {
           login_url: resetPasswordUrl,
           receiver_full_name: updatedNewUserFullName,
         },
-        updatedNewUser.email,
+        getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
       );
 
       return true;
@@ -104,6 +116,9 @@ const resolvers: Resolvers<Context> = {
           reset_password_token: resetToken,
           reset_password_expiration: new Date(resetTokenExpiration),
         },
+        include: {
+          pseudonyms: true,
+        },
       });
 
       invariant(
@@ -112,13 +127,15 @@ const resolvers: Resolvers<Context> = {
       );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const updatedNewUserFullName = getUserFullName(updatedNewUser);
+      const updatedNewUserFullName = getUserFullNameFromPseudonyms(
+        updatedNewUser.pseudonyms!,
+      );
       customerInvitationByAdminEmail(
         {
           login_url: resetPasswordUrl,
           receiver_full_name: updatedNewUserFullName,
         },
-        updatedNewUser.email,
+        getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
       );
 
       return true;
@@ -140,10 +157,14 @@ const resolvers: Resolvers<Context> = {
             id: user_id,
           },
           data: {
-            first_name: ignoreEmptyString(first_name) ?? undefined,
-            last_name: ignoreEmptyString(last_name) ?? undefined,
-            country_code: country_code || null,
-            phone_number: phone_number || null,
+            pseudonyms: {
+              update: {
+                first_name: encrypt(ignoreEmptyString(first_name)) ?? undefined,
+                last_name: encrypt(ignoreEmptyString(last_name)) ?? undefined,
+                country_code: encrypt(country_code) || null,
+                phone_number: encrypt(phone_number) || null,
+              },
+            },
           },
         });
         const updatedVendorMember = await trx.vendorMember.update({
@@ -204,10 +225,14 @@ const resolvers: Resolvers<Context> = {
             id: user_id,
           },
           data: {
-            first_name: ignoreEmptyString(first_name) ?? undefined,
-            last_name: ignoreEmptyString(last_name) ?? undefined,
-            phone_number: phone_number || null,
-            country_code: country_code || null,
+            pseudonyms: {
+              update: {
+                first_name: encrypt(ignoreEmptyString(first_name)) ?? undefined,
+                last_name: encrypt(ignoreEmptyString(last_name)) ?? undefined,
+                country_code: encrypt(country_code) || null,
+                phone_number: encrypt(phone_number) || null,
+              },
+            },
           },
         });
         const updatedCustomer = await trx.customer.update({

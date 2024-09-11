@@ -20,6 +20,7 @@ import {
   checkAllowCustomerOnlyPermission,
   checkAllowVendorOnlyPermission,
 } from '../../helper/accessControl';
+import { decrypt, encrypt } from '../../helper/gdprHelper';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -106,9 +107,11 @@ const resolvers: Resolvers<Context> = {
       // Check for existing user
       const existingUser = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: lowerCaseEmail,
+          pseudonyms: {
+            email: {
+              mode: 'insensitive',
+              equals: encrypt(lowerCaseEmail),
+            },
           },
         },
       });
@@ -121,6 +124,7 @@ const resolvers: Resolvers<Context> = {
           id: currentUserId,
         },
         include: {
+          pseudonyms: true,
           customer: {
             select: {
               biotech_id: true,
@@ -154,9 +158,13 @@ const resolvers: Resolvers<Context> = {
         // Create new user
         const newUser = await trx.user.create({
           data: {
-            first_name: firstName,
-            last_name: lastName,
-            email: lowerCaseEmail,
+            pseudonyms: {
+              create: {
+                email: encrypt(lowerCaseEmail),
+                first_name: encrypt(firstName),
+                last_name: encrypt(lastName),
+              },
+            },
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
             customer: isBiotech
@@ -182,9 +190,8 @@ const resolvers: Resolvers<Context> = {
         });
         const emailMessage = args.custom_message || '';
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const currentUserFullName = getUserFullName(currentUser);
-        const newUserFullName = getUserFullName(newUser);
-
+        const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+        const newUserFullName = `${firstName} ${lastName}`;
         // Send email
         if (isBiotech) {
           customerInvitationEmail(
@@ -194,7 +201,7 @@ const resolvers: Resolvers<Context> = {
               login_url: resetPasswordUrl,
               receiver_full_name: newUserFullName,
             },
-            newUser.email,
+            lowerCaseEmail,
           );
         }
         if (isVendor) {
@@ -205,7 +212,7 @@ const resolvers: Resolvers<Context> = {
               login_url: resetPasswordUrl,
               receiver_full_name: newUserFullName,
             },
-            newUser.email,
+            lowerCaseEmail,
           );
         }
 
@@ -242,16 +249,18 @@ const resolvers: Resolvers<Context> = {
         // Check for existing user
         const existingUser = await context.prisma.user.findFirst({
           where: {
-            email: {
-              mode: 'insensitive',
-              equals: lowerCaseEmail,
+            pseudonyms: {
+              email: {
+                mode: 'insensitive',
+                equals: encrypt(lowerCaseEmail),
+              },
             },
           },
         });
 
         invariant(
           !existingUser,
-          new PublicError(`User ${existingUser?.email} already exists!`),
+          new PublicError(`User ${lowerCaseEmail} already exists!`),
         );
 
         return existingUser;
@@ -266,6 +275,7 @@ const resolvers: Resolvers<Context> = {
           id: userId,
         },
         include: {
+          pseudonyms: true,
           customer: {
             select: {
               biotech_id: true,
@@ -294,16 +304,20 @@ const resolvers: Resolvers<Context> = {
             // Create new user
             const newUser = await trx.user.create({
               data: {
-                first_name: collaborator.first_name,
-                last_name: collaborator.last_name,
-                email: lowerCaseEmail,
+                pseudonyms: {
+                  create: {
+                    email: encrypt(lowerCaseEmail),
+                    first_name: encrypt(collaborator.first_name),
+                    last_name: encrypt(collaborator.last_name),
+                  },
+                },
                 reset_password_token: resetToken,
                 reset_password_expiration: new Date(resetTokenExpiration),
               },
             });
-            const newUserFullName = getUserFullName(newUser);
+            const newUserFullName = `${collaborator.first_name} ${collaborator.last_name}`;
+            const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
             const resetPasswordUrl = createResetPasswordUrl(resetToken);
-            const currentUserFullName = getUserFullName(currentUser);
 
             // If current user is a biotech member, create customer data for the new user.
             if (currentUser.customer?.biotech_id) {
@@ -320,7 +334,7 @@ const resolvers: Resolvers<Context> = {
                   login_url: resetPasswordUrl,
                   receiver_full_name: newUserFullName,
                 },
-                newUser.email,
+                lowerCaseEmail,
               );
             }
 
@@ -340,7 +354,7 @@ const resolvers: Resolvers<Context> = {
                   login_url: resetPasswordUrl,
                   receiver_full_name: newUserFullName,
                 },
-                newUser.email,
+                lowerCaseEmail,
               );
             }
 
@@ -361,6 +375,7 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id,
         },
         include: {
+          pseudonyms: true,
           customer: {
             select: {
               biotech_id: true,
@@ -380,6 +395,7 @@ const resolvers: Resolvers<Context> = {
           id: args.user_id,
         },
         include: {
+          pseudonyms: true,
           customer: {
             select: {
               job_title: true,
@@ -406,15 +422,18 @@ const resolvers: Resolvers<Context> = {
         where: {
           id: args.user_id,
         },
+        include: {
+          pseudonyms: true,
+        },
         data: {
           reset_password_token: resetToken,
           reset_password_expiration: new Date(resetTokenExpiration),
         },
       });
-      const updatedUserFullName = getUserFullName(updatedNewUser);
+      // const updatedUserFullName = getUserFullName(updatedNewUser);
+      const updatedUserFullName = `${decrypt(updatedNewUser?.pseudonyms?.first_name)} ${decrypt(updatedNewUser?.pseudonyms?.last_name)}`;
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const currentUserFullName = getUserFullName(currentUser);
-
+      const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
       if (currentUser?.customer?.biotech_id) {
         customerInvitationEmail(
           {
@@ -423,7 +442,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: updatedUserFullName,
           },
-          updatedNewUser.email,
+          decrypt(updatedNewUser?.pseudonyms?.email),
         );
         return updatedNewUser;
       }
@@ -435,7 +454,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: updatedUserFullName,
           },
-          updatedNewUser.email,
+          decrypt(updatedNewUser?.pseudonyms?.email),
         );
         return updatedNewUser;
       }

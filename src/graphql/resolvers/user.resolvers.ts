@@ -23,9 +23,51 @@ import { addRoleForUser } from '../../helper/casbin';
 import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
 import { slackNotification } from '../../helper/slack';
+import { decrypt, encrypt } from '../../helper/gdprHelper';
+import { en } from '@faker-js/faker';
 
 const resolvers: Resolvers<Context> = {
   User: {
+    email: async (parent, _, context) => {
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+      return decrypt(pseudonym?.email);
+    },
+    first_name: async (parent, _, context) => {
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+      return decrypt(pseudonym?.first_name);
+    },
+    last_name: async (parent, _, context) => {
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+      return decrypt(pseudonym?.last_name);
+    },
+    phone_number: async (parent, _, context) => {
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+      return decrypt(pseudonym?.phone_number);
+    },
+    country_code: async (parent, _, context) => {
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+      return decrypt(pseudonym?.country_code);
+    },
     user_type: async (parent, _, context) => {
       if (parent.user_type) return parent.user_type;
       if (!parent.id) return null;
@@ -250,8 +292,13 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
     full_name: async (parent, args, context) => {
-      if (!parent.first_name && !parent.last_name) return null;
-      return [parent.first_name || '', parent.last_name || ''].join(' ');
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          user_id: parent.id,
+        },
+      });
+
+      return `${decrypt(pseudonym?.first_name)} ${decrypt(pseudonym?.last_name)}`;
     },
     company_collaborator_role: async (parent, args, context) => {
       if (parent.company_collaborator_role) {
@@ -357,7 +404,9 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          email,
+          pseudonyms: {
+            email: encrypt(lowerCaseEmail),
+          },
         },
       });
 
@@ -375,7 +424,11 @@ const resolvers: Resolvers<Context> = {
             create: {
               user: {
                 create: {
-                  email: lowerCaseEmail,
+                  pseudonyms: {
+                    create: {
+                      email: encrypt(lowerCaseEmail),
+                    },
+                  },
                   encrypted_password: hashedPassword,
                   availability: {
                     createMany: {
@@ -395,7 +448,9 @@ const resolvers: Resolvers<Context> = {
             },
             where: {
               user: {
-                email: lowerCaseEmail,
+                pseudonyms: {
+                  email: encrypt(lowerCaseEmail),
+                },
               },
             },
           },
@@ -417,13 +472,25 @@ const resolvers: Resolvers<Context> = {
     },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
+      const encryptedEmail = encrypt(email);
+      const pseudonym = await context.prisma.userPseudonyms.findFirst({
+        where: {
+          email: encrypt(email),
+        },
+      });
+      console.log(email);
+      console.log(encrypt(email));
+      console.log(decrypt(encrypt(email)));
+      console.log(decrypt(encryptedEmail));
+      console.log(encryptedEmail);
+      console.log(pseudonym);
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: email,
+          pseudonyms: {
+            email: encrypt(email),
           },
         },
+        include: { pseudonyms: true },
       });
 
       invariant(foundUser, new PublicError('User not found.'));
@@ -446,7 +513,7 @@ const resolvers: Resolvers<Context> = {
         const ip = context.req.ip;
         const ipInfo = await getUserIpInfo(ip);
         await slackNotification.globalPasswordLoginNotification({
-          email: foundUser.email,
+          email: decrypt(foundUser?.pseudonyms?.email),
           ipAddress: ipInfo.ip_address,
           city: ipInfo.city,
           country: ipInfo.country_name,
@@ -512,9 +579,8 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: lowerCaseEmail,
+          pseudonyms: {
+            email: encrypt(lowerCaseEmail),
           },
         },
       });
@@ -618,11 +684,28 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id,
         },
         data: {
-          first_name: args.first_name,
-          last_name: args.last_name,
-          email: lowerCaseEmail,
-          phone_number: args.phone_number || null,
-          country_code: args.country_code || null,
+          pseudonyms: {
+            upsert: {
+              create: {
+                email: encrypt(lowerCaseEmail),
+                first_name: encrypt(args.first_name),
+                last_name: encrypt(args.last_name),
+                phone_number: args.phone_number
+                  ? encrypt(args.phone_number)
+                  : null,
+                country_code: args.country_code
+                  ? encrypt(args.country_code)
+                  : null,
+              },
+              update: {
+                email: encrypt(lowerCaseEmail),
+                first_name: encrypt(args.first_name),
+                last_name: encrypt(args.last_name),
+                phone_number: encrypt(args.phone_number),
+                country_code: encrypt(args.country_code),
+              },
+            },
+          },
         },
       });
 

@@ -27,6 +27,8 @@ import createCollaboratedNotification from '../../notification/collaboratedNotif
 import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
 import { getUserFullName, createResetPasswordUrl } from '../../helper/email';
+import { decrypt, encrypt } from '../../helper/gdprHelper';
+import { enc } from 'crypto-ts';
 
 type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;
@@ -392,6 +394,9 @@ const addProjectCollaborator = async (
     where: {
       id: context.req.user_id,
     },
+    include: {
+      pseudonyms: true,
+    },
   });
 
   invariant(currentUser, 'Current user not found.');
@@ -401,6 +406,7 @@ const addProjectCollaborator = async (
       id: user_id,
     },
     include: {
+      pseudonyms: true,
       customer: true,
       vendor_member: true,
       notifications: true,
@@ -460,14 +466,16 @@ const addProjectCollaborator = async (
     });
 
     if (projectConnection) {
+      const inviterFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+      const receiverFullName = `${decrypt(user?.pseudonyms?.first_name)} ${decrypt(user?.pseudonyms?.last_name)}`;
       projectCollaboratorInvitationEmail(
         {
           login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-          inviter_full_name: `${currentUser.first_name} ${currentUser.last_name}`,
+          inviter_full_name: inviterFullName,
           project_title: projectConnection.project_request.title,
-          receiver_full_name: `${user.first_name} ${user.last_name}`,
+          receiver_full_name: receiverFullName,
         },
-        user.email,
+        decrypt(user?.pseudonyms?.email),
       );
 
       try {
@@ -574,6 +582,7 @@ export const inviteProjectCollaboratorViaEmail = async (
       id: currentUserId,
     },
     include: {
+      pseudonyms: true,
       customer: true,
       vendor_member: true,
     },
@@ -583,7 +592,9 @@ export const inviteProjectCollaboratorViaEmail = async (
 
   const existingUser = await context.prisma.user.findFirst({
     where: {
-      email: email,
+      pseudonyms: {
+        email,
+      },
     },
     include: {
       customer: true,
@@ -627,9 +638,13 @@ export const inviteProjectCollaboratorViaEmail = async (
 
     const newUser = await trx.user.create({
       data: {
-        first_name: firstName,
-        last_name: lastName,
-        email,
+        pseudonyms: {
+          create: {
+            first_name: encrypt(firstName),
+            last_name: encrypt(lastName),
+            email: encrypt(email),
+          },
+        },
         reset_password_token: resetToken,
         reset_password_expiration: new Date(resetTokenExpiration),
         customer: isBiotech
@@ -658,15 +673,16 @@ export const inviteProjectCollaboratorViaEmail = async (
           : undefined,
       },
       include: {
+        pseudonyms: true,
         customer: true,
         vendor_member: true,
       },
     });
     const emailMessage = custom_message || '';
 
-    const newUserFullName = getUserFullName(newUser);
+    const newUserFullName = `${decrypt(newUser?.pseudonyms?.first_name)} ${decrypt(newUser?.pseudonyms?.last_name)}`;
     const resetPasswordUrl = createResetPasswordUrl(resetToken);
-    const currentUserFullName = getUserFullName(currentUser);
+    const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
 
     // Send email
     if (isBiotech) {
@@ -677,7 +693,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        newUser.email,
+        decrypt(newUser?.pseudonyms?.email),
       );
     }
     if (isVendor) {
@@ -688,7 +704,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        newUser.email,
+        decrypt(newUser?.pseudonyms?.email),
       );
     }
 

@@ -25,6 +25,11 @@ import { app_env } from '../../environment';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
 import createFinalContractUploadNotificationJob from '../../notification/finalContractUploadNotification';
 import createFileUploadNotificationJob from '../../notification/fileUploadNotification';
+import {
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
+import { get } from 'lodash';
 
 async function getBuffer(
   stream: Readable,
@@ -104,6 +109,9 @@ const resolvers: Resolvers<Context> = {
               where: {
                 id: context.req.user_id,
               },
+              include: {
+                pseudonyms: true,
+              },
             });
             const url = await getZohoContractEditorUrl(parent, user);
             return url;
@@ -136,6 +144,7 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           customer: true,
+          pseudonyms: true,
         },
       });
 
@@ -218,11 +227,11 @@ const resolvers: Resolvers<Context> = {
           const emailData = receivers.map((r) => ({
             emailData: {
               login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              receiver_full_name: getUserFullNameFromPseudonyms(r.pseudonyms),
               project_title: projectConnection.project_request.title,
               company_name: senderCompanyName,
             },
-            receiverEmail: r.email,
+            receiverEmail: getEmailFromPseudonyms(r.pseudonyms),
           }));
           const notificationData = receivers.map((r) => {
             return createFileUploadNotificationJob({
@@ -230,7 +239,7 @@ const resolvers: Resolvers<Context> = {
               recipient_id: r.id,
               project_connection_id,
               project_title: projectConnection.project_request.title,
-              sender_fullname: `${user.first_name} ${user.last_name}`,
+              sender_fullname: getUserFullNameFromPseudonyms(user.pseudonyms!),
             });
           });
           bulkDocumentUploadNoticeEmail(emailData);
@@ -271,6 +280,7 @@ const resolvers: Resolvers<Context> = {
         },
         include: {
           customer: true,
+          pseudonyms: true,
         },
       });
 
@@ -335,11 +345,11 @@ const resolvers: Resolvers<Context> = {
           const emailData = receivers.map((r) => ({
             emailData: {
               login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              receiver_full_name: getUserFullNameFromPseudonyms(r.pseudonyms),
               project_title: projectConnection.project_request.title,
               company_name: senderCompanyName,
             },
-            receiverEmail: r.email,
+            receiverEmail: getEmailFromPseudonyms(r.pseudonyms),
           }));
           // Prepare notification data
           const notificationData = receivers.map((r) => {
@@ -348,7 +358,7 @@ const resolvers: Resolvers<Context> = {
               recipient_id: r.id,
               project_connection_id,
               project_title: projectConnection.project_request.title,
-              sender_fullname: `${user.first_name} ${user.last_name}`,
+              sender_fullname: getUserFullNameFromPseudonyms(user.pseudonyms!),
             });
           });
 

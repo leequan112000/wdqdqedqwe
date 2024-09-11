@@ -7,7 +7,13 @@ import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
 import { vendorMemberInvitationByAdminEmail } from '../../mailer';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getEmailFromPseudonyms,
+  getUserFullName,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolver: Resolvers<Context> = {
   VendorMember: {
@@ -29,7 +35,9 @@ const resolver: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            email: lowerCaseEmail,
+            pseudonyms: {
+              email: encrypt(lowerCaseEmail),
+            },
           },
         });
 
@@ -55,13 +63,20 @@ const resolver: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            email: lowerCaseEmail,
-            first_name: args.first_name,
-            last_name: args.last_name,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
-            country_code: args.country_code || null,
-            phone_number: args.phone_number || null,
+            pseudonyms: {
+              create: {
+                email: encrypt(lowerCaseEmail),
+                first_name: encrypt(args.first_name),
+                last_name: encrypt(args.last_name),
+                phone_number: encrypt(args.phone_number) || null,
+                country_code: encrypt(args.country_code) || null,
+              },
+            },
+          },
+          include: {
+            pseudonyms: true,
           },
         });
 
@@ -112,14 +127,16 @@ const resolver: Resolvers<Context> = {
         }
 
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const newUserFullName = getUserFullName(newUser);
+        const newUserFullName = getUserFullNameFromPseudonyms(
+          newUser.pseudonyms!,
+        );
 
         vendorMemberInvitationByAdminEmail(
           {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          newUser.email,
+          getEmailFromPseudonyms(newUser.pseudonyms!),
         );
 
         return newVendorMember;

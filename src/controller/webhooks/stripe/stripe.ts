@@ -22,6 +22,7 @@ import { createInvoicePaymentNotification } from '../../../notification/invoiceN
 import { createMilestonePaymentFailedNotification } from '../../../notification/milestoneNotification';
 import { VendorOnboardingStep } from '../../../graphql/generated';
 import { slackNotification } from '../../../helper/slack';
+import { decrypt } from '../../../helper/gdprHelper';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -320,19 +321,24 @@ export const processStripeEvent = async (
                     },
                   },
                   include: {
-                    user: true,
+                    user: {
+                      include: {
+                        pseudonyms: true,
+                      },
+                    },
                   },
                 });
 
                 await Promise.all(
                   receivers.map(async (receiver) => {
+                    const email = decrypt(receiver?.user?.pseudonyms?.email);
                     await sendInvoicePaymentNoticeEmail(
                       {
                         button_url: buttonUrl,
                         invoice_month: invoiceMonth,
                         payment_status: 'successful',
                       },
-                      receiver.user.email,
+                      email,
                     );
 
                     await createInvoicePaymentNotification({
@@ -453,19 +459,24 @@ export const processStripeEvent = async (
                     },
                   },
                   include: {
-                    user: true,
+                    user: {
+                      include: {
+                        pseudonyms: true,
+                      },
+                    },
                   },
                 });
 
                 await Promise.all(
                   receivers.map(async (receiver) => {
+                    const email = decrypt(receiver?.user?.pseudonyms?.email);
                     await sendInvoicePaymentNoticeEmail(
                       {
                         button_url: buttonUrl,
                         invoice_month: invoiceMonth,
                         payment_status: 'failed',
                       },
-                      receiver.user.email,
+                      email,
                     );
 
                     await createInvoicePaymentNotification({
@@ -550,22 +561,27 @@ export const processStripeEvent = async (
                       },
                     ],
                   },
+                  include: {
+                    pseudonyms: true,
+                  },
                 });
 
                 const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
                 await Promise.all(
                   receivers.map(async (receiver) => {
+                    const email = decrypt(receiver?.pseudonyms?.email);
+                    const full_name = `${decrypt(receiver?.pseudonyms?.first_name)} ${decrypt(receiver?.pseudonyms?.last_name)}`;
                     await sendMilestoneNoticeEmail(
                       {
                         sender_name: 'Cromatic Admin',
                         project_title:
                           milestone.quote.project_connection.project_request
                             .title,
-                        receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                        receiver_full_name: full_name,
                         milestone_update_content: milestoneUpdateContent,
                         milestone_url: `${app_env.APP_URL}/app/project-connection/${milestone.quote.project_connection_id}/quote/${milestone.quote.id}`,
                       },
-                      receiver.email,
+                      email,
                     );
 
                     await createMilestonePaymentFailedNotification(

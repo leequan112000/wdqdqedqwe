@@ -32,7 +32,7 @@ import {
   createUpdateMeetingNotificationJob,
 } from '../../notification/meetingNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
-import { find } from 'lodash';
+import { find, get } from 'lodash';
 import { ServiceContext } from '../../types/context';
 import { MicrosoftCalendarEvent } from '../../types/microsoft';
 import { CalendarEvent } from '../../graphql/generated';
@@ -58,6 +58,11 @@ import {
 } from '@prisma/client';
 import { NoOAuthError } from '../../graphql/errors/NoOAuthError';
 import Sentry from '../../sentry';
+import { decrypt, encrypt } from '../../helper/gdprHelper';
+import {
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 
 const isGoogleExpiredError = (error: any) => {
   return (
@@ -516,6 +521,7 @@ const createMeetingEvent = async (
       id: organizer_user_id,
     },
     include: {
+      pseudonyms: true,
       customer: {
         include: {
           biotech: true,
@@ -542,7 +548,7 @@ const createMeetingEvent = async (
         all_participants_emails: [
           ...cromaticParticipantEmails,
           ...externalParticipantEmails,
-          organizerUser.email,
+          decrypt(organizerUser?.pseudonyms?.email),
         ],
         organizer_user_id: organizerUser.id,
         title,
@@ -618,11 +624,14 @@ const createMeetingEvent = async (
 
   const cromaticParticipantUserData = await ctx.prisma.user.findMany({
     where: {
-      email: {
-        in: cromaticParticipantEmails,
+      pseudonyms: {
+        email: {
+          in: cromaticParticipantEmails.map((e) => encrypt(e)),
+        },
       },
     },
     include: {
+      pseudonyms: true,
       customer: true,
       vendor_member: true,
     },
@@ -650,10 +659,10 @@ const createMeetingEvent = async (
     const organizerParticipantEmailData = organizerParticipants.map((u) => ({
       meeting_title: newMeetingEvent.title,
       project_title: newMeetingEvent.project_connection.project_request.title,
-      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-      user_name: `${u.first_name} ${u.last_name}`,
+      company_name: getUserFullNameFromPseudonyms(organizerUser?.pseudonyms!),
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const organizerCompany =
       organizerUser.customer?.biotech?.name ||
@@ -662,9 +671,9 @@ const createMeetingEvent = async (
       meeting_title: newMeetingEvent.title,
       project_title: newMeetingEvent.project_connection.project_request.title,
       company_name: organizerCompany!,
-      user_name: `${u.first_name} ${u.last_name}`,
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
 
     [...organizerParticipantEmailData, ...attendingParticipantEmailData].map(
@@ -678,7 +687,9 @@ const createMeetingEvent = async (
     data: cromaticParticipantUserData.map((u) =>
       createNewMeetingNotificationJob({
         meeting_event_id: newMeetingEvent.id,
-        organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+        organizer_full_name: getUserFullNameFromPseudonyms(
+          organizerUser?.pseudonyms!,
+        ),
         project_title: newMeetingEvent.project_connection.project_request.title,
         recipient_id: u.id,
       }),
@@ -804,10 +815,18 @@ const removeMeetingEvent = async (
     include: {
       meetingAttendeeConnections: {
         include: {
-          user: true,
+          user: {
+            include: {
+              pseudonyms: true,
+            },
+          },
         },
       },
-      organizer: true,
+      organizer: {
+        include: {
+          pseudonyms: true,
+        },
+      },
       project_connection: {
         include: {
           project_request: true,
@@ -828,6 +847,7 @@ const removeMeetingEvent = async (
       id: current_user_id,
     },
     include: {
+      pseudonyms: true,
       customer: {
         include: {
           biotech: true,
@@ -881,20 +901,27 @@ const removeMeetingEvent = async (
     }
   } else {
     const existingCromaticParticipantsEmails =
-      meetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
+      meetingEvent.meetingAttendeeConnections.map((u) =>
+        getEmailFromPseudonyms(u.user.pseudonyms!),
+      );
     const existingCromaticParticipantWithoutOrganizerEmails =
       existingCromaticParticipantsEmails.filter(
-        (e) => e !== organizerUser.email,
+        (e) => e !== decrypt(organizerUser.pseudonyms?.email),
       );
 
     const cromaticParticipantWithoutOrganizerUserData =
       await ctx.prisma.user.findMany({
         where: {
-          email: {
-            in: existingCromaticParticipantWithoutOrganizerEmails,
+          pseudonyms: {
+            email: {
+              in: existingCromaticParticipantWithoutOrganizerEmails.map((e) =>
+                encrypt(e),
+              ),
+            },
           },
         },
         include: {
+          pseudonyms: true,
           customer: true,
           vendor_member: true,
         },
@@ -929,16 +956,16 @@ const removeMeetingEvent = async (
     const organizerParticipantEmailData = organizerParticipants.map((u) => ({
       meeting_title: meetingEvent.title,
       project_title: meetingEvent.project_connection.project_request.title,
-      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-      user_name: `${u.first_name} ${u.last_name}`,
-      receive_email: u.email,
+      company_name: getUserFullNameFromPseudonyms(organizerUser?.pseudonyms!),
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const attendingParticipantEmailData = attendingParticipants.map((u) => ({
       meeting_title: meetingEvent.title,
       project_title: meetingEvent.project_connection.project_request.title,
       company_name: organizerCompanyName!,
-      user_name: `${u.first_name} ${u.last_name}`,
-      receive_email: u.email,
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const externalParticipantEmailData = meetingEvent.meeting_guests.map(
       (guest) => ({
@@ -965,7 +992,9 @@ const removeMeetingEvent = async (
       .map((con) =>
         createRemoveMeetingNotificationJob({
           meeting_event_id: meetingEvent.id,
-          organizer_full_name: `${meetingEvent.organizer.first_name} ${meetingEvent.organizer.last_name}`,
+          organizer_full_name: getUserFullNameFromPseudonyms(
+            meetingEvent.organizer.pseudonyms!,
+          ),
           project_title: meetingEvent.project_connection.project_request.title,
           recipient_id: con.user_id,
         }),
@@ -1238,7 +1267,12 @@ const addExternalGuestToMeeting = async (
   // Check if email is an existing Cromatic user
   const existingUser = await ctx.prisma.user.findFirst({
     where: {
-      email,
+      pseudonyms: {
+        email: encrypt(email),
+      },
+    },
+    include: {
+      pseudonyms: true,
     },
   });
 
@@ -1256,7 +1290,7 @@ const addExternalGuestToMeeting = async (
 
   // Take name of existing user from our DB
   const guestName = existingUser
-    ? `${existingUser.first_name} ${existingUser.last_name}`
+    ? getUserFullNameFromPseudonyms(existingUser.pseudonyms!)
     : name;
 
   const guest = await ctx.prisma.meetingGuest.upsert({
@@ -1340,7 +1374,11 @@ const updateMeetingEvent = async (
     include: {
       meetingAttendeeConnections: {
         include: {
-          user: true,
+          user: {
+            include: {
+              pseudonyms: true,
+            },
+          },
         },
       },
       meeting_guests: true,
@@ -1354,6 +1392,7 @@ const updateMeetingEvent = async (
       id: organizer_user_id,
     },
     include: {
+      pseudonyms: true,
       customer: {
         include: {
           biotech: true,
@@ -1402,9 +1441,13 @@ const updateMeetingEvent = async (
   }
 
   const existingCromaticParticipantsEmails =
-    previousMeetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
+    previousMeetingEvent.meetingAttendeeConnections.map((u) =>
+      getEmailFromPseudonyms(u.user.pseudonyms!),
+    );
   const existingCromaticParticipantWithoutOrganizerEmails =
-    existingCromaticParticipantsEmails.filter((e) => e !== organizerUser.email);
+    existingCromaticParticipantsEmails.filter(
+      (e) => e !== getEmailFromPseudonyms(organizerUser.pseudonyms!),
+    );
 
   const existingExternalParticipantsEmails =
     previousMeetingEvent.meeting_guests.map((g) => g.email);
@@ -1412,11 +1455,16 @@ const updateMeetingEvent = async (
   const cromaticParticipantWithoutOrganizerUserData =
     await ctx.prisma.user.findMany({
       where: {
-        email: {
-          in: existingCromaticParticipantWithoutOrganizerEmails,
+        pseudonyms: {
+          email: {
+            in: existingCromaticParticipantWithoutOrganizerEmails.map((e) =>
+              encrypt(e),
+            ),
+          },
         },
       },
       include: {
+        pseudonyms: true,
         customer: true,
         vendor_member: true,
       },
@@ -1621,19 +1669,19 @@ const updateMeetingEvent = async (
       meeting_title: updatedMeetingEvent.title,
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
-      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-      user_name: `${u.first_name} ${u.last_name}`,
+      company_name: getUserFullNameFromPseudonyms(organizerUser?.pseudonyms!),
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const attendingParticipantEmailData = attendingParticipants.map((u) => ({
       meeting_title: updatedMeetingEvent.title,
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
       company_name: organizerCompanyName!,
-      user_name: `${u.first_name} ${u.last_name}`,
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const externalParticipantEmailData = updatedMeetingEvent.meeting_guests.map(
       (guest) => ({
@@ -1661,7 +1709,9 @@ const updateMeetingEvent = async (
     createUpdateMeetingNotificationJob({
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
-      organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+      organizer_full_name: getUserFullNameFromPseudonyms(
+        organizerUser?.pseudonyms!,
+      ),
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
     }),
@@ -1725,6 +1775,7 @@ const updateMeetingPlatform = async (
       id: organizer_user_id,
     },
     include: {
+      pseudonyms: true,
       customer: {
         include: {
           biotech: true,
@@ -1747,7 +1798,11 @@ const updateMeetingPlatform = async (
     include: {
       meetingAttendeeConnections: {
         include: {
-          user: true,
+          user: {
+            include: {
+              pseudonyms: true,
+            },
+          },
         },
       },
       meeting_guests: {
@@ -1770,9 +1825,13 @@ const updateMeetingPlatform = async (
   }
 
   const existingCromaticParticipantsEmails =
-    previousMeetingEvent.meetingAttendeeConnections.map((u) => u.user.email);
+    previousMeetingEvent.meetingAttendeeConnections.map((u) =>
+      getEmailFromPseudonyms(u.user.pseudonyms!),
+    );
   const existingCromaticParticipantWithoutOrganizerEmails =
-    existingCromaticParticipantsEmails.filter((e) => e !== organizerUser.email);
+    existingCromaticParticipantsEmails.filter(
+      (e) => e !== getEmailFromPseudonyms(organizerUser.pseudonyms!),
+    );
 
   const existingExternalParticipantsEmails =
     previousMeetingEvent.meeting_guests.map((g) => g.email);
@@ -1780,11 +1839,16 @@ const updateMeetingPlatform = async (
   const cromaticParticipantWithoutOrganizerUserData =
     await ctx.prisma.user.findMany({
       where: {
-        email: {
-          in: existingCromaticParticipantWithoutOrganizerEmails,
+        pseudonyms: {
+          email: {
+            in: existingCromaticParticipantWithoutOrganizerEmails.map((e) =>
+              encrypt(e),
+            ),
+          },
         },
       },
       include: {
+        pseudonyms: true,
         customer: true,
         vendor_member: true,
       },
@@ -1850,19 +1914,19 @@ const updateMeetingPlatform = async (
       meeting_title: updatedMeetingEvent.title,
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
-      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-      user_name: `${u.first_name} ${u.last_name}`,
+      company_name: getUserFullNameFromPseudonyms(organizerUser?.pseudonyms!),
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const attendingParticipantEmailData = attendingParticipants.map((u) => ({
       meeting_title: updatedMeetingEvent.title,
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
       company_name: organizerCompanyName!,
-      user_name: `${u.first_name} ${u.last_name}`,
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const externalParticipantEmailData =
       previousMeetingEvent.meeting_guests.map((guest) => ({
@@ -1928,7 +1992,9 @@ const updateMeetingPlatform = async (
     createUpdateMeetingNotificationJob({
       project_title:
         updatedMeetingEvent.project_connection.project_request.title,
-      organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+      organizer_full_name: getUserFullNameFromPseudonyms(
+        organizerUser?.pseudonyms!,
+      ),
       meeting_event_id: updatedMeetingEvent.id,
       recipient_id: u.id,
     }),
@@ -2004,7 +2070,11 @@ const removeCromaticParticipant = async (
         meeting_event_id,
       },
       include: {
-        user: true,
+        user: {
+          include: {
+            pseudonyms: true,
+          },
+        },
       },
     });
 
@@ -2026,7 +2096,9 @@ const removeCromaticParticipant = async (
       });
       invariant(oauthGoogle, new PublicError('Missing token.'));
       const attendeesArr = [
-        ...existingAttendees.map((a) => ({ email: a.email })),
+        ...existingAttendees.map((a) => ({
+          email: getEmailFromPseudonyms(a.pseudonyms!),
+        })),
         ...existingExternalGuests.map((a) => ({ email: a.email })),
       ];
 
@@ -2057,7 +2129,7 @@ const removeCromaticParticipant = async (
       const client = microsoftGraphClient(oauthMicrosoft.access_token);
       const attendeesArr = [
         ...existingAttendees.map((a) => ({
-          emailAddress: { address: a.email },
+          emailAddress: { address: getEmailFromPseudonyms(a.pseudonyms!) },
         })),
         ...existingExternalGuests.map((a) => ({
           emailAddress: { address: a.email },
@@ -2109,6 +2181,7 @@ const addParticipants = async (
       id: organizer_user_id,
     },
     include: {
+      pseudonyms: true,
       customer: {
         include: {
           biotech: true,
@@ -2130,7 +2203,11 @@ const addParticipants = async (
     include: {
       meetingAttendeeConnections: {
         include: {
-          user: true,
+          user: {
+            include: {
+              pseudonyms: true,
+            },
+          },
         },
       },
       meeting_guests: true,
@@ -2170,6 +2247,9 @@ const addParticipants = async (
       where: {
         id: userId,
       },
+      include: {
+        pseudonyms: true,
+      },
     });
     await ctx.prisma.meetingAttendeeConnection.create({
       data: {
@@ -2202,7 +2282,9 @@ const addParticipants = async (
       invariant(oauthGoogle, new PublicError('Missing token.'));
 
       const attendeesArr = [
-        ...existingAttendees.map((a) => ({ email: a.email })),
+        ...existingAttendees.map((a) => ({
+          email: getEmailFromPseudonyms(a.pseudonyms!),
+        })),
         ...existingExternalGuests.map((a) => ({ email: a.email })),
         ...cromatic_participants.map((a) => ({ email: a.email })),
       ];
@@ -2233,7 +2315,7 @@ const addParticipants = async (
       invariant(oauthMicrosoft, new PublicError('Missing token.'));
       const attendeesArr = [
         ...existingAttendees.map((a) => ({
-          emailAddress: { address: a.email },
+          emailAddress: { address: getEmailFromPseudonyms(a.pseudonyms!) },
         })),
         ...existingExternalGuests.map((a) => ({
           emailAddress: { address: a.email },
@@ -2262,11 +2344,14 @@ const addParticipants = async (
   const cromaticParticipantEmails = cromatic_participants.map((a) => a.email);
   const cromaticParticipantUserData = await ctx.prisma.user.findMany({
     where: {
-      email: {
-        in: cromaticParticipantEmails,
+      pseudonyms: {
+        email: {
+          in: cromaticParticipantEmails.map((e) => encrypt(e)),
+        },
       },
     },
     include: {
+      pseudonyms: true,
       customer: true,
       vendor_member: true,
     },
@@ -2294,10 +2379,10 @@ const addParticipants = async (
     const organizerParticipantEmailData = organizerParticipants.map((u) => ({
       meeting_title: meetingEvent.title,
       project_title: meetingEvent.project_connection.project_request.title,
-      company_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
-      user_name: `${u.first_name} ${u.last_name}`,
+      company_name: getUserFullNameFromPseudonyms(organizerUser?.pseudonyms!),
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
     const organizerCompany =
       organizerUser.customer?.biotech?.name ||
@@ -2306,16 +2391,18 @@ const addParticipants = async (
       meeting_title: meetingEvent.title,
       project_title: meetingEvent.project_connection.project_request.title,
       company_name: organizerCompany!,
-      user_name: `${u.first_name} ${u.last_name}`,
+      user_name: getUserFullNameFromPseudonyms(u?.pseudonyms!),
       button_url: `${app_env.APP_URL}/app/meeting-events`,
-      receive_email: u.email,
+      receive_email: getEmailFromPseudonyms(u?.pseudonyms!),
     }));
 
     const notificationJob = {
       data: cromaticParticipantUserData.map((u) =>
         createNewMeetingNotificationJob({
           meeting_event_id: meetingEvent.id,
-          organizer_full_name: `${organizerUser.first_name} ${organizerUser.last_name}`,
+          organizer_full_name: getUserFullNameFromPseudonyms(
+            organizerUser?.pseudonyms!,
+          ),
           project_title: meetingEvent.project_connection.project_request.title,
           recipient_id: u.id,
         }),
@@ -2332,8 +2419,8 @@ const addParticipants = async (
 
   return [
     ...cromaticUsers.map((p) => ({
-      email: p!.email,
-      name: `${p!.first_name} ${p!.last_name}`,
+      email: getEmailFromPseudonyms(p?.pseudonyms!),
+      name: getUserFullNameFromPseudonyms(p?.pseudonyms!),
       status: MeetingGuestStatus.ACCEPTED,
     })),
     ...externalParticipants.map((p) => ({

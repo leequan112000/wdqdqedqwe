@@ -2,6 +2,7 @@ import { NotificationType } from '../helper/constant';
 import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
+import { decrypt } from '../helper/gdprHelper';
 
 const createCollaboratedNotification = async (
   sender_id: string,
@@ -12,12 +13,18 @@ const createCollaboratedNotification = async (
     where: {
       id: sender_id,
     },
+    include: {
+      pseudonyms: true,
+    },
   });
   invariant(sender, 'Sender not found.');
 
   const recipient = await prisma.user.findFirst({
     where: {
       id: recipient_id,
+    },
+    include: {
+      pseudonyms: true,
     },
   });
   invariant(recipient, 'Recipient not found.');
@@ -31,10 +38,11 @@ const createCollaboratedNotification = async (
     },
   });
 
+  const senderFullName = `${decrypt(sender?.pseudonyms?.first_name)} ${decrypt(sender?.pseudonyms?.last_name)}`;
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.COLLABORATED_NOTIFICATION,
-      message: `**${sender.first_name} ${sender.last_name}** invited you to collaborate on **${project_connection?.project_request.title}**`,
+      message: `**${senderFullName}** invited you to collaborate on **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
       params: {
         project_connection_id: project_connection_id,

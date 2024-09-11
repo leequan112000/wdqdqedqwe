@@ -4,14 +4,19 @@ import {
   CustomerConnection,
   VendorMemberConnection,
   ProjectRequest,
+  UserPseudonyms,
 } from '@prisma/client';
 import { prisma } from '../prisma';
+
+type ReceiverType = User & {
+  pseudonyms: UserPseudonyms;
+};
 
 export const getReceiversByProjectConnection = async (
   projectConnectionId: string,
   senderUserId: string,
 ): Promise<{
-  receivers: User[];
+  receivers: ReceiverType[];
   projectConnection: ProjectConnection & {
     customer_connections: CustomerConnection[];
     vendor_member_connections: VendorMemberConnection[];
@@ -40,12 +45,12 @@ export const getReceiversByProjectConnection = async (
   });
 
   let senderCompanyName = '';
-  let receivers: User[] = [];
+  let receivers: ReceiverType[] = [];
 
   if (vendor) {
     // if uploader is vendor, notify biotech members
     senderCompanyName = vendor.vendor_company?.name as string;
-    receivers = await prisma.user.findMany({
+    receivers = (await prisma.user.findMany({
       where: {
         customer: {
           id: {
@@ -65,8 +70,14 @@ export const getReceiversByProjectConnection = async (
             },
           },
         ],
+        pseudonyms: {
+          isNot: null,
+        },
       },
-    });
+      include: {
+        pseudonyms: true,
+      },
+    })) as ReceiverType[];
   } else {
     // if uploader is customer, notify vendor members
     const customer = await prisma.customer.findFirstOrThrow({
@@ -78,7 +89,7 @@ export const getReceiversByProjectConnection = async (
       },
     });
     senderCompanyName = customer.biotech.name;
-    receivers = await prisma.user.findMany({
+    receivers = (await prisma.user.findMany({
       where: {
         vendor_member: {
           id: {
@@ -98,8 +109,14 @@ export const getReceiversByProjectConnection = async (
             },
           },
         ],
+        pseudonyms: {
+          isNot: null,
+        },
       },
-    });
+      include: {
+        pseudonyms: true,
+      },
+    })) as ReceiverType[];
   }
 
   return {

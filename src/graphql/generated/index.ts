@@ -1628,6 +1628,16 @@ export type ProjectRequestProjectConnectionFilter = {
   vendor_status?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type Pseudonyms = {
+  __typename?: 'Pseudonyms';
+  country_code?: Maybe<Scalars['String']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  phone_number?: Maybe<Scalars['String']['output']>;
+};
+
 export type PubMeeting = {
   __typename?: 'PubMeeting';
   end_time?: Maybe<Scalars['String']['output']>;
@@ -2366,6 +2376,7 @@ export type User = {
   last_name?: Maybe<Scalars['String']['output']>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   phone_number?: Maybe<Scalars['String']['output']>;
+  pseudonyms?: Maybe<Pseudonyms>;
   status?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['Date']['output']>;
   user_type?: Maybe<Scalars['String']['output']>;
@@ -2684,6 +2695,7 @@ export type ResolversTypes = ResolversObject<{
   ProjectRequestCollaborator: ResolverTypeWrapper<ProjectRequestCollaborator>;
   ProjectRequestComment: ResolverTypeWrapper<ProjectRequestComment>;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
+  Pseudonyms: ResolverTypeWrapper<Pseudonyms>;
   PubMeeting: ResolverTypeWrapper<PubMeeting>;
   PubMeetingGuestInfo: ResolverTypeWrapper<PubMeetingGuestInfo>;
   PubRVSP: ResolverTypeWrapper<PubRvsp>;
@@ -2820,6 +2832,7 @@ export type ResolversParentTypes = ResolversObject<{
   ProjectRequestCollaborator: ProjectRequestCollaborator;
   ProjectRequestComment: ProjectRequestComment;
   ProjectRequestProjectConnectionFilter: ProjectRequestProjectConnectionFilter;
+  Pseudonyms: Pseudonyms;
   PubMeeting: PubMeeting;
   PubMeetingGuestInfo: PubMeetingGuestInfo;
   PubRVSP: PubRvsp;
@@ -3731,6 +3744,16 @@ export type ProjectRequestCommentResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PseudonymsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pseudonyms'] = ResolversParentTypes['Pseudonyms']> = ResolversObject<{
+  country_code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  first_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PubMeetingResolvers<ContextType = any, ParentType extends ResolversParentTypes['PubMeeting'] = ResolversParentTypes['PubMeeting']> = ResolversObject<{
   end_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   guest_info?: Resolver<Maybe<ResolversTypes['PubMeetingGuestInfo']>, ParentType, ContextType>;
@@ -4151,6 +4174,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notifications?: Resolver<Maybe<Array<Maybe<ResolversTypes['Notification']>>>, ParentType, ContextType>;
   phone_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pseudonyms?: Resolver<Maybe<ResolversTypes['Pseudonyms']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4322,6 +4346,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ProjectRequest?: ProjectRequestResolvers<ContextType>;
   ProjectRequestCollaborator?: ProjectRequestCollaboratorResolvers<ContextType>;
   ProjectRequestComment?: ProjectRequestCommentResolvers<ContextType>;
+  Pseudonyms?: PseudonymsResolvers<ContextType>;
   PubMeeting?: PubMeetingResolvers<ContextType>;
   PubMeetingGuestInfo?: PubMeetingGuestInfoResolvers<ContextType>;
   PubRVSP?: PubRvspResolvers<ContextType>;

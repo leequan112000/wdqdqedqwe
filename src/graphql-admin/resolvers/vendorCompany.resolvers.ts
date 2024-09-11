@@ -17,9 +17,15 @@ import {
 } from '../../mailer/vendorMember';
 import { app_env } from '../../environment';
 import { addRoleForUser } from '../../helper/casbin';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getEmailFromPseudonyms,
+  getUserFullName,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 import createAdminInviteNotificationJob from '../../notification/adminInviteNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
+import { encrypt } from '../../helper/gdprHelper';
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -85,7 +91,11 @@ const resolvers: Resolvers<Context> = {
                   },
                 },
                 include: {
-                  user: true,
+                  user: {
+                    include: {
+                      pseudonyms: true,
+                    },
+                  },
                 },
               });
 
@@ -164,16 +174,19 @@ const resolvers: Resolvers<Context> = {
                   });
 
                   // Send email and notification
-                  const primaryVendorMemberFullName = getUserFullName(
-                    primaryVendorMember.user,
-                  );
+                  const primaryVendorMemberFullName =
+                    getUserFullNameFromPseudonyms(
+                      primaryVendorMember.user.pseudonyms!,
+                    );
                   vendorMemberProjectRequestInvitationByAdminEmail(
                     {
                       login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`,
                       project_request_title: projectRequest.title,
                       receiver_full_name: primaryVendorMemberFullName,
                     },
-                    primaryVendorMember.user.email,
+                    getEmailFromPseudonyms(
+                      primaryVendorMember.user.pseudonyms!,
+                    ),
                   );
                   const notificationJob = createAdminInviteNotificationJob({
                     project_connection_id: projectConnection.id,
@@ -212,7 +225,11 @@ const resolvers: Resolvers<Context> = {
             },
             include: {
               biotech: true,
-              inviter: true,
+              inviter: {
+                include: {
+                  pseudonyms: true,
+                },
+              },
               project_request: true,
             },
           });
@@ -253,7 +270,12 @@ const resolvers: Resolvers<Context> = {
         // Check if user already exists
         const existingUser = await context.prisma.user.findFirst({
           where: {
-            email: biotechInviteVendor.email,
+            pseudonyms: {
+              email: encrypt(biotechInviteVendor.email),
+            },
+          },
+          include: {
+            pseudonyms: true,
           },
         });
 
@@ -265,7 +287,9 @@ const resolvers: Resolvers<Context> = {
             },
           });
 
-        const inviterFullName = getUserFullName(inviter);
+        const inviterFullName = getUserFullNameFromPseudonyms(
+          inviter.pseudonyms!,
+        );
 
         // Check if the vendor company with the same user already exists
         // If vendor copmany is not in marketplace, assign request to this vendor company
@@ -321,7 +345,9 @@ const resolvers: Resolvers<Context> = {
 
           // Send email to existing vendor member by biotech
           const viewProjectConnectionUrl = `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`;
-          const existingUserFullName = getUserFullName(existingUser);
+          const existingUserFullName = getUserFullNameFromPseudonyms(
+            existingUser.pseudonyms!,
+          );
           vendorMemberInvitationByBiotechEmail(
             {
               biotech_name: biotech.name,
@@ -330,7 +356,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: existingUserFullName,
             },
-            existingUser.email,
+            getEmailFromPseudonyms(existingUser.pseudonyms!),
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -413,7 +439,9 @@ const resolvers: Resolvers<Context> = {
 
           // Send email to existing vendor member by biotech
           const viewProjectConnectionUrl = `${app_env.APP_URL}/app/project-connection/${projectConnection.id}/project-request`;
-          const existingUserFullName = getUserFullName(existingUser);
+          const existingUserFullName = getUserFullNameFromPseudonyms(
+            existingUser.pseudonyms!,
+          );
           vendorMemberInvitationByBiotechEmail(
             {
               biotech_name: biotech.name,
@@ -422,7 +450,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: existingUserFullName,
             },
-            existingUser.email,
+            getEmailFromPseudonyms(existingUser.pseudonyms!),
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -450,11 +478,18 @@ const resolvers: Resolvers<Context> = {
 
           const newUser = await context.prisma.user.create({
             data: {
-              email: biotechInviteVendor.email,
-              first_name: biotechInviteVendor.first_name,
-              last_name: biotechInviteVendor.last_name,
               reset_password_token: resetToken,
               reset_password_expiration: new Date(resetTokenExpiration),
+              pseudonyms: {
+                create: {
+                  email: encrypt(biotechInviteVendor.email),
+                  first_name: encrypt(biotechInviteVendor.first_name),
+                  last_name: encrypt(biotechInviteVendor.last_name),
+                },
+              },
+            },
+            include: {
+              pseudonyms: true,
             },
           });
 
@@ -494,7 +529,9 @@ const resolvers: Resolvers<Context> = {
 
           // Send email to new vendor member by biotech
           const resetPasswordUrl = createResetPasswordUrl(resetToken);
-          const newUserFullName = getUserFullName(newUser);
+          const newUserFullName = getUserFullNameFromPseudonyms(
+            newUser.pseudonyms!,
+          );
           vendorMemberInvitationByBiotechEmail(
             {
               biotech_name: biotech.name,
@@ -503,7 +540,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: newUserFullName,
             },
-            newUser.email,
+            getEmailFromPseudonyms(newUser.pseudonyms!),
           );
 
           return true;
@@ -530,7 +567,11 @@ const resolvers: Resolvers<Context> = {
               created_at: 'desc',
             },
             include: {
-              user: true,
+              user: {
+                include: {
+                  pseudonyms: true,
+                },
+              },
             },
           },
         },
@@ -557,7 +598,7 @@ const resolvers: Resolvers<Context> = {
           website: vendorCompany.website,
           user_company_role: ownerVendorMember.title,
           department: ownerVendorMember.department,
-          email: ownerUser.email,
+          email: getEmailFromPseudonyms(ownerUser.pseudonyms!),
         },
       });
 

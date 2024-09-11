@@ -12,6 +12,7 @@ import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { InternalError } from '../../graphql/errors/InternalError';
 import { PublicError } from '../../graphql/errors/PublicError';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolver: Resolvers<Context> = {
   Query: {
@@ -154,9 +155,11 @@ const resolver: Resolvers<Context> = {
         new PublicError('There is no email address submitted in this survey.'),
       );
 
-      const user = await context.prisma.user.findUnique({
+      const user = await context.prisma.user.findFirst({
         where: {
-          email: vendorSurvey.email,
+          pseudonyms: {
+            email: encrypt(vendorSurvey.email),
+          },
         },
         include: {
           vendor_member: true,
@@ -218,9 +221,13 @@ const resolver: Resolvers<Context> = {
                 }
               : {
                   create: {
-                    email: vendorSurvey.email,
-                    first_name: firstName,
-                    last_name: lastName,
+                    pseudonyms: {
+                      create: {
+                        email: encrypt(vendorSurvey.email),
+                        first_name: encrypt(firstName),
+                        last_name: encrypt(lastName),
+                      },
+                    },
                   },
                 }),
           },

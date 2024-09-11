@@ -1,16 +1,20 @@
-import { User } from '@prisma/client';
+import { User, UserPseudonyms } from '@prisma/client';
 import axios from 'axios';
 import { app_env } from '../environment';
 import { ProjectAttachment } from '../graphql/generated';
 import { getSignedUrl } from './awsS3';
+import { decrypt } from './gdprHelper';
 
 export const getZohoContractEditorUrl = async (
   contract: ProjectAttachment,
-  user: User,
+  user: User & {
+    pseudonyms?: UserPseudonyms | null;
+  },
 ): Promise<string> => {
   try {
     const form = new FormData();
     const signedUrl = await getSignedUrl(contract.key!);
+    const first_name = decrypt(user?.pseudonyms?.first_name!);
     form.append('apikey', process.env.ZOHO_API_KEY!);
     form.append('url', signedUrl);
     form.append(
@@ -54,7 +58,7 @@ export const getZohoContractEditorUrl = async (
     );
     form.append(
       'user_info',
-      JSON.stringify({ user_id: user.id, display_name: user.first_name }),
+      JSON.stringify({ user_id: user.id, display_name: first_name }),
     );
     form.append(
       'ui_options',
