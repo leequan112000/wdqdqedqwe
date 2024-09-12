@@ -35,6 +35,7 @@ export function encrypt(data?: string | null): string {
 
 export function decrypt(encryptedData?: string | null): string {
   if (!encryptedData) return '';
+  console.log(encryptedData);
   try {
     // Extract IV, Auth Tag, and encrypted data
     const iv = Buffer.from(encryptedData.slice(0, IV_LENGTH * 2), 'hex');
@@ -54,7 +55,7 @@ export function decrypt(encryptedData?: string | null): string {
     return decrypted;
   } catch (error) {
     console.error('Decryption failed:', error);
-    return ''; // or throw an error, depending on your error handling strategy
+    return encryptedData; // or throw an error, depending on your error handling strategy
   }
 }
 

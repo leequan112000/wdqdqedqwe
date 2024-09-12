@@ -472,18 +472,7 @@ const resolvers: Resolvers<Context> = {
     },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
-      const encryptedEmail = encrypt(email);
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          email: encrypt(email),
-        },
-      });
-      console.log(email);
-      console.log(encrypt(email));
-      console.log(decrypt(encrypt(email)));
-      console.log(decrypt(encryptedEmail));
-      console.log(encryptedEmail);
-      console.log(pseudonym);
+
       let foundUser = await context.prisma.user.findFirst({
         where: {
           pseudonyms: {
@@ -492,7 +481,7 @@ const resolvers: Resolvers<Context> = {
         },
         include: { pseudonyms: true },
       });
-
+      console.log('foundUser', foundUser);
       invariant(foundUser, new PublicError('User not found.'));
 
       invariant(

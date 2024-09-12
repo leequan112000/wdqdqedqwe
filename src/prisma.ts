@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient as PrismaClientMainDb } from '@prisma/client';
 import { PrismaClient as PrismaClientCRODb } from '../prisma-cro/generated/client';
+import { decrypt } from './helper/gdprHelper';
 
 const logQuery = process.env.LOG_PRISMA_QUERY === 'true';
 
@@ -23,7 +24,45 @@ const prisma: PrismaClientMainDb<
   'query' | 'info' | 'warn' | 'error'
 > = new PrismaClientMainDb({
   log,
-});
+}).$extends({
+  result: {
+    userPseudonyms: {
+      first_name: {
+        needs: { first_name: true },
+        compute({ first_name }) {
+          console.log('first_name', first_name);
+          console.log();
+          return decrypt(first_name);
+        },
+      },
+      last_name: {
+        needs: { last_name: true },
+        compute({ last_name }) {
+          console.log(last_name);
+          return decrypt(last_name);
+        },
+      },
+      email: {
+        needs: { email: true },
+        compute({ email }) {
+          return decrypt(email);
+        },
+      },
+      phone_number: {
+        needs: { phone_number: true },
+        compute({ phone_number }) {
+          return decrypt(phone_number);
+        },
+      },
+      country_code: {
+        needs: { country_code: true },
+        compute({ country_code }) {
+          return decrypt(country_code);
+        },
+      },
+    },
+  },
+}) as unknown as PrismaClientMainDb;
 
 if (logQuery) {
   prisma.$on('query', (e) => {
