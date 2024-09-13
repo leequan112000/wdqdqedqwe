@@ -138,7 +138,9 @@ const resolvers: Resolvers<Context> = {
             newUser.pseudonyms!,
           );
           const resetPasswordUrl = createResetPasswordUrl(resetToken);
-          const currentUserFullName = getUserFullName(currentUser.pseudonyms!);
+          const currentUserFullName = getUserFullNameFromPseudonyms(
+            currentUser.pseudonyms!,
+          );
 
           vendorMemberInvitationByUserEmail(
             {

@@ -482,7 +482,6 @@ const resolvers: Resolvers<Context> = {
         },
         include: { pseudonyms: true },
       });
-      console.log('foundUser', foundUser);
       invariant(foundUser, new PublicError('User not found.'));
 
       invariant(
