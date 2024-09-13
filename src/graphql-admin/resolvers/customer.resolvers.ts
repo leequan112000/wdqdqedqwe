@@ -10,7 +10,6 @@ import { customerInvitationByAdminEmail } from '../../mailer';
 import {
   createResetPasswordUrl,
   getEmailFromPseudonyms,
-  getUserFullName,
   getUserFullNameFromPseudonyms,
 } from '../../helper/email';
 import { encrypt } from '../../helper/gdprHelper';

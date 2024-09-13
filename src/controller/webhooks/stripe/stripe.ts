@@ -23,6 +23,7 @@ import { createMilestonePaymentFailedNotification } from '../../../notification/
 import { VendorOnboardingStep } from '../../../graphql/generated';
 import { slackNotification } from '../../../helper/slack';
 import { decrypt } from '../../../helper/gdprHelper';
+import { getUserFullNameFromPseudonyms } from '../../../helper/email';
 
 export const processStripeEvent = async (
   event: Stripe.Event,
@@ -331,7 +332,7 @@ export const processStripeEvent = async (
 
                 await Promise.all(
                   receivers.map(async (receiver) => {
-                    const email = decrypt(receiver?.user?.pseudonyms?.email);
+                    const email = receiver.user.pseudonyms?.email!;
                     await sendInvoicePaymentNoticeEmail(
                       {
                         button_url: buttonUrl,
@@ -469,7 +470,7 @@ export const processStripeEvent = async (
 
                 await Promise.all(
                   receivers.map(async (receiver) => {
-                    const email = decrypt(receiver?.user?.pseudonyms?.email);
+                    const email = receiver.user.pseudonyms?.email!;
                     await sendInvoicePaymentNoticeEmail(
                       {
                         button_url: buttonUrl,
@@ -569,8 +570,10 @@ export const processStripeEvent = async (
                 const milestoneUpdateContent = `Payment failed for the following milestone: ${milestone.title}. Please ensure that your payment details are up to date and retry the payment to proceed with the transaction.`;
                 await Promise.all(
                   receivers.map(async (receiver) => {
-                    const email = decrypt(receiver?.pseudonyms?.email);
-                    const full_name = `${decrypt(receiver?.pseudonyms?.first_name)} ${decrypt(receiver?.pseudonyms?.last_name)}`;
+                    const email = receiver?.pseudonyms?.email!;
+                    const full_name = getUserFullNameFromPseudonyms(
+                      receiver.pseudonyms!,
+                    );
                     await sendMilestoneNoticeEmail(
                       {
                         sender_name: 'Cromatic Admin',

@@ -20,8 +20,11 @@ const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ALGORITHM = 'aes-256-gcm';
 
-export function encrypt(data?: string | null): string {
-  if (!data) return '';
+export function encrypt(data?: any): string {
+  if (!data || typeof data != 'string') {
+    return '';
+  }
+
   // Create cipher
   const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, FIXED_IV);
   // Encrypt the data
@@ -35,7 +38,7 @@ export function encrypt(data?: string | null): string {
 
 export function decrypt(encryptedData?: string | null): string {
   if (!encryptedData) return '';
-  console.log(encryptedData);
+
   try {
     // Extract IV, Auth Tag, and encrypted data
     const iv = Buffer.from(encryptedData.slice(0, IV_LENGTH * 2), 'hex');

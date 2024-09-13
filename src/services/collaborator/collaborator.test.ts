@@ -502,7 +502,9 @@ describe('collaborator.service', () => {
       mockCtx.prisma.user.findFirst.mockResolvedValueOnce(newUser); // Current User
       mockCtx.prisma.user.findFirst.mockResolvedValueOnce(null); // No existing user
       mockCtx.prisma.user.create.mockResolvedValueOnce(newUser);
-      vi.mocked(emailModule.getUserFullName).mockReturnValue('Jane Doe');
+      vi.mocked(emailModule.getUserFullNameFromPseudonyms).mockReturnValue(
+        'Jane Doe',
+      );
       vi.mocked(emailModule.createResetPasswordUrl).mockReturnValue(
         'http://reset-password-url',
       );

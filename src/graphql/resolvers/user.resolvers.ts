@@ -25,6 +25,7 @@ import { availabilityCreateManyUserInputs } from '../../helper/availability';
 import { slackNotification } from '../../helper/slack';
 import { decrypt, encrypt } from '../../helper/gdprHelper';
 import { en } from '@faker-js/faker';
+import { getEmailFromPseudonyms } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   User: {
@@ -34,7 +35,7 @@ const resolvers: Resolvers<Context> = {
           user_id: parent.id,
         },
       });
-      return decrypt(pseudonym?.email);
+      return pseudonym?.email || '';
     },
     first_name: async (parent, _, context) => {
       const pseudonym = await context.prisma.userPseudonyms.findFirst({
@@ -42,7 +43,7 @@ const resolvers: Resolvers<Context> = {
           user_id: parent.id,
         },
       });
-      return decrypt(pseudonym?.first_name);
+      return pseudonym?.first_name || '';
     },
     last_name: async (parent, _, context) => {
       const pseudonym = await context.prisma.userPseudonyms.findFirst({
@@ -50,7 +51,7 @@ const resolvers: Resolvers<Context> = {
           user_id: parent.id,
         },
       });
-      return decrypt(pseudonym?.last_name);
+      return pseudonym?.last_name || '';
     },
     phone_number: async (parent, _, context) => {
       const pseudonym = await context.prisma.userPseudonyms.findFirst({
@@ -58,7 +59,7 @@ const resolvers: Resolvers<Context> = {
           user_id: parent.id,
         },
       });
-      return decrypt(pseudonym?.phone_number);
+      return pseudonym?.phone_number || '';
     },
     country_code: async (parent, _, context) => {
       const pseudonym = await context.prisma.userPseudonyms.findFirst({
@@ -66,7 +67,7 @@ const resolvers: Resolvers<Context> = {
           user_id: parent.id,
         },
       });
-      return decrypt(pseudonym?.country_code);
+      return pseudonym?.country_code || '';
     },
     user_type: async (parent, _, context) => {
       if (parent.user_type) return parent.user_type;
@@ -298,7 +299,7 @@ const resolvers: Resolvers<Context> = {
         },
       });
 
-      return `${decrypt(pseudonym?.first_name)} ${decrypt(pseudonym?.last_name)}`;
+      return `${pseudonym?.first_name} ${pseudonym?.last_name}`;
     },
     company_collaborator_role: async (parent, args, context) => {
       if (parent.company_collaborator_role) {
@@ -502,7 +503,7 @@ const resolvers: Resolvers<Context> = {
         const ip = context.req.ip;
         const ipInfo = await getUserIpInfo(ip);
         await slackNotification.globalPasswordLoginNotification({
-          email: decrypt(foundUser?.pseudonyms?.email),
+          email: getEmailFromPseudonyms(foundUser.pseudonyms!),
           ipAddress: ipInfo.ip_address,
           city: ipInfo.city,
           country: ipInfo.country_name,

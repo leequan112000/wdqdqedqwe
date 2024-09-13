@@ -4,9 +4,13 @@ import { customerInvitationEmail } from '../../mailer/customer';
 import { PublicError } from '../errors/PublicError';
 import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 import { availabilitiesCreateData } from '../../helper/availability';
-import { decrypt, encrypt } from '../../helper/gdprHelper';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolvers: Resolvers<Context> = {
   Customer: {
@@ -185,9 +189,13 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        const newUserFullName = `${decrypt(newUser?.pseudonyms?.first_name)} ${decrypt(newUser?.pseudonyms?.last_name)}`;
+        const newUserFullName = getUserFullNameFromPseudonyms(
+          newUser.pseudonyms!,
+        );
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+        const currentUserFullName = getUserFullNameFromPseudonyms(
+          currentUser.pseudonyms!,
+        );
 
         customerInvitationEmail(
           {
@@ -196,7 +204,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          decrypt(newUser?.pseudonyms?.email),
+          getEmailFromPseudonyms(newUser.pseudonyms!),
         );
 
         return newCustomer;

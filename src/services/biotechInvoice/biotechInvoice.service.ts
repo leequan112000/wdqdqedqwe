@@ -17,6 +17,7 @@ import {
   generateInvoiceReferenceId,
 } from '../../helper/invoice';
 import { decrypt } from '../../helper/gdprHelper';
+import { getEmailFromPseudonyms } from '../../helper/email';
 
 export type CreateBiotechInvoiceArgs = {
   milestone: Milestone;
@@ -110,7 +111,7 @@ export const createBiotechInvoice = async (
     0,
   );
   const emailData = receivers.map((r) => {
-    const email = decrypt(r?.user?.pseudonyms?.email);
+    const email = getEmailFromPseudonyms(r.user.pseudonyms!);
     return {
       emailData: {
         project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote

@@ -26,7 +26,11 @@ import {
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
-import { getUserFullName, createResetPasswordUrl } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getUserFullNameFromPseudonyms,
+  getEmailFromPseudonyms,
+} from '../../helper/email';
 import { decrypt, encrypt } from '../../helper/gdprHelper';
 import { enc } from 'crypto-ts';
 
@@ -466,8 +470,10 @@ const addProjectCollaborator = async (
     });
 
     if (projectConnection) {
-      const inviterFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
-      const receiverFullName = `${decrypt(user?.pseudonyms?.first_name)} ${decrypt(user?.pseudonyms?.last_name)}`;
+      const inviterFullName = getUserFullNameFromPseudonyms(
+        currentUser.pseudonyms!,
+      );
+      const receiverFullName = getUserFullNameFromPseudonyms(user.pseudonyms!);
       projectCollaboratorInvitationEmail(
         {
           login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
@@ -475,7 +481,7 @@ const addProjectCollaborator = async (
           project_title: projectConnection.project_request.title,
           receiver_full_name: receiverFullName,
         },
-        decrypt(user?.pseudonyms?.email),
+        getEmailFromPseudonyms(user.pseudonyms!),
       );
 
       try {
@@ -680,9 +686,11 @@ export const inviteProjectCollaboratorViaEmail = async (
     });
     const emailMessage = custom_message || '';
 
-    const newUserFullName = `${decrypt(newUser?.pseudonyms?.first_name)} ${decrypt(newUser?.pseudonyms?.last_name)}`;
+    const newUserFullName = getUserFullNameFromPseudonyms(newUser.pseudonyms!);
     const resetPasswordUrl = createResetPasswordUrl(resetToken);
-    const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+    const currentUserFullName = getUserFullNameFromPseudonyms(
+      currentUser.pseudonyms!,
+    );
 
     // Send email
     if (isBiotech) {
@@ -693,7 +701,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        decrypt(newUser?.pseudonyms?.email),
+        getEmailFromPseudonyms(newUser.pseudonyms!),
       );
     }
     if (isVendor) {
@@ -704,7 +712,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        decrypt(newUser?.pseudonyms?.email),
+        getEmailFromPseudonyms(newUser.pseudonyms!),
       );
     }
 

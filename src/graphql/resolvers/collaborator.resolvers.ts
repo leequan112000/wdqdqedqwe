@@ -15,7 +15,11 @@ import {
 } from '../../helper/constant';
 import { PermissionDeniedError } from '../errors/PermissionDeniedError';
 import collaboratorService from '../../services/collaborator/collaborator.service';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 import {
   checkAllowCustomerOnlyPermission,
   checkAllowVendorOnlyPermission,
@@ -190,7 +194,9 @@ const resolvers: Resolvers<Context> = {
         });
         const emailMessage = args.custom_message || '';
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+        const currentUserFullName = getUserFullNameFromPseudonyms(
+          currentUser.pseudonyms!,
+        );
         const newUserFullName = `${firstName} ${lastName}`;
         // Send email
         if (isBiotech) {
@@ -316,7 +322,9 @@ const resolvers: Resolvers<Context> = {
               },
             });
             const newUserFullName = `${collaborator.first_name} ${collaborator.last_name}`;
-            const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+            const currentUserFullName = getUserFullNameFromPseudonyms(
+              currentUser.pseudonyms!,
+            );
             const resetPasswordUrl = createResetPasswordUrl(resetToken);
 
             // If current user is a biotech member, create customer data for the new user.
@@ -431,9 +439,13 @@ const resolvers: Resolvers<Context> = {
         },
       });
       // const updatedUserFullName = getUserFullName(updatedNewUser);
-      const updatedUserFullName = `${decrypt(updatedNewUser?.pseudonyms?.first_name)} ${decrypt(updatedNewUser?.pseudonyms?.last_name)}`;
+      const updatedUserFullName = getUserFullNameFromPseudonyms(
+        updatedNewUser.pseudonyms!,
+      );
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const currentUserFullName = `${decrypt(currentUser?.pseudonyms?.first_name)} ${decrypt(currentUser?.pseudonyms?.last_name)}`;
+      const currentUserFullName = getUserFullNameFromPseudonyms(
+        currentUser.pseudonyms!,
+      );
       if (currentUser?.customer?.biotech_id) {
         customerInvitationEmail(
           {
@@ -442,7 +454,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: updatedUserFullName,
           },
-          decrypt(updatedNewUser?.pseudonyms?.email),
+          getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
         );
         return updatedNewUser;
       }
@@ -454,7 +466,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: updatedUserFullName,
           },
-          decrypt(updatedNewUser?.pseudonyms?.email),
+          getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
         );
         return updatedNewUser;
       }

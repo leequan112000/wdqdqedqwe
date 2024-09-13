@@ -20,7 +20,6 @@ import { addRoleForUser } from '../../helper/casbin';
 import {
   createResetPasswordUrl,
   getEmailFromPseudonyms,
-  getUserFullName,
   getUserFullNameFromPseudonyms,
 } from '../../helper/email';
 import createAdminInviteNotificationJob from '../../notification/adminInviteNotification';

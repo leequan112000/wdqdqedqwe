@@ -11,7 +11,6 @@ import invariant from '../../helper/invariant';
 import {
   createResetPasswordUrl,
   getEmailFromPseudonyms,
-  getUserFullName,
   getUserFullNameFromPseudonyms,
 } from '../../helper/email';
 import { availabilitiesCreateData } from '../../helper/availability';

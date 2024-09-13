@@ -5,6 +5,7 @@ import { PublicError } from '../errors/PublicError';
 import { sendAdminBiotechInviteVendorNoticeEmail } from '../../mailer/admin';
 import { AdminTeam } from '../../helper/constant';
 import { decrypt } from '../../helper/gdprHelper';
+import { getUserFullNameFromPseudonyms } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   BiotechInviteVendor: {
@@ -147,7 +148,7 @@ const resolvers: Resolvers<Context> = {
         });
 
       // Send email to admin
-      const full_name = `${decrypt(user?.pseudonyms?.first_name)} ${decrypt(user?.pseudonyms?.last_name)}`;
+      const full_name = getUserFullNameFromPseudonyms(user.pseudonyms!);
       const data = {
         biotech_name: user.customer?.biotech?.name!,
         inviter_full_name: full_name,

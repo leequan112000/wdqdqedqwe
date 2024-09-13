@@ -3,6 +3,7 @@ import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
 import { decrypt } from '../helper/gdprHelper';
+import { getUserFullNameFromPseudonyms } from '../helper/email';
 
 const createCollaboratedNotification = async (
   sender_id: string,
@@ -38,7 +39,7 @@ const createCollaboratedNotification = async (
     },
   });
 
-  const senderFullName = `${decrypt(sender?.pseudonyms?.first_name)} ${decrypt(sender?.pseudonyms?.last_name)}`;
+  const senderFullName = getUserFullNameFromPseudonyms(sender.pseudonyms!);
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.COLLABORATED_NOTIFICATION,

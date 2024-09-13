@@ -548,7 +548,7 @@ const createMeetingEvent = async (
         all_participants_emails: [
           ...cromaticParticipantEmails,
           ...externalParticipantEmails,
-          decrypt(organizerUser?.pseudonyms?.email),
+          getEmailFromPseudonyms(organizerUser.pseudonyms!),
         ],
         organizer_user_id: organizerUser.id,
         title,
@@ -906,7 +906,7 @@ const removeMeetingEvent = async (
       );
     const existingCromaticParticipantWithoutOrganizerEmails =
       existingCromaticParticipantsEmails.filter(
-        (e) => e !== decrypt(organizerUser.pseudonyms?.email),
+        (e) => e !== getEmailFromPseudonyms(organizerUser.pseudonyms!),
       );
 
     const cromaticParticipantWithoutOrganizerUserData =

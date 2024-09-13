@@ -29,6 +29,10 @@ import {
 } from '../../helper/availableTimeSlots';
 import Sentry from '../../sentry';
 import { decrypt } from '../../helper/gdprHelper';
+import {
+  getEmailFromPseudonyms,
+  getUserFullNameFromPseudonyms,
+} from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -165,10 +169,10 @@ const resolvers: Resolvers<Context> = {
           return false;
         })
         .map((u) => {
-          const fullName = `${decrypt(u?.pseudonyms?.first_name)} ${decrypt(u?.pseudonyms?.last_name)}`;
+          const fullName = getUserFullNameFromPseudonyms(u.pseudonyms!);
           return {
             name: fullName,
-            email: decrypt(u?.pseudonyms?.email),
+            email: getEmailFromPseudonyms(u.pseudonyms!),
             user_id: u.id,
           };
         });
@@ -223,10 +227,10 @@ const resolvers: Resolvers<Context> = {
           return false;
         })
         .map((u) => {
-          const fullName = `${decrypt(u?.pseudonyms?.first_name)} ${decrypt(u?.pseudonyms?.last_name)}`;
+          const fullName = getUserFullNameFromPseudonyms(u.pseudonyms!);
           return {
             name: fullName,
-            email: decrypt(u?.pseudonyms?.email),
+            email: getEmailFromPseudonyms(u.pseudonyms!),
             user_id: u.id,
           };
         });
@@ -1153,7 +1157,7 @@ const resolvers: Resolvers<Context> = {
             );
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
-                email: decrypt(a?.pseudonyms?.email),
+                email: getEmailFromPseudonyms(a.pseudonyms!),
               })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
             ];
@@ -1178,7 +1182,9 @@ const resolvers: Resolvers<Context> = {
             const client = microsoftGraphClient(oauthMicrosoft.access_token);
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
-                emailAddress: { address: decrypt(a?.pseudonyms?.email) },
+                emailAddress: {
+                  address: getEmailFromPseudonyms(a.pseudonyms!),
+                },
               })),
               ...existingExternalGuests.map((a) => ({
                 emailAddress: { address: a.email },
