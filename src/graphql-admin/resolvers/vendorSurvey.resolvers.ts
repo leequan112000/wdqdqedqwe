@@ -167,7 +167,7 @@ const resolver: Resolvers<Context> = {
       let isValidExistingVendor = false;
 
       invariant(
-        user?.vendor === null,
+        user === null || user?.vendor === null,
         new PublicError('Vendor already exists.'),
       );
 
