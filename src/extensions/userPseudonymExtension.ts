@@ -1,26 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { encrypt, decrypt } from '../helper/gdprHelper';
 export const userPseudonymExtension = Prisma.defineExtension({
-  query: {
-    userPseudonyms: {
-      async create({ args, query }) {
-        args.data.first_name = encrypt(args.data.first_name);
-        args.data.last_name = encrypt(args.data.last_name);
-        args.data.email = encrypt(args.data.email);
-        args.data.phone_number = encrypt(args.data.phone_number);
-        args.data.country_code = encrypt(args.data.country_code);
-        return query(args);
-      },
-      async update({ args, query }) {
-        args.data.first_name = encrypt(args.data.first_name) || null;
-        args.data.last_name = encrypt(args.data.last_name);
-        args.data.email = encrypt(args.data.email);
-        args.data.phone_number = encrypt(args.data.phone_number);
-        args.data.country_code = encrypt(args.data.country_code);
-        return query(args);
-      },
-    },
-  },
   result: {
     user: {
       first_name: {

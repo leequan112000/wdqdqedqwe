@@ -599,7 +599,7 @@ export const inviteProjectCollaboratorViaEmail = async (
   const existingUser = await context.prisma.user.findFirst({
     where: {
       pseudonyms: {
-        email,
+        email: encrypt(email),
       },
     },
     include: {

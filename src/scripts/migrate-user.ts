@@ -4,7 +4,6 @@ import { encrypt } from '../helper/gdprHelper';
 async function migrateUsersToPseudonyms() {
   const pseudonyms = await prisma.userPseudonyms.findMany();
   for (const pseudonym of pseudonyms) {
-    console.log(pseudonym);
     await prisma.userPseudonyms.update({
       where: {
         id: pseudonym.id,

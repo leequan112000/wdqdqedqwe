@@ -465,7 +465,7 @@ const resolvers: Resolvers<Context> = {
 
       // Genereate tokens
       const tokens = createTokens({ id: newUser.id });
-
+      console.log('BEFORE RETURNS');
       return {
         access_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
@@ -679,12 +679,8 @@ const resolvers: Resolvers<Context> = {
                 email: encrypt(lowerCaseEmail),
                 first_name: encrypt(args.first_name),
                 last_name: encrypt(args.last_name),
-                phone_number: args.phone_number
-                  ? encrypt(args.phone_number)
-                  : null,
-                country_code: args.country_code
-                  ? encrypt(args.country_code)
-                  : null,
+                phone_number: encrypt(args.phone_number),
+                country_code: encrypt(args.country_code),
               },
               update: {
                 email: encrypt(lowerCaseEmail),

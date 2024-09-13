@@ -158,8 +158,8 @@ const resolvers: Resolvers<Context> = {
           data: {
             pseudonyms: {
               update: {
-                first_name: encrypt(ignoreEmptyString(first_name)) ?? undefined,
-                last_name: encrypt(ignoreEmptyString(last_name)) ?? undefined,
+                first_name: encrypt(first_name) || null,
+                last_name: encrypt(last_name) || null,
                 country_code: encrypt(country_code) || null,
                 phone_number: encrypt(phone_number) || null,
               },

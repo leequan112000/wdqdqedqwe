@@ -112,10 +112,7 @@ const resolvers: Resolvers<Context> = {
       const existingUser = await context.prisma.user.findFirst({
         where: {
           pseudonyms: {
-            email: {
-              mode: 'insensitive',
-              equals: encrypt(lowerCaseEmail),
-            },
+            email: encrypt(lowerCaseEmail),
           },
         },
       });
@@ -256,10 +253,7 @@ const resolvers: Resolvers<Context> = {
         const existingUser = await context.prisma.user.findFirst({
           where: {
             pseudonyms: {
-              email: {
-                mode: 'insensitive',
-                equals: encrypt(lowerCaseEmail),
-              },
+              email: encrypt(lowerCaseEmail),
             },
           },
         });

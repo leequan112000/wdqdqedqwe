@@ -114,8 +114,8 @@ const resolvers: Resolvers<Context> = {
               pseudonyms: {
                 create: {
                   email: encrypt(lowerCaseEmail),
-                  first_name: args.first_name,
-                  last_name: args.last_name,
+                  first_name: encrypt(args.first_name),
+                  last_name: encrypt(args.last_name),
                 },
               },
               ...args,
