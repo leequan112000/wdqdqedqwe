@@ -3,13 +3,10 @@ import { PublicError } from '../../graphql/errors/PublicError';
 import invariant from '../../helper/invariant';
 import { OrdinalAction } from '../../helper/constant';
 import { sortBy } from 'lodash';
+import { ServiceContext } from '../../types/context';
 
 const QUOTE_REVIEW_QUESTION_SET_ID =
   process.env.QUOTE_REVIEW_QUESTION_SET_ID || '';
-
-interface ServiceContext {
-  prisma: PrismaClient | Prisma.TransactionClient;
-}
 
 type GetQuoteReviewQuestionsArgs = {
   quote_id: string;

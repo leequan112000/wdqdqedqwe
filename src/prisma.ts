@@ -1,6 +1,5 @@
-import { Prisma, PrismaClient as PrismaClientMainDb } from '@prisma/client';
-import { PrismaClient as PrismaClientCRODb } from '../prisma-cro/generated/client';
-import { decrypt, encrypt } from './helper/gdprHelper';
+import { Prisma, PrismaClient as MainPrismaClient } from '@prisma/client';
+import { PrismaClient as CroPrismaClient } from '../prisma-cro/generated/client';
 import { userPseudonymExtension } from './extensions/userPseudonymExtension';
 
 const logQuery = process.env.LOG_PRISMA_QUERY === 'true';
@@ -20,25 +19,25 @@ const log: Array<Prisma.LogLevel | Prisma.LogDefinition> = [
     : []),
 ];
 
-const prisma: PrismaClientMainDb<
+export const prismaClient: MainPrismaClient<
   Prisma.PrismaClientOptions,
   'query' | 'info' | 'warn' | 'error'
-> = new PrismaClientMainDb({
+> = new MainPrismaClient({
   log,
-}).$extends(userPseudonymExtension) as unknown as PrismaClientMainDb;
+});
 
 if (logQuery) {
-  prisma.$on('query', (e) => {
+  prismaClient.$on('query', (e) => {
     console.log('Prisma Main DB:');
     console.log('Params: ' + e.params);
     console.log('Duration: ' + e.duration + 'ms');
   });
 }
 
-const prismaCRODb: PrismaClientCRODb<
+const prismaCRODb: CroPrismaClient<
   Prisma.PrismaClientOptions,
   'query' | 'info' | 'warn' | 'error'
-> = new PrismaClientCRODb({
+> = new CroPrismaClient({
   log,
 });
 
@@ -50,4 +49,17 @@ if (logQuery) {
   });
 }
 
-export { prisma, prismaCRODb };
+const prismaMainDb = prismaClient.$extends(userPseudonymExtension);
+
+export { prismaMainDb as prisma, prismaCRODb };
+
+export type PrismaClientMainDb = typeof prismaMainDb;
+export type TransactionClientMainDb = Parameters<
+  Parameters<PrismaClientMainDb['$transaction']>[0]
+>[0];
+
+export type User = Prisma.Result<
+  typeof prismaMainDb.user,
+  {},
+  'findFirstOrThrow'
+>;

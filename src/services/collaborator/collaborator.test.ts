@@ -4,7 +4,6 @@ import {
   User,
   VendorMember,
   ProjectConnection,
-  PrismaClient,
 } from '@prisma/client';
 import { Context } from '../../types/context';
 import { MockContext, createMockContext } from '../../testContext';
@@ -21,6 +20,7 @@ import * as mailerModule from '../../mailer';
 import * as notificationModule from '../../notification/collaboratedNotification';
 import { faker } from '@faker-js/faker';
 import { mockDeep } from 'vitest-mock-extended';
+import { PrismaClientMainDb } from '../../prisma';
 
 let mockCtx: MockContext;
 let ctx: Context;
@@ -76,15 +76,15 @@ describe('collaborator.service', () => {
         updated_at: new Date(),
       },
     };
-    const prismaClientMock = mockDeep<PrismaClient>();
-    prismaClientMock.$transaction.mockImplementation(async (callback) => {
+    mockCtx = createMockContext();
+    mockCtx.prisma.$transaction.mockImplementation(async (callback) => {
       const trx = {
         user: {
           findFirst: vi.fn().mockResolvedValue({} as any),
           create: vi.fn().mockResolvedValue(newUser),
         },
       } as unknown as Omit<
-        PrismaClient,
+        PrismaClientMainDb,
         | '$connect'
         | '$disconnect'
         | '$on'
@@ -94,8 +94,6 @@ describe('collaborator.service', () => {
       >;
       return callback(trx);
     });
-    mockCtx = createMockContext();
-    mockCtx.prisma = prismaClientMock;
     ctx = mockCtx as unknown as Context;
     ctx = {
       ...mockCtx,

@@ -24,7 +24,6 @@ import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
 import { slackNotification } from '../../helper/slack';
 import { decrypt, encrypt, isEncrypted } from '../../helper/gdprHelper';
-import { en } from '@faker-js/faker';
 import { getUserEmail } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
@@ -39,25 +38,25 @@ const resolvers: Resolvers<Context> = {
       if (parent.first_name && isEncrypted(parent.first_name)) {
         return decrypt(parent.first_name);
       }
-      return parent.first_name!;
+      return parent.first_name || null;
     },
     last_name: async (parent, _, context) => {
       if (parent.last_name && isEncrypted(parent.last_name)) {
         return decrypt(parent.last_name);
       }
-      return parent.last_name!;
+      return parent.last_name || null;
     },
     phone_number: async (parent, _, context) => {
       if (parent.phone_number && isEncrypted(parent.phone_number)) {
         return decrypt(parent.phone_number);
       }
-      return parent.phone_number!;
+      return parent.phone_number || null;
     },
     country_code: async (parent, _, context) => {
       if (parent.country_code && isEncrypted(parent.country_code)) {
         return decrypt(parent.country_code);
       }
-      return parent.country_code!;
+      return parent.country_code || null;
     },
     user_type: async (parent, _, context) => {
       if (parent.user_type) return parent.user_type;

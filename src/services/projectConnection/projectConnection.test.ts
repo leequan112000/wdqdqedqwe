@@ -4,7 +4,6 @@ import {
   Chat,
   CustomerConnection,
   Prisma,
-  PrismaClient,
   ProjectConnection,
   ProjectRequest,
   User,
@@ -21,8 +20,7 @@ import {
 import * as casbinModule from '../../helper/casbin';
 import * as projectRequestMailerModule from '../../mailer/projectRequest';
 import * as acceptRequestNotificationModule from '../../notification/acceptRequestNotification';
-import * as chatService from '../chat/chat.service';
-import { mockDeep } from 'vitest-mock-extended';
+import { PrismaClientMainDb } from '../../prisma';
 
 vi.mock('@sendgrid/mail');
 vi.mock('../chat/chat.service');
@@ -41,8 +39,8 @@ let chat: Chat;
 
 describe('projectConnection.service', () => {
   beforeEach(() => {
-    const prismaClientMock = mockDeep<PrismaClient>();
-    prismaClientMock.$transaction.mockImplementation(async (callback) => {
+    mockCtx = createMockContext();
+    mockCtx.prisma.$transaction.mockImplementation(async (callback) => {
       const trx = {
         projectRequest: {
           update: vi.fn().mockResolvedValue({
@@ -61,7 +59,7 @@ describe('projectConnection.service', () => {
           }),
         },
       } as unknown as Omit<
-        PrismaClient,
+        PrismaClientMainDb,
         | '$connect'
         | '$disconnect'
         | '$on'
@@ -71,8 +69,6 @@ describe('projectConnection.service', () => {
       >;
       return callback(trx);
     });
-    mockCtx = createMockContext();
-    mockCtx.prisma = prismaClientMock;
     ctx = {
       ...mockCtx,
       req: { user_id: faker.string.uuid() },
@@ -185,7 +181,7 @@ describe('projectConnection.service', () => {
             user_id: ctx.req.user_id!,
             project_connection_id: projectConnection.id,
           },
-          mockCtx,
+          ctx,
         );
 
       expect(result).toBe(true);
@@ -203,7 +199,7 @@ describe('projectConnection.service', () => {
             user_id: ctx.req.user_id!,
             project_connection_id: projectConnection.id,
           },
-          mockCtx,
+          ctx,
         );
 
       expect(result).toBe(false);
