@@ -9,8 +9,8 @@ import { addRoleForUser } from '../../helper/casbin';
 import { customerInvitationByAdminEmail } from '../../mailer';
 import {
   createResetPasswordUrl,
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
+  getUserEmail,
+  getUserFullName,
 } from '../../helper/email';
 import { encrypt } from '../../helper/gdprHelper';
 
@@ -21,9 +21,6 @@ const resolver: Resolvers<Context> = {
       return await context.prisma.user.findFirst({
         where: {
           id: parent.user_id,
-        },
-        include: {
-          pseudonyms: true,
         },
       });
     },
@@ -46,9 +43,7 @@ const resolver: Resolvers<Context> = {
 
         const user = await trx.user.findFirst({
           where: {
-            pseudonyms: {
-              email: encrypt(email),
-            },
+            email: encrypt(email),
           },
         });
 
@@ -76,18 +71,11 @@ const resolver: Resolvers<Context> = {
           data: {
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
-            pseudonyms: {
-              create: {
-                email: encrypt(email),
-                first_name: encrypt(first_name),
-                last_name: encrypt(last_name),
-                country_code: encrypt(country_code) || null,
-                phone_number: encrypt(phone_number) || null,
-              },
-            },
-          },
-          include: {
-            pseudonyms: true,
+            email: encrypt(email),
+            first_name: encrypt(first_name),
+            last_name: encrypt(last_name),
+            country_code: encrypt(country_code) || null,
+            phone_number: encrypt(phone_number) || null,
           },
         });
 
@@ -138,15 +126,13 @@ const resolver: Resolvers<Context> = {
         }
 
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const newUserFullName = getUserFullNameFromPseudonyms(
-          newUser.pseudonyms!,
-        );
+        const newUserFullName = getUserFullName(newUser);
         customerInvitationByAdminEmail(
           {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          getEmailFromPseudonyms(newUser.pseudonyms!),
+          getUserEmail(newUser),
         );
 
         return newCustomer;

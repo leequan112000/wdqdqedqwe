@@ -10,7 +10,6 @@ type User {
   has_completed_onboarding: Boolean
   customer: Customer
   vendor_member: VendorMember
-  pseudonyms: Pseudonyms
   notifications: [Notification]
   has_setup_profile: Boolean
   company_name: String
@@ -22,15 +21,6 @@ type User {
   is_connected_google: Boolean
   deactivated_at: Date
   status: String
-}
-
-type Pseudonyms {
-  id: String
-  first_name: String
-  last_name: String
-  email: String
-  phone_number: String
-  country_code: String
 }
 
 type AuthResponse {

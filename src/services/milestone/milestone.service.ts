@@ -15,10 +15,7 @@ import { createMilestoneNotification } from '../../notification/milestoneNotific
 import { createNotificationQueueJob } from '../../queues/notification.queues';
 import { getReceiversByProjectConnection } from '../../queues/utils';
 import { decrypt } from '../../helper/gdprHelper';
-import {
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
-} from '../../helper/email';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 type UpdateMilestoneAsPaidArgs = {
   milestone_id: string;
@@ -89,11 +86,7 @@ const updateMilestoneAsPaid = async (
       },
     },
     include: {
-      user: {
-        include: {
-          pseudonyms: true,
-        },
-      },
+      user: true,
     },
   });
 
@@ -109,7 +102,7 @@ const updateMilestoneAsPaid = async (
       biotech_company_name: biotechInvoice.biotech.name,
       button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
     },
-    receiverEmail: getEmailFromPseudonyms(r.user.pseudonyms!),
+    receiverEmail: getUserEmail(r.user),
   }));
   const notificationData = receivers.map((r) => {
     return createBiotechInvoicePaymentVerifiedNotificationJob({
@@ -131,8 +124,8 @@ const updateMilestoneAsPaid = async (
   let milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${updatedMilestone.title}`;
   await Promise.all(
     biotechs.map(async (receiver) => {
-      const email = getEmailFromPseudonyms(receiver.pseudonyms!);
-      const full_name = getUserFullNameFromPseudonyms(receiver.pseudonyms);
+      const email = getUserEmail(receiver);
+      const full_name = getUserFullName(receiver);
       await sendMilestoneNoticeEmail(
         {
           sender_name: senderCompanyName,

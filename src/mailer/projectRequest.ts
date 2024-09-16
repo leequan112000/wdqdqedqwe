@@ -16,11 +16,11 @@ import {
   createBulkSendMailJobs,
   createSendMailJob,
 } from '../queues/sendMail.queues';
-import { getEmailFromPseudonyms } from '../helper/email';
+import { getUserEmail } from '../helper/email';
 
 export const sendProjectRequestSubmissionEmail = (receiver: any) => {
   const mailData = createMailData({
-    to: getEmailFromPseudonyms(receiver?.pseudonyms!),
+    to: getUserEmail(receiver),
     templateId: projectRequestSubmissionTemplate,
     dynamicTemplateData: {
       manage_request_url: `${app_env.APP_URL}/app`,

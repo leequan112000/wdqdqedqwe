@@ -11,10 +11,7 @@ import {
   ProjectConnectionVendorStatus,
   ProjectRequestStatus,
 } from '../../helper/constant';
-import {
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
-} from '../../helper/email';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 import invariant from '../../helper/invariant';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
@@ -178,9 +175,6 @@ export const acceptProjectConnection = async (
           },
         ],
       },
-      include: {
-        pseudonyms: true,
-      },
     });
 
     // send email and notification to biotech members
@@ -189,13 +183,11 @@ export const acceptProjectConnection = async (
         await sendVendorAcceptProjectNoticeEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}`,
-            receiver_full_name: getUserFullNameFromPseudonyms(
-              receiver?.pseudonyms!,
-            ),
+            receiver_full_name: getUserFullName(receiver),
             project_title: projectConnection.project_request.title,
             vendor_company_name: vendor.vendor_company?.name as string,
           },
-          getEmailFromPseudonyms(receiver?.pseudonyms!),
+          getUserEmail(receiver),
         );
 
         await createAcceptRequestNotification(

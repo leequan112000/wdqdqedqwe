@@ -15,9 +15,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          pseudonyms: {
-            email: encrypt(email),
-          },
+          email: encrypt(email),
         },
       });
 
@@ -29,11 +27,7 @@ const resolvers: Resolvers<Context> = {
           company_name: company_name || undefined,
           user: {
             create: {
-              pseudonyms: {
-                create: {
-                  email: encrypt(email),
-                },
-              },
+              email: encrypt(email),
             },
           },
         },

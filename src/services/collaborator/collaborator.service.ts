@@ -28,8 +28,8 @@ import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
 import {
   createResetPasswordUrl,
-  getUserFullNameFromPseudonyms,
-  getEmailFromPseudonyms,
+  getUserFullName,
+  getUserEmail,
 } from '../../helper/email';
 import { decrypt, encrypt } from '../../helper/gdprHelper';
 import { enc } from 'crypto-ts';
@@ -398,9 +398,6 @@ const addProjectCollaborator = async (
     where: {
       id: context.req.user_id,
     },
-    include: {
-      pseudonyms: true,
-    },
   });
 
   invariant(currentUser, 'Current user not found.');
@@ -410,7 +407,6 @@ const addProjectCollaborator = async (
       id: user_id,
     },
     include: {
-      pseudonyms: true,
       customer: true,
       vendor_member: true,
       notifications: true,
@@ -470,10 +466,8 @@ const addProjectCollaborator = async (
     });
 
     if (projectConnection) {
-      const inviterFullName = getUserFullNameFromPseudonyms(
-        currentUser.pseudonyms!,
-      );
-      const receiverFullName = getUserFullNameFromPseudonyms(user.pseudonyms!);
+      const inviterFullName = getUserFullName(currentUser);
+      const receiverFullName = getUserFullName(user);
       projectCollaboratorInvitationEmail(
         {
           login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
@@ -481,7 +475,7 @@ const addProjectCollaborator = async (
           project_title: projectConnection.project_request.title,
           receiver_full_name: receiverFullName,
         },
-        getEmailFromPseudonyms(user.pseudonyms!),
+        getUserEmail(user),
       );
 
       try {
@@ -588,7 +582,6 @@ export const inviteProjectCollaboratorViaEmail = async (
       id: currentUserId,
     },
     include: {
-      pseudonyms: true,
       customer: true,
       vendor_member: true,
     },
@@ -598,9 +591,7 @@ export const inviteProjectCollaboratorViaEmail = async (
 
   const existingUser = await context.prisma.user.findFirst({
     where: {
-      pseudonyms: {
-        email: encrypt(email),
-      },
+      email: encrypt(email),
     },
     include: {
       customer: true,
@@ -644,13 +635,9 @@ export const inviteProjectCollaboratorViaEmail = async (
 
     const newUser = await trx.user.create({
       data: {
-        pseudonyms: {
-          create: {
-            first_name: encrypt(firstName),
-            last_name: encrypt(lastName),
-            email: encrypt(email),
-          },
-        },
+        first_name: encrypt(firstName),
+        last_name: encrypt(lastName),
+        email: encrypt(email),
         reset_password_token: resetToken,
         reset_password_expiration: new Date(resetTokenExpiration),
         customer: isBiotech
@@ -679,18 +666,15 @@ export const inviteProjectCollaboratorViaEmail = async (
           : undefined,
       },
       include: {
-        pseudonyms: true,
         customer: true,
         vendor_member: true,
       },
     });
     const emailMessage = custom_message || '';
 
-    const newUserFullName = getUserFullNameFromPseudonyms(newUser.pseudonyms!);
+    const newUserFullName = getUserFullName(newUser);
     const resetPasswordUrl = createResetPasswordUrl(resetToken);
-    const currentUserFullName = getUserFullNameFromPseudonyms(
-      currentUser.pseudonyms!,
-    );
+    const currentUserFullName = getUserFullName(currentUser);
 
     // Send email
     if (isBiotech) {
@@ -701,7 +685,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        getEmailFromPseudonyms(newUser.pseudonyms!),
+        getUserEmail(newUser),
       );
     }
     if (isVendor) {
@@ -712,7 +696,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        getEmailFromPseudonyms(newUser.pseudonyms!),
+        getUserEmail(newUser),
       );
     }
 

@@ -21,19 +21,22 @@ const AUTH_TAG_LENGTH = 16;
 const ALGORITHM = 'aes-256-gcm';
 
 export function encrypt(data?: any): string {
-  if (!data || typeof data != 'string') {
+  if (!data || typeof data != 'string') return '';
+
+  try {
+    // Create cipher
+    const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, FIXED_IV);
+    // Encrypt the data
+    let encrypted = cipher.update(data, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    // Get the authentication tag
+    const authTag = cipher.getAuthTag();
+    // Return IV + Auth Tag + Encrypted data
+    return FIXED_IV.toString('hex') + authTag.toString('hex') + encrypted;
+  } catch (error) {
+    console.error('Encryption failed:', error);
     return '';
   }
-
-  // Create cipher
-  const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, FIXED_IV);
-  // Encrypt the data
-  let encrypted = cipher.update(data, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  // Get the authentication tag
-  const authTag = cipher.getAuthTag();
-  // Return IV + Auth Tag + Encrypted data
-  return FIXED_IV.toString('hex') + authTag.toString('hex') + encrypted;
 }
 
 export function decrypt(encryptedData?: any): string {
@@ -58,10 +61,39 @@ export function decrypt(encryptedData?: any): string {
     return decrypted;
   } catch (error) {
     console.error('Decryption failed:', error);
-    return encryptedData; // or throw an error, depending on your error handling strategy
+    return encryptedData;
   }
 }
 
-export function generatePseudonym(data: string): string {
-  return crypto.createHash('sha256').update(data).digest('hex');
+export function isEncrypted(data?: string): boolean {
+  if (
+    typeof data !== 'string' ||
+    data.length < (IV_LENGTH + AUTH_TAG_LENGTH) * 2
+  ) {
+    return false;
+  }
+
+  try {
+    const iv = Buffer.from(data.slice(0, IV_LENGTH * 2), 'hex');
+    const authTag = Buffer.from(
+      data.slice(IV_LENGTH * 2, IV_LENGTH * 2 + AUTH_TAG_LENGTH * 2),
+      'hex',
+    );
+    const encryptedText = data.slice(IV_LENGTH * 2 + AUTH_TAG_LENGTH * 2);
+
+    // Check if the IV and authTag are valid buffers
+    if (iv.length !== IV_LENGTH || authTag.length !== AUTH_TAG_LENGTH) {
+      return false;
+    }
+
+    // Attempt to create a decipher to see if it throws an error
+    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    decipher.setAuthTag(authTag);
+    decipher.update(encryptedText, 'hex', 'utf8');
+    decipher.final('utf8');
+
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

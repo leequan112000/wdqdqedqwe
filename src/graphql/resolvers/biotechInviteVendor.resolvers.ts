@@ -5,7 +5,7 @@ import { PublicError } from '../errors/PublicError';
 import { sendAdminBiotechInviteVendorNoticeEmail } from '../../mailer/admin';
 import { AdminTeam } from '../../helper/constant';
 import { decrypt } from '../../helper/gdprHelper';
-import { getUserFullNameFromPseudonyms } from '../../helper/email';
+import { getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   BiotechInviteVendor: {
@@ -109,7 +109,6 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id,
         },
         include: {
-          pseudonyms: true,
           customer: {
             include: {
               biotech: true,
@@ -148,7 +147,7 @@ const resolvers: Resolvers<Context> = {
         });
 
       // Send email to admin
-      const full_name = getUserFullNameFromPseudonyms(user.pseudonyms!);
+      const full_name = getUserFullName(user);
       const data = {
         biotech_name: user.customer?.biotech?.name!,
         inviter_full_name: full_name,

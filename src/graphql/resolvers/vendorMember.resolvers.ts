@@ -10,8 +10,8 @@ import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
 import {
   createResetPasswordUrl,
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
+  getUserEmail,
+  getUserFullName,
 } from '../../helper/email';
 import { availabilitiesCreateData } from '../../helper/availability';
 import { encrypt } from '../../helper/gdprHelper';
@@ -88,9 +88,7 @@ const resolvers: Resolvers<Context> = {
         return await context.prisma.$transaction(async (trx) => {
           const user = await trx.user.findFirst({
             where: {
-              pseudonyms: {
-                email: encrypt(lowerCaseEmail),
-              },
+              email: encrypt(lowerCaseEmail),
             },
           });
 
@@ -102,7 +100,6 @@ const resolvers: Resolvers<Context> = {
             },
             include: {
               vendor_member: true,
-              pseudonyms: true,
             },
           });
 
@@ -111,19 +108,11 @@ const resolvers: Resolvers<Context> = {
           const resetToken = createResetPasswordToken();
           const newUser = await trx.user.create({
             data: {
-              pseudonyms: {
-                create: {
-                  email: encrypt(lowerCaseEmail),
-                  first_name: encrypt(args.first_name),
-                  last_name: encrypt(args.last_name),
-                },
-              },
-              ...args,
+              email: encrypt(lowerCaseEmail),
+              first_name: encrypt(args.first_name),
+              last_name: encrypt(args.last_name),
               reset_password_token: resetToken,
               reset_password_expiration: new Date(resetTokenExpiration),
-            },
-            include: {
-              pseudonyms: true,
             },
           });
 
@@ -134,13 +123,9 @@ const resolvers: Resolvers<Context> = {
             },
           });
 
-          const newUserFullName = getUserFullNameFromPseudonyms(
-            newUser.pseudonyms!,
-          );
+          const newUserFullName = getUserFullName(newUser);
           const resetPasswordUrl = createResetPasswordUrl(resetToken);
-          const currentUserFullName = getUserFullNameFromPseudonyms(
-            currentUser.pseudonyms!,
-          );
+          const currentUserFullName = getUserFullName(currentUser);
 
           vendorMemberInvitationByUserEmail(
             {
@@ -149,7 +134,7 @@ const resolvers: Resolvers<Context> = {
               login_url: resetPasswordUrl,
               receiver_full_name: newUserFullName,
             },
-            getEmailFromPseudonyms(newUser.pseudonyms!),
+            getUserEmail(newUser),
           );
 
           return newVendorMember;
@@ -172,11 +157,7 @@ const resolvers: Resolvers<Context> = {
             },
             include: {
               biotech: true,
-              inviter: {
-                include: {
-                  pseudonyms: true,
-                },
-              },
+              inviter: true,
               project_request: true,
             },
           });
@@ -221,24 +202,17 @@ const resolvers: Resolvers<Context> = {
 
         const invitedUser = await context.prisma.user.findFirst({
           where: {
-            pseudonyms: {
-              email: encrypt(biotechInviteVendor.email),
-            },
+            email: encrypt(biotechInviteVendor.email),
           },
           include: {
-            pseudonyms: true,
             vendor_member: true,
           },
         });
         invariant(invitedUser, 'Invited user not found.');
         invariant(biotechInviteVendor.biotech?.name, 'Biotech name not found.');
         invariant(biotechInviteVendor.inviter, 'Inviter not found.');
-        const inviterFullName = getUserFullNameFromPseudonyms(
-          biotechInviteVendor.inviter.pseudonyms!,
-        );
-        const receiverFullName = getUserFullNameFromPseudonyms(
-          invitedUser.pseudonyms!,
-        );
+        const inviterFullName = getUserFullName(biotechInviteVendor.inviter);
+        const receiverFullName = getUserFullName(invitedUser);
 
         invariant(
           invitedUser.reset_password_token,
@@ -268,7 +242,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: receiverFullName,
             },
-            getEmailFromPseudonyms(invitedUser.pseudonyms!),
+            getUserEmail(invitedUser),
           );
           return true;
         }
@@ -281,7 +255,7 @@ const resolvers: Resolvers<Context> = {
             project_request_name: projectRequest.title,
             receiver_full_name: receiverFullName,
           },
-          getEmailFromPseudonyms(invitedUser.pseudonyms!),
+          getUserEmail(invitedUser),
         );
         return true;
       }

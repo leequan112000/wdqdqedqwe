@@ -1,9 +1,6 @@
 import { app_env } from '../../environment';
 import { createResetPasswordToken } from '../../helper/auth';
-import {
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
-} from '../../helper/email';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 import { encrypt } from '../../helper/gdprHelper';
 import { sendResetPasswordEmail } from '../../mailer/user';
 import { ServiceContext } from '../../types/context';
@@ -21,9 +18,7 @@ export const forgotPassword = async (
   const resetTokenExpiration = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
   const user = await context.prisma.user.findFirst({
     where: {
-      pseudonyms: {
-        email: encrypt(email),
-      },
+      email: encrypt(email),
     },
   });
   const updatedUser = await context.prisma.user.update({
@@ -34,9 +29,6 @@ export const forgotPassword = async (
       reset_password_token: createResetPasswordToken(),
       reset_password_expiration: new Date(resetTokenExpiration),
     },
-    include: {
-      pseudonyms: true,
-    },
   });
 
   if (updatedUser) {
@@ -44,12 +36,10 @@ export const forgotPassword = async (
     sendResetPasswordEmail(
       {
         button_url: resetPasswordUrl,
-        receiver_full_name: getUserFullNameFromPseudonyms(
-          updatedUser.pseudonyms!,
-        ),
+        receiver_full_name: getUserFullName(updatedUser),
         reset_password_url: resetPasswordUrl,
       },
-      getEmailFromPseudonyms(updatedUser.pseudonyms!),
+      getUserEmail(updatedUser),
     );
   }
 

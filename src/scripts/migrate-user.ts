@@ -1,31 +1,25 @@
 import { PrismaClient } from '@prisma/client';
 import { prisma } from '../prisma';
 import { encrypt } from '../helper/gdprHelper';
-async function migrateUsersToPseudonyms() {
-  const pseudonyms = await prisma.userPseudonyms.findMany();
-  for (const pseudonym of pseudonyms) {
-    await prisma.userPseudonyms.update({
+async function encryptUserPIIField() {
+  const users = await prisma.user.findMany();
+  for (const user of users) {
+    await prisma.user.update({
       where: {
-        id: pseudonym.id,
+        id: user.id,
       },
       data: {
-        email: encrypt(pseudonym.email),
-        first_name: pseudonym.first_name
-          ? encrypt(pseudonym.first_name!)
-          : null,
-        last_name: pseudonym.last_name ? encrypt(pseudonym.last_name!) : null,
-        phone_number: pseudonym.phone_number
-          ? encrypt(pseudonym.phone_number!)
-          : null,
-        country_code: pseudonym.country_code
-          ? encrypt(pseudonym.country_code!)
-          : null,
+        email: encrypt(user.email),
+        first_name: user.first_name ? encrypt(user.first_name!) : null,
+        last_name: user.last_name ? encrypt(user.last_name!) : null,
+        phone_number: user.phone_number ? encrypt(user.phone_number!) : null,
+        country_code: user.country_code ? encrypt(user.country_code!) : null,
       },
     });
   }
 }
 
-migrateUsersToPseudonyms()
+encryptUserPIIField()
   .catch((e) => {
     console.error(e);
     process.exit(1);

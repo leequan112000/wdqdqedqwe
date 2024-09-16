@@ -4,43 +4,6 @@ export const userPseudonymExtension = Prisma.defineExtension({
   result: {
     user: {
       first_name: {
-        // @ts-ignore
-        needs: { pseudonyms: true },
-        compute({ pseudonyms }) {
-          return decrypt(pseudonyms?.first_name);
-        },
-      },
-      last_name: {
-        // @ts-ignore
-        needs: { pseudonyms: true },
-        compute({ pseudonyms }) {
-          return decrypt(pseudonyms?.last_name);
-        },
-      },
-      email: {
-        // @ts-ignore
-        needs: { pseudonyms: true },
-        compute({ pseudonyms }) {
-          return decrypt(pseudonyms?.email);
-        },
-      },
-      phone_number: {
-        // @ts-ignore
-        needs: { pseudonyms: true },
-        compute({ pseudonyms }) {
-          return decrypt(pseudonyms?.phone_number);
-        },
-      },
-      country_code: {
-        // @ts-ignore
-        needs: { pseudonyms: true },
-        compute({ pseudonyms }) {
-          return decrypt(pseudonyms?.country_code);
-        },
-      },
-    },
-    userPseudonyms: {
-      first_name: {
         needs: { first_name: true },
         compute({ first_name }) {
           return decrypt(first_name);
@@ -49,7 +12,6 @@ export const userPseudonymExtension = Prisma.defineExtension({
       last_name: {
         needs: { last_name: true },
         compute({ last_name }) {
-          console.log(last_name);
           return decrypt(last_name);
         },
       },

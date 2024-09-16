@@ -23,51 +23,41 @@ import { addRoleForUser } from '../../helper/casbin';
 import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
 import { slackNotification } from '../../helper/slack';
-import { decrypt, encrypt } from '../../helper/gdprHelper';
+import { decrypt, encrypt, isEncrypted } from '../../helper/gdprHelper';
 import { en } from '@faker-js/faker';
-import { getEmailFromPseudonyms } from '../../helper/email';
+import { getUserEmail } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   User: {
     email: async (parent, _, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-      return pseudonym?.email || '';
+      if (parent.email && isEncrypted(parent.email!)) {
+        return decrypt(parent.email);
+      }
+      return parent.email!;
     },
     first_name: async (parent, _, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-      return pseudonym?.first_name || '';
+      if (parent.first_name && isEncrypted(parent.first_name)) {
+        return decrypt(parent.first_name);
+      }
+      return parent.first_name!;
     },
     last_name: async (parent, _, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-      return pseudonym?.last_name || '';
+      if (parent.last_name && isEncrypted(parent.last_name)) {
+        return decrypt(parent.last_name);
+      }
+      return parent.last_name!;
     },
     phone_number: async (parent, _, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-      return pseudonym?.phone_number || '';
+      if (parent.phone_number && isEncrypted(parent.phone_number)) {
+        return decrypt(parent.phone_number);
+      }
+      return parent.phone_number!;
     },
     country_code: async (parent, _, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-      return pseudonym?.country_code || '';
+      if (parent.country_code && isEncrypted(parent.country_code)) {
+        return decrypt(parent.country_code);
+      }
+      return parent.country_code!;
     },
     user_type: async (parent, _, context) => {
       if (parent.user_type) return parent.user_type;
@@ -293,13 +283,10 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
     full_name: async (parent, args, context) => {
-      const pseudonym = await context.prisma.userPseudonyms.findFirst({
-        where: {
-          user_id: parent.id,
-        },
-      });
-
-      return `${pseudonym?.first_name} ${pseudonym?.last_name}`;
+      if (parent.first_name && parent.last_name) {
+        return `${decrypt(parent.first_name)} ${decrypt(parent.last_name)}`;
+      }
+      return null;
     },
     company_collaborator_role: async (parent, args, context) => {
       if (parent.company_collaborator_role) {
@@ -405,9 +392,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          pseudonyms: {
-            email: encrypt(lowerCaseEmail),
-          },
+          email: encrypt(lowerCaseEmail),
         },
       });
 
@@ -425,11 +410,7 @@ const resolvers: Resolvers<Context> = {
             create: {
               user: {
                 create: {
-                  pseudonyms: {
-                    create: {
-                      email: encrypt(lowerCaseEmail),
-                    },
-                  },
+                  email: encrypt(lowerCaseEmail),
                   encrypted_password: hashedPassword,
                   availability: {
                     createMany: {
@@ -449,9 +430,7 @@ const resolvers: Resolvers<Context> = {
             },
             where: {
               user: {
-                pseudonyms: {
-                  email: encrypt(lowerCaseEmail),
-                },
+                email: encrypt(lowerCaseEmail),
               },
             },
           },
@@ -476,11 +455,8 @@ const resolvers: Resolvers<Context> = {
 
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          pseudonyms: {
-            email: encrypt(email),
-          },
+          email: encrypt(email),
         },
-        include: { pseudonyms: true },
       });
       invariant(foundUser, new PublicError('User not found.'));
 
@@ -502,7 +478,7 @@ const resolvers: Resolvers<Context> = {
         const ip = context.req.ip;
         const ipInfo = await getUserIpInfo(ip);
         await slackNotification.globalPasswordLoginNotification({
-          email: getEmailFromPseudonyms(foundUser.pseudonyms!),
+          email: getUserEmail(foundUser),
           ipAddress: ipInfo.ip_address,
           city: ipInfo.city,
           country: ipInfo.country_name,
@@ -568,9 +544,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          pseudonyms: {
-            email: encrypt(lowerCaseEmail),
-          },
+          email: encrypt(lowerCaseEmail),
         },
       });
 
@@ -673,24 +647,11 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id,
         },
         data: {
-          pseudonyms: {
-            upsert: {
-              create: {
-                email: encrypt(lowerCaseEmail),
-                first_name: encrypt(args.first_name),
-                last_name: encrypt(args.last_name),
-                phone_number: encrypt(args.phone_number),
-                country_code: encrypt(args.country_code),
-              },
-              update: {
-                email: encrypt(lowerCaseEmail),
-                first_name: encrypt(args.first_name),
-                last_name: encrypt(args.last_name),
-                phone_number: encrypt(args.phone_number),
-                country_code: encrypt(args.country_code),
-              },
-            },
-          },
+          email: encrypt(lowerCaseEmail),
+          first_name: encrypt(args.first_name),
+          last_name: encrypt(args.last_name),
+          phone_number: encrypt(args.phone_number),
+          country_code: encrypt(args.country_code),
         },
       });
 

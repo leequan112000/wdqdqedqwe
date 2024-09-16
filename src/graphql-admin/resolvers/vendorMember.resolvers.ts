@@ -9,8 +9,8 @@ import { addRoleForUser } from '../../helper/casbin';
 import { vendorMemberInvitationByAdminEmail } from '../../mailer';
 import {
   createResetPasswordUrl,
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
+  getUserEmail,
+  getUserFullName,
 } from '../../helper/email';
 import { encrypt } from '../../helper/gdprHelper';
 
@@ -34,9 +34,7 @@ const resolver: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            pseudonyms: {
-              email: encrypt(lowerCaseEmail),
-            },
+            email: encrypt(lowerCaseEmail),
           },
         });
 
@@ -64,18 +62,11 @@ const resolver: Resolvers<Context> = {
           data: {
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
-            pseudonyms: {
-              create: {
-                email: encrypt(lowerCaseEmail),
-                first_name: encrypt(args.first_name),
-                last_name: encrypt(args.last_name),
-                phone_number: encrypt(args.phone_number) || null,
-                country_code: encrypt(args.country_code) || null,
-              },
-            },
-          },
-          include: {
-            pseudonyms: true,
+            email: encrypt(lowerCaseEmail),
+            first_name: encrypt(args.first_name),
+            last_name: encrypt(args.last_name),
+            phone_number: encrypt(args.phone_number) || null,
+            country_code: encrypt(args.country_code) || null,
           },
         });
 
@@ -126,16 +117,14 @@ const resolver: Resolvers<Context> = {
         }
 
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const newUserFullName = getUserFullNameFromPseudonyms(
-          newUser.pseudonyms!,
-        );
+        const newUserFullName = getUserFullName(newUser);
 
         vendorMemberInvitationByAdminEmail(
           {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          getEmailFromPseudonyms(newUser.pseudonyms!),
+          getUserEmail(newUser),
         );
 
         return newVendorMember;

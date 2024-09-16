@@ -8,7 +8,7 @@ import { CustomerSubscriptionPlanName } from '../../helper/constant';
 import { env } from '../../env';
 import { parseCompanySize } from '../../helper/vendorCompany';
 import Sentry from '../../sentry';
-import { getEmailFromPseudonyms } from '../../helper/email';
+import { getUserEmail } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -115,7 +115,6 @@ const resolvers: Resolvers<Context> = {
           id: userId,
         },
         include: {
-          pseudonyms: true,
           customer: {
             include: {
               customer_subscriptions: true,
@@ -147,7 +146,7 @@ const resolvers: Resolvers<Context> = {
          */
         ...(stripeCusId
           ? { customer: stripeCusId }
-          : { customer_email: getEmailFromPseudonyms(user.pseudonyms!) }),
+          : { customer_email: getUserEmail(user) }),
         line_items: [
           {
             price: price_id,

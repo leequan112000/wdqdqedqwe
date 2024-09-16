@@ -157,9 +157,7 @@ const resolver: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          pseudonyms: {
-            email: encrypt(vendorSurvey.email),
-          },
+          email: encrypt(vendorSurvey.email),
         },
         include: {
           vendor_member: true,
@@ -221,13 +219,9 @@ const resolver: Resolvers<Context> = {
                 }
               : {
                   create: {
-                    pseudonyms: {
-                      create: {
-                        email: encrypt(vendorSurvey.email),
-                        first_name: encrypt(firstName),
-                        last_name: encrypt(lastName),
-                      },
-                    },
+                    email: encrypt(vendorSurvey.email),
+                    first_name: encrypt(firstName),
+                    last_name: encrypt(lastName),
                   },
                 }),
           },

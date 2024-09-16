@@ -4,19 +4,14 @@ import {
   CustomerConnection,
   VendorMemberConnection,
   ProjectRequest,
-  UserPseudonyms,
 } from '@prisma/client';
 import { prisma } from '../prisma';
-
-type ReceiverType = User & {
-  pseudonyms: UserPseudonyms;
-};
 
 export const getReceiversByProjectConnection = async (
   projectConnectionId: string,
   senderUserId: string,
 ): Promise<{
-  receivers: ReceiverType[];
+  receivers: User[];
   projectConnection: ProjectConnection & {
     customer_connections: CustomerConnection[];
     vendor_member_connections: VendorMemberConnection[];
@@ -45,7 +40,7 @@ export const getReceiversByProjectConnection = async (
   });
 
   let senderCompanyName = '';
-  let receivers: ReceiverType[] = [];
+  let receivers: User[] = [];
 
   if (vendor) {
     // if uploader is vendor, notify biotech members
@@ -70,14 +65,8 @@ export const getReceiversByProjectConnection = async (
             },
           },
         ],
-        pseudonyms: {
-          isNot: null,
-        },
       },
-      include: {
-        pseudonyms: true,
-      },
-    })) as ReceiverType[];
+    })) as User[];
   } else {
     // if uploader is customer, notify vendor members
     const customer = await prisma.customer.findFirstOrThrow({
@@ -109,14 +98,8 @@ export const getReceiversByProjectConnection = async (
             },
           },
         ],
-        pseudonyms: {
-          isNot: null,
-        },
       },
-      include: {
-        pseudonyms: true,
-      },
-    })) as ReceiverType[];
+    })) as User[];
   }
 
   return {

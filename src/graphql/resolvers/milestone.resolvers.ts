@@ -31,10 +31,7 @@ import { payVendorJob } from '../../queues/payout.queues';
 import { getReceiversByProjectConnection } from '../../queues/utils';
 import biotechInvoiceService from '../../services/biotechInvoice/biotechInvoice.service';
 import blanketPurchaseOrderService from '../../services/blanketPurchaseOrder/blanketPurchaseOrder.service';
-import {
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
-} from '../../helper/email';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   Milestone: {
@@ -301,13 +298,11 @@ const resolvers: Resolvers<Context> = {
               {
                 sender_name: senderCompanyName,
                 project_title: projectConnection.project_request.title,
-                receiver_full_name: getUserFullNameFromPseudonyms(
-                  receiver.pseudonyms,
-                ),
+                receiver_full_name: getUserFullName(receiver),
                 milestone_update_content: milestoneUpdateContent,
                 milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
               },
-              getEmailFromPseudonyms(receiver.pseudonyms),
+              getUserEmail(receiver),
             );
 
             await createMilestoneNotification(
@@ -388,13 +383,11 @@ const resolvers: Resolvers<Context> = {
             {
               sender_name: senderCompanyName,
               project_title: projectConnection.project_request.title,
-              receiver_full_name: getUserFullNameFromPseudonyms(
-                receiver.pseudonyms,
-              ),
+              receiver_full_name: getUserFullName(receiver),
               milestone_update_content: milestoneUpdateContent,
               milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
             },
-            getEmailFromPseudonyms(receiver.pseudonyms),
+            getUserEmail(receiver),
           );
 
           await createMilestoneNotification(

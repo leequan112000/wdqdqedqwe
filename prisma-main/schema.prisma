@@ -12,6 +12,9 @@ datasource db {
 
 model User {
   id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                     String    @unique
+  first_name                String?
+  last_name                 String?
   encrypted_password        String?
   reset_password_token      String?   @unique
   reset_password_expiration DateTime?
@@ -20,6 +23,8 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
   is_active                 Boolean   @default(true) /// deprecated, use deactivated_at to track user activation
+  phone_number              String?
+  country_code              String?
   deactivated_at            DateTime?
 
   customer                            Customer?
@@ -38,22 +43,8 @@ model User {
   oauth                               Oauth[]
   availability                        Availability[]
   vendor                              Vendor?
-  pseudonyms                          UserPseudonyms?
   @@map("users")
 }
-
-model UserPseudonyms {
-  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id       String  @unique @db.Uuid
-  email         String  @unique
-  first_name    String?
-  last_name     String?
-  phone_number  String?
-  country_code  String?
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  @@map("user_pseudonyms")
-}
-
 
 model Customer {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

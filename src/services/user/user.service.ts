@@ -18,15 +18,14 @@ const purgeTestDataByUser = async (
       id: user_id,
     },
     include: {
-      pseudonyms: true,
       customer: true,
       vendor_member: true,
     },
   });
 
   invariant(user, 'User not found.');
-  const firstname = decrypt(user.pseudonyms?.first_name);
-  const lastname = decrypt(user.pseudonyms?.last_name);
+  const firstname = decrypt(user.first_name);
+  const lastname = decrypt(user.last_name);
   if (firstname.includes('[TEST]') && lastname !== 'Cypress') {
     throw new PublicError('The user is not a test user. Abort deletion.');
   }

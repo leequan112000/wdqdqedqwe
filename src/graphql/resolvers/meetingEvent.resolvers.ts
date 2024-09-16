@@ -29,10 +29,7 @@ import {
 } from '../../helper/availableTimeSlots';
 import Sentry from '../../sentry';
 import { decrypt } from '../../helper/gdprHelper';
-import {
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
-} from '../../helper/email';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -152,7 +149,6 @@ const resolvers: Resolvers<Context> = {
           include: {
             user: {
               include: {
-                pseudonyms: true,
                 customer: true,
                 vendor_member: true,
               },
@@ -169,10 +165,10 @@ const resolvers: Resolvers<Context> = {
           return false;
         })
         .map((u) => {
-          const fullName = getUserFullNameFromPseudonyms(u.pseudonyms!);
+          const fullName = getUserFullName(u);
           return {
             name: fullName,
-            email: getEmailFromPseudonyms(u.pseudonyms!),
+            email: getUserEmail(u),
             user_id: u.id,
           };
         });
@@ -210,7 +206,6 @@ const resolvers: Resolvers<Context> = {
           include: {
             user: {
               include: {
-                pseudonyms: true,
                 customer: true,
                 vendor_member: true,
               },
@@ -227,10 +222,10 @@ const resolvers: Resolvers<Context> = {
           return false;
         })
         .map((u) => {
-          const fullName = getUserFullNameFromPseudonyms(u.pseudonyms!);
+          const fullName = getUserFullName(u);
           return {
             name: fullName,
-            email: getEmailFromPseudonyms(u.pseudonyms!),
+            email: getUserEmail(u),
             user_id: u.id,
           };
         });
@@ -1124,11 +1119,7 @@ const resolvers: Resolvers<Context> = {
               meeting_event_id,
             },
             include: {
-              user: {
-                include: {
-                  pseudonyms: true,
-                },
-              },
+              user: {},
             },
           });
 
@@ -1157,7 +1148,7 @@ const resolvers: Resolvers<Context> = {
             );
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
-                email: getEmailFromPseudonyms(a.pseudonyms!),
+                email: getUserEmail(a),
               })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
             ];
@@ -1183,7 +1174,7 @@ const resolvers: Resolvers<Context> = {
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
                 emailAddress: {
-                  address: getEmailFromPseudonyms(a.pseudonyms!),
+                  address: getUserEmail(a),
                 },
               })),
               ...existingExternalGuests.map((a) => ({

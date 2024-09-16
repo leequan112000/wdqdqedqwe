@@ -11,8 +11,8 @@ import {
 } from '../../mailer';
 import {
   createResetPasswordUrl,
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
+  getUserEmail,
+  getUserFullName,
 } from '../../helper/email';
 import { encrypt } from '../../helper/gdprHelper';
 
@@ -58,7 +58,6 @@ const resolvers: Resolvers<Context> = {
           reset_password_expiration: new Date(resetTokenExpiration),
         },
         include: {
-          pseudonyms: true,
           vendor_member: true,
         },
       });
@@ -69,16 +68,14 @@ const resolvers: Resolvers<Context> = {
       );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const updatedNewUserFullName = getUserFullNameFromPseudonyms(
-        updatedNewUser.pseudonyms!,
-      );
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
 
       vendorMemberInvitationByAdminEmail(
         {
           login_url: resetPasswordUrl,
           receiver_full_name: updatedNewUserFullName,
         },
-        getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
+        getUserEmail(updatedNewUser),
       );
 
       return true;
@@ -115,9 +112,7 @@ const resolvers: Resolvers<Context> = {
           reset_password_token: resetToken,
           reset_password_expiration: new Date(resetTokenExpiration),
         },
-        include: {
-          pseudonyms: true,
-        },
+        include: {},
       });
 
       invariant(
@@ -126,15 +121,13 @@ const resolvers: Resolvers<Context> = {
       );
 
       const resetPasswordUrl = createResetPasswordUrl(resetToken);
-      const updatedNewUserFullName = getUserFullNameFromPseudonyms(
-        updatedNewUser.pseudonyms!,
-      );
+      const updatedNewUserFullName = getUserFullName(updatedNewUser);
       customerInvitationByAdminEmail(
         {
           login_url: resetPasswordUrl,
           receiver_full_name: updatedNewUserFullName,
         },
-        getEmailFromPseudonyms(updatedNewUser.pseudonyms!),
+        getUserEmail(updatedNewUser),
       );
 
       return true;
@@ -156,14 +149,10 @@ const resolvers: Resolvers<Context> = {
             id: user_id,
           },
           data: {
-            pseudonyms: {
-              update: {
-                first_name: encrypt(first_name) || null,
-                last_name: encrypt(last_name) || null,
-                country_code: encrypt(country_code) || null,
-                phone_number: encrypt(phone_number) || null,
-              },
-            },
+            first_name: encrypt(first_name) || null,
+            last_name: encrypt(last_name) || null,
+            country_code: encrypt(country_code) || null,
+            phone_number: encrypt(phone_number) || null,
           },
         });
         const updatedVendorMember = await trx.vendorMember.update({
@@ -224,14 +213,10 @@ const resolvers: Resolvers<Context> = {
             id: user_id,
           },
           data: {
-            pseudonyms: {
-              update: {
-                first_name: encrypt(ignoreEmptyString(first_name)) ?? undefined,
-                last_name: encrypt(ignoreEmptyString(last_name)) ?? undefined,
-                country_code: encrypt(country_code) || null,
-                phone_number: encrypt(phone_number) || null,
-              },
-            },
+            first_name: encrypt(ignoreEmptyString(first_name)) ?? undefined,
+            last_name: encrypt(ignoreEmptyString(last_name)) ?? undefined,
+            country_code: encrypt(country_code) || null,
+            phone_number: encrypt(phone_number) || null,
           },
         });
         const updatedCustomer = await trx.customer.update({

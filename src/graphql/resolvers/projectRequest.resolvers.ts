@@ -26,7 +26,7 @@ import {
   sendProjectRequestSubmissionEmail,
 } from '../../mailer/projectRequest';
 import { sendAdminBiotechInviteVendorNoticeEmail } from '../../mailer/admin';
-import { getUserFullNameFromPseudonyms } from '../../helper/email';
+import { getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   ProjectRequest: {
@@ -387,7 +387,6 @@ const resolvers: Resolvers<Context> = {
             id: currentUserId,
           },
           include: {
-            pseudonyms: true,
             customer: {
               include: {
                 biotech: true,
@@ -498,7 +497,7 @@ const resolvers: Resolvers<Context> = {
           invariant(biotechInfo, 'Biotech not found.');
           const data = {
             biotech_name: biotechInfo.name,
-            inviter_full_name: getUserFullNameFromPseudonyms(user.pseudonyms!),
+            inviter_full_name: getUserFullName(user),
             vendor_company_name: args.company_name,
             website: args.website,
             first_name: args.first_name,

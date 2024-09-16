@@ -151,11 +151,9 @@ const resolvers: Resolvers<Context> = {
           onboarding_step,
           ...(payload.user_name
             ? {
-                pseudonyms: {
-                  update: {
-                    first_name: encrypt(firstName),
-                    last_name: encrypt(lastName),
-                  },
+                update: {
+                  first_name: encrypt(firstName),
+                  last_name: encrypt(lastName),
                 },
               }
             : {}),

@@ -2,7 +2,7 @@ import invariant from '../../helper/invariant';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { slackNotification } from '../../helper/slack';
-import { getUserFullNameFromPseudonyms } from '../../helper/email';
+import { getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -29,9 +29,6 @@ const resolvers: Resolvers<Context> = {
         where: {
           id: userId,
         },
-        include: {
-          pseudonyms: true,
-        },
       });
 
       const buttonUrl =
@@ -39,9 +36,7 @@ const resolvers: Resolvers<Context> = {
         `?searchTerm=${sourcing_session_id}`;
 
       await slackNotification.newShortlistNotification({
-        submittedBy: user
-          ? getUserFullNameFromPseudonyms(user.pseudonyms!)
-          : 'N/A',
+        submittedBy: user ? getUserFullName(user) : 'N/A',
         submittedAt: new Date().toISOString(),
         shortlistCounts: sourcingSession.sourced_cros.length.toString(),
         shortlistedVendors: sourcingSession.sourced_cros.map((cro) => ({

@@ -6,8 +6,8 @@ import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
 import {
   createResetPasswordUrl,
-  getEmailFromPseudonyms,
-  getUserFullNameFromPseudonyms,
+  getUserEmail,
+  getUserFullName,
 } from '../../helper/email';
 import { availabilitiesCreateData } from '../../helper/availability';
 import { encrypt } from '../../helper/gdprHelper';
@@ -144,9 +144,7 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            pseudonyms: {
-              email: encrypt(lowerCaseEmail),
-            },
+            email: encrypt(lowerCaseEmail),
           },
         });
 
@@ -157,7 +155,6 @@ const resolvers: Resolvers<Context> = {
             id: context.req.user_id,
           },
           include: {
-            pseudonyms: true,
             customer: true,
           },
         });
@@ -167,18 +164,11 @@ const resolvers: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            pseudonyms: {
-              create: {
-                email: encrypt(lowerCaseEmail),
-                first_name: encrypt(args.first_name),
-                last_name: encrypt(args.last_name),
-              },
-            },
+            email: encrypt(lowerCaseEmail),
+            first_name: encrypt(args.first_name),
+            last_name: encrypt(args.last_name),
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
-          },
-          include: {
-            pseudonyms: true,
           },
         });
 
@@ -189,13 +179,9 @@ const resolvers: Resolvers<Context> = {
           },
         });
 
-        const newUserFullName = getUserFullNameFromPseudonyms(
-          newUser.pseudonyms!,
-        );
+        const newUserFullName = getUserFullName(newUser);
         const resetPasswordUrl = createResetPasswordUrl(resetToken);
-        const currentUserFullName = getUserFullNameFromPseudonyms(
-          currentUser.pseudonyms!,
-        );
+        const currentUserFullName = getUserFullName(currentUser);
 
         customerInvitationEmail(
           {
@@ -204,7 +190,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          getEmailFromPseudonyms(newUser.pseudonyms!),
+          getUserEmail(newUser),
         );
 
         return newCustomer;
