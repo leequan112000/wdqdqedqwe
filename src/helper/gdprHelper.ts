@@ -4,18 +4,6 @@ import crypto from 'crypto';
 const ENCRYPTION_KEY = Buffer.from(process.env.AES_256_GCM_KEY || '', 'hex');
 const FIXED_IV = Buffer.from(process.env.AES_256_GCM_IV || '', 'hex');
 
-if (ENCRYPTION_KEY.length !== 32) {
-  throw new Error(
-    `AES_256_GCM_KEY must be 32 bytes (64 hexadecimal characters) long, got ${process.env.toString}`,
-  );
-}
-
-if (FIXED_IV.length !== 16) {
-  throw new Error(
-    `AES_256_GCM_IV must be 16 bytes (32 hexadecimal characters) long, got ${FIXED_IV.length}`,
-  );
-}
-
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ALGORITHM = 'aes-256-gcm';
