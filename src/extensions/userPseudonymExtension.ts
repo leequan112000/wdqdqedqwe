@@ -6,13 +6,13 @@ export const userPseudonymExtension = Prisma.defineExtension({
       first_name: {
         needs: { first_name: true },
         compute({ first_name }) {
-          return decrypt(first_name);
+          return decrypt(first_name) || null;
         },
       },
       last_name: {
         needs: { last_name: true },
         compute({ last_name }) {
-          return decrypt(last_name);
+          return decrypt(last_name) || null;
         },
       },
       email: {
@@ -24,13 +24,13 @@ export const userPseudonymExtension = Prisma.defineExtension({
       phone_number: {
         needs: { phone_number: true },
         compute({ phone_number }) {
-          return decrypt(phone_number);
+          return decrypt(phone_number) || null;
         },
       },
       country_code: {
         needs: { country_code: true },
         compute({ country_code }) {
-          return decrypt(country_code);
+          return decrypt(country_code) || null;
         },
       },
     },

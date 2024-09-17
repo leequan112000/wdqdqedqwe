@@ -32,4 +32,15 @@ jobs:
     - name: 👷 Build
       run: yarn build
     - name: 🤖 Run tests
+      env:
+          APP_ENV: 'development'
+          STRIPE_SOURCERER_MONTHLY_PLAN: '{"price_id": "secrets.STRIPE_SOURCERER_MONTHLY_PLAN", "discount_percentage": 1}'
+          STRIPE_SOURCERER_YEARLY_PLAN: '{"price_id": "secrets.STRIPE_SOURCERER_YEARLY_PLAN", "discount_percentage": 1}'
+          ENABLE_VENDOR_SURVEY_REMINDER: 'false'
+          STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID: 'secrets.STRIPE_STARTER_CROMATIC_VENDOR_LISTING_PRICE_ID'
+          STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID: 'secrets.STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID'
+          CROMATIC_NOTIFY_SLACK_OAUTH_TOKEN: 'secrets.CROMATIC_NOTIFY_SLACK_OAUTH_TOKEN'
+          CROMATIC_NOTIFY_SLACK_CHANNEL_ID: 'secrets.CROMATIC_NOTIFY_SLACK_CHANNEL_ID'
+          AES_256_GCM_KEY: '2da0d6b398ae3198be125136b532535fe19ccc2e4b6d992f199601dea0d9059f'
+          AES_256_GCM_IV: '29bf3e652dc4d5fbb5b8ea24303c5f43'
       run: yarn test
