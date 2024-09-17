@@ -283,7 +283,7 @@ const resolvers: Resolvers<Context> = {
     },
     full_name: async (parent, args, context) => {
       if (parent.first_name && parent.last_name) {
-        return `${decrypt(parent.first_name)} ${decrypt(parent.last_name)}`;
+        return `${parent.first_name} ${parent.last_name}`;
       }
       return null;
     },

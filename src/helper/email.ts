@@ -7,9 +7,9 @@ export function createResetPasswordUrl(token: string) {
 }
 
 export function getUserFullName({ first_name, last_name }: User) {
-  return `${decrypt(first_name)} ${decrypt(last_name)}`;
+  return `${first_name} ${last_name}`;
 }
 
 export function getUserEmail({ email }: User) {
-  return decrypt(email);
+  return email;
 }
