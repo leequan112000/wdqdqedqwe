@@ -30,6 +30,7 @@ vi.mock('../../helper/accessControl');
 vi.mock('../../helper/email');
 vi.mock('../../mailer');
 vi.mock('../../notification/collaboratedNotification');
+vi.mock('../../env.ts');
 
 afterEach(() => {
   vi.resetAllMocks();

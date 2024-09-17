@@ -24,6 +24,8 @@ import { PrismaClientMainDb } from '../../prisma';
 
 vi.mock('@sendgrid/mail');
 vi.mock('../chat/chat.service');
+vi.mock('../../env.ts');
+
 let mockCtx: MockContext;
 let ctx: Context;
 let projectRequest: ProjectRequest;

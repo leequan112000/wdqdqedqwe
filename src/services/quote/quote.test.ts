@@ -26,6 +26,7 @@ import { PrismaClientMainDb } from '../../prisma';
 import { mockDeep } from 'vitest-mock-extended';
 
 vi.mock('@sendgrid/mail');
+vi.mock('../../env.ts');
 
 let mockCtx: MockContext;
 let ctx: ServiceContext;

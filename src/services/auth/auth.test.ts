@@ -10,7 +10,7 @@ vi.mock('../../mailer/user', () => ({
 }));
 
 vi.mock('@sendgrid/mail');
-
+vi.mock('../../env.ts');
 let mockCtx: MockContext;
 let ctx: ServiceContext;
 
