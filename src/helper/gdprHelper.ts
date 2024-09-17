@@ -1,8 +1,9 @@
 import crypto from 'crypto';
+import { env } from '../env';
 
 // Ensure the key is 32 bytes (256 bits) long
-const ENCRYPTION_KEY = Buffer.from(process.env.AES_256_GCM_KEY || '', 'hex');
-const FIXED_IV = Buffer.from(process.env.AES_256_GCM_IV || '', 'hex');
+const ENCRYPTION_KEY = Buffer.from(env.AES_256_GCM_KEY || '', 'hex');
+const FIXED_IV = Buffer.from(env.AES_256_GCM_IV || '', 'hex');
 
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
