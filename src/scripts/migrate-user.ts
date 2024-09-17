@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { prisma } from '../prisma';
 import { encrypt } from '../helper/gdprHelper';
+
+const prisma = new PrismaClient();
 async function encryptUserPIIField() {
   const users = await prisma.user.findMany();
   for (const user of users) {
