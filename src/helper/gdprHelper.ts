@@ -1,16 +1,15 @@
 import crypto from 'crypto';
 import { env } from '../env';
 
-// Ensure the key is 32 bytes (256 bits) long
-const ENCRYPTION_KEY = Buffer.from(env.AES_256_GCM_KEY || '', 'hex');
-const FIXED_IV = Buffer.from(env.AES_256_GCM_IV || '', 'hex');
+const ENCRYPTION_KEY = Buffer.from(process.env.AES_256_GCM_KEY || '', 'hex');
+const FIXED_IV = Buffer.from(process.env.AES_256_GCM_IV || '', 'hex');
 
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
 const ALGORITHM = 'aes-256-gcm';
 
-export function encrypt(data?: any): string {
-  if (!data || typeof data != 'string') return '';
+export function encrypt(data?: any) {
+  if (!data || typeof data != 'string') return null;
 
   try {
     // Create cipher
@@ -28,8 +27,8 @@ export function encrypt(data?: any): string {
   }
 }
 
-export function decrypt(encryptedData?: any): string {
-  if (!encryptedData || typeof encryptedData !== 'string') return '';
+export function decrypt(encryptedData?: any) {
+  if (!encryptedData || typeof encryptedData !== 'string') return null;
 
   try {
     // Extract IV, Auth Tag, and encrypted data
