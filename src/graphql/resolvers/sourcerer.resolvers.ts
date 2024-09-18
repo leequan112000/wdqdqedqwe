@@ -2,7 +2,11 @@ import { withFilter } from 'graphql-subscriptions';
 import { Resolvers } from '../generated';
 import { Context } from '../../types/context';
 import sourcererService from '../../services/sourcerer/sourcerer.service';
-import { CountryRegion, SourcingResultSortBy } from '../../helper/constant';
+import {
+  CountryRegion,
+  SourcingResultSortBy,
+  WhiteGloveStatus,
+} from '../../helper/constant';
 import { deleteObject, getSignedUrl } from '../../helper/awsS3';
 import { formatBytes } from '../../helper/filesize';
 import { countryRegionMap, getRegionByCountryCode } from '../../helper/country';
@@ -418,6 +422,15 @@ const resolvers: Resolvers<Context> = {
       const { sourcing_session_id, sourced_cro_id } = args;
       invariant(context.req.user_id, new PublicError('User not found.'));
 
+      await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status: WhiteGloveStatus.DRAFT,
+        },
+      });
+
       return await context.prismaCRODb.sourcedCro.update({
         where: {
           id: sourced_cro_id,
@@ -431,6 +444,15 @@ const resolvers: Resolvers<Context> = {
     removeSourcedCroFromShortlist: async (_, args, context) => {
       const { sourcing_session_id, sourced_cro_id } = args;
       invariant(context.req.user_id, new PublicError('User not found.'));
+
+      await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status: WhiteGloveStatus.DRAFT,
+        },
+      });
 
       return await context.prismaCRODb.sourcedCro.update({
         where: {

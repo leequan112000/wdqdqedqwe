@@ -314,6 +314,7 @@ model SourcingSession {
   project_desc            String
   preparation_details     String
   vendor_requirement      String
+  whiteglove_status       String                 @default("draft")
   task_id                 String
   task_canceled_at        DateTime?
   user_id                 String                 @db.Uuid

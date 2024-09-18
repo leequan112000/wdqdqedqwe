@@ -4,6 +4,7 @@ type SourcingSession {
   project_desc: String
   preparation_details: String
   vendor_requirement: String
+  whiteglove_status: String
   task_id: String
   user_id: String
   user: User
