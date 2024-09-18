@@ -4,6 +4,7 @@ import { app_env } from '../../environment';
 import { ServiceContext } from '../../types/context';
 import { InputMaybe } from '../../graphql/generated';
 import storeUpload from '../../helper/storeUpload';
+import { WhiteGloveStatus } from '../../helper/constant';
 import { deleteObject } from '../../helper/awsS3';
 import { PublicError } from '../../graphql/errors/PublicError';
 import { redis } from '../../redis';
@@ -136,7 +137,7 @@ export const extractPdfToRfp = async (
           project_desc,
           preparation_details,
           vendor_requirement,
-
+          whiteglove_status: WhiteGloveStatus.DRAFT,
           sourcing_extracted_rfp: {
             upsert: {
               create: {
@@ -229,6 +230,7 @@ export const sourceRfpSpecialties = async (
           preparation_details: args.preparation_details,
           vendor_requirement: args.vendor_requirement,
           user_id: args.user_id,
+          whiteglove_status: WhiteGloveStatus.DRAFT,
         },
       });
 

@@ -3,6 +3,7 @@ import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { slackNotification } from '../../helper/slack';
 import { getUserFullName } from '../../helper/email';
+import { WhiteGloveStatus } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
   Mutation: {
@@ -46,7 +47,28 @@ const resolvers: Resolvers<Context> = {
         buttonUrl,
       });
 
+      await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status: WhiteGloveStatus.SUBMITTED,
+        },
+      });
+
       return true;
+    },
+    updateWhiteGloveStatus: async (_, args, context) => {
+      const { sourcing_session_id, whiteglove_status } = args;
+
+      return await context.prismaCRODb.sourcingSession.update({
+        where: {
+          id: sourcing_session_id,
+        },
+        data: {
+          whiteglove_status,
+        },
+      });
     },
   },
 };
