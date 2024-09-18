@@ -706,6 +706,7 @@ export type Query = {
   biotechInvoice?: Maybe<BiotechInvoice>;
   paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
   signedUrl?: Maybe<Scalars['String']['output']>;
+  users?: Maybe<Array<Maybe<User>>>;
   vendorSurveyAttachmentSignedUrl?: Maybe<Scalars['String']['output']>;
   verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
 };
@@ -748,11 +749,13 @@ export type ReviewQuestionSet = {
 
 export type User = {
   __typename?: 'User';
+  customer?: Maybe<Customer>;
   email?: Maybe<Scalars['String']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   reset_password_token?: Maybe<Scalars['String']['output']>;
+  vendor_member?: Maybe<VendorMember>;
 };
 
 export type Vendor = {
@@ -1175,6 +1178,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
   paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
   signedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySignedUrlArgs, 'key'>>;
+  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   vendorSurveyAttachmentSignedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorSurveyAttachmentSignedUrlArgs, 'key'>>;
   verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
@@ -1205,11 +1209,13 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 }
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   first_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reset_password_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  vendor_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
