@@ -8,6 +8,7 @@ import { CustomerSubscriptionPlanName } from '../../helper/constant';
 import { env } from '../../env';
 import { parseCompanySize } from '../../helper/vendorCompany';
 import Sentry from '../../sentry';
+import { getUserEmail } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -145,7 +146,7 @@ const resolvers: Resolvers<Context> = {
          */
         ...(stripeCusId
           ? { customer: stripeCusId }
-          : { customer_email: user.email }),
+          : { customer_email: getUserEmail(user) }),
         line_items: [
           {
             price: price_id,

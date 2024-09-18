@@ -2,6 +2,7 @@ import invariant from '../../helper/invariant';
 import { deleteRolesForUser } from '../../helper/casbin';
 import { PublicError } from '../../graphql/errors/PublicError';
 import { ServiceContext } from '../../types/context';
+import { decrypt } from '../../helper/gdprHelper';
 
 type PurgeTestDataByUserEventArgs = {
   user_id: string;
@@ -23,8 +24,9 @@ const purgeTestDataByUser = async (
   });
 
   invariant(user, 'User not found.');
-
-  if (!user?.first_name?.includes('[TEST]') && user?.first_name !== 'Cypress') {
+  const firstname = decrypt(user.first_name);
+  const lastname = decrypt(user.last_name);
+  if (firstname.includes('[TEST]') && lastname !== 'Cypress') {
     throw new PublicError('The user is not a test user. Abort deletion.');
   }
 

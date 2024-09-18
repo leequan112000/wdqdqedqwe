@@ -4,8 +4,13 @@ import { customerInvitationEmail } from '../../mailer/customer';
 import { PublicError } from '../errors/PublicError';
 import { Resolvers } from '../generated';
 import invariant from '../../helper/invariant';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getUserEmail,
+  getUserFullName,
+} from '../../helper/email';
 import { availabilitiesCreateData } from '../../helper/availability';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolvers: Resolvers<Context> = {
   Customer: {
@@ -139,7 +144,7 @@ const resolvers: Resolvers<Context> = {
       return await context.prisma.$transaction(async (trx) => {
         const user = await trx.user.findFirst({
           where: {
-            email: lowerCaseEmail,
+            email: encrypt(lowerCaseEmail),
           },
         });
 
@@ -159,9 +164,9 @@ const resolvers: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            first_name: args.first_name,
-            last_name: args.last_name,
-            email: lowerCaseEmail,
+            email: encrypt(lowerCaseEmail),
+            first_name: encrypt(args.first_name),
+            last_name: encrypt(args.last_name),
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
           },
@@ -185,7 +190,7 @@ const resolvers: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          newUser.email,
+          getUserEmail(newUser),
         );
 
         return newCustomer;

@@ -17,9 +17,14 @@ import {
 } from '../../mailer/vendorMember';
 import { app_env } from '../../environment';
 import { addRoleForUser } from '../../helper/casbin';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getUserEmail,
+  getUserFullName,
+} from '../../helper/email';
 import createAdminInviteNotificationJob from '../../notification/adminInviteNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
+import { encrypt } from '../../helper/gdprHelper';
 
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
@@ -173,7 +178,7 @@ const resolvers: Resolvers<Context> = {
                       project_request_title: projectRequest.title,
                       receiver_full_name: primaryVendorMemberFullName,
                     },
-                    primaryVendorMember.user.email,
+                    getUserEmail(primaryVendorMember.user),
                   );
                   const notificationJob = createAdminInviteNotificationJob({
                     project_connection_id: projectConnection.id,
@@ -253,7 +258,7 @@ const resolvers: Resolvers<Context> = {
         // Check if user already exists
         const existingUser = await context.prisma.user.findFirst({
           where: {
-            email: biotechInviteVendor.email,
+            email: encrypt(biotechInviteVendor.email),
           },
         });
 
@@ -330,7 +335,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: existingUserFullName,
             },
-            existingUser.email,
+            getUserEmail(existingUser),
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -422,7 +427,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: existingUserFullName,
             },
-            existingUser.email,
+            getUserEmail(existingUser),
           );
           invariant(!existingUser, new PublicError('User already exists.'));
 
@@ -450,11 +455,11 @@ const resolvers: Resolvers<Context> = {
 
           const newUser = await context.prisma.user.create({
             data: {
-              email: biotechInviteVendor.email,
-              first_name: biotechInviteVendor.first_name,
-              last_name: biotechInviteVendor.last_name,
               reset_password_token: resetToken,
               reset_password_expiration: new Date(resetTokenExpiration),
+              email: encrypt(biotechInviteVendor.email),
+              first_name: encrypt(biotechInviteVendor.first_name),
+              last_name: encrypt(biotechInviteVendor.last_name),
             },
           });
 
@@ -503,7 +508,7 @@ const resolvers: Resolvers<Context> = {
               project_request_name: projectRequest.title,
               receiver_full_name: newUserFullName,
             },
-            newUser.email,
+            getUserEmail(newUser),
           );
 
           return true;
@@ -557,7 +562,7 @@ const resolvers: Resolvers<Context> = {
           website: vendorCompany.website,
           user_company_role: ownerVendorMember.title,
           department: ownerVendorMember.department,
-          email: ownerUser.email,
+          email: getUserEmail(ownerUser),
         },
       });
 

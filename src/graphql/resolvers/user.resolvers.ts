@@ -23,9 +23,41 @@ import { addRoleForUser } from '../../helper/casbin';
 import authService from '../../services/auth/auth.service';
 import { availabilityCreateManyUserInputs } from '../../helper/availability';
 import { slackNotification } from '../../helper/slack';
+import { decrypt, encrypt, isEncrypted } from '../../helper/gdprHelper';
+import { getUserEmail } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   User: {
+    email: async (parent, _, context) => {
+      if (parent.email && isEncrypted(parent.email!)) {
+        return decrypt(parent.email);
+      }
+      return parent.email!;
+    },
+    first_name: async (parent, _, context) => {
+      if (parent.first_name && isEncrypted(parent.first_name)) {
+        return decrypt(parent.first_name);
+      }
+      return parent.first_name || null;
+    },
+    last_name: async (parent, _, context) => {
+      if (parent.last_name && isEncrypted(parent.last_name)) {
+        return decrypt(parent.last_name);
+      }
+      return parent.last_name || null;
+    },
+    phone_number: async (parent, _, context) => {
+      if (parent.phone_number && isEncrypted(parent.phone_number)) {
+        return decrypt(parent.phone_number);
+      }
+      return parent.phone_number || null;
+    },
+    country_code: async (parent, _, context) => {
+      if (parent.country_code && isEncrypted(parent.country_code)) {
+        return decrypt(parent.country_code);
+      }
+      return parent.country_code || null;
+    },
     user_type: async (parent, _, context) => {
       if (parent.user_type) return parent.user_type;
       if (!parent.id) return null;
@@ -250,8 +282,10 @@ const resolvers: Resolvers<Context> = {
       return null;
     },
     full_name: async (parent, args, context) => {
-      if (!parent.first_name && !parent.last_name) return null;
-      return [parent.first_name || '', parent.last_name || ''].join(' ');
+      if (parent.first_name && parent.last_name) {
+        return `${parent.first_name} ${parent.last_name}`;
+      }
+      return null;
     },
     company_collaborator_role: async (parent, args, context) => {
       if (parent.company_collaborator_role) {
@@ -357,7 +391,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          email,
+          email: encrypt(lowerCaseEmail),
         },
       });
 
@@ -375,7 +409,7 @@ const resolvers: Resolvers<Context> = {
             create: {
               user: {
                 create: {
-                  email: lowerCaseEmail,
+                  email: encrypt(lowerCaseEmail),
                   encrypted_password: hashedPassword,
                   availability: {
                     createMany: {
@@ -395,7 +429,7 @@ const resolvers: Resolvers<Context> = {
             },
             where: {
               user: {
-                email: lowerCaseEmail,
+                email: encrypt(lowerCaseEmail),
               },
             },
           },
@@ -409,7 +443,7 @@ const resolvers: Resolvers<Context> = {
 
       // Genereate tokens
       const tokens = createTokens({ id: newUser.id });
-
+      console.log('BEFORE RETURNS');
       return {
         access_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
@@ -417,15 +451,12 @@ const resolvers: Resolvers<Context> = {
     },
     signInUser: async (_, args, context) => {
       const { email, password } = args;
+
       let foundUser = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: email,
-          },
+          email: encrypt(email),
         },
       });
-
       invariant(foundUser, new PublicError('User not found.'));
 
       invariant(
@@ -446,7 +477,7 @@ const resolvers: Resolvers<Context> = {
         const ip = context.req.ip;
         const ipInfo = await getUserIpInfo(ip);
         await slackNotification.globalPasswordLoginNotification({
-          email: foundUser.email,
+          email: getUserEmail(foundUser),
           ipAddress: ipInfo.ip_address,
           city: ipInfo.city,
           country: ipInfo.country_name,
@@ -512,10 +543,7 @@ const resolvers: Resolvers<Context> = {
 
       const user = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: lowerCaseEmail,
-          },
+          email: encrypt(lowerCaseEmail),
         },
       });
 
@@ -618,11 +646,11 @@ const resolvers: Resolvers<Context> = {
           id: context.req.user_id,
         },
         data: {
-          first_name: args.first_name,
-          last_name: args.last_name,
-          email: lowerCaseEmail,
-          phone_number: args.phone_number || null,
-          country_code: args.country_code || null,
+          email: encrypt(lowerCaseEmail),
+          first_name: encrypt(args.first_name),
+          last_name: encrypt(args.last_name),
+          phone_number: encrypt(args.phone_number),
+          country_code: encrypt(args.country_code),
         },
       });
 

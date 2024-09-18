@@ -1,6 +1,6 @@
 import { newEnforcer, newModelFromString } from 'casbin';
 import { PrismaAdapter } from 'casbin-prisma-adapter';
-import { prisma } from '../prisma';
+import { prisma, prismaClient } from '../prisma';
 import { CasbinAct, CasbinObj, CasbinRole } from './constant';
 
 const rbac_models = `
@@ -21,7 +21,7 @@ m = g(r.sub, p.sub) && r.obj == p.obj && keyMatch(r.act, p.act) || checkSuperAdm
 `;
 
 const createEnforcer = async () => {
-  const a = await PrismaAdapter.newAdapter(prisma);
+  const a = await PrismaAdapter.newAdapter(prismaClient);
   const model = newModelFromString(rbac_models);
   const e = await newEnforcer(model, a);
   e.addFunction('checkSuperAdmin', async (args) => {

@@ -43,7 +43,6 @@ model User {
   oauth                               Oauth[]
   availability                        Availability[]
   vendor                              Vendor?
-
   @@map("users")
 }
 

@@ -4,6 +4,8 @@ import invariant from '../../helper/invariant';
 import { PublicError } from '../errors/PublicError';
 import { sendAdminBiotechInviteVendorNoticeEmail } from '../../mailer/admin';
 import { AdminTeam } from '../../helper/constant';
+import { decrypt } from '../../helper/gdprHelper';
+import { getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   BiotechInviteVendor: {
@@ -145,9 +147,10 @@ const resolvers: Resolvers<Context> = {
         });
 
       // Send email to admin
+      const full_name = getUserFullName(user);
       const data = {
         biotech_name: user.customer?.biotech?.name!,
-        inviter_full_name: `${user.first_name} ${user.last_name}`,
+        inviter_full_name: full_name,
         vendor_company_name: company_name,
         website: website,
         first_name: first_name,

@@ -2,6 +2,7 @@ import { NotificationType } from '../helper/constant';
 import { prisma } from '../prisma';
 import { publishNewNotification } from '../helper/pubsub';
 import invariant from '../helper/invariant';
+import { getUserFullName } from '../helper/email';
 
 const createMessageNotification = async (
   sender_id: string,
@@ -34,7 +35,7 @@ const createMessageNotification = async (
   const notification = await prisma.notification.create({
     data: {
       notification_type: NotificationType.MESSAGE_NOTIFICATION,
-      message: `**${sender.first_name} ${sender.last_name}** has sent you messages on **${project_connection?.project_request.title}**`,
+      message: `**${getUserFullName(sender)}** has sent you messages on **${project_connection?.project_request.title}**`,
       sender_id: sender_id,
       params: {
         project_connection_id: project_connection_id,

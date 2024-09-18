@@ -25,6 +25,8 @@ import { app_env } from '../../environment';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
 import createFinalContractUploadNotificationJob from '../../notification/finalContractUploadNotification';
 import createFileUploadNotificationJob from '../../notification/fileUploadNotification';
+import { getUserEmail, getUserFullName } from '../../helper/email';
+import { get } from 'lodash';
 
 async function getBuffer(
   stream: Readable,
@@ -218,11 +220,11 @@ const resolvers: Resolvers<Context> = {
           const emailData = receivers.map((r) => ({
             emailData: {
               login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              receiver_full_name: getUserFullName(r),
               project_title: projectConnection.project_request.title,
               company_name: senderCompanyName,
             },
-            receiverEmail: r.email,
+            receiverEmail: getUserEmail(r),
           }));
           const notificationData = receivers.map((r) => {
             return createFileUploadNotificationJob({
@@ -230,7 +232,7 @@ const resolvers: Resolvers<Context> = {
               recipient_id: r.id,
               project_connection_id,
               project_title: projectConnection.project_request.title,
-              sender_fullname: `${user.first_name} ${user.last_name}`,
+              sender_fullname: getUserFullName(user),
             });
           });
           bulkDocumentUploadNoticeEmail(emailData);
@@ -335,11 +337,11 @@ const resolvers: Resolvers<Context> = {
           const emailData = receivers.map((r) => ({
             emailData: {
               login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              receiver_full_name: getUserFullName(r),
               project_title: projectConnection.project_request.title,
               company_name: senderCompanyName,
             },
-            receiverEmail: r.email,
+            receiverEmail: getUserEmail(r),
           }));
           // Prepare notification data
           const notificationData = receivers.map((r) => {
@@ -348,7 +350,7 @@ const resolvers: Resolvers<Context> = {
               recipient_id: r.id,
               project_connection_id,
               project_title: projectConnection.project_request.title,
-              sender_fullname: `${user.first_name} ${user.last_name}`,
+              sender_fullname: getUserFullName(user),
             });
           });
 

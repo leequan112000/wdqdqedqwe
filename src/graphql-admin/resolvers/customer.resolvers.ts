@@ -7,7 +7,12 @@ import { CasbinRole, CompanyCollaboratorRoleType } from '../../helper/constant';
 import collaboratorService from '../../services/collaborator/collaborator.service';
 import { addRoleForUser } from '../../helper/casbin';
 import { customerInvitationByAdminEmail } from '../../mailer';
-import { createResetPasswordUrl, getUserFullName } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getUserEmail,
+  getUserFullName,
+} from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolver: Resolvers<Context> = {
   Customer: {
@@ -38,7 +43,7 @@ const resolver: Resolvers<Context> = {
 
         const user = await trx.user.findFirst({
           where: {
-            email: email,
+            email: encrypt(email),
           },
         });
 
@@ -64,13 +69,13 @@ const resolver: Resolvers<Context> = {
         const resetToken = createResetPasswordToken();
         const newUser = await trx.user.create({
           data: {
-            email: email,
-            first_name: first_name,
-            last_name: last_name,
             reset_password_token: resetToken,
             reset_password_expiration: new Date(resetTokenExpiration),
-            country_code: country_code || null,
-            phone_number: phone_number || null,
+            email: encrypt(email),
+            first_name: encrypt(first_name),
+            last_name: encrypt(last_name),
+            country_code: encrypt(country_code) || null,
+            phone_number: encrypt(phone_number) || null,
           },
         });
 
@@ -127,7 +132,7 @@ const resolver: Resolvers<Context> = {
             login_url: resetPasswordUrl,
             receiver_full_name: newUserFullName,
           },
-          newUser.email,
+          getUserEmail(newUser),
         );
 
         return newCustomer;

@@ -28,6 +28,8 @@ import {
   generateDates,
 } from '../../helper/availableTimeSlots';
 import Sentry from '../../sentry';
+import { decrypt } from '../../helper/gdprHelper';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 const resolvers: Resolvers<Context> = {
   MeetingEvent: {
@@ -162,11 +164,14 @@ const resolvers: Resolvers<Context> = {
           if (organizerIsVendor && !!u.vendor_member) return true;
           return false;
         })
-        .map((u) => ({
-          name: `${u.first_name} ${u.last_name}`,
-          email: u.email,
-          user_id: u.id,
-        }));
+        .map((u) => {
+          const fullName = getUserFullName(u);
+          return {
+            name: fullName,
+            email: getUserEmail(u),
+            user_id: u.id,
+          };
+        });
     },
     attending_company_participants: async (parent, args, context) => {
       let organizerId = parent.organizer_id;
@@ -216,11 +221,14 @@ const resolvers: Resolvers<Context> = {
           if (organizerIsVendor && !!u.customer) return true;
           return false;
         })
-        .map((u) => ({
-          name: `${u.first_name} ${u.last_name}`,
-          user_id: u.id,
-          // do not include email because attending company email is hidden
-        }));
+        .map((u) => {
+          const fullName = getUserFullName(u);
+          return {
+            name: fullName,
+            email: getUserEmail(u),
+            user_id: u.id,
+          };
+        });
     },
     external_guests: async (parent, args, context) => {
       const { id } = parent;
@@ -1111,7 +1119,7 @@ const resolvers: Resolvers<Context> = {
               meeting_event_id,
             },
             include: {
-              user: true,
+              user: {},
             },
           });
 
@@ -1139,7 +1147,9 @@ const resolvers: Resolvers<Context> = {
               oauthGoogle.refresh_token,
             );
             const attendeesArr = [
-              ...existingAttendees.map((a) => ({ email: a.email })),
+              ...existingAttendees.map((a) => ({
+                email: getUserEmail(a),
+              })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
             ];
 
@@ -1163,7 +1173,9 @@ const resolvers: Resolvers<Context> = {
             const client = microsoftGraphClient(oauthMicrosoft.access_token);
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
-                emailAddress: { address: a.email },
+                emailAddress: {
+                  address: getUserEmail(a),
+                },
               })),
               ...existingExternalGuests.map((a) => ({
                 emailAddress: { address: a.email },

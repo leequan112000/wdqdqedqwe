@@ -3,6 +3,7 @@ import {
   SubscriptionStatus,
   VendorProfileFilePath,
 } from '../../helper/constant';
+import { encrypt } from '../../helper/gdprHelper';
 import invariant from '../../helper/invariant';
 import { slackNotification } from '../../helper/slack';
 import storeUpload from '../../helper/storeUpload';
@@ -150,11 +151,9 @@ const resolvers: Resolvers<Context> = {
           onboarding_step,
           ...(payload.user_name
             ? {
-                user: {
-                  update: {
-                    first_name: firstName,
-                    last_name: lastName,
-                  },
+                update: {
+                  first_name: encrypt(firstName),
+                  last_name: encrypt(lastName),
                 },
               }
             : {}),

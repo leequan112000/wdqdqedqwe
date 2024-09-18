@@ -26,7 +26,13 @@ import {
 import createCollaboratedNotification from '../../notification/collaboratedNotification';
 import { PublicError } from '../../graphql/errors/PublicError';
 import { createResetPasswordToken } from '../../helper/auth';
-import { getUserFullName, createResetPasswordUrl } from '../../helper/email';
+import {
+  createResetPasswordUrl,
+  getUserFullName,
+  getUserEmail,
+} from '../../helper/email';
+import { decrypt, encrypt } from '../../helper/gdprHelper';
+import { enc } from 'crypto-ts';
 
 type SetCustomerRoleAsAdminArgs = {
   biotech_id: string;
@@ -460,14 +466,16 @@ const addProjectCollaborator = async (
     });
 
     if (projectConnection) {
+      const inviterFullName = getUserFullName(currentUser);
+      const receiverFullName = getUserFullName(user);
       projectCollaboratorInvitationEmail(
         {
           login_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-          inviter_full_name: `${currentUser.first_name} ${currentUser.last_name}`,
+          inviter_full_name: inviterFullName,
           project_title: projectConnection.project_request.title,
-          receiver_full_name: `${user.first_name} ${user.last_name}`,
+          receiver_full_name: receiverFullName,
         },
-        user.email,
+        getUserEmail(user),
       );
 
       try {
@@ -583,7 +591,7 @@ export const inviteProjectCollaboratorViaEmail = async (
 
   const existingUser = await context.prisma.user.findFirst({
     where: {
-      email: email,
+      email: encrypt(email),
     },
     include: {
       customer: true,
@@ -627,9 +635,9 @@ export const inviteProjectCollaboratorViaEmail = async (
 
     const newUser = await trx.user.create({
       data: {
-        first_name: firstName,
-        last_name: lastName,
-        email,
+        first_name: encrypt(firstName),
+        last_name: encrypt(lastName),
+        email: encrypt(email),
         reset_password_token: resetToken,
         reset_password_expiration: new Date(resetTokenExpiration),
         customer: isBiotech
@@ -677,7 +685,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        newUser.email,
+        getUserEmail(newUser),
       );
     }
     if (isVendor) {
@@ -688,7 +696,7 @@ export const inviteProjectCollaboratorViaEmail = async (
           login_url: resetPasswordUrl,
           receiver_full_name: newUserFullName,
         },
-        newUser.email,
+        getUserEmail(newUser),
       );
     }
 

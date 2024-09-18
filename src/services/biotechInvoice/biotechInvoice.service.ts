@@ -16,6 +16,8 @@ import {
   generateInvoiceNumber,
   generateInvoiceReferenceId,
 } from '../../helper/invoice';
+import { decrypt } from '../../helper/gdprHelper';
+import { getUserEmail } from '../../helper/email';
 
 export type CreateBiotechInvoiceArgs = {
   milestone: Milestone;
@@ -104,18 +106,23 @@ export const createBiotechInvoice = async (
     (acc, item) => acc + item.amount.toNumber(),
     0,
   );
-  const emailData = receivers.map((r) => ({
-    emailData: {
-      project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote
-        .project_connection.project_request.title as string,
-      invoice_number: biotechInvoice.invoice_number,
-      invoice_total_amount: currency(totalAmount, { fromCents: true }).format(),
-      biotech_company_name: biotechInvoice.biotech.name,
-      due_at: moment(biotechInvoice.due_at).format('ll'),
-      button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
-    },
-    receiverEmail: r.user.email,
-  }));
+  const emailData = receivers.map((r) => {
+    const email = getUserEmail(r.user);
+    return {
+      emailData: {
+        project_title: biotechInvoice.biotech_invoice_items[0].milestone?.quote
+          .project_connection.project_request.title as string,
+        invoice_number: biotechInvoice.invoice_number,
+        invoice_total_amount: currency(totalAmount, {
+          fromCents: true,
+        }).format(),
+        biotech_company_name: biotechInvoice.biotech.name,
+        due_at: moment(biotechInvoice.due_at).format('ll'),
+        button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
+      },
+      receiverEmail: email,
+    };
+  });
   const notificationData = receivers.map((r) => {
     return createNewBiotechInvoiceNotificationJob({
       recipient_id: r.user_id,

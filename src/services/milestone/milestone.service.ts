@@ -14,6 +14,8 @@ import { createBiotechInvoicePaymentVerifiedNotificationJob } from '../../notifi
 import { createMilestoneNotification } from '../../notification/milestoneNotification';
 import { createNotificationQueueJob } from '../../queues/notification.queues';
 import { getReceiversByProjectConnection } from '../../queues/utils';
+import { decrypt } from '../../helper/gdprHelper';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 type UpdateMilestoneAsPaidArgs = {
   milestone_id: string;
@@ -100,7 +102,7 @@ const updateMilestoneAsPaid = async (
       biotech_company_name: biotechInvoice.biotech.name,
       button_url: `${app_env.APP_URL}/app/invoices/${biotechInvoice.id}`,
     },
-    receiverEmail: r.user.email,
+    receiverEmail: getUserEmail(r.user),
   }));
   const notificationData = receivers.map((r) => {
     return createBiotechInvoicePaymentVerifiedNotificationJob({
@@ -122,15 +124,17 @@ const updateMilestoneAsPaid = async (
   let milestoneUpdateContent = `Payment is now in escrow for the following milestone: ${updatedMilestone.title}`;
   await Promise.all(
     biotechs.map(async (receiver) => {
+      const email = getUserEmail(receiver);
+      const full_name = getUserFullName(receiver);
       await sendMilestoneNoticeEmail(
         {
           sender_name: senderCompanyName,
           project_title: projectConnection.project_request.title,
-          receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+          receiver_full_name: full_name,
           milestone_update_content: milestoneUpdateContent,
           milestone_url: `${app_env.APP_URL}/app/project-connection/${projectConnectionId}/quote/${quoteId}`,
         },
-        receiver.email,
+        email,
       );
 
       await createMilestoneNotification(

@@ -16,6 +16,7 @@ import { QuoteNotFoundError } from '../errors/QuoteNotFoundError';
 import { getReceiversByProjectConnection } from '../../queues/utils';
 import { sendQuoteNoticeEmail } from '../../mailer/quote';
 import createQuoteNotification from '../../notification/quoteNotification';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 
 const EXPIRY_DAYS = 7;
 
@@ -276,11 +277,11 @@ const resolvers: Resolvers<Context> = {
               {
                 sender_name: senderCompanyName,
                 project_title: projectConnection.project_request.title,
-                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                receiver_full_name: getUserFullName(receiver),
                 action: QuoteNotificationActionContent.SUBMITTED,
                 quotation_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}/quote/${newQuote.id}`,
               },
-              receiver.email,
+              getUserEmail(receiver),
             );
 
             await createQuoteNotification(
@@ -414,11 +415,11 @@ const resolvers: Resolvers<Context> = {
               {
                 sender_name: senderCompanyName,
                 project_title: projectConnection.project_request.title,
-                receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+                receiver_full_name: getUserFullName(receiver),
                 action: QuoteNotificationActionContent.SUBMITTED,
                 quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
               },
-              receiver.email,
+              getUserEmail(receiver),
             );
 
             await createQuoteNotification(
@@ -470,11 +471,11 @@ const resolvers: Resolvers<Context> = {
             {
               sender_name: senderCompanyName,
               project_title: projectConnection.project_request.title,
-              receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+              receiver_full_name: getUserFullName(receiver),
               action: QuoteNotificationActionContent.ACCEPTED,
               quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
             },
-            receiver.email,
+            getUserEmail(receiver),
           );
 
           await createQuoteNotification(
@@ -527,11 +528,11 @@ const resolvers: Resolvers<Context> = {
             {
               sender_name: senderCompanyName,
               project_title: projectConnection.project_request.title,
-              receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+              receiver_full_name: getUserFullName(receiver),
               action: QuoteNotificationActionContent.DECLINED,
               quotation_url: `${app_env.APP_URL}/app/project-connection/${updatedQuote.project_connection_id}/quote/${id}`,
             },
-            receiver.email,
+            getUserEmail(receiver),
           );
 
           await createQuoteNotification(

@@ -11,10 +11,12 @@ import {
   ProjectConnectionVendorStatus,
   ProjectRequestStatus,
 } from '../../helper/constant';
+import { getUserEmail, getUserFullName } from '../../helper/email';
 import invariant from '../../helper/invariant';
 import { filterByCollaborationStatus } from '../../helper/projectConnection';
 import { sendVendorAcceptProjectNoticeEmail } from '../../mailer/projectRequest';
 import createAcceptRequestNotification from '../../notification/acceptRequestNotification';
+import { MockContext } from '../../testContext';
 import { ServiceContext, Context } from '../../types/context';
 import chatService from '../chat/chat.service';
 
@@ -182,11 +184,11 @@ export const acceptProjectConnection = async (
         await sendVendorAcceptProjectNoticeEmail(
           {
             login_url: `${app_env.APP_URL}/app/project-connection/${projectConnection.id}`,
-            receiver_full_name: `${receiver.first_name} ${receiver.last_name}`,
+            receiver_full_name: getUserFullName(receiver),
             project_title: projectConnection.project_request.title,
             vendor_company_name: vendor.vendor_company?.name as string,
           },
-          receiver.email,
+          getUserEmail(receiver),
         );
 
         await createAcceptRequestNotification(

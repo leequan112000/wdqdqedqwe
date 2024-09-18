@@ -5,6 +5,7 @@ import { NotificationType } from '../helper/constant';
 import { createQueue } from '../helper/queue';
 import { bulkNewMessageNoticeEmail } from '../mailer/message';
 import createMessageNotification from '../notification/messageNotification';
+import { getUserEmail, getUserFullName } from '../helper/email';
 
 export type chatJob = {
   project_connection_id: string;
@@ -43,12 +44,12 @@ chatQueue.process(async (job, done) => {
           return {
             emailData: {
               button_url: `${app_env.APP_URL}/app/project-connection/${project_connection_id}`,
-              receiver_full_name: `${r.first_name} ${r.last_name}`,
+              receiver_full_name: getUserFullName(r),
               project_title: projectConnection.project_request.title,
               company_name: senderCompanyName,
               message_text: message,
             },
-            receiverEmail: r.email,
+            receiverEmail: getUserEmail(r),
           };
         }
         return undefined;

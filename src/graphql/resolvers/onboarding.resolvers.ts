@@ -1,3 +1,5 @@
+import { getUserEmail } from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 
@@ -13,13 +15,12 @@ const resolvers: Resolvers<Context> = {
         phone_number,
         country_code,
       } = args;
-
       const user = await context.prisma.user.update({
         data: {
-          first_name,
-          last_name,
-          phone_number,
-          country_code,
+          first_name: encrypt(first_name),
+          last_name: encrypt(last_name),
+          phone_number: encrypt(phone_number),
+          country_code: encrypt(country_code),
           customer: {
             update: {
               job_title,

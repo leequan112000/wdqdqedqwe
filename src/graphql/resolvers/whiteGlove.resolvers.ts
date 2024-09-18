@@ -2,6 +2,7 @@ import invariant from '../../helper/invariant';
 import { Context } from '../../types/context';
 import { Resolvers } from '../generated';
 import { slackNotification } from '../../helper/slack';
+import { getUserFullName } from '../../helper/email';
 import { WhiteGloveStatus } from '../../helper/constant';
 
 const resolvers: Resolvers<Context> = {
@@ -36,7 +37,7 @@ const resolvers: Resolvers<Context> = {
         `?searchTerm=${sourcing_session_id}`;
 
       await slackNotification.newShortlistNotification({
-        submittedBy: user ? [user.first_name, user.last_name].join(' ') : 'N/A',
+        submittedBy: user ? getUserFullName(user) : 'N/A',
         submittedAt: new Date().toISOString(),
         shortlistCounts: sourcingSession.sourced_cros.length.toString(),
         shortlistedVendors: sourcingSession.sourced_cros.map((cro) => ({

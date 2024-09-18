@@ -45,7 +45,7 @@ export const getReceiversByProjectConnection = async (
   if (vendor) {
     // if uploader is vendor, notify biotech members
     senderCompanyName = vendor.vendor_company?.name as string;
-    receivers = await prisma.user.findMany({
+    receivers = (await prisma.user.findMany({
       where: {
         customer: {
           id: {
@@ -66,7 +66,7 @@ export const getReceiversByProjectConnection = async (
           },
         ],
       },
-    });
+    })) as User[];
   } else {
     // if uploader is customer, notify vendor members
     const customer = await prisma.customer.findFirstOrThrow({
@@ -78,7 +78,7 @@ export const getReceiversByProjectConnection = async (
       },
     });
     senderCompanyName = customer.biotech.name;
-    receivers = await prisma.user.findMany({
+    receivers = (await prisma.user.findMany({
       where: {
         vendor_member: {
           id: {
@@ -99,7 +99,7 @@ export const getReceiversByProjectConnection = async (
           },
         ],
       },
-    });
+    })) as User[];
   }
 
   return {

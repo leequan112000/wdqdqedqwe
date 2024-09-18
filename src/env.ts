@@ -22,6 +22,8 @@ const envSchema = z.object({
   STRIPE_CROMATIC_VENDOR_LISTING_PRICE_ID: z.string(),
   CROMATIC_NOTIFY_SLACK_OAUTH_TOKEN: z.string(),
   CROMATIC_NOTIFY_SLACK_CHANNEL_ID: z.string(),
+  AES_256_GCM_KEY: z.string().length(64),
+  AES_256_GCM_IV: z.string().length(32),
 });
 
 export const env = envSchema.parse(process.env);

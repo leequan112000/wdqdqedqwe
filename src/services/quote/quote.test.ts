@@ -22,8 +22,11 @@ import { toDollar } from '../../helper/money';
 import * as quoteNotificationModule from '../../notification/quoteNotification';
 import * as quoteMailerModule from '../../mailer/quote';
 import * as utils from '../../queues/utils';
+import { PrismaClientMainDb } from '../../prisma';
+import { mockDeep } from 'vitest-mock-extended';
 
 vi.mock('@sendgrid/mail');
+vi.mock('../../env.ts');
 
 let mockCtx: MockContext;
 let ctx: ServiceContext;
@@ -158,9 +161,10 @@ describe('quote.service', () => {
 
       mockCtx.prisma.quote.create.mockResolvedValueOnce(newQuote);
       mockCtx.prisma.milestone.create.mockResolvedValueOnce(newMilestone);
-      mockCtx.prisma.$transaction.mockImplementation((callback) =>
-        callback(mockCtx.prisma),
-      );
+      mockCtx.prisma.$transaction.mockResolvedValueOnce([
+        newQuote,
+        newMilestone,
+      ]);
       const { milestones, ...rest } = await quoteService.createQuote(
         createQuoteInput,
         ctx,
@@ -237,9 +241,10 @@ describe('quote.service', () => {
 
       mockCtx.prisma.quote.create.mockResolvedValueOnce(newQuote);
       mockCtx.prisma.milestone.create.mockResolvedValueOnce(newMilestone);
-      mockCtx.prisma.$transaction.mockImplementation((callback) =>
-        callback(mockCtx.prisma),
-      );
+      mockCtx.prisma.$transaction.mockResolvedValueOnce([
+        newQuote,
+        newMilestone,
+      ]);
 
       vi.spyOn(utils, 'getReceiversByProjectConnection').mockResolvedValue({
         projectConnection,
@@ -248,7 +253,7 @@ describe('quote.service', () => {
       });
       const { milestones, ...rest } = await quoteService.createQuote(
         createQuoteInput,
-        mockCtx,
+        ctx,
       );
 
       /**

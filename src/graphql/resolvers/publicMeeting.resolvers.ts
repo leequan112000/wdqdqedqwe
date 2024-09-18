@@ -24,6 +24,8 @@ import {
 } from '../../notification/guestMeeting';
 import { checkIfUserInProjectConnection } from '../../services/projectConnection/projectConnection.service';
 import meetingEventService from '../../services/meetingEvent/meetingEvent.service';
+import { getUserEmail, getUserFullName } from '../../helper/email';
+import { encrypt } from '../../helper/gdprHelper';
 
 const resolvers: Resolvers<Context> = {
   Query: {
@@ -64,7 +66,7 @@ const resolvers: Resolvers<Context> = {
         title: meeting?.title,
         start_time: meeting.start_time.toISOString(),
         end_time: meeting.end_time.toISOString(),
-        organizer_name: `${meeting.organizer.first_name} ${meeting.organizer.last_name}`,
+        organizer_name: getUserFullName(meeting.organizer),
         guest_info: meetingGuest,
         meeting_link:
           !isEnded &&
@@ -113,10 +115,7 @@ const resolvers: Resolvers<Context> = {
 
       const existingUser = await context.prisma.user.findFirst({
         where: {
-          email: {
-            mode: 'insensitive',
-            equals: lowerCaseEmail,
-          },
+          email: encrypt(lowerCaseEmail),
         },
       });
       let isPartOfProject = false;
@@ -176,7 +175,7 @@ const resolvers: Resolvers<Context> = {
             guest_name: name || 'guest',
             project_title:
               meetingEvent.project_connection.project_request.title,
-            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            host_name: getUserFullName(organizer),
           },
           meetingGuest.email,
         );
@@ -185,11 +184,11 @@ const resolvers: Resolvers<Context> = {
             button_url: `${app_env.APP_URL}/app/meeting-events`,
             meeting_title: meetingEvent.title,
             guest_name: name || 'guest',
-            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            host_name: getUserFullName(organizer),
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
-          organizer.email,
+          getUserEmail(organizer),
         );
         createAcceptedMeetingRSVPNotification({
           guest_name: guestName,
@@ -203,7 +202,7 @@ const resolvers: Resolvers<Context> = {
           {
             meeting_title: meetingEvent.title,
             guest_name: name || 'guest',
-            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            host_name: getUserFullName(organizer),
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
@@ -214,11 +213,11 @@ const resolvers: Resolvers<Context> = {
             button_url: `${app_env.APP_URL}/app/meeting-events`,
             meeting_title: meetingEvent.title,
             guest_name: name || 'guest',
-            host_name: `${organizer.first_name} ${organizer.last_name}`,
+            host_name: getUserFullName(organizer),
             project_title:
               meetingEvent.project_connection.project_request.title,
           },
-          organizer.email,
+          getUserEmail(organizer),
         );
         createDeclinedMeetingRSVPNotification({
           guest_name: guestName,
@@ -245,7 +244,9 @@ const resolvers: Resolvers<Context> = {
             invariant(oauthGoogle, new PublicError('Missing token.'));
 
             const attendeesArr = [
-              ...existingAttendees.map((a) => ({ email: a.email })),
+              ...existingAttendees.map((a) => ({
+                email: getUserEmail(a),
+              })),
               ...existingExternalGuests.map((a) => ({ email: a.email })),
               { email: lowerCaseEmail },
             ];
@@ -274,7 +275,9 @@ const resolvers: Resolvers<Context> = {
             invariant(oauthMicrosoft, new PublicError('Missing token.'));
             const attendeesArr = [
               ...existingAttendees.map((a) => ({
-                emailAddress: { address: a.email },
+                emailAddress: {
+                  address: getUserEmail(a),
+                },
               })),
               ...existingExternalGuests.map((a) => ({
                 emailAddress: { address: a.email },
