@@ -29,6 +29,24 @@ import { encrypt } from '../../helper/gdprHelper';
 const PROJECT_REQUEST_RESPONSE_PERIOD = 14; // in day
 
 const resolvers: Resolvers<Context> = {
+  VendorCompany: {
+    vendor_members: async (parent, _, context) => {
+      if (parent.vendor_members) return parent.vendor_members;
+
+      if (!parent.id) return null;
+
+      return context.prisma.vendorMember.findMany({
+        where: {
+          vendor_company_id: parent.id,
+        },
+      });
+    },
+  },
+  Query: {
+    vendor_companies: async (_, __, context) => {
+      return await context.prisma.vendorCompany.findMany();
+    },
+  },
   Mutation: {
     createVendorCompany: async (_, args, context) => {
       return await context.prisma.vendorCompany.create({

@@ -17,8 +17,11 @@ import { encrypt } from '../../helper/gdprHelper';
 const resolver: Resolvers<Context> = {
   VendorMember: {
     user: async (parent, _, context) => {
-      invariant(parent.user_id, 'User id not found.');
-      return await context.prisma.user.findFirst({
+      if (parent.user) return parent.user;
+
+      if (!parent.user_id) return null;
+
+      return await context.prisma.user.findUnique({
         where: {
           id: parent.user_id,
         },

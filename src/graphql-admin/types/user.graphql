@@ -6,6 +6,7 @@ type User {
   reset_password_token: String
   customer: Customer
   vendor_member: VendorMember
+  sourcerer_vendor_profile: Vendor
 }
 
 type Query {

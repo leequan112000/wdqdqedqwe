@@ -26,6 +26,18 @@ const resolver: Resolvers<Context> = {
         },
       });
     },
+    sourcerer_vendor_profile: async (parent, _, context) => {
+      if (parent.sourcerer_vendor_profile)
+        return parent.sourcerer_vendor_profile;
+
+      if (!parent.id) return null;
+
+      return await context.prisma.vendor.findUnique({
+        where: {
+          user_id: parent.id,
+        },
+      });
+    },
   },
   Query: {
     users: async (_, __, context) => {
