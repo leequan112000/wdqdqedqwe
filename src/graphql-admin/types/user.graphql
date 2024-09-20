@@ -4,6 +4,13 @@ type User {
   first_name: String
   last_name: String
   reset_password_token: String
+  customer: Customer
+  vendor_member: VendorMember
+  sourcerer_vendor_profile: Vendor
+}
+
+type Query {
+  users: [User]
 }
 
 type Mutation {

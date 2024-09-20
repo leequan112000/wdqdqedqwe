@@ -706,7 +706,9 @@ export type Query = {
   biotechInvoice?: Maybe<BiotechInvoice>;
   paidBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
   signedUrl?: Maybe<Scalars['String']['output']>;
+  users?: Maybe<Array<Maybe<User>>>;
   vendorSurveyAttachmentSignedUrl?: Maybe<Scalars['String']['output']>;
+  vendor_companies?: Maybe<Array<Maybe<VendorCompany>>>;
   verificationPendingBiotechInvoices?: Maybe<Array<Maybe<BiotechInvoice>>>;
 };
 
@@ -748,11 +750,14 @@ export type ReviewQuestionSet = {
 
 export type User = {
   __typename?: 'User';
+  customer?: Maybe<Customer>;
   email?: Maybe<Scalars['String']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   reset_password_token?: Maybe<Scalars['String']['output']>;
+  sourcerer_vendor_profile?: Maybe<Vendor>;
+  vendor_member?: Maybe<VendorMember>;
 };
 
 export type Vendor = {
@@ -770,6 +775,7 @@ export type VendorCompany = {
   is_on_marketplace?: Maybe<Scalars['Boolean']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['Date']['output']>;
+  vendor_members?: Maybe<Array<Maybe<VendorMember>>>;
   vendor_type?: Maybe<Scalars['String']['output']>;
   website?: Maybe<Scalars['String']['output']>;
 };
@@ -780,6 +786,7 @@ export type VendorMember = {
   department?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   phone?: Maybe<Scalars['String']['output']>;
+  role?: Maybe<Scalars['String']['output']>;
   title?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['Date']['output']>;
   user?: Maybe<User>;
@@ -1175,7 +1182,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   biotechInvoice?: Resolver<Maybe<ResolversTypes['BiotechInvoice']>, ParentType, ContextType, RequireFields<QueryBiotechInvoiceArgs, 'id'>>;
   paidBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
   signedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QuerySignedUrlArgs, 'key'>>;
+  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   vendorSurveyAttachmentSignedUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryVendorSurveyAttachmentSignedUrlArgs, 'key'>>;
+  vendor_companies?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorCompany']>>>, ParentType, ContextType>;
   verificationPendingBiotechInvoices?: Resolver<Maybe<Array<Maybe<ResolversTypes['BiotechInvoice']>>>, ParentType, ContextType>;
 }>;
 
@@ -1205,11 +1214,14 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 }
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   first_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reset_password_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sourcerer_vendor_profile?: Resolver<Maybe<ResolversTypes['Vendor']>, ParentType, ContextType>;
+  vendor_member?: Resolver<Maybe<ResolversTypes['VendorMember']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1227,6 +1239,7 @@ export type VendorCompanyResolvers<ContextType = any, ParentType extends Resolve
   is_on_marketplace?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  vendor_members?: Resolver<Maybe<Array<Maybe<ResolversTypes['VendorMember']>>>, ParentType, ContextType>;
   vendor_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   website?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1237,6 +1250,7 @@ export type VendorMemberResolvers<ContextType = any, ParentType extends Resolver
   department?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;

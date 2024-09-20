@@ -9,6 +9,11 @@ type VendorCompany {
   vendor_type: String
   is_on_marketplace: Boolean
   invited_by: String
+  vendor_members: [VendorMember]
+}
+
+type Query {
+  vendor_companies: [VendorCompany]
 }
 
 type Mutation {
