@@ -12,7 +12,7 @@ export type chatJob = {
   message: string;
 };
 
-const chatQueue = createQueue<chatJob>('notification');
+const chatQueue = createQueue<chatJob>('chat');
 
 chatQueue.process(async (job, done) => {
   const { project_connection_id, sender_id, message } = job.data;
