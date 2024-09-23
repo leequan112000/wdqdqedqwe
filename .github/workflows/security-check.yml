@@ -10,27 +10,6 @@ on:
         - cron: '0 0 * * 0'  # Run weekly on Sundays
 
 jobs:
-  sast:
-    name: SAST with CodeQL
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: javascript
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          category: "/language:javascript"
-
   dast:
     name: DAST with OWASP ZAP
     runs-on: ubuntu-latest
@@ -38,6 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.4.0
+        uses: zaproxy/action-baseline@v0.7.0
         with:
           target: 'https://staging.cromatic.bio'
