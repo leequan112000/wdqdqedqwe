@@ -5,6 +5,7 @@ on:
       branches:
         - staging
         - master
+        - security-check
     schedule:
         - cron: '0 0 * * 0'  # Run weekly on Sundays
 
@@ -39,4 +40,4 @@ jobs:
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.4.0
         with:
-          target: 'https://your-staging-site.com'  # Replace with your actual staging URL
+          target: 'https://staging.cromatic.bio'
