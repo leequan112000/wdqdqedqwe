@@ -3,7 +3,7 @@ name: Security Checks
 on:
   push:
     branches:
-      - main
+      - security-check
 
 
 jobs:
@@ -12,12 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-          args: >
-              -Dsonar.verbose=true
-      - uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+        
+        - name: Set branch name
+          run: echo "BRANCH_NAME=$(echo $GITHUB_REF | cut -d'/' -f 3)" >> $GITHUB_ENV
+        
+        - name: SonarQube Scan
+          uses: sonarsource/sonarqube-scan-action@master
+          with:
+            args: >
+                -Dsonar.branch.name=${{ env.BRANCH_NAME }}
+                -Dsonar.verbose=true
+          env:
+            SONAR_TOKEN: sqp_7276fe4c5ca945228db21497209f21e6f7a88ead
+            SONAR_HOST_URL: http://18.144.66.184
