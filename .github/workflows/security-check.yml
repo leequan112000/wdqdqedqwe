@@ -1,22 +1,21 @@
 name: Security Checks
 
 on:
-    push:
-      branches:
-        - staging
-        - master
-        - security-check
-    schedule:
-        - cron: '0 0 * * 0'  # Run weekly on Sundays
+  push:
+    branches:
+      - security-check
+
 
 jobs:
-  dast:
-    name: DAST with OWASP ZAP
+  build:
+    name: Build and analyze
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: ZAP Scan
-        uses: zaproxy/action-baseline@v0.7.0
+      - uses: actions/checkout@v4
         with:
-          target: 'https://staging.cromatic.bio'
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: sqp_a49576b7a9ae454d6268726625bf1d02aaa9654c
+          SONAR_HOST_URL: http://18.144.66.184:9000
